@@ -1,8 +1,11 @@
-"use client";
-
 import Plot from "react-plotly.js";
 
-export default function BeamPlot({ x, moment }) {
+type BeamPlotProps = {
+  x: number[];
+  moment: number[];
+};
+
+export default function BeamPlot({ x, moment }: BeamPlotProps) {
   return (
     <Plot
       data={[
@@ -11,13 +14,12 @@ export default function BeamPlot({ x, moment }) {
           y: moment,
           type: "scatter",
           mode: "lines",
-          name: "Moment"
-        }
+        },
       ]}
       layout={{
         title: "Bending Moment Diagram",
         xaxis: { title: "Length (m)" },
-        yaxis: { title: "Moment (Nm)" }
+        yaxis: { title: "Moment (Nm)" },
       }}
     />
   );
