@@ -1,4 +1,5 @@
 import Plot from "react-plotly.js";
+import { Layout } from "plotly.js";
 
 type BeamPlotProps = {
   x: number[];
@@ -6,6 +7,12 @@ type BeamPlotProps = {
 };
 
 export default function BeamPlot({ x, moment }: BeamPlotProps) {
+  const layout: Partial<Layout> = {
+    title: { text: "Bending Moment Diagram" },
+    xaxis: { title: { text: "Length (m)" } },
+    yaxis: { title: { text: "Moment (Nm)" } },
+  };
+
   return (
     <Plot
       data={[
@@ -16,11 +23,7 @@ export default function BeamPlot({ x, moment }: BeamPlotProps) {
           mode: "lines",
         },
       ]}
-      layout={{
-        title: "Bending Moment Diagram",
-        xaxis: { title: "Length (m)" },
-        yaxis: { title: "Moment (Nm)" },
-      }}
+      layout={layout}
     />
   );
 }
