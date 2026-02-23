@@ -9,7 +9,7 @@ export default function Home() {
 
   const calculateBeam = async () => {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/calculate`,
+      `${process.env.NEXT_PUBLIC_API_URL}/beam/data`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
