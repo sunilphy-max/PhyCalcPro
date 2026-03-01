@@ -1,13 +1,9 @@
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  padding: 0;
+  font-family: sans-serif;
+  background-color: #f7f7f7;
 }
-
-#root {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  gap: 20px;
+h1 {
+  color: #1f2937;
 }

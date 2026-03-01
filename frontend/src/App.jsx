@@ -1,13 +1,27 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import React, { useEffect, useState } from "react";
+import PlotCard from "./components/PlotCard";
 
-useEffect(() => {
-  fetch(`${API_URL}/hello`)
-    .then(res => res.json())
-    .then(data => setMsg(data.message));
-}, []);
+function App() {
+  const [result, setResult] = useState(null);
 
-useEffect(() => {
-  fetch(`${API_URL}/plot-test`)
-    .then(res => res.json())
-    .then(data => setPlot(`data:image/png;base64,${data.plot}`));
-}, []);
+  useEffect(() => {
+    fetch("/api/example?x=4")
+      .then((res) => res.json())
+      .then((data) => setResult(data))
+      .catch((err) => console.error(err));
+  }, []);
+
+  return (
+    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
+      <h1>Welcome to PhyCalcPro</h1>
+      {result && (
+        <div>
+          <p>Example Calculation: x = {result.x}, y = {result.y.toFixed(3)}</p>
+          <PlotCard src={result.plot} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
