@@ -1,10 +1,16 @@
-import Plot from "react-plotly.js";
+"use client";
+
+import dynamic from "next/dynamic";
 import { Layout } from "plotly.js";
 
 type BeamPlotProps = {
   x: number[];
   moment: number[];
 };
+
+const Plot = dynamic(() => import("react-plotly.js"), {
+  ssr: false,
+});
 
 export default function BeamPlot({ x, moment }: BeamPlotProps) {
   const layout: Partial<Layout> = {
@@ -17,7 +23,7 @@ export default function BeamPlot({ x, moment }: BeamPlotProps) {
     <Plot
       data={[
         {
-          x: x,
+          x,
           y: moment,
           type: "scatter",
           mode: "lines",
