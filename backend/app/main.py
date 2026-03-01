@@ -1,61 +1,39 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
-from pydantic import BaseModel
-from app.calculators.straight_beam import straight_beam_analysis
-from app.plotting.static_plot import generate_plot
-from app.reporting.pdf_report import generate_pdf_report
-
-class BeamInput(BaseModel):
-    load: float
-    length: float
-    width: float
-    height: float
+import numpy as np
+import matplotlib.pyplot as plt
+import io
+import base64
 
 app = FastAPI()
 
+# Allow CORS so frontend (localhost:5173) can access backend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # change to your domain when deploying
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.post("/beam/data")
-def beam_data(load: float, length: float, width: float, height: float):
+# Simple hello endpoint
+@app.get("/hello")
+def hello():
+    return {"message": "Hello from backend!"}
 
-    x, shear, moment, max_stress = straight_beam_analysis(
-        load, length, width, height
-    )
+# Test plotting endpoint
+@app.get("/plot-test")
+def plot_test():
+    x = np.linspace(0, 2*np.pi, 100)
+    y = np.sin(x)
 
-    return {
-        "x": x.tolist(),
-        "shear": shear.tolist(),
-        "moment": moment.tolist(),
-        "max_stress": max_stress
-    }
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    ax.set_title("Sine Wave Example")
 
-@app.post("/beam/moment-plot")
-def moment_plot(load: float, length: float, width: float, height: float):
-
-    x, shear, moment, _ = straight_beam_analysis(
-        load, length, width, height
-    )
-
-    return generate_plot(x, moment, "Length (m)", "Moment (Nm)", "Bending Moment Diagram")
-@app.post("/beam/report")
-def beam_report(data: BeamInput):
-
-    x, shear, moment, max_stress = straight_beam_analysis(
-        data.load, data.length, data.width, data.height
-    )
-
-    pdf_bytes = generate_pdf_report(x, moment, max_stress)
-
-    return Response(
-        content=pdf_bytes,
-        media_type="application/pdf",
-        headers={
-            "Content-Disposition": "attachment; filename=beam_report.pdf"
-        },
-    )
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    plt.close(fig)
+    buf.seek(0)
+    img_base64 = base64.b64encode(buf.read()).decode("utf-8")
+    return {"plot": img_base64}
