@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Layout } from "plotly.js";
+import type { Layout } from "plotly.js";
 
 type BeamPlotProps = {
   x: number[];
