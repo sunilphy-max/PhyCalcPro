@@ -36,8 +36,14 @@ npm run dev
 
 ### Building for production
 
-1. From `frontend/` run `npm run build` (a postbuild script copies output into `backend/static`).
-2. Start the backend as above; it will serve the static files.
+1. From `frontend/` run `npm run build`. This generates a `dist/` directory and the `postbuild` script
+   automatically copies the generated files into `backend/static`.
+2. Commit the contents of `backend/static` so that static assets are available to the
+   deployment platform (Render, Heroku, etc.).
+3. Start the backend as above; it will serve the static files.
+
+> In continuous integration we also build and copy the frontend assets so the `static`
+> directory stays up‑to‑date; see `.github/workflows/ci.yml`.
 
 ## Environment variables
 
