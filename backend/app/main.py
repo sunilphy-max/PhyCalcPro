@@ -5,10 +5,12 @@ from app.api import calc
 
 app = FastAPI(title="PhyCalcPro API")
 
-# Optional: allow frontend requests from same origin or different domains
+# CORS configuration: allow requests from origins listed in CORS_ORIGINS env var
+# (comma-separated). Defaults to all origins for development convenience.
+origins = [o.strip() for o in __import__("os").getenv("CORS_ORIGINS", "*").split(",")] if __import__("os").getenv("CORS_ORIGINS") else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
