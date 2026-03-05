@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import PlotCard from "./components/PlotCard";
+import BeamCalculator from "./components/BeamCalculator";
 
+function App() {
+  return (
+    <div>
+      <BeamCalculator />
+    </div>
+  );
+}
 function App() {
   const [result, setResult] = useState(null);
 
