@@ -1,5 +1,5 @@
 import React from "react";
-import BeamCalculator from "./components/BeamCalculator";
+import BeamCalculator from "./components/BeamCalculator.jsx";
 
 function App() {
   return (
