@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import calc
+from app.api.beam import router as beam_router
 
 app = FastAPI(title="PhyCalcPro API")
 
@@ -16,7 +16,7 @@ app.add_middleware(
 )
 
 # Include calculator routes
-app.include_router(calc.router, prefix="/api")
+app.include_router(beam_router, prefix="/api/beam")
 
 # Serve frontend static files
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
