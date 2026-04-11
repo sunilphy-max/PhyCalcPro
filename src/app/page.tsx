@@ -2,86 +2,88 @@ import Link from "next/link";
 
 export default function Page() {
   return (
-    <div style={container}>
+    <div style={page}>
       
-      {/* SIDEBAR */}
-      <aside style={sidebar}>
-        <h2 style={{ marginBottom: 20 }}>PhyCalcPro</h2>
+      {/* HEADER */}
+      <div style={header}>
+        <h1>PhyCalcPro</h1>
+        <p>Engineering Calculation Suite</p>
+      </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <div style={sectionTitle}>Beams, Shafts, Profiles</div>
+      {/* MODULE GRID */}
+      <div style={grid}>
+        
+        {/* BEAMS */}
+        <Link href="/products/beams" style={card}>
+          <h2>Beams, Shafts, Profiles</h2>
+          <p>Straight beam bending, shear & deflection analysis</p>
+        </Link>
 
-          <Link style={link} href="/bolt-calculator">
-            ⚙ Bolt Stress Calculator
-          </Link>
-
-          <div style={disabled}>🧱 Beam Bending (coming soon)</div>
-          <div style={disabled}>🌡 Thermal Expansion</div>
-          <div style={disabled}>📊 Material Properties</div>
-        </nav>
-      </aside>
-
-      {/* MAIN */}
-      <main style={main}>
-        <h1>Engineering Calculation Suite</h1>
-
-        <p style={{ opacity: 0.7 }}>
-          MITCalc-style engineering tools for mechanical design
-        </p>
-
-        <div style={card}>
-          <h2>Welcome</h2>
-          <p>
-            Select a module from the left panel to start calculations.
-          </p>
+        {/* SHAFTS (placeholder) */}
+        <div style={cardDisabled}>
+          <h2>Shaft Design</h2>
+          <p>Torque, stress & deformation analysis</p>
         </div>
-      </main>
+
+        {/* BUCKLING */}
+        <div style={cardDisabled}>
+          <h2>Column Buckling</h2>
+          <p>Slender strut stability analysis</p>
+        </div>
+
+        {/* PROFILES */}
+        <div style={cardDisabled}>
+          <h2>Profiles & Properties</h2>
+          <p>Area, inertia & section properties</p>
+        </div>
+
+        {/* SCREWS */}
+        <div style={cardDisabled}>
+          <h2>Power Screws</h2>
+          <p>Lead screw & ball screw design tools</p>
+        </div>
+      </div>
     </div>
   );
 }
 
-/* ===== styles ===== */
+/* ================= STYLES ================= */
 
-const container: any = {
-  display: "flex",
+const page: any = {
   minHeight: "100vh",
-  background: "#0b1220",
-  color: "white",
+  background: "#f5f7fb",
   fontFamily: "system-ui",
-};
-
-const sidebar: any = {
-  width: "260px",
-  padding: "20px",
-  borderRight: "1px solid #1f2937",
-};
-
-const main: any = {
-  flex: 1,
   padding: "30px",
+  color: "#111827",
 };
 
-const sectionTitle: any = {
-  fontSize: "12px",
-  opacity: 0.6,
-  marginTop: 10,
+const header: any = {
+  marginBottom: 30,
+  borderBottom: "1px solid #e5e7eb",
+  paddingBottom: 10,
 };
 
-const link: any = {
-  color: "#60a5fa",
-  textDecoration: "none",
-  padding: "6px 0",
-};
-
-const disabled: any = {
-  opacity: 0.4,
-  padding: "6px 0",
+const grid: any = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+  gap: 20,
 };
 
 const card: any = {
-  marginTop: 20,
   padding: 20,
-  background: "#111827",
   borderRadius: 10,
-  border: "1px solid #1f2937",
+  background: "white",
+  border: "1px solid #e5e7eb",
+  textDecoration: "none",
+  color: "#111827",
+  cursor: "pointer",
+  transition: "0.2s",
+};
+
+const cardDisabled: any = {
+  padding: 20,
+  borderRadius: 10,
+  background: "#f3f4f6",
+  border: "1px solid #e5e7eb",
+  color: "#6b7280",
 };
