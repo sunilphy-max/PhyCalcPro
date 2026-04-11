@@ -140,7 +140,12 @@ const imageStyle: any = {
   fontSize: "0.9rem",
   opacity: 0.8,
 };
-
+const gridStyle: any = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+  gap: "1rem",
+  marginTop: "1rem",
+};
 const buttonStyle: any = {
   display: "inline-block",
   marginTop: "1rem",
