@@ -4,18 +4,29 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beamEngine";
 
+// 👇 Fix Plotly SSR issue
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function Page() {
+  // =============================
+  // STATE
+  // =============================
   const [length, setLength] = useState(5);
   const [force, setForce] = useState(1000);
+  const [support, setSupport] = useState<
+  "simply_supported" | "cantilever" | "fixed_fixed"
+>("simply_supported");
   const [result, setResult] = useState<any>(null);
 
+  // =============================
+  // CALCULATION
+  // =============================
   const calculate = () => {
     const res = solveBeam({
       length,
       E: 210e9,
       I: 1e-6,
+      support,
       loads: [
         {
           type: "point",
@@ -34,32 +45,48 @@ export default function Page() {
     setResult(res);
   };
 
+  // =============================
+  // UI
+  // =============================
   return (
-    <div style={{ padding: 20, background: "#f5f7fb", minHeight: "100vh" }}>
-      <h1>Beam Analysis (Step 1)</h1>
+    <div style={page}>
+      <h1>Beam Analysis Module</h1>
 
-      {/* INPUTS */}
-      <div style={{ background: "white", padding: 10, marginBottom: 10 }}>
+      {/* INPUT PANEL */}
+      <div style={card}>
         <label>Length (m)</label>
         <input
+          type="number"
           value={length}
           onChange={(e) => setLength(+e.target.value)}
         />
 
         <label>Point Load (N)</label>
         <input
+          type="number"
           value={force}
           onChange={(e) => setForce(+e.target.value)}
         />
 
-        <button onClick={calculate} style={{ marginTop: 10 }}>
+        <label>Support Type</label>
+        <select
+          value={support}
+          onChange={(e) => setSupport(e.target.value as "simply_supported" | "cantilever" | "fixed_fixed")}
+        >
+          <option value="simply_supported">Simply Supported</option>
+          <option value="cantilever">Cantilever</option>
+          <option value="fixed_fixed">Fixed-Fixed</option>
+        </select>
+
+        <button onClick={calculate} style={button}>
           Solve Beam
         </button>
       </div>
 
-      {/* OUTPUTS */}
+      {/* RESULTS */}
       {result && (
-        <div style={{ display: "grid", gap: 20 }}>
+        <div style={grid}>
+          {/* SHEAR */}
           <Plot
             data={[
               {
@@ -71,8 +98,10 @@ export default function Page() {
               },
             ]}
             layout={{ title: "Shear Force Diagram" }}
+            style={{ width: "100%", height: "300px" }}
           />
 
+          {/* MOMENT */}
           <Plot
             data={[
               {
@@ -84,8 +113,10 @@ export default function Page() {
               },
             ]}
             layout={{ title: "Bending Moment Diagram" }}
+            style={{ width: "100%", height: "300px" }}
           />
 
+          {/* DEFLECTION */}
           <Plot
             data={[
               {
@@ -97,9 +128,45 @@ export default function Page() {
               },
             ]}
             layout={{ title: "Deflection Curve" }}
+            style={{ width: "100%", height: "300px" }}
           />
         </div>
       )}
     </div>
   );
 }
+
+// =============================
+// STYLES
+// =============================
+
+const page: any = {
+  padding: "20px",
+  background: "#f5f7fb",
+  minHeight: "100vh",
+  fontFamily: "system-ui",
+};
+
+const card: any = {
+  background: "white",
+  padding: "15px",
+  borderRadius: "10px",
+  marginBottom: "20px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+  maxWidth: "400px",
+};
+
+const grid: any = {
+  display: "grid",
+  gap: "20px",
+};
+
+const button: any = {
+  padding: "10px",
+  background: "#111827",
+  color: "white",
+  borderRadius: "6px",
+  cursor: "pointer",
+};
