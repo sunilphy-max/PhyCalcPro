@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { solveBeam } from "@/lib/beamEngine";
+import { solveBeam } from "@/lib/beam/solver";
 
 // Prevent SSR issues with Plotly
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
