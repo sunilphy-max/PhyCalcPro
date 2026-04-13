@@ -10,6 +10,7 @@ export type BeamConfig = {
   length: number;
   E: number;
   I: number;
+  c: number; // distance to outer fiber
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   loads: Load[];
 };
@@ -19,6 +20,9 @@ export type BeamResult = {
   shear: number[];
   moment: number[];
   deflection: number[];
+  stress: number[];
+  maxStress: number;
+  maxDeflection: number;
 };
 
 export function solveBeam(config: BeamConfig): BeamResult {
@@ -30,7 +34,8 @@ export function solveBeam(config: BeamConfig): BeamResult {
   const shear: number[] = [];
   const moment: number[] = [];
   const deflection: number[] = [];
-
+  const stress: number[] = [];
+  
   for (let i = 0; i < n; i++) {
   const xi = (i / (n - 1)) * length;
   x.push(xi);
@@ -106,8 +111,22 @@ export function solveBeam(config: BeamConfig): BeamResult {
 
   shear.push(V);
   moment.push(M);
-  deflection.push(M / (E * I));
-}
+  const d = M / (E * I);
+  deflection.push(d);
 
-  return { x, shear, moment, deflection };
+// stress calculation
+const sigma = (M * config.c) / config.I;
+stress.push(sigma);
+}
+const maxStress = Math.max(...stress.map(Math.abs));
+const maxDeflection = Math.max(...deflection.map(Math.abs));
+return {
+  x,
+  shear,
+  moment,
+  deflection,
+  stress,
+  maxStress,
+  maxDeflection,
+};
 }

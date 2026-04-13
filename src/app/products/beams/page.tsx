@@ -4,7 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beamEngine";
 
-// 👇 Fix Plotly SSR issue
+// Prevent SSR issues with Plotly
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function Page() {
@@ -13,9 +13,14 @@ export default function Page() {
   // =============================
   const [length, setLength] = useState(5);
   const [force, setForce] = useState(1000);
+
   const [support, setSupport] = useState<
-  "simply_supported" | "cantilever" | "fixed_fixed"
->("simply_supported");
+    "simply_supported" | "cantilever" | "fixed_fixed"
+  >("simply_supported");
+
+  const [I, setI] = useState(1e-6);
+  const [c, setC] = useState(0.05);
+
   const [result, setResult] = useState<any>(null);
 
   // =============================
@@ -25,7 +30,8 @@ export default function Page() {
     const res = solveBeam({
       length,
       E: 210e9,
-      I: 1e-6,
+      I,
+      c,
       support,
       loads: [
         {
@@ -68,10 +74,31 @@ export default function Page() {
           onChange={(e) => setForce(+e.target.value)}
         />
 
+        <label>Moment of Inertia I (m⁴)</label>
+        <input
+          type="number"
+          value={I}
+          onChange={(e) => setI(+e.target.value)}
+        />
+
+        <label>Outer Fiber Distance c (m)</label>
+        <input
+          type="number"
+          value={c}
+          onChange={(e) => setC(+e.target.value)}
+        />
+
         <label>Support Type</label>
         <select
           value={support}
-          onChange={(e) => setSupport(e.target.value as "simply_supported" | "cantilever" | "fixed_fixed")}
+          onChange={(e) =>
+            setSupport(
+              e.target.value as
+                | "simply_supported"
+                | "cantilever"
+                | "fixed_fixed"
+            )
+          }
         >
           <option value="simply_supported">Simply Supported</option>
           <option value="cantilever">Cantilever</option>
@@ -85,52 +112,84 @@ export default function Page() {
 
       {/* RESULTS */}
       {result && (
-        <div style={grid}>
-          {/* SHEAR */}
-          <Plot
-            data={[
-              {
-                x: result.x,
-                y: result.shear,
-                type: "scatter",
-                mode: "lines",
-                name: "Shear",
-              },
-            ]}
-            layout={{ title: "Shear Force Diagram" }}
-            style={{ width: "100%", height: "300px" }}
-          />
+        <>
+          <div style={grid}>
+            {/* SHEAR */}
+            <Plot
+              data={[
+                {
+                  x: result.x,
+                  y: result.shear,
+                  type: "scatter",
+                  mode: "lines",
+                  name: "Shear",
+                },
+              ]}
+              layout={{ title: "Shear Force Diagram" }}
+              style={{ width: "100%", height: "300px" }}
+            />
 
-          {/* MOMENT */}
-          <Plot
-            data={[
-              {
-                x: result.x,
-                y: result.moment,
-                type: "scatter",
-                mode: "lines",
-                name: "Moment",
-              },
-            ]}
-            layout={{ title: "Bending Moment Diagram" }}
-            style={{ width: "100%", height: "300px" }}
-          />
+            {/* MOMENT */}
+            <Plot
+              data={[
+                {
+                  x: result.x,
+                  y: result.moment,
+                  type: "scatter",
+                  mode: "lines",
+                  name: "Moment",
+                },
+              ]}
+              layout={{ title: "Bending Moment Diagram" }}
+              style={{ width: "100%", height: "300px" }}
+            />
 
-          {/* DEFLECTION */}
-          <Plot
-            data={[
-              {
-                x: result.x,
-                y: result.deflection,
-                type: "scatter",
-                mode: "lines",
-                name: "Deflection",
-              },
-            ]}
-            layout={{ title: "Deflection Curve" }}
-            style={{ width: "100%", height: "300px" }}
-          />
-        </div>
+            {/* DEFLECTION */}
+            <Plot
+              data={[
+                {
+                  x: result.x,
+                  y: result.deflection,
+                  type: "scatter",
+                  mode: "lines",
+                  name: "Deflection",
+                },
+              ]}
+              layout={{ title: "Deflection Curve" }}
+              style={{ width: "100%", height: "300px" }}
+            />
+
+            {/* STRESS */}
+            <Plot
+              data={[
+                {
+                  x: result.x,
+                  y: result.stress,
+                  type: "scatter",
+                  mode: "lines",
+                  name: "Stress",
+                },
+              ]}
+              layout={{ title: "Bending Stress Distribution" }}
+              style={{ width: "100%", height: "300px" }}
+            />
+          </div>
+
+          {/* SUMMARY */}
+          <div style={resultCard}>
+            <h3>Results</h3>
+
+            <p>
+              <strong>Max Stress:</strong>{" "}
+              {result.maxStress.toExponential(3)} Pa
+            </p>
+
+            <p>
+              <strong>Max Deflection:</strong>{" "}
+              {result.maxDeflection.toExponential(3)} m
+            </p>
+          </div>
+        </>
       )}
     </div>
   );
@@ -155,7 +214,7 @@ const card: any = {
   display: "flex",
   flexDirection: "column",
   gap: "10px",
-  maxWidth: "400px",
+  maxWidth: "420px",
 };
 
 const grid: any = {
@@ -169,4 +228,12 @@ const button: any = {
   color: "white",
   borderRadius: "6px",
   cursor: "pointer",
+};
+
+const resultCard: any = {
+  background: "white",
+  padding: "15px",
+  borderRadius: "10px",
+  marginTop: "20px",
+  maxWidth: "420px",
 };
