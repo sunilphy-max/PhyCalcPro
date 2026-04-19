@@ -3,6 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beam/solver";
+import DashboardLayout from "@/components/DashboardLayout";
 
 // Prevent SSR issues with Plotly
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -55,6 +56,7 @@ export default function Page() {
   // UI
   // =============================
   return (
+    <DashboardLayout title="Beam Analysis Module">
     <div style={page}>
       <h1>Beam Analysis Module</h1>
 
@@ -192,6 +194,7 @@ export default function Page() {
         </>
       )}
     </div>
+    </DashboardLayout>
   );
 }
 
