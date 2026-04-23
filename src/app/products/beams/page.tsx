@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beam/solver";
 import DashboardLayout from "@/components/DashboardLayout";
+import { supabase } from "@/lib/supabase";
 
 // Prevent SSR issues with Plotly
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
@@ -23,6 +24,9 @@ export default function Page() {
   const [c, setC] = useState(0.05);
 
   const [result, setResult] = useState<any>(null);
+
+  const [projectName, setProjectName] = useState("Beam Project");
+  const [saving, setSaving] = useState(false);
 
   // =============================
   // CALCULATION
@@ -53,147 +57,191 @@ export default function Page() {
   };
 
   // =============================
+  // SAVE PROJECT TO SUPABASE
+  // =============================
+  const saveProject = async () => {
+    try {
+      setSaving(true);
+
+      const { error } = await supabase.from("beam_projects").insert([
+        {
+          name: projectName,
+          length,
+          force,
+          inertia: I,
+          c,
+          support,
+        },
+      ]);
+
+      if (error) throw error;
+
+      alert("Project saved successfully!");
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Error saving project");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // =============================
   // UI
   // =============================
   return (
     <DashboardLayout title="Beam Analysis Module">
-    <div style={page}>
-      <h1>Beam Analysis Module</h1>
+      <div style={page}>
+        <h1>Beam Analysis Module</h1>
 
-      {/* INPUT PANEL */}
-      <div style={card}>
-        <label>Length (m)</label>
-        <input
-          type="number"
-          value={length}
-          onChange={(e) => setLength(+e.target.value)}
-        />
+        {/* INPUT PANEL */}
+        <div style={card}>
+          <label>Project Name</label>
+          <input
+            type="text"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+          />
 
-        <label>Point Load (N)</label>
-        <input
-          type="number"
-          value={force}
-          onChange={(e) => setForce(+e.target.value)}
-        />
+          <label>Length (m)</label>
+          <input
+            type="number"
+            value={length}
+            onChange={(e) => setLength(+e.target.value)}
+          />
 
-        <label>Moment of Inertia I (m⁴)</label>
-        <input
-          type="number"
-          value={I}
-          onChange={(e) => setI(+e.target.value)}
-        />
+          <label>Point Load (N)</label>
+          <input
+            type="number"
+            value={force}
+            onChange={(e) => setForce(+e.target.value)}
+          />
 
-        <label>Outer Fiber Distance c (m)</label>
-        <input
-          type="number"
-          value={c}
-          onChange={(e) => setC(+e.target.value)}
-        />
+          <label>Moment of Inertia I (m⁴)</label>
+          <input
+            type="number"
+            value={I}
+            onChange={(e) => setI(+e.target.value)}
+          />
 
-        <label>Support Type</label>
-        <select
-          value={support}
-          onChange={(e) =>
-            setSupport(
-              e.target.value as
-                | "simply_supported"
-                | "cantilever"
-                | "fixed_fixed"
-            )
-          }
-        >
-          <option value="simply_supported">Simply Supported</option>
-          <option value="cantilever">Cantilever</option>
-          <option value="fixed_fixed">Fixed-Fixed</option>
-        </select>
+          <label>Outer Fiber Distance c (m)</label>
+          <input
+            type="number"
+            value={c}
+            onChange={(e) => setC(+e.target.value)}
+          />
 
-        <button onClick={calculate} style={button}>
-          Solve Beam
-        </button>
+          <label>Support Type</label>
+          <select
+            value={support}
+            onChange={(e) =>
+              setSupport(
+                e.target.value as
+                  | "simply_supported"
+                  | "cantilever"
+                  | "fixed_fixed"
+              )
+            }
+          >
+            <option value="simply_supported">Simply Supported</option>
+            <option value="cantilever">Cantilever</option>
+            <option value="fixed_fixed">Fixed-Fixed</option>
+          </select>
+
+          <button onClick={calculate} style={button}>
+            Solve Beam
+          </button>
+
+          <button
+            onClick={saveProject}
+            style={saveButton}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Project"}
+          </button>
+        </div>
+
+        {/* RESULTS */}
+        {result && (
+          <>
+            <div style={grid}>
+              {/* SHEAR */}
+              <Plot
+                data={[
+                  {
+                    x: result.x,
+                    y: result.shear,
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Shear",
+                  },
+                ]}
+                layout={{ title: "Shear Force Diagram" }}
+                style={{ width: "100%", height: "300px" }}
+              />
+
+              {/* MOMENT */}
+              <Plot
+                data={[
+                  {
+                    x: result.x,
+                    y: result.moment,
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Moment",
+                  },
+                ]}
+                layout={{ title: "Bending Moment Diagram" }}
+                style={{ width: "100%", height: "300px" }}
+              />
+
+              {/* DEFLECTION */}
+              <Plot
+                data={[
+                  {
+                    x: result.x,
+                    y: result.deflection,
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Deflection",
+                  },
+                ]}
+                layout={{ title: "Deflection Curve" }}
+                style={{ width: "100%", height: "300px" }}
+              />
+
+              {/* STRESS */}
+              <Plot
+                data={[
+                  {
+                    x: result.x,
+                    y: result.stress,
+                    type: "scatter",
+                    mode: "lines",
+                    name: "Stress",
+                  },
+                ]}
+                layout={{ title: "Bending Stress Distribution" }}
+                style={{ width: "100%", height: "300px" }}
+              />
+            </div>
+
+            {/* SUMMARY */}
+            <div style={resultCard}>
+              <h3>Results</h3>
+
+              <p>
+                <strong>Max Stress:</strong>{" "}
+                {result.maxStress.toExponential(3)} Pa
+              </p>
+
+              <p>
+                <strong>Max Deflection:</strong>{" "}
+                {result.maxDeflection.toExponential(3)} m
+              </p>
+            </div>
+          </>
+        )}
       </div>
-
-      {/* RESULTS */}
-      {result && (
-        <>
-          <div style={grid}>
-            {/* SHEAR */}
-            <Plot
-              data={[
-                {
-                  x: result.x,
-                  y: result.shear,
-                  type: "scatter",
-                  mode: "lines",
-                  name: "Shear",
-                },
-              ]}
-              layout={{ title: "Shear Force Diagram" }}
-              style={{ width: "100%", height: "300px" }}
-            />
-
-            {/* MOMENT */}
-            <Plot
-              data={[
-                {
-                  x: result.x,
-                  y: result.moment,
-                  type: "scatter",
-                  mode: "lines",
-                  name: "Moment",
-                },
-              ]}
-              layout={{ title: "Bending Moment Diagram" }}
-              style={{ width: "100%", height: "300px" }}
-            />
-
-            {/* DEFLECTION */}
-            <Plot
-              data={[
-                {
-                  x: result.x,
-                  y: result.deflection,
-                  type: "scatter",
-                  mode: "lines",
-                  name: "Deflection",
-                },
-              ]}
-              layout={{ title: "Deflection Curve" }}
-              style={{ width: "100%", height: "300px" }}
-            />
-
-            {/* STRESS */}
-            <Plot
-              data={[
-                {
-                  x: result.x,
-                  y: result.stress,
-                  type: "scatter",
-                  mode: "lines",
-                  name: "Stress",
-                },
-              ]}
-              layout={{ title: "Bending Stress Distribution" }}
-              style={{ width: "100%", height: "300px" }}
-            />
-          </div>
-
-          {/* SUMMARY */}
-          <div style={resultCard}>
-            <h3>Results</h3>
-
-            <p>
-              <strong>Max Stress:</strong>{" "}
-              {result.maxStress.toExponential(3)} Pa
-            </p>
-
-            <p>
-              <strong>Max Deflection:</strong>{" "}
-              {result.maxDeflection.toExponential(3)} m
-            </p>
-          </div>
-        </>
-      )}
-    </div>
     </DashboardLayout>
   );
 }
@@ -228,6 +276,14 @@ const grid: any = {
 const button: any = {
   padding: "10px",
   background: "#111827",
+  color: "white",
+  borderRadius: "6px",
+  cursor: "pointer",
+};
+
+const saveButton: any = {
+  padding: "10px",
+  background: "#2563eb",
   color: "white",
   borderRadius: "6px",
   cursor: "pointer",
