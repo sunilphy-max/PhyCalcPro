@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beam/solver";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -28,8 +28,10 @@ export default function Page() {
   const [projectName, setProjectName] = useState("Beam Project");
   const [saving, setSaving] = useState(false);
 
+  const [savedProjects, setSavedProjects] = useState<any[]>([]);
+
   // =============================
-  // CALCULATION
+  // CALCULATE
   // =============================
   const calculate = () => {
     const res = solveBeam({
@@ -57,7 +59,7 @@ export default function Page() {
   };
 
   // =============================
-  // SAVE PROJECT TO SUPABASE
+  // SAVE PROJECT
   // =============================
   const saveProject = async () => {
     try {
@@ -77,12 +79,46 @@ export default function Page() {
       if (error) throw error;
 
       alert("Project saved successfully!");
-    } catch (error) {
-      console.error("Save error:", error);
-      alert("Error saving project");
+      loadProjects();
+    } catch (error: any) {
+      console.error(error);
+      alert(error.message || "Error saving project");
     } finally {
       setSaving(false);
     }
+  };
+
+  // =============================
+  // LOAD PROJECTS
+  // =============================
+  const loadProjects = async () => {
+    const { data, error } = await supabase
+      .from("beam_projects")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setSavedProjects(data || []);
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  // =============================
+  // LOAD INTO FORM
+  // =============================
+  const loadProjectIntoForm = (project: any) => {
+    setProjectName(project.name);
+    setLength(project.length);
+    setForce(project.force);
+    setI(project.inertia);
+    setC(project.c);
+    setSupport(project.support);
   };
 
   // =============================
@@ -93,11 +129,29 @@ export default function Page() {
       <div style={page}>
         <h1>Beam Analysis Module</h1>
 
-        {/* INPUT PANEL */}
+        {/* SAVED PROJECTS */}
+        <div style={savedCard}>
+          <h3>Saved Projects</h3>
+
+          {savedProjects.length === 0 ? (
+            <p>No saved projects yet</p>
+          ) : (
+            savedProjects.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => loadProjectIntoForm(p)}
+                style={savedProjectButton}
+              >
+                {p.name}
+              </button>
+            ))
+          )}
+        </div>
+
+        {/* INPUTS */}
         <div style={card}>
           <label>Project Name</label>
           <input
-            type="text"
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
           />
@@ -116,21 +170,21 @@ export default function Page() {
             onChange={(e) => setForce(+e.target.value)}
           />
 
-          <label>Moment of Inertia I (m⁴)</label>
+          <label>I (m⁴)</label>
           <input
             type="number"
             value={I}
             onChange={(e) => setI(+e.target.value)}
           />
 
-          <label>Outer Fiber Distance c (m)</label>
+          <label>c (m)</label>
           <input
             type="number"
             value={c}
             onChange={(e) => setC(+e.target.value)}
           />
 
-          <label>Support Type</label>
+          <label>Support</label>
           <select
             value={support}
             onChange={(e) =>
@@ -151,95 +205,43 @@ export default function Page() {
             Solve Beam
           </button>
 
-          <button
-            onClick={saveProject}
-            style={saveButton}
-            disabled={saving}
-          >
+          <button onClick={saveProject} style={saveButton} disabled={saving}>
             {saving ? "Saving..." : "Save Project"}
           </button>
         </div>
 
         {/* RESULTS */}
         {result && (
-          <>
-            <div style={grid}>
-              {/* SHEAR */}
-              <Plot
-                data={[
-                  {
-                    x: result.x,
-                    y: result.shear,
-                    type: "scatter",
-                    mode: "lines",
-                    name: "Shear",
-                  },
-                ]}
-                layout={{ title: "Shear Force Diagram" }}
-                style={{ width: "100%", height: "300px" }}
-              />
+          <div style={grid}>
+            <Plot
+              data={[{ x: result.x, y: result.shear, type: "scatter", mode: "lines" }]}
+              layout={{ title: "Shear Force" }}
+            />
 
-              {/* MOMENT */}
-              <Plot
-                data={[
-                  {
-                    x: result.x,
-                    y: result.moment,
-                    type: "scatter",
-                    mode: "lines",
-                    name: "Moment",
-                  },
-                ]}
-                layout={{ title: "Bending Moment Diagram" }}
-                style={{ width: "100%", height: "300px" }}
-              />
+            <Plot
+              data={[{ x: result.x, y: result.moment, type: "scatter", mode: "lines" }]}
+              layout={{ title: "Moment" }}
+            />
 
-              {/* DEFLECTION */}
-              <Plot
-                data={[
-                  {
-                    x: result.x,
-                    y: result.deflection,
-                    type: "scatter",
-                    mode: "lines",
-                    name: "Deflection",
-                  },
-                ]}
-                layout={{ title: "Deflection Curve" }}
-                style={{ width: "100%", height: "300px" }}
-              />
+            <Plot
+              data={[{ x: result.x, y: result.deflection, type: "scatter", mode: "lines" }]}
+              layout={{ title: "Deflection" }}
+            />
 
-              {/* STRESS */}
-              <Plot
-                data={[
-                  {
-                    x: result.x,
-                    y: result.stress,
-                    type: "scatter",
-                    mode: "lines",
-                    name: "Stress",
-                  },
-                ]}
-                layout={{ title: "Bending Stress Distribution" }}
-                style={{ width: "100%", height: "300px" }}
-              />
-            </div>
+            <Plot
+              data={[{ x: result.x, y: result.stress, type: "scatter", mode: "lines" }]}
+              layout={{ title: "Stress" }}
+            />
 
-            {/* SUMMARY */}
             <div style={resultCard}>
-              <h3>Results</h3>
-
               <p>
-                <strong>Max Stress:</strong>{" "}
-                {result.maxStress.toExponential(3)} Pa
+                <b>Max Stress:</b> {result.maxStress.toExponential(3)}
               </p>
-
               <p>
-                <strong>Max Deflection:</strong>{" "}
-                {result.maxDeflection.toExponential(3)} m
+                <b>Max Deflection:</b> {result.maxDeflection.toExponential(3)}
               </p>
             </div>
-          </>
+          </div>
         )}
       </div>
     </DashboardLayout>
@@ -249,50 +251,63 @@ export default function Page() {
 // =============================
 // STYLES
 // =============================
-
 const page: any = {
-  padding: "20px",
+  padding: 20,
   background: "#f5f7fb",
   minHeight: "100vh",
-  fontFamily: "system-ui",
 };
 
 const card: any = {
-  background: "white",
-  padding: "15px",
-  borderRadius: "10px",
-  marginBottom: "20px",
+  background: "#fff",
+  padding: 15,
+  borderRadius: 10,
+  maxWidth: 420,
+  marginBottom: 20,
   display: "flex",
   flexDirection: "column",
-  gap: "10px",
-  maxWidth: "420px",
+  gap: 10,
+};
+
+const savedCard: any = {
+  background: "#fff",
+  padding: 15,
+  borderRadius: 10,
+  maxWidth: 420,
+  marginBottom: 20,
+};
+
+const savedProjectButton: any = {
+  display: "block",
+  width: "100%",
+  marginTop: 8,
+  padding: 8,
+  background: "#f3f4f6",
+  borderRadius: 6,
+  textAlign: "left",
+};
+
+const button: any = {
+  padding: 10,
+  background: "#111827",
+  color: "#fff",
+  borderRadius: 6,
+};
+
+const saveButton: any = {
+  padding: 10,
+  background: "#2563eb",
+  color: "#fff",
+  borderRadius: 6,
+  marginTop: 10,
 };
 
 const grid: any = {
   display: "grid",
-  gap: "20px",
-};
-
-const button: any = {
-  padding: "10px",
-  background: "#111827",
-  color: "white",
-  borderRadius: "6px",
-  cursor: "pointer",
-};
-
-const saveButton: any = {
-  padding: "10px",
-  background: "#2563eb",
-  color: "white",
-  borderRadius: "6px",
-  cursor: "pointer",
+  gap: 20,
 };
 
 const resultCard: any = {
-  background: "white",
-  padding: "15px",
-  borderRadius: "10px",
-  marginTop: "20px",
-  maxWidth: "420px",
+  background: "#fff",
+  padding: 15,
+  borderRadius: 10,
 };
