@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beam/solver";
 import DashboardLayout from "@/components/DashboardLayout";
+import CalculatorLayout from "@/components/CalculatorLayout";
 import { supabase } from "@/lib/supabase";
 
-// Prevent SSR issues with Plotly
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function Page() {
@@ -59,7 +59,7 @@ export default function Page() {
   };
 
   // =============================
-  // SAVE PROJECT
+  // SAVE TO SUPABASE
   // =============================
   const saveProject = async () => {
     try {
@@ -78,11 +78,11 @@ export default function Page() {
 
       if (error) throw error;
 
-      alert("Project saved successfully!");
+      alert("Project saved!");
       loadProjects();
-    } catch (error: any) {
-      console.error(error);
-      alert(error.message || "Error saving project");
+    } catch (err: any) {
+      console.error(err);
+      alert("Error saving project");
     } finally {
       setSaving(false);
     }
@@ -97,12 +97,7 @@ export default function Page() {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setSavedProjects(data || []);
+    if (!error) setSavedProjects(data || []);
   };
 
   useEffect(() => {
@@ -112,13 +107,13 @@ export default function Page() {
   // =============================
   // LOAD INTO FORM
   // =============================
-  const loadProjectIntoForm = (project: any) => {
-    setProjectName(project.name);
-    setLength(project.length);
-    setForce(project.force);
-    setI(project.inertia);
-    setC(project.c);
-    setSupport(project.support);
+  const loadProjectIntoForm = (p: any) => {
+    setProjectName(p.name);
+    setLength(p.length);
+    setForce(p.force);
+    setI(p.inertia);
+    setC(p.c);
+    setSupport(p.support);
   };
 
   // =============================
@@ -126,188 +121,183 @@ export default function Page() {
   // =============================
   return (
     <DashboardLayout title="Beam Analysis Module">
-      <div style={page}>
-        <h1>Beam Analysis Module</h1>
 
-        {/* SAVED PROJECTS */}
-        <div style={savedCard}>
-          <h3>Saved Projects</h3>
+      <CalculatorLayout
 
-          {savedProjects.length === 0 ? (
-            <p>No saved projects yet</p>
-          ) : (
-            savedProjects.map((p) => (
+        title="Beam Analysis Module"
+
+        // ================= LEFT =================
+        left={
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <h3 className="text-sm font-semibold mb-3">Saved Projects</h3>
+
+            {savedProjects.length === 0 ? (
+              <p className="text-gray-400 text-sm">No saved projects</p>
+            ) : (
+              savedProjects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => loadProjectIntoForm(p)}
+                  className="w-full text-left px-3 py-2 mb-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  {p.name}
+                </button>
+              ))
+            )}
+          </div>
+        }
+
+        // ================= CENTER =================
+        center={
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <h3 className="text-sm font-semibold mb-4">Beam Inputs</h3>
+
+            <input
+              className="w-full px-3 py-2 mb-3 border rounded-lg"
+              placeholder="Project Name"
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+            />
+
+            <input
+              className="w-full px-3 py-2 mb-3 border rounded-lg"
+              type="number"
+              placeholder="Length (m)"
+              value={length}
+              onChange={(e) => setLength(+e.target.value)}
+            />
+
+            <input
+              className="w-full px-3 py-2 mb-3 border rounded-lg"
+              type="number"
+              placeholder="Force (N)"
+              value={force}
+              onChange={(e) => setForce(+e.target.value)}
+            />
+
+            <input
+              className="w-full px-3 py-2 mb-3 border rounded-lg"
+              type="number"
+              placeholder="Moment of Inertia"
+              value={I}
+              onChange={(e) => setI(+e.target.value)}
+            />
+
+            <input
+              className="w-full px-3 py-2 mb-3 border rounded-lg"
+              type="number"
+              placeholder="Outer Fiber Distance"
+              value={c}
+              onChange={(e) => setC(+e.target.value)}
+            />
+
+            <select
+              className="w-full px-3 py-2 mb-3 border rounded-lg"
+              value={support}
+              onChange={(e) =>
+                setSupport(e.target.value as any)
+              }
+            >
+              <option value="simply_supported">Simply Supported</option>
+              <option value="cantilever">Cantilever</option>
+              <option value="fixed_fixed">Fixed-Fixed</option>
+            </select>
+
+            <div className="flex gap-2 mt-2">
               <button
-                key={p.id}
-                onClick={() => loadProjectIntoForm(p)}
-                style={savedProjectButton}
+                onClick={calculate}
+                className="flex-1 bg-gray-900 text-white py-2 rounded-lg hover:bg-gray-800"
               >
-                {p.name}
+                Solve
               </button>
-            ))
-          )}
-        </div>
 
-        {/* INPUTS */}
-        <div style={card}>
-          <label>Project Name</label>
-          <input
-            value={projectName}
-            onChange={(e) => setProjectName(e.target.value)}
-          />
-
-          <label>Length (m)</label>
-          <input
-            type="number"
-            value={length}
-            onChange={(e) => setLength(+e.target.value)}
-          />
-
-          <label>Point Load (N)</label>
-          <input
-            type="number"
-            value={force}
-            onChange={(e) => setForce(+e.target.value)}
-          />
-
-          <label>I (m⁴)</label>
-          <input
-            type="number"
-            value={I}
-            onChange={(e) => setI(+e.target.value)}
-          />
-
-          <label>c (m)</label>
-          <input
-            type="number"
-            value={c}
-            onChange={(e) => setC(+e.target.value)}
-          />
-
-          <label>Support</label>
-          <select
-            value={support}
-            onChange={(e) =>
-              setSupport(
-                e.target.value as
-                  | "simply_supported"
-                  | "cantilever"
-                  | "fixed_fixed"
-              )
-            }
-          >
-            <option value="simply_supported">Simply Supported</option>
-            <option value="cantilever">Cantilever</option>
-            <option value="fixed_fixed">Fixed-Fixed</option>
-          </select>
-
-          <button onClick={calculate} style={button}>
-            Solve Beam
-          </button>
-
-          <button onClick={saveProject} style={saveButton} disabled={saving}>
-            {saving ? "Saving..." : "Save Project"}
-          </button>
-        </div>
-
-        {/* RESULTS */}
-        {result && (
-          <div style={grid}>
-            <Plot
-              data={[{ x: result.x, y: result.shear, type: "scatter", mode: "lines" }]}
-              layout={{ title: "Shear Force" }}
-            />
-
-            <Plot
-              data={[{ x: result.x, y: result.moment, type: "scatter", mode: "lines" }]}
-              layout={{ title: "Moment" }}
-            />
-
-            <Plot
-              data={[{ x: result.x, y: result.deflection, type: "scatter", mode: "lines" }]}
-              layout={{ title: "Deflection" }}
-            />
-
-            <Plot
-              data={[{ x: result.x, y: result.stress, type: "scatter", mode: "lines" }]}
-              layout={{ title: "Stress" }}
-            />
-
-            <div style={resultCard}>
-              <p>
-                <b>Max Stress:</b> {result.maxStress.toExponential(3)}
-              </p>
-              <p>
-                <b>Max Deflection:</b> {result.maxDeflection.toExponential(3)}
-              </p>
+              <button
+                onClick={saveProject}
+                disabled={saving}
+                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500"
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        }
+
+        // ================= RIGHT =================
+        right={
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <h3 className="text-sm font-semibold mb-4">Results</h3>
+
+            {result ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <Plot
+                    data={[
+                      {
+                        x: result.x,
+                        y: result.shear,
+                        type: "scatter",
+                        mode: "lines",
+                      },
+                    ]}
+                    layout={{ title: "Shear Force" }}
+                  />
+
+                  <Plot
+                    data={[
+                      {
+                        x: result.x,
+                        y: result.moment,
+                        type: "scatter",
+                        mode: "lines",
+                      },
+                    ]}
+                    layout={{ title: "Bending Moment" }}
+                  />
+
+                  <Plot
+                    data={[
+                      {
+                        x: result.x,
+                        y: result.deflection,
+                        type: "scatter",
+                        mode: "lines",
+                      },
+                    ]}
+                    layout={{ title: "Deflection" }}
+                  />
+
+                  <Plot
+                    data={[
+                      {
+                        x: result.x,
+                        y: result.stress,
+                        type: "scatter",
+                        mode: "lines",
+                      },
+                    ]}
+                    layout={{ title: "Stress" }}
+                  />
+
+                </div>
+
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p>
+                    <b>Max Stress:</b> {result.maxStress.toExponential(3)}
+                  </p>
+                  <p>
+                    <b>Max Deflection:</b> {result.maxDeflection.toExponential(3)}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-gray-400">Run analysis to see results</p>
+            )}
+          </div>
+        }
+
+      />
+
     </DashboardLayout>
   );
 }
-
-// =============================
-// STYLES
-// =============================
-const page: any = {
-  padding: 20,
-  background: "#f5f7fb",
-  minHeight: "100vh",
-};
-
-const card: any = {
-  background: "#fff",
-  padding: 15,
-  borderRadius: 10,
-  maxWidth: 420,
-  marginBottom: 20,
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-};
-
-const savedCard: any = {
-  background: "#fff",
-  padding: 15,
-  borderRadius: 10,
-  maxWidth: 420,
-  marginBottom: 20,
-};
-
-const savedProjectButton: any = {
-  display: "block",
-  width: "100%",
-  marginTop: 8,
-  padding: 8,
-  background: "#f3f4f6",
-  borderRadius: 6,
-  textAlign: "left",
-};
-
-const button: any = {
-  padding: 10,
-  background: "#111827",
-  color: "#fff",
-  borderRadius: 6,
-};
-
-const saveButton: any = {
-  padding: 10,
-  background: "#2563eb",
-  color: "#fff",
-  borderRadius: 6,
-  marginTop: 10,
-};
-
-const grid: any = {
-  display: "grid",
-  gap: 20,
-};
-
-const resultCard: any = {
-  background: "#fff",
-  padding: 15,
-  borderRadius: 10,
-};
