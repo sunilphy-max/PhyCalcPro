@@ -6,6 +6,8 @@ import { solveBeam } from "@/lib/beam/solver";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import { supabase } from "@/lib/supabase";
+import { toBase, fromBase } from "@/lib/units/conversions";
+import { UnitSystems, UnitSystem } from "@/lib/units/systems";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -15,6 +17,7 @@ export default function Page() {
   // =============================
   const [length, setLength] = useState(5);
   const [force, setForce] = useState(1000);
+  const [unitSystem, setUnitSystem] = useState<UnitSystem>("SI");
 
   const [support, setSupport] = useState<
     "simply_supported" | "cantilever" | "fixed_fixed"
@@ -29,35 +32,43 @@ export default function Page() {
   const [saving, setSaving] = useState(false);
 
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
-
+  const units = UnitSystems[unitSystem];
   // =============================
   // CALCULATE
   // =============================
-  const calculate = () => {
-    const res = solveBeam({
-      length,
-      E: 210e9,
-      I,
-      c,
-      support,
-      loads: [
-        {
-          type: "point",
-          value: force,
-          position: length / 2,
-        },
-        {
-          type: "udl",
-          value: 200,
-          start: 1,
-          end: 4,
-        },
-      ],
-    });
 
-    setResult(res);
+const calculate = () => {
+  const normalizedInputs = {
+    length: toBase(length, "length", units.length),
+    E: 210e9,
+    I: toBase(I, "inertia", units.inertia),
+    c: toBase(c, "length", units.length),
+    support,
+    loads: [
+      {
+        type: "point",
+        value: toBase(force, "force", units.force),
+        position: toBase(length / 2, "length", units.length),
+      },
+      {
+        type: "udl",
+        value: toBase(200, "force", units.force),
+        start: toBase(1, "length", units.length),
+        end: toBase(4, "length", units.length),
+      },
+    ],
   };
 
+  const rawResult = solveBeam(normalizedInputs);
+
+  const convertedResult = {
+    ...rawResult,
+    maxStress: fromBase(rawResult.maxStress, "stress", units.stress),
+    maxDeflection: fromBase(rawResult.maxDeflection, "length", units.length),
+  };
+
+  setResult(convertedResult);
+};
   // =============================
   // SAVE TO SUPABASE
   // =============================
@@ -158,35 +169,42 @@ export default function Page() {
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
             />
-
+<select
+  className="w-full px-3 py-2 mb-3 border rounded-lg"
+  value={unitSystem}
+  onChange={(e) => setUnitSystem(e.target.value as UnitSystem)}
+>
+  <option value="SI">SI</option>
+  <option value="Imperial">Imperial</option>
+</select>
             <input
               className="w-full px-3 py-2 mb-3 border rounded-lg"
               type="number"
-              placeholder="Length (m)"
+              placeholder={`Length (${units.length})`}
               value={length}
               onChange={(e) => setLength(+e.target.value)}
-            />
+/>
+
+            <input
+  className="w-full px-3 py-2 mb-3 border rounded-lg"
+  type="number"
+  placeholder={`Force (${units.force})`}
+  value={force}
+  onChange={(e) => setForce(+e.target.value)}
+/>
+
+            <input
+  className="w-full px-3 py-2 mb-3 border rounded-lg"
+  type="number"
+  placeholder={`Moment of Inertia (${units.inertia})`}
+  value={I}
+  onChange={(e) => setI(+e.target.value)}
+/>
 
             <input
               className="w-full px-3 py-2 mb-3 border rounded-lg"
               type="number"
-              placeholder="Force (N)"
-              value={force}
-              onChange={(e) => setForce(+e.target.value)}
-            />
-
-            <input
-              className="w-full px-3 py-2 mb-3 border rounded-lg"
-              type="number"
-              placeholder="Moment of Inertia"
-              value={I}
-              onChange={(e) => setI(+e.target.value)}
-            />
-
-            <input
-              className="w-full px-3 py-2 mb-3 border rounded-lg"
-              type="number"
-              placeholder="Outer Fiber Distance"
+              placeholder={`Outer Fiber Distance (${units.length})`}
               value={c}
               onChange={(e) => setC(+e.target.value)}
             />
@@ -282,12 +300,12 @@ export default function Page() {
                 </div>
 
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <p>
-                    <b>Max Stress:</b> {result.maxStress.toExponential(3)}
-                  </p>
-                  <p>
-                    <b>Max Deflection:</b> {result.maxDeflection.toExponential(3)}
-                  </p>
+                 <p>
+  <b>Max Stress:</b> {result.maxStress.toExponential(3)} {units.stress}
+</p>
+<p>
+  <b>Max Deflection:</b> {result.maxDeflection.toExponential(3)} {units.length}
+</p>
                 </div>
               </>
             ) : (
