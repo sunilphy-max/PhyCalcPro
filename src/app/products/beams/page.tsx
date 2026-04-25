@@ -305,7 +305,7 @@ export default function Page() {
 
   </div>
 }
-        }
+        
       />
     </DashboardLayout>
   );
