@@ -60,11 +60,11 @@ export default function Page() {
   // =========================
   const calculate = () => {
     const toSI = {
-  length: convertLength(length, lengthUnit),
-  force: convertForce(force, forceUnit),
-  udl: convertUDL(udl, udlUnit),
-  inertia: convertInertia(I, inertiaUnit),
-};
+  length: toBase(length, "length", lengthUnit),
+  force: toBase(force, "force", forceUnit),
+  udl: toBase(udl, "forcePerLength", udlUnit),
+  inertia: toBase(I, "inertia", inertiaUnit),
+}
     const normalizedInputs: BeamConfig = {
       length: toBase(length, "length", lengthUnit),
       E: 210e9,
