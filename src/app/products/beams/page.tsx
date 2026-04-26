@@ -10,6 +10,7 @@ import { toBase, fromBase } from "@/lib/units/conversions";
 import type { Load, BeamConfig } from "@/lib/beam/types";
 import BeamDiagram from "@/components/BeamDiagram";
 
+
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function Page() {
@@ -257,10 +258,21 @@ export default function Page() {
         
         {/* ✅ ADD IT HERE (TOP OF RESULTS) */}
         <BeamDiagram
-          length={length}
-          loads={normalizedInputs.loads}
-        />
-
+  length={length}
+  loads={[
+    {
+      type: "point",
+      value: force,
+      position: length / 2,
+    },
+    {
+      type: "udl",
+      value: udl,
+      start: 1,
+      end: 4,
+    },
+  ]}
+/>
         {/* GRAPHS */}
         <Plot
           data={[{ x: result.x, y: result.shear, type: "scatter", mode: "lines" }]}
