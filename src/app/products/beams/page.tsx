@@ -259,6 +259,7 @@ export default function Page() {
         {/* ✅ ADD IT HERE (TOP OF RESULTS) */}
         <BeamDiagram
   length={length}
+  support="simply_supported"
   loads={[
     {
       type: "point",
