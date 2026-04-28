@@ -25,7 +25,7 @@ export default function Page() {
   const [c, setC] = useState(0.05);
   const [support, setSupport] = useState<"simply_supported" | "cantilever" | "fixed_fixed">(
   "simply_supported"
-  );
+);
   // =========================
   // UNIT PER FIELD (PRO LEVEL)
   // =========================
