@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Load, SupportType } from "@/lib/beam/types";
 
@@ -7,7 +9,11 @@ type Props = {
   support: SupportType;
 };
 
-export default function BeamDiagram({ length, loads, support}: Props) {
+export default function BeamDiagram({
+  length,
+  loads,
+  support,
+}: Props)  {
   const width = 600;
   const height = 120;
   const margin = 40;
