@@ -9,7 +9,8 @@ import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import type { Load, BeamConfig } from "@/lib/beam/types";
 import BeamDiagram from "@/components/BeamDiagram";
-
+import EngineeringPlot from "@/components/EngineeringPlot";
+import ResultCards from "@/components/ResultCards";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -22,7 +23,8 @@ export default function Page() {
   const [udl, setUdl] = useState(200);
   const [I, setI] = useState(1e-6);
   const [c, setC] = useState(0.05);
-
+  const [support, setSupport] = useState<"simply_supported" | "cantilever" | "fixed_fixed">(
+  "simply_supported"
   // =========================
   // UNIT PER FIELD (PRO LEVEL)
   // =========================
@@ -71,7 +73,7 @@ export default function Page() {
       I: toBase(I, "inertia", inertiaUnit),
       c: toBase(c, "length", lengthUnit),
 
-      support: "simply_supported",
+      support,
 
       loads: [
         {
@@ -175,7 +177,20 @@ export default function Page() {
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
             />
+            {/* SUPPORT TYPE */}
+<div className="flex flex-col gap-1">
+  <label className="text-sm text-gray-600">Support Type</label>
 
+  <select
+    value={support}
+    onChange={(e) => setSupport(e.target.value as any)}
+    className="border p-2 rounded"
+  >
+    <option value="simply_supported">Simply Supported</option>
+    <option value="cantilever">Cantilever</option>
+    <option value="fixed_fixed">Fixed - Fixed</option>
+  </select>
+</div>
             {/* LENGTH */}
             <div className="flex gap-2">
               <input
@@ -250,72 +265,61 @@ export default function Page() {
         }
 
         // ================= RIGHT =================
-       right={
+      right={
   <div className="bg-white rounded-xl p-4 shadow-sm">
-
     {result ? (
       <>
-        
-        {/* ✅ ADD IT HERE (TOP OF RESULTS) */}
         <BeamDiagram
-  length={length}
-  support="simply_supported"
-  loads={[
-    {
-      type: "point",
-      value: force,
-      position: length / 2,
-    },
-    {
-      type: "udl",
-      value: udl,
-      start: 1,
-      end: 4,
-    },
-  ]}
-/>
-        {/* GRAPHS */}
-        <Plot
-          data={[{ x: result.x, y: result.shear, type: "scatter", mode: "lines" }]}
-          layout={{
-            title: `Shear Force`,
-            xaxis: { title: "Length" },
-            yaxis: { title: "Force" },
-          }}
+          length={length}
+          support={support}
+          loads={[
+            {
+              type: "point",
+              value: force,
+              position: length / 2,
+            },
+            {
+              type: "udl",
+              value: udl,
+              start: 1,
+              end: 4,
+            },
+          ]}
         />
 
-        <Plot
-          data={[{ x: result.x, y: result.moment, type: "scatter", mode: "lines" }]}
-          layout={{
-            title: `Bending Moment`,
-            xaxis: { title: "Length" },
-            yaxis: { title: "Moment" },
-          }}
+        <ResultCards result={result} />
+
+        <EngineeringPlot
+          title="Shear Force Diagram"
+          x={result.x}
+          y={result.shear}
+          yLabel="Force (N)"
         />
 
-        <Plot
-          data={[{ x: result.x, y: result.deflection, type: "scatter", mode: "lines" }]}
-          layout={{
-            title: `Deflection`,
-            xaxis: { title: "Length" },
-            yaxis: { title: "Deflection" },
-          }}
+        <EngineeringPlot
+          title="Bending Moment Diagram"
+          x={result.x}
+          y={result.moment}
+          yLabel="Moment (N·m)"
         />
 
-        <Plot
-          data={[{ x: result.x, y: result.stress, type: "scatter", mode: "lines" }]}
-          layout={{
-            title: `Stress`,
-            xaxis: { title: "Length" },
-            yaxis: { title: "Stress" },
-          }}
+        <EngineeringPlot
+          title="Deflection Diagram"
+          x={result.x}
+          y={result.deflection}
+          yLabel="Deflection (m)"
         />
 
+        <EngineeringPlot
+          title="Stress Distribution"
+          x={result.x}
+          y={result.stress}
+          yLabel="Stress (Pa)"
+        />
       </>
     ) : (
-      <p className="text-gray-400">Run analysis to see results</p>
+      <p className="text-gray-500">Run calculation to see results.</p>
     )}
-
   </div>
 }
         
