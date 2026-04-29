@@ -1,7 +1,5 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import dynamic from "next/dynamic";
 import { solveBeam } from "@/lib/beam/solver";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,8 +9,6 @@ import type { Load, BeamConfig } from "@/lib/beam/types";
 import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import ResultCards from "@/components/ResultCards";
-
-const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 export default function Page() {
   // =========================
