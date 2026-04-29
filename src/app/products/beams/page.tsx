@@ -58,12 +58,6 @@ export default function Page() {
   // CORE SOLVER
   // =========================
   const calculate = () => {
-    const toSI = {
-  length: toBase(length, "length", lengthUnit),
-  force: toBase(force, "force", forceUnit),
-  udl: toBase(udl, "forcePerLength", udlUnit),
-  inertia: toBase(I, "inertia", inertiaUnit),
-}
     const normalizedInputs: BeamConfig = {
       length: toBase(length, "length", lengthUnit),
       E: 210e9,
