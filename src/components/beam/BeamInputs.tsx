@@ -1,5 +1,7 @@
 "use client";
 
+import type { Load } from "@/lib/beam/types";
+
 type Props = {
   projectName: string;
   setProjectName: (v: string) => void;
@@ -26,6 +28,12 @@ type Props = {
 
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   setSupport: (v: "simply_supported" | "cantilever" | "fixed_fixed") => void;
+
+  loads: Load[];
+  updateLoad: (index: number, newLoad: Load) => void;
+  removeLoad: (index: number) => void;
+  addPointLoad: () => void;
+  addUDL: () => void;
 
   calculate: () => void;
   saveProject: () => void;
@@ -122,6 +130,44 @@ export default function BeamInputs(props: Props) {
           <option value="m4">m⁴</option>
           <option value="in4">in⁴</option>
         </select>
+      </div>
+
+      {/* LOADS */}
+      <div className="border-t pt-3">
+        <label className="text-sm font-semibold text-gray-700 mb-2 block">Loads</label>
+        {props.loads.map((load, idx) => (
+          <div key={idx} className="mb-2 p-2 bg-gray-50 rounded border text-sm">
+            {load.type === "point" ? (
+              <>
+                <div>Point Load: {load.value.toFixed(2)} at {load.position.toFixed(2)}</div>
+              </>
+            ) : (
+              <>
+                <div>UDL: {load.value.toFixed(2)} from {load.start.toFixed(2)} to {load.end.toFixed(2)}</div>
+              </>
+            )}
+            <button
+              onClick={() => props.removeLoad(idx)}
+              className="text-xs text-red-600 hover:text-red-800 mt-1"
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <div className="flex gap-2">
+          <button
+            onClick={props.addPointLoad}
+            className="flex-1 text-xs bg-gray-200 hover:bg-gray-300 py-1 rounded"
+          >
+            + Point Load
+          </button>
+          <button
+            onClick={props.addUDL}
+            className="flex-1 text-xs bg-gray-200 hover:bg-gray-300 py-1 rounded"
+          >
+            + UDL
+          </button>
+        </div>
       </div>
 
       {/* ACTIONS */}
