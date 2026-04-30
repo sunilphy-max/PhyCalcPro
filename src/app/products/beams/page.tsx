@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { solveBeam } from "@/lib/beam/solver";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -6,9 +7,10 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import type { Load, BeamConfig } from "@/lib/beam/types";
-import BeamDiagram from "@/components/BeamDiagram";
-import EngineeringPlot from "@/components/EngineeringPlot";
-import ResultCards from "@/components/ResultCards";
+
+import BeamInputs from "@/components/beam/BeamInputs";
+import BeamResults from "@/components/beam/BeamResults";
+import SavedProjects from "@/components/beam/SavedProjects";
 
 export default function Page() {
   // =========================
@@ -19,16 +21,46 @@ export default function Page() {
   const [udl, setUdl] = useState(200);
   const [I, setI] = useState(1e-6);
   const [c, setC] = useState(0.05);
-  const [support, setSupport] = useState<"simply_supported" | "cantilever" | "fixed_fixed">(
-  "simply_supported"
-);
+
+  const [support, setSupport] = useState<
+    "simply_supported" | "cantilever" | "fixed_fixed"
+  >("simply_supported");
+
   // =========================
-  // UNIT PER FIELD (PRO LEVEL)
+  // UNITS
   // =========================
   const [lengthUnit, setLengthUnit] = useState("m");
   const [forceUnit, setForceUnit] = useState("N");
   const [udlUnit, setUdlUnit] = useState("N/m");
   const [inertiaUnit, setInertiaUnit] = useState("m4");
+
+  // =========================
+  // LOADS (STEP 6)
+  // =========================
+  const [loads, setLoads] = useState<Load[]>([
+    { type: "point", value: 1000, position: 2.5 },
+  ]);
+
+  const addPointLoad = () => {
+    setLoads([
+      ...loads,
+      { type: "point", value: 500, position: length / 2 },
+    ]);
+  };
+
+  const addUDL = () => {
+    setLoads([...loads, { type: "udl", value: 200, start: 1, end: 4 }]);
+  };
+
+  const updateLoad = (index: number, newLoad: Load) => {
+    const updated = [...loads];
+    updated[index] = newLoad;
+    setLoads(updated);
+  };
+
+  const removeLoad = (index: number) => {
+    setLoads(loads.filter((_, i) => i !== index));
+  };
 
   // =========================
   // UI STATE
@@ -55,7 +87,7 @@ export default function Page() {
   }, []);
 
   // =========================
-  // CORE SOLVER
+  // SOLVER
   // =========================
   const calculate = () => {
     const normalizedInputs: BeamConfig = {
@@ -63,38 +95,42 @@ export default function Page() {
       E: 210e9,
       I: toBase(I, "inertia", inertiaUnit),
       c: toBase(c, "length", lengthUnit),
-
       support,
 
-      loads: [
-        {
-          type: "point",
-          value: toBase(force, "force", forceUnit),
-          position: toBase(length / 2, "length", lengthUnit),
-        },
-        {
-          type: "udl",
-          value: toBase(udl, "forcePerLength", udlUnit),
-          start: toBase(1, "length", lengthUnit),
-          end: toBase(4, "length", lengthUnit),
-        },
-      ] as Load[],
+      loads: loads.map((l) => {
+        if (l.type === "point") {
+          return {
+            ...l,
+            value: toBase(l.value, "force", forceUnit),
+            position: toBase(l.position, "length", lengthUnit),
+          };
+        }
+
+        return {
+          ...l,
+          value: toBase(l.value, "forcePerLength", udlUnit),
+          start: toBase(l.start, "length", lengthUnit),
+          end: toBase(l.end, "length", lengthUnit),
+        };
+      }),
     };
 
     const raw = solveBeam(normalizedInputs);
 
     const converted = {
       ...raw,
-
-      shear: raw.shear.map((v: number) => fromBase(v, "force", forceUnit)),
-      moment: raw.moment.map((v: number) => fromBase(v, "moment", forceUnit)),
+      shear: raw.shear.map((v: number) =>
+        fromBase(v, "force", forceUnit)
+      ),
+      moment: raw.moment.map((v: number) =>
+        fromBase(v, "moment", forceUnit)
+      ),
       deflection: raw.deflection.map((v: number) =>
         fromBase(v, "length", lengthUnit)
       ),
       stress: raw.stress.map((v: number) =>
         fromBase(v, "stress", forceUnit)
       ),
-
       maxStress: fromBase(raw.maxStress, "stress", forceUnit),
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
     };
@@ -124,7 +160,7 @@ export default function Page() {
   };
 
   // =========================
-  // LOAD INTO FORM
+  // LOAD
   // =========================
   const loadProjectIntoForm = (p: any) => {
     setProjectName(p.name);
@@ -142,178 +178,52 @@ export default function Page() {
     <DashboardLayout title="Beam Analysis Module">
       <CalculatorLayout
         title="Beam Analysis Module"
-
-        // ================= LEFT =================
         left={
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <h3 className="font-semibold mb-3">Saved Projects</h3>
-
-            {savedProjects.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => loadProjectIntoForm(p)}
-                className="w-full text-left px-3 py-2 mb-2 bg-gray-100 rounded"
-              >
-                {p.name}
-              </button>
-            ))}
-          </div>
+          <SavedProjects
+            savedProjects={savedProjects}
+            loadProjectIntoForm={loadProjectIntoForm}
+          />
         }
-
-        // ================= CENTER =================
         center={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-            <input
-              className="w-full p-2 border rounded"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-            />
-            {/* SUPPORT TYPE */}
-<div className="flex flex-col gap-1">
-  <label className="text-sm text-gray-600">Support Type</label>
-
-  <select
-    value={support}
-    onChange={(e) => setSupport(e.target.value as any)}
-    className="border p-2 rounded"
-  >
-    <option value="simply_supported">Simply Supported</option>
-    <option value="cantilever">Cantilever</option>
-    <option value="fixed_fixed">Fixed - Fixed</option>
-  </select>
-</div>
-            {/* LENGTH */}
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border p-2 rounded"
-                value={length}
-                onChange={(e) => setLength(+e.target.value)}
-              />
-              <select value={lengthUnit} onChange={(e) => setLengthUnit(e.target.value)}>
-                <option value="m">m</option>
-                <option value="mm">mm</option>
-                <option value="ft">ft</option>
-                <option value="in">in</option>
-              </select>
-            </div>
-
-            {/* FORCE */}
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border p-2 rounded"
-                value={force}
-                onChange={(e) => setForce(+e.target.value)}
-              />
-              <select value={forceUnit} onChange={(e) => setForceUnit(e.target.value)}>
-                <option value="N">N</option>
-                <option value="kN">kN</option>
-                <option value="lbf">lbf</option>
-              </select>
-            </div>
-
-            {/* UDL */}
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border p-2 rounded"
-                value={udl}
-                onChange={(e) => setUdl(+e.target.value)}
-              />
-              <select value={udlUnit} onChange={(e) => setUdlUnit(e.target.value)}>
-                <option value="N/m">N/m</option>
-                <option value="kN/m">kN/m</option>
-                <option value="lbf/ft">lbf/ft</option>
-              </select>
-            </div>
-
-            {/* INERTIA */}
-            <div className="flex gap-2">
-              <input
-                className="flex-1 border p-2 rounded"
-                value={I}
-                onChange={(e) => setI(+e.target.value)}
-              />
-              <select value={inertiaUnit} onChange={(e) => setInertiaUnit(e.target.value)}>
-                <option value="m4">m⁴</option>
-                <option value="mm4">mm⁴</option>
-                <option value="in4">in⁴</option>
-              </select>
-            </div>
-
-            <button
-              onClick={calculate}
-              className="w-full bg-black text-white py-2 rounded"
-            >
-              Solve
-            </button>
-
-            <button
-              onClick={saveProject}
-              className="w-full bg-blue-600 text-white py-2 rounded"
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-          </div>
+          <BeamInputs
+            projectName={projectName}
+            setProjectName={setProjectName}
+            length={length}
+            setLength={setLength}
+            lengthUnit={lengthUnit}
+            setLengthUnit={setLengthUnit}
+            force={force}
+            setForce={setForce}
+            forceUnit={forceUnit}
+            setForceUnit={setForceUnit}
+            udl={udl}
+            setUdl={setUdl}
+            udlUnit={udlUnit}
+            setUdlUnit={setUdlUnit}
+            I={I}
+            setI={setI}
+            inertiaUnit={inertiaUnit}
+            setInertiaUnit={setInertiaUnit}
+            support={support}
+            setSupport={setSupport}
+            loads={loads}
+            updateLoad={updateLoad}
+            removeLoad={removeLoad}
+            addPointLoad={addPointLoad}
+            addUDL={addUDL}
+            calculate={calculate}
+            saveProject={saveProject}
+            saving={saving}
+          />
         }
-
-        // ================= RIGHT =================
-      right={
-  <div className="bg-white rounded-xl p-4 shadow-sm">
-    {result ? (
-      <>
-        <BeamDiagram
-          length={length}
-          support={support}
-          loads={[
-            {
-              type: "point",
-              value: force,
-              position: length / 2,
-            },
-            {
-              type: "udl",
-              value: udl,
-              start: 1,
-              end: 4,
-            },
-          ]}
-        />
-
-        <ResultCards result={result} />
-
-        <EngineeringPlot
-          title="Shear Force Diagram"
-          x={result.x}
-          y={result.shear}
-          yLabel="Force (N)"
-        />
-
-        <EngineeringPlot
-          title="Bending Moment Diagram"
-          x={result.x}
-          y={result.moment}
-          yLabel="Moment (N·m)"
-        />
-
-        <EngineeringPlot
-          title="Deflection Diagram"
-          x={result.x}
-          y={result.deflection}
-          yLabel="Deflection (m)"
-        />
-
-        <EngineeringPlot
-          title="Stress Distribution"
-          x={result.x}
-          y={result.stress}
-          yLabel="Stress (Pa)"
-        />
-      </>
-    ) : (
-      <p className="text-gray-500">Run calculation to see results.</p>
-    )}
-  </div>
-}
-        
+        right={
+          <BeamResults
+            result={result}
+            length={length}
+            support={support}
+            loads={loads}
+          />
+        }
       />
     </DashboardLayout>
   );
