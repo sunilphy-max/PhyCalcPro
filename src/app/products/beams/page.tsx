@@ -11,6 +11,7 @@ import type { Load, BeamConfig } from "@/lib/beam/types";
 import BeamInputs from "@/components/beam/BeamInputs";
 import BeamResults from "@/components/beam/BeamResults";
 import SavedProjects from "@/components/beam/SavedProjects";
+import { materials } from "@/data/materials";
 
 export default function Page() {
   // =========================
@@ -25,7 +26,7 @@ export default function Page() {
   const [support, setSupport] = useState<
     "simply_supported" | "cantilever" | "fixed_fixed"
   >("simply_supported");
-
+  const [material, setMaterial] = useState("Steel");
   // =========================
   // UNITS
   // =========================
@@ -33,7 +34,7 @@ export default function Page() {
   const [forceUnit, setForceUnit] = useState("N");
   const [udlUnit, setUdlUnit] = useState("N/m");
   const [inertiaUnit, setInertiaUnit] = useState("m4");
-
+   
   // =========================
   // LOADS (STEP 6)
   // =========================
@@ -89,10 +90,12 @@ export default function Page() {
   // =========================
   // SOLVER
   // =========================
+  const selectedMaterial =
+  materials.find((m) => m.name === material) || materials[0];
   const calculate = () => {
     const normalizedInputs: BeamConfig = {
       length: toBase(length, "length", lengthUnit),
-      E: 210e9,
+      E: selectedMaterial.E,
       I: toBase(I, "inertia", inertiaUnit),
       c: toBase(c, "length", lengthUnit),
       support,
@@ -207,6 +210,8 @@ export default function Page() {
             support={support}
             setSupport={setSupport}
             loads={loads}
+            material={material}
+            setMaterial={setMaterial}
             updateLoad={updateLoad}
             removeLoad={removeLoad}
             addPointLoad={addPointLoad}

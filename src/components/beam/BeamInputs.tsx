@@ -1,6 +1,7 @@
 "use client";
 
 import { Load } from "@/lib/beam/types";
+import { materials } from "@/data/materials";
 
 type Props = {
   projectName: string;
@@ -28,6 +29,9 @@ type Props = {
 
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   setSupport: (v: "simply_supported" | "cantilever" | "fixed_fixed") => void;
+
+  material: string;
+  setMaterial: (v: string) => void;
 
   calculate: () => void;
   saveProject: () => void;
@@ -61,6 +65,19 @@ export default function BeamInputs(props: Props) {
         <option value="simply_supported">Simply Supported</option>
         <option value="cantilever">Cantilever</option>
         <option value="fixed_fixed">Fixed-Fixed</option>
+      </select>
+
+      {/* ================= MATERIAL ================= */}
+      <select
+        className="w-full border p-2 rounded"
+        value={props.material}
+        onChange={(e) => props.setMaterial(e.target.value)}
+      >
+        {materials.map((m) => (
+          <option key={m.name} value={m.name}>
+            {m.name}
+          </option>
+        ))}
       </select>
 
       {/* ================= LENGTH ================= */}
