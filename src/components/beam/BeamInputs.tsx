@@ -1,7 +1,6 @@
 "use client";
 
-import type { Load } from "@/lib/beam/types";
-import { materials } from "@/data/materials";
+import { Load } from "@/lib/beam/types";
 
 type Props = {
   projectName: string;
@@ -26,49 +25,45 @@ type Props = {
   setI: (v: number) => void;
   inertiaUnit: string;
   setInertiaUnit: (v: string) => void;
-  
-material: string;
-setMaterial: (v: string) => void;
 
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   setSupport: (v: "simply_supported" | "cantilever" | "fixed_fixed") => void;
 
-  loads: Load[];
-  updateLoad: (index: number, newLoad: Load) => void;
-  removeLoad: (index: number) => void;
-  addPointLoad: () => void;
-  addUDL: () => void;
-
   calculate: () => void;
   saveProject: () => void;
   saving: boolean;
+
+  // ✅ LOADS (IMPORTANT)
+  loads: Load[];
+  updateLoad: (i: number, l: Load) => void;
+  removeLoad: (i: number) => void;
+  addPointLoad: () => void;
+  addUDL: () => void;
 };
 
 export default function BeamInputs(props: Props) {
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
 
-      {/* PROJECT */}
+      {/* ================= PROJECT NAME ================= */}
       <input
         className="w-full p-2 border rounded"
         value={props.projectName}
         onChange={(e) => props.setProjectName(e.target.value)}
       />
 
-      {/* SUPPORT */}
+      {/* ================= SUPPORT TYPE ================= */}
       <select
         className="w-full border p-2 rounded"
         value={props.support}
-        onChange={(e) =>
-          props.setSupport(e.target.value as Props["support"])
-        }
+        onChange={(e) => props.setSupport(e.target.value as Props["support"])}
       >
         <option value="simply_supported">Simply Supported</option>
         <option value="cantilever">Cantilever</option>
         <option value="fixed_fixed">Fixed-Fixed</option>
       </select>
 
-      {/* LENGTH */}
+      {/* ================= LENGTH ================= */}
       <div className="flex gap-2">
         <input
           className="flex-1 border p-2 rounded"
@@ -86,7 +81,7 @@ export default function BeamInputs(props: Props) {
         </select>
       </div>
 
-      {/* FORCE */}
+      {/* ================= FORCE ================= */}
       <div className="flex gap-2">
         <input
           className="flex-1 border p-2 rounded"
@@ -98,12 +93,11 @@ export default function BeamInputs(props: Props) {
           onChange={(e) => props.setForceUnit(e.target.value)}
         >
           <option value="N">N</option>
-          <option value="kN">kN</option>
           <option value="lbf">lbf</option>
         </select>
       </div>
 
-      {/* UDL */}
+      {/* ================= UDL ================= */}
       <div className="flex gap-2">
         <input
           className="flex-1 border p-2 rounded"
@@ -115,12 +109,11 @@ export default function BeamInputs(props: Props) {
           onChange={(e) => props.setUdlUnit(e.target.value)}
         >
           <option value="N/m">N/m</option>
-          <option value="kN/m">kN/m</option>
           <option value="lbf/ft">lbf/ft</option>
         </select>
       </div>
 
-      {/* INERTIA */}
+      {/* ================= INERTIA ================= */}
       <div className="flex gap-2">
         <input
           className="flex-1 border p-2 rounded"
@@ -136,45 +129,93 @@ export default function BeamInputs(props: Props) {
         </select>
       </div>
 
-      {/* LOADS */}
-      <div className="border-t pt-3">
-        <label className="text-sm font-semibold text-gray-700 mb-2 block">Loads</label>
-        {props.loads.map((load, idx) => (
-          <div key={idx} className="mb-2 p-2 bg-gray-50 rounded border text-sm">
+      {/* ================= LOADS SECTION ================= */}
+      <div className="border-t pt-3 mt-3">
+        <h4 className="font-semibold mb-2">Loads</h4>
+
+        {(props.loads ?? []).map((load, i) => (
+          <div key={i} className="mb-2 p-2 border rounded">
+
+            <div className="text-sm mb-1">
+              {load.type === "point" ? "Point Load" : "UDL"}
+            </div>
+
+            {/* VALUE */}
+            <input
+              className="w-full border p-1 mb-1"
+              value={load.value}
+              onChange={(e) =>
+                props.updateLoad(i, {
+                  ...load,
+                  value: +e.target.value,
+                })
+              }
+            />
+
+            {/* POSITION / RANGE */}
             {load.type === "point" ? (
-              <>
-                <div>Point Load: {load.value.toFixed(2)} at {load.position.toFixed(2)}</div>
-              </>
+              <input
+                className="w-full border p-1"
+                value={load.position}
+                onChange={(e) =>
+                  props.updateLoad(i, {
+                    ...load,
+                    position: +e.target.value,
+                  })
+                }
+              />
             ) : (
               <>
-                <div>UDL: {load.value.toFixed(2)} from {load.start.toFixed(2)} to {load.end.toFixed(2)}</div>
+                <input
+                  className="w-full border p-1 mb-1"
+                  value={load.start}
+                  onChange={(e) =>
+                    props.updateLoad(i, {
+                      ...load,
+                      start: +e.target.value,
+                    })
+                  }
+                />
+                <input
+                  className="w-full border p-1"
+                  value={load.end}
+                  onChange={(e) =>
+                    props.updateLoad(i, {
+                      ...load,
+                      end: +e.target.value,
+                    })
+                  }
+                />
               </>
             )}
+
             <button
-              onClick={() => props.removeLoad(idx)}
-              className="text-xs text-red-600 hover:text-red-800 mt-1"
+              className="text-red-500 text-sm mt-1"
+              onClick={() => props.removeLoad(i)}
             >
               Remove
             </button>
           </div>
         ))}
-        <div className="flex gap-2">
+
+        <div className="flex gap-2 mt-2">
           <button
             onClick={props.addPointLoad}
-            className="flex-1 text-xs bg-gray-200 hover:bg-gray-300 py-1 rounded"
+            className="bg-gray-200 px-2 py-1 rounded"
           >
             + Point Load
           </button>
+
           <button
             onClick={props.addUDL}
-            className="flex-1 text-xs bg-gray-200 hover:bg-gray-300 py-1 rounded"
+            className="bg-gray-200 px-2 py-1 rounded"
           >
             + UDL
           </button>
         </div>
       </div>
 
-      {/* ACTIONS */}
+      {/* ================= ACTIONS ================= */}
       <button
         onClick={props.calculate}
         className="w-full bg-black text-white py-2 rounded"
