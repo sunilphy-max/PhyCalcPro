@@ -1,6 +1,7 @@
 "use client";
 
 import type { Load } from "@/lib/beam/types";
+import { materials } from "@/data/materials";
 
 type Props = {
   projectName: string;
@@ -25,6 +26,9 @@ type Props = {
   setI: (v: number) => void;
   inertiaUnit: string;
   setInertiaUnit: (v: string) => void;
+  
+material: string;
+setMaterial: (v: string) => void;
 
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   setSupport: (v: "simply_supported" | "cantilever" | "fixed_fixed") => void;

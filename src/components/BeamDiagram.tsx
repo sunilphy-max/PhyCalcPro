@@ -11,7 +11,7 @@ type Props = {
 
 export default function BeamDiagram({
   length,
-  loads,
+  loads = [],
   support,
 }: Props) {
   const width = 600;
@@ -22,18 +22,35 @@ export default function BeamDiagram({
     (x / length) * (width - 2 * margin) + margin;
 
   // simple visual scaling (prevents huge arrows)
-  const maxLoad = Math.max(
-    ...loads.map((l) => Math.abs(l.value)),
-    1
-  );
+  const safeLoads = loads ?? [];
+
+const maxLoad = Math.max(
+  ...safeLoads.map((l) => Math.abs(l.value)),
+  1
+);
 
   const scaleLoad = (v: number) =>
     Math.max(20, (Math.abs(v) / maxLoad) * 60);
-
+const unitLabel = "N"; // later dynamic
   return (
     <div className="w-full bg-white rounded-lg p-4 shadow">
       <svg width="100%" viewBox={`0 0 ${width} ${height}`}>
 
+{/* Grid */}
+{Array.from({ length: 5 }).map((_, i) => {
+  const y = 50 + i * 10;
+  return (
+    <line
+      key={i}
+      x1={margin}
+      y1={y}
+      x2={width - margin}
+      y2={y}
+      stroke="#f3f3f3"
+      strokeWidth={1}
+    />
+  );
+})}
         {/* ================= BEAM ================= */}
         <line
           x1={margin}
@@ -43,7 +60,23 @@ export default function BeamDiagram({
           stroke="black"
           strokeWidth={4}
         />
+{/* ================= AXIS ================= */}
+<line
+  x1={margin}
+  y1={110}
+  x2={width - margin}
+  y2={110}
+  stroke="#ccc"
+  strokeWidth={1}
+/>
 
+<text x={margin - 5} y={125} fontSize="10">
+  0
+</text>
+
+<text x={width - margin - 10} y={125} fontSize="10">
+  {length}
+</text>
         {/* ================= SUPPORTS ================= */}
 
         {/* LEFT SUPPORT */}
@@ -86,7 +119,7 @@ export default function BeamDiagram({
         )}
 
         {/* ================= LOADS ================= */}
-        {loads.map((load, i) => {
+        {(loads ?? []).map((load, i) => {
           if (load.type === "point") {
             const x = scaleX(load.position);
             const h = scaleLoad(load.value);
@@ -102,12 +135,12 @@ export default function BeamDiagram({
                   strokeWidth={2}
                 />
                 <polygon
-                  points={`${x},70 ${x - 6},60 ${x + 6},60`}
-                  fill="red"
-                />
+  points={`${x},70 ${x - 5},60 ${x + 5},60`}
+  fill="red"
+/>
 
-                <text x={x + 5} y={40} fontSize="10" fill="red">
-                  {load.value}
+                <text x={x + 5} y={70 - h - 5} fontSize="10" fill="red">
+                  {load.value}{unitLabel}
                 </text>
               </g>
             );
@@ -129,25 +162,31 @@ export default function BeamDiagram({
                 />
 
                 {/* arrows */}
-                {Array.from({ length: 5 }).map((_, j) => {
-                  const x =
-                    x1 + ((x2 - x1) / 4) * j;
+                {Array.from({ length: 7 }).map((_, j) => {
+  const x = x1 + ((x2 - x1) / 6) * j;
 
-                  return (
-                    <line
-                      key={j}
-                      x1={x}
-                      y1={40}
-                      x2={x}
-                      y2={70}
-                      stroke="blue"
-                    />
-                  );
-                })}
+  return (
+    <g key={j}>
+      <line
+        x1={x}
+        y1={45}
+        x2={x}
+        y2={70}
+        stroke="blue"
+        strokeWidth={1.5}
+      />
+      <polygon
+        points={`${x},70 ${x - 4},62 ${x + 4},62`}
+        fill="blue"
+      />
+    </g>
+  );
+})}
 
                 <text
-                  x={(x1 + x2) / 2}
-                  y={35}
+  x={(x1 + x2) / 2}
+  y={30}
+  textAnchor="middle"
                   fontSize="10"
                   fill="blue"
                 >
@@ -161,13 +200,15 @@ export default function BeamDiagram({
         })}
 
         {/* ================= SUPPORT LABELS ================= */}
-        <text x={margin - 10} y={130} fontSize="10">
-          Support
-        </text>
+        <text x={margin - 15} y={130} fontSize="10">
+  {support === "cantilever" ? "Fixed" : "Support"}
+</text>
 
-        <text x={width - margin - 20} y={130} fontSize="10">
-          Support
-        </text>
+        {support !== "cantilever" && (
+  <text x={width - margin - 20} y={130} fontSize="10">
+    Support
+  </text>
+)}
       </svg>
     </div>
   );
