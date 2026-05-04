@@ -27,6 +27,9 @@ type Props = {
   inertiaUnit: string;
   setInertiaUnit: (v: string) => void;
 
+  c: number;
+  setC: (v: number) => void;
+
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   setSupport: (v: "simply_supported" | "cantilever" | "fixed_fixed") => void;
 
@@ -143,6 +146,25 @@ export default function BeamInputs(props: Props) {
         >
           <option value="m4">m⁴</option>
           <option value="in4">in⁴</option>
+        </select>
+      </div>
+
+      {/* ================= DISTANCE C (Neutral Axis to Extreme Fiber) ================= */}
+      <div className="flex gap-2">
+        <input
+          className="flex-1 border p-2 rounded"
+          placeholder="Distance to extreme fiber (c)"
+          value={props.c}
+          onChange={(e) => props.setC(+e.target.value)}
+        />
+        <select
+          value={props.lengthUnit}
+          onChange={(e) => props.setLengthUnit(e.target.value)}
+        >
+          <option value="m">m</option>
+          <option value="mm">mm</option>
+          <option value="ft">ft</option>
+          <option value="in">in</option>
         </select>
       </div>
 

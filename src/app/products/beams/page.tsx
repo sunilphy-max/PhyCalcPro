@@ -207,6 +207,8 @@ export default function Page() {
             setI={setI}
             inertiaUnit={inertiaUnit}
             setInertiaUnit={setInertiaUnit}
+            c={c}
+            setC={setC}
             support={support}
             setSupport={setSupport}
             loads={loads}
