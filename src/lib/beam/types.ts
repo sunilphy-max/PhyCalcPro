@@ -1,6 +1,17 @@
 export type Load =
-  | { type: "point"; value: number; position: number }
-  | { type: "udl"; value: number; start: number; end: number };
+  | {
+      id: string;
+      type: "point";
+      value: number;
+      position: number;
+    }
+  | {
+      id: string;
+      type: "udl";
+      value: number;
+      start: number;
+      end: number;
+    };
 
 export type SupportType =
   | "simply_supported"

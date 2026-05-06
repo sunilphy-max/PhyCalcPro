@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Load, SupportType } from "@/lib/beam/types";
 
 type Props = {
   length: number;
   loads: Load[];
   support: SupportType;
+  onLoadDrag?: (id: string, updates: Partial<Load>) => void;
 };
 
 export default function BeamDiagram({
@@ -23,7 +24,7 @@ export default function BeamDiagram({
 
   // simple visual scaling (prevents huge arrows)
   const safeLoads = loads ?? [];
-
+const [draggingId, setDraggingId] = useState<string | null>(null);
 const maxLoad = Math.max(
   ...safeLoads.map((l) => Math.abs(l.value)),
   1
@@ -31,10 +32,30 @@ const maxLoad = Math.max(
 
   const scaleLoad = (v: number) =>
     Math.max(20, (Math.abs(v) / maxLoad) * 60);
-const unitLabel = "N"; // later dynamic
+const unitLabel = "N"; 
+const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+  if (!draggingId || !onLoadDrag) return;
+
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+
+  const raw = (x / rect.width) * length;
+  const newX = Math.max(0, Math.min(length, raw));
+
+  onLoadDrag(draggingId, { position: newX });
+};
+
+const handleMouseUp = () => {
+  setDraggingId(null);
+};// later dynamic
   return (
     <div className="w-full bg-white rounded-lg p-4 shadow">
-      <svg width="100%" viewBox={`0 0 ${width} ${height}`}>
+      <svg
+  width="100%"
+  viewBox={`0 0 ${width} ${height}`}
+  onMouseMove={handleMouseMove}
+  onMouseUp={handleMouseUp}
+>
 
 {/* Grid */}
 {Array.from({ length: 5 }).map((_, i) => {
@@ -119,13 +140,13 @@ const unitLabel = "N"; // later dynamic
         )}
 
         {/* ================= LOADS ================= */}
-        {(loads ?? []).map((load, i) => {
+        {(loads ?? []).map((load) => {
           if (load.type === "point") {
             const x = scaleX(load.position);
             const h = scaleLoad(load.value);
 
             return (
-              <g key={i}>
+              <g key={load.id}>
                 <line
                   x1={x}
                   y1={70 - h}
@@ -137,6 +158,8 @@ const unitLabel = "N"; // later dynamic
                 <polygon
   points={`${x},70 ${x - 5},60 ${x + 5},60`}
   fill="red"
+  style={{ cursor: "grab" }}
+  onMouseDown={() => setDraggingId(load.id)}
 />
 
                 <text x={x + 5} y={70 - h - 5} fontSize="10" fill="red">
@@ -151,7 +174,7 @@ const unitLabel = "N"; // later dynamic
             const x2 = scaleX(load.end);
 
             return (
-              <g key={i}>
+              <g key={load.id}>
                 {/* UDL region */}
                 <rect
                   x={x1}

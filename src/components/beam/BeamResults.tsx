@@ -8,6 +8,7 @@ type Props = {
   length: number;
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   loads: Load[];
+    onLoadDrag?: (id: string, updates: Partial<Load>) => void;
 };
 
 export default function BeamResults({
@@ -15,6 +16,7 @@ export default function BeamResults({
   length,
   support,
   loads,
+  onLoadDrag,
 }: Props) {
   if (!result) {
     return (
@@ -34,6 +36,7 @@ export default function BeamResults({
         length={length}
         support={support}
         loads={loads}
+        onLoadDrag={onLoadDrag}
       />
 
       {/* SUMMARY CARDS */}

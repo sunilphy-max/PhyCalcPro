@@ -38,21 +38,49 @@ export default function Page() {
   // =========================
   // LOADS (STEP 6)
   // =========================
+  const createId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
   const [loads, setLoads] = useState<Load[]>([
-    { type: "point", value: 1000, position: 2.5 },
+    {
+  id: createId(),
+  type: "point",
+  value: 1000,
+  position: 2.5,
+},
   ]);
 
   const addPointLoad = () => {
-    setLoads([
-      ...loads,
-      { type: "point", value: 500, position: length / 2 },
-    ]);
-  };
+  setLoads([
+    ...loads,
+    {
+      id: createId(),
+      type: "point",
+      value: 500,
+      position: length / 2,
+    },
+  ]);
+};
 
-  const addUDL = () => {
-    setLoads([...loads, { type: "udl", value: 200, start: 1, end: 4 }]);
-  };
-
+ const addUDL = () => {
+  setLoads([
+    ...loads,
+    {
+      id: createId(),
+      type: "udl",
+      value: 200,
+      start: 1,
+      end: 4,
+    },
+  ]);
+};
+const handleLoadDrag = (id: string, updates: Partial<Load>) => {
+  setLoads((prev) =>
+    prev.map((l) => (l.id === id ? { ...l, ...updates } : l))
+  );
+};
   const updateLoad = (index: number, newLoad: Load) => {
     const updated = [...loads];
     updated[index] = newLoad;
@@ -225,11 +253,12 @@ export default function Page() {
         }
         right={
           <BeamResults
-            result={result}
-            length={length}
-            support={support}
-            loads={loads}
-          />
+  result={result}
+  length={length}
+  support={support}
+  loads={loads}
+  onLoadDrag={handleLoadDrag}
+/>
         }
       />
     </DashboardLayout>
