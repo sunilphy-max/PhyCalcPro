@@ -2,13 +2,18 @@ import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import ResultCards from "@/components/ResultCards";
 import type { Load } from "@/lib/beam/types";
+import BeamDashboard from "@/components/beam/BeamDashboard";
 
 type Props = {
   result: any;
   length: number;
   support: "simply_supported" | "cantilever" | "fixed_fixed";
   loads: Load[];
-    onLoadDrag?: (id: string, updates: Partial<Load>) => void;
+
+  onLoadDrag?: (
+    id: string,
+    updates: Partial<Extract<Load, { type: "point" }>>
+  ) => void;
 };
 
 export default function BeamResults({
@@ -29,47 +34,14 @@ export default function BeamResults({
   }
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm">
-
-      {/* BEAM DIAGRAM */}
-      <BeamDiagram
-        length={length}
-        support={support}
-        loads={loads}
-        onLoadDrag={onLoadDrag}
-      />
-
-      {/* SUMMARY CARDS */}
-      <ResultCards result={result} />
-
-      {/* ENGINEERING PLOTS */}
-      <EngineeringPlot
-        title="Shear Force Diagram"
-        x={result.x}
-        y={result.shear}
-        yLabel="Force"
-      />
-
-      <EngineeringPlot
-        title="Bending Moment Diagram"
-        x={result.x}
-        y={result.moment}
-        yLabel="Moment"
-      />
-
-      <EngineeringPlot
-        title="Deflection Diagram"
-        x={result.x}
-        y={result.deflection}
-        yLabel="Deflection"
-      />
-
-      <EngineeringPlot
-        title="Stress Distribution"
-        x={result.x}
-        y={result.stress}
-        yLabel="Stress"
-      />
-    </div>
-  );
+  <div className="bg-white rounded-xl p-4 shadow-sm">
+    <BeamDashboard
+      result={result}
+      loads={loads}
+      length={length}
+      support={support}
+      onLoadDrag={onLoadDrag}
+    />
+  </div>
+);
 }

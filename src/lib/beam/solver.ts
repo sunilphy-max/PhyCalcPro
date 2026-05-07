@@ -4,13 +4,26 @@ import { maxAbs } from "../shared/math";
 export function solveBeam(config: BeamConfig): BeamResult {
   const { length, loads, E, I, c, support } = config;
 
-  const n = 60;
+  const n = 80;
 
   const x: number[] = [];
   const shear: number[] = [];
   const moment: number[] = [];
   const deflection: number[] = [];
   const stress: number[] = [];
+
+  // -----------------------------
+  // SIMPLE SUPPORT REACTION MODEL
+  // (still simplified but consistent)
+  // -----------------------------
+  let totalLoad = 0;
+
+  for (const load of loads) {
+    if (load.type === "point") totalLoad += load.value;
+    if (load.type === "udl") totalLoad += load.value * (load.end - load.start);
+  }
+
+  const R = support === "simply_supported" ? totalLoad / 2 : totalLoad;
 
   for (let i = 0; i < n; i++) {
     const xi = (i / (n - 1)) * length;
@@ -19,25 +32,26 @@ export function solveBeam(config: BeamConfig): BeamResult {
     let V = 0;
     let M = 0;
 
+    // -----------------------------
+    // REACTION FORCE EFFECT
+    // -----------------------------
+    if (support !== "cantilever") {
+      V += R;
+      M += R * xi;
+    }
+
+    // -----------------------------
+    // LOAD CONTRIBUTIONS
+    // -----------------------------
     for (const load of loads) {
       // POINT LOAD
       if (load.type === "point") {
         const P = load.value;
         const a = load.position;
 
-        if (support === "cantilever") {
-          if (xi <= a) {
-            V += P;
-            M += P * (a - xi);
-          }
-        } else {
-          if (xi < a) {
-            V += P / 2;
-            M += (P * xi) / 2;
-          } else {
-            V -= P / 2;
-            M += (P * (length - xi)) / 2;
-          }
+        if (xi >= a) {
+          V -= P;
+          M -= P * (xi - a);
         }
       }
 
@@ -47,17 +61,13 @@ export function solveBeam(config: BeamConfig): BeamResult {
         const a = load.start;
         const b = load.end;
 
-        if (xi >= a && xi <= b) {
-          const L = b - a;
-          const xRel = xi - a;
+        const L = b - a;
 
-          if (support === "cantilever") {
-            V += w * (b - xi);
-            M += (w * (b - xi) * (b - xi)) / 2;
-          } else {
-            V += w * (L / 2 - xRel);
-            M += (w * xRel * (L - xRel)) / 2;
-          }
+        if (xi >= a) {
+          const effectiveLength = Math.min(xi, b) - a;
+
+          V -= w * effectiveLength;
+          M -= w * effectiveLength * (xi - (a + effectiveLength / 2));
         }
       }
     }
@@ -65,9 +75,17 @@ export function solveBeam(config: BeamConfig): BeamResult {
     shear.push(V);
     moment.push(M);
 
-    const d = M / (E * I);
+    // -----------------------------
+    // DEFLECTION (SIMPLIFIED ENGINEERING APPROX)
+    // -----------------------------
+    const EI = E * I;
+    const d = EI !== 0 ? M / EI : 0;
+
     deflection.push(d);
 
+    // -----------------------------
+    // STRESS
+    // -----------------------------
     stress.push((M * c) / I);
   }
 
@@ -77,6 +95,7 @@ export function solveBeam(config: BeamConfig): BeamResult {
     moment,
     deflection,
     stress,
+
     maxStress: maxAbs(stress),
     maxDeflection: maxAbs(deflection),
   };

@@ -14,6 +14,7 @@ export default function BeamDiagram({
   length,
   loads = [],
   support,
+  onLoadDrag,
 }: Props) {
   const width = 600;
   const height = 140;
@@ -40,9 +41,9 @@ const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
   const x = e.clientX - rect.left;
 
   const raw = (x / rect.width) * length;
-  const newX = Math.max(0, Math.min(length, raw));
+  const clamped = Math.max(0, Math.min(length, raw));
 
-  onLoadDrag(draggingId, { position: newX });
+  onLoadDrag(draggingId, { position: clamped });
 };
 
 const handleMouseUp = () => {
@@ -55,6 +56,7 @@ const handleMouseUp = () => {
   viewBox={`0 0 ${width} ${height}`}
   onMouseMove={handleMouseMove}
   onMouseUp={handleMouseUp}
+  onMouseLeave={handleMouseUp}
 >
 
 {/* Grid */}
@@ -159,7 +161,7 @@ const handleMouseUp = () => {
   points={`${x},70 ${x - 5},60 ${x + 5},60`}
   fill="red"
   style={{ cursor: "grab" }}
-  onMouseDown={() => setDraggingId(load.id)}
+  onMouseDown={() => setDraggingId(load.id + ":point")}
 />
 
                 <text x={x + 5} y={70 - h - 5} fontSize="10" fill="red">

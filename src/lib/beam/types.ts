@@ -1,17 +1,21 @@
-export type Load =
-  | {
-      id: string;
-      type: "point";
-      value: number;
-      position: number;
-    }
-  | {
-      id: string;
-      type: "udl";
-      value: number;
-      start: number;
-      end: number;
-    };
+export type BaseLoad = {
+  id: string;
+};
+
+export type PointLoad = BaseLoad & {
+  type: "point";
+  value: number;
+  position: number;
+};
+
+export type UDL = BaseLoad & {
+  type: "udl";
+  value: number;
+  start: number;
+  end: number;
+};
+
+export type Load = PointLoad | UDL;
 
 export type SupportType =
   | "simply_supported"

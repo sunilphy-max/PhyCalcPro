@@ -12,6 +12,7 @@ import BeamInputs from "@/components/beam/BeamInputs";
 import BeamResults from "@/components/beam/BeamResults";
 import SavedProjects from "@/components/beam/SavedProjects";
 import { materials } from "@/data/materials";
+import { solveBeamEngine } from "@/lib/beam/engine";
 
 export default function Page() {
   // =========================
@@ -76,9 +77,23 @@ export default function Page() {
     },
   ]);
 };
-const handleLoadDrag = (id: string, updates: Partial<Load>) => {
-  setLoads((prev) =>
-    prev.map((l) => (l.id === id ? { ...l, ...updates } : l))
+const handleLoadDrag = (
+  id: string,
+  updates: Partial<Extract<Load, { type: "point" }>>
+) => {
+  setLoads((prevLoads) =>
+    prevLoads.map((load) => {
+      if (load.id !== id) return load;
+
+      if (load.type === "point") {
+        return {
+          ...load,
+          ...updates,
+        };
+      }
+
+      return load;
+    })
   );
 };
   const updateLoad = (index: number, newLoad: Load) => {
@@ -146,7 +161,9 @@ const handleLoadDrag = (id: string, updates: Partial<Load>) => {
       }),
     };
 
-    const raw = solveBeam(normalizedInputs);
+    
+
+const raw = solveBeamEngine(normalizedInputs);
 
     const converted = {
       ...raw,
