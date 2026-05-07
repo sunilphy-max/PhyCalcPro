@@ -7,7 +7,11 @@ type Props = {
   length: number;
   loads: Load[];
   support: SupportType;
-  onLoadDrag?: (id: string, updates: Partial<Load>) => void;
+
+  onLoadDrag?: (id: string, updates: any) => void;
+
+  probeX?: number | null;
+  setProbeX?: (x: number | null) => void;
 };
 
 export default function BeamDiagram({
@@ -15,6 +19,8 @@ export default function BeamDiagram({
   loads = [],
   support,
   onLoadDrag,
+  probeX,
+  setProbeX,
 }: Props) {
   const width = 600;
   const height = 140;
@@ -43,6 +49,7 @@ const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
   const raw = (x / rect.width) * length;
   const clamped = Math.max(0, Math.min(length, raw));
 
+  setProbeX?.(clamped);
   onLoadDrag(draggingId, { position: clamped });
 };
 
@@ -140,6 +147,19 @@ const handleMouseUp = () => {
             fill="gray"
           />
         )}
+
+        {/* PROBE LINE */}
+{probeX !== null && (
+  <line
+    x1={scaleX(probeX)}
+    y1={20}
+    x2={scaleX(probeX)}
+    y2={120}
+    stroke="orange"
+    strokeWidth={2}
+    strokeDasharray="5 5"
+  />
+)}
 
         {/* ================= LOADS ================= */}
         {(loads ?? []).map((load) => {

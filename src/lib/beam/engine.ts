@@ -30,8 +30,14 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
 const maxShear = Math.max(...raw.shear.map(Math.abs));
 const maxDeflection = Math.max(...raw.deflection.map(Math.abs));
 
-const stress = raw.moment.map((m: number) => m);
-const maxStress = Math.max(...stress.map(Math.abs));
+const safeMoment = raw.moment.map(v => isFinite(v) ? v : 0);
+
+const stress = safeMoment.map((m: number) => {
+  if (!isFinite(m)) return 0;
+  return m;
+});
+
+const maxStress = Math.max(...stress.map(v => Math.abs(v || 0)));
 
   return {
     x: raw.x,
@@ -39,7 +45,7 @@ const maxStress = Math.max(...stress.map(Math.abs));
     moment: raw.moment,
     deflection: raw.deflection,
 
-    stress: raw.moment.map((m: number) => m), // placeholder (improve later)
+    stress,
     slope: raw.deflection.map(() => 0),       // placeholder (improve later)
 
     maxMoment,
