@@ -38,19 +38,20 @@ const stress = safeMoment.map((m: number) => {
 });
 
 const maxStress = Math.max(...stress.map(v => Math.abs(v || 0)));
-
+const clean = (arr: number[]) =>
+  arr.map(v => (Number.isFinite(v) ? v : 0));
   return {
-    x: raw.x,
-    shear: raw.shear,
-    moment: raw.moment,
-    deflection: raw.deflection,
+  x: clean(raw.x),
+  shear: clean(raw.shear),
+  moment: clean(raw.moment),
+  deflection: clean(raw.deflection),
+  stress: clean(stress),
 
-    stress,
-    slope: raw.deflection.map(() => 0),       // placeholder (improve later)
+  slope: raw.deflection.map(() => 0),
 
-    maxMoment,
-    maxShear,
-    maxStress,
-    maxDeflection,
-  };
+  maxMoment,
+  maxShear,
+  maxStress,
+  maxDeflection,
+};
 }
