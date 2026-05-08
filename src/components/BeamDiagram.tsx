@@ -149,7 +149,7 @@ const handleMouseUp = () => {
         )}
 
         {/* PROBE LINE */}
-{probeX !== null && (
+{typeof probeX === "number" && (
   <line
     x1={scaleX(probeX)}
     y1={20}
