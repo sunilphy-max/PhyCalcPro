@@ -4,13 +4,17 @@ import { useMemo, useState } from "react";
 
 import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
+import type { BeamResult, Load, SupportType } from "@/lib/beam/types";
 
 type Props = {
-  result: any;
-  loads: any[];
+  result: BeamResult;
+  loads: Load[];
   length: number;
-  support: any;
-  onLoadDrag?: any;
+  support: SupportType;
+  onLoadDrag?: (
+    id: string,
+    updates: Partial<Extract<Load, { type: "point" }>>
+  ) => void;
 };
 
 export default function BeamDashboard({
@@ -110,6 +114,7 @@ export default function BeamDashboard({
         x={result.x}
         y={result.shear}
         yLabel="V"
+        probeX={probeX}
       />
 
       {/* ========================================= */}
@@ -120,6 +125,7 @@ export default function BeamDashboard({
         x={result.x}
         y={result.moment}
         yLabel="M"
+        probeX={probeX}
       />
 
       {/* ========================================= */}
@@ -130,41 +136,73 @@ export default function BeamDashboard({
         x={result.x}
         y={result.deflection}
         yLabel="y"
+        probeX={probeX}
       />
+
+      {/* ========================================= */}
+      {/* Stress Distribution */}
+      {/* ========================================= */}
+      {result.stress && (
+        <EngineeringPlot
+          title="Stress Distribution σ(x)"
+          x={result.x}
+          y={result.stress}
+          yLabel="σ"
+          probeX={probeX}
+        />
+      )}
 
       {/* ========================================= */}
       {/* SUMMARY */}
       {/* ========================================= */}
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
 
-        <div className="bg-white rounded-xl p-3 shadow">
-          <div className="text-xs text-gray-400">Max Moment</div>
-          <div className="font-semibold">
-            {result.maxMoment.toFixed(2)}
+        <div className="bg-gray-50 rounded-xl p-3">
+          <div className="text-xs text-gray-500">Max Moment</div>
+          <div className="text-lg font-semibold">
+            {result.maxMoment?.toFixed(2) ?? "--"}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3 shadow">
-          <div className="text-xs text-gray-400">Max Shear</div>
-          <div className="font-semibold">
-            {result.maxShear.toFixed(2)}
+        <div className="bg-gray-50 rounded-xl p-3">
+          <div className="text-xs text-gray-500">Max Shear</div>
+          <div className="text-lg font-semibold">
+            {result.maxShear?.toFixed(2) ?? "--"}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3 shadow">
-          <div className="text-xs text-gray-400">Max Stress</div>
-          <div className="font-semibold">
-            {result.maxStress.toFixed(2)}
+        <div className="bg-gray-50 rounded-xl p-3">
+          <div className="text-xs text-gray-500">Max Stress</div>
+          <div className="text-lg font-semibold">
+            {result.maxStress?.toFixed(2) ?? "--"}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-3 shadow">
-          <div className="text-xs text-gray-400">Max Deflection</div>
-          <div className="font-semibold">
-            {result.maxDeflection.toExponential(3)}
+        <div className="bg-gray-50 rounded-xl p-3">
+          <div className="text-xs text-gray-500">Max Deflection</div>
+          <div className="text-lg font-semibold">
+            {result.maxDeflection?.toExponential(2) ?? "--"}
           </div>
         </div>
       </div>
+
+      {/* ========================================= */}
+      {/* REACTIONS */}
+      {/* ========================================= */}
+      {result.reactions && (
+        <div className="bg-white border rounded-xl p-4 mt-4">
+          <div className="font-semibold mb-3">Support Reactions</div>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            {result.reactions.map((r: number, i: number) => (
+              <div key={i} className="bg-gray-50 rounded p-2">
+                DOF {i}: {r.toFixed(2)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+ 

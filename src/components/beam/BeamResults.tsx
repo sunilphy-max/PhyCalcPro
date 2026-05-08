@@ -1,13 +1,11 @@
-import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import ResultCards from "@/components/ResultCards";
-import type { Load } from "@/lib/beam/types";
+import type { BeamResult, Load, SupportType } from "@/lib/beam/types";
 import BeamDashboard from "@/components/beam/BeamDashboard";
 
 type Props = {
-  result: any;
+  result: BeamResult | null;
   length: number;
-  support: "simply_supported" | "cantilever" | "fixed_fixed";
+  support: SupportType;
   loads: Load[];
 
   onLoadDrag?: (

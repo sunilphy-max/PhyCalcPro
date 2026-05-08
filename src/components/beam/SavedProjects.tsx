@@ -34,7 +34,7 @@ export default function SavedProjects(props: Props) {
   </button>
 ))
       ) : (
-        <p className="text-gray-400 text-sm">No saved projects</p>
+        <p className="text-gray-400 text-sm">No saved projects yet</p>
       )}
     </div>
   );

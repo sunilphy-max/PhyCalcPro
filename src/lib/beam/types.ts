@@ -35,8 +35,12 @@ export type BeamResult = {
   x: number[];
   shear: number[];
   moment: number[];
+  slope: number[];
   deflection: number[];
   stress: number[];
   maxStress: number;
   maxDeflection: number;
+  maxMoment: number;
+  maxShear: number;
+  reactions?: number[];
 };

@@ -8,7 +8,10 @@ type Props = {
   loads: Load[];
   support: SupportType;
 
-  onLoadDrag?: (id: string, updates: any) => void;
+  onLoadDrag?: (
+    id: string,
+    updates: Partial<Extract<Load, { type: "point" }>>
+  ) => void;
 
   probeX?: number | null;
   setProbeX?: (x: number | null) => void;
