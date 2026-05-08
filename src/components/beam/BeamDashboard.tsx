@@ -11,6 +11,8 @@ type Props = {
   loads: Load[];
   length: number;
   support: SupportType;
+  caseLabel?: string;
+  combinationMode?: "active" | "envelope";
   onLoadDrag?: (
     id: string,
     updates: Partial<Extract<Load, { type: "point" }>>
@@ -22,6 +24,8 @@ export default function BeamDashboard({
   loads,
   length,
   support,
+  caseLabel,
+  combinationMode = "active",
   onLoadDrag,
 }: Props) {
   const [probeX, setProbeX] = useState<number | null>(null);
@@ -63,7 +67,14 @@ export default function BeamDashboard({
       {/* ========================================= */}
       {/* TOP INSPECTOR BAR */}
       {/* ========================================= */}
-      <div className="bg-slate-900 text-white rounded-xl px-4 py-3 grid grid-cols-4 gap-4 text-sm shadow">
+      <div className="bg-slate-900 text-white rounded-xl px-4 py-3 grid grid-cols-1 md:grid-cols-5 gap-4 text-sm shadow">
+
+        <div>
+          <div className="text-slate-400">Case</div>
+          <div className="font-semibold">
+            {caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active Case")}
+          </div>
+        </div>
 
         <div>
           <div className="text-slate-400">Position</div>
@@ -104,6 +115,9 @@ export default function BeamDashboard({
         onLoadDrag={onLoadDrag}
         probeX={probeX}
         setProbeX={setProbeX}
+        xPositions={result.x}
+        deflection={result.deflection}
+        reactions={result.reactions}
       />
 
       {/* ========================================= */}

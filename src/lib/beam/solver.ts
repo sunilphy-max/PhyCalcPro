@@ -30,6 +30,7 @@ export function solveBeam(
       support,
       E,
       I,
+      meshSegments: config.meshSegments,
     });
 
   // -----------------------------------

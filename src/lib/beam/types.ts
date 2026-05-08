@@ -29,6 +29,7 @@ export type BeamConfig = {
   c: number;
   support: SupportType;
   loads: Load[];
+  meshSegments?: number;
 };
 
 export type BeamResult = {

@@ -14,12 +14,14 @@ export function solveBeamFEM({
   support,
   E,
   I,
+  meshSegments,
 }: {
   length: number;
   loads: Load[];
   support: SupportType;
   E: number;
   I: number;
+  meshSegments?: number;
 }): { model: FEMModel; displacements: number[]; reactions: number[] } {
 
   // ----------------------------------
@@ -31,7 +33,7 @@ export function solveBeamFEM({
       length,
       E,
       I,
-      40
+      meshSegments ?? 40
     );
 
   // ----------------------------------

@@ -3,6 +3,13 @@
 import React, { useState } from "react";
 import { Load, SupportType } from "@/lib/beam/types";
 
+type ReactionForces = {
+  left?: number;
+  right?: number;
+  leftMoment?: number;
+  rightMoment?: number;
+};
+
 type Props = {
   length: number;
   loads: Load[];
@@ -15,7 +22,12 @@ type Props = {
 
   probeX?: number | null;
   setProbeX?: (x: number | null) => void;
+
+  xPositions?: number[];
+  deflection?: number[];
+  reactions?: number[] | ReactionForces;
 };
+
 
 export default function BeamDiagram({
   length,
@@ -24,6 +36,9 @@ export default function BeamDiagram({
   onLoadDrag,
   probeX,
   setProbeX,
+  xPositions,
+  deflection,
+  reactions,
 }: Props) {
   const width = 600;
   const height = 140;
@@ -57,18 +72,48 @@ const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
 };
 
 const handleMouseUp = () => {
-  setDraggingId(null);
-};// later dynamic
+    setDraggingId(null);
+  };
+
+  const maxDeflection = deflection?.length
+    ? Math.max(...deflection.map((v) => Math.abs(v)), 1)
+    : 1;
+
+  const deflectionScale = Math.min(30, 30 / maxDeflection);
+
+  const deformationPath =
+    xPositions && deflection && xPositions.length === deflection.length
+      ? xPositions
+          .map((x, i) => {
+            const scaledY = 70 - (deflection[i] ?? 0) * deflectionScale;
+            return `${i === 0 ? "M" : "L"} ${scaleX(x)} ${scaledY}`;
+          })
+          .join(" ")
+      : null;
+
+  const reactionObject: ReactionForces | undefined = Array.isArray(reactions)
+    ? {
+        left: reactions[0] ?? 0,
+        right: reactions[1] ?? 0,
+      }
+    : reactions;
+
+  const leftReaction = reactionObject?.left ?? 0;
+  const rightReaction = reactionObject?.right ?? 0;
+  const maxReaction = Math.max(Math.abs(leftReaction), Math.abs(rightReaction), 1);
+
+  const reactionHeight = (force: number) => 12 + (Math.abs(force) / maxReaction) * 24;
+  const reactionY = (force: number) => (force >= 0 ? 70 - reactionHeight(force) : 70 + reactionHeight(force));
+
   return (
     <div className="w-full bg-white rounded-lg p-4 shadow">
       <svg
-  width="100%"
-  viewBox={`0 0 ${width} ${height}`}
-  onMouseMove={handleMouseMove}
-  onMouseUp={handleMouseUp}
-  onMouseLeave={handleMouseUp}
->
-
+        width="100%"
+        viewBox={`0 0 ${width} ${height}`}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
 {/* Grid */}
 {Array.from({ length: 5 }).map((_, i) => {
   const y = 50 + i * 10;
@@ -90,8 +135,38 @@ const handleMouseUp = () => {
           y1={70}
           x2={width - margin}
           y2={70}
-          stroke="black"
+          stroke="#d1d5db"
           strokeWidth={4}
+        />
+
+        {deformationPath && (
+          <path
+            d={deformationPath}
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth={2}
+            opacity={0.95}
+          />
+        )}
+
+        {deformationPath && (
+          <path
+            d={deformationPath}
+            fill="none"
+            stroke="#2563eb"
+            strokeWidth={1}
+            strokeDasharray="6 4"
+            opacity={0.6}
+          />
+        )}
+
+        <line
+          x1={margin}
+          y1={70}
+          x2={width - margin}
+          y2={70}
+          stroke="black"
+          strokeWidth={2}
         />
 {/* ================= AXIS ================= */}
 <line
@@ -181,11 +256,11 @@ const handleMouseUp = () => {
                   strokeWidth={2}
                 />
                 <polygon
-  points={`${x},70 ${x - 5},60 ${x + 5},60`}
-  fill="red"
-  style={{ cursor: "grab" }}
-  onMouseDown={() => setDraggingId(load.id + ":point")}
-/>
+                  points={`${x},70 ${x - 5},60 ${x + 5},60`}
+                  fill="red"
+                  style={{ cursor: "grab" }}
+                  onMouseDown={() => setDraggingId(load.id)}
+                />
 
                 <text x={x + 5} y={70 - h - 5} fontSize="10" fill="red">
                   {load.value}{unitLabel}
@@ -249,14 +324,59 @@ const handleMouseUp = () => {
 
         {/* ================= SUPPORT LABELS ================= */}
         <text x={margin - 15} y={130} fontSize="10">
-  {support === "cantilever" ? "Fixed" : "Support"}
-</text>
+          {support === "cantilever" ? "Fixed" : "Support"}
+        </text>
 
         {support !== "cantilever" && (
-  <text x={width - margin - 20} y={130} fontSize="10">
-    Support
-  </text>
-)}
+          <text x={width - margin - 20} y={130} fontSize="10">
+            Support
+          </text>
+        )}
+
+        {/* ================= REACTIONS ================= */}
+        <line
+          x1={margin}
+          y1={70}
+          x2={margin}
+          y2={reactionY(leftReaction)}
+          stroke="#047857"
+          strokeWidth={2}
+          markerEnd="url(#arrowhead)"
+        />
+        <text x={margin - 18} y={reactionY(leftReaction) - 6} fontSize="10" fill="#047857">
+          {Math.abs(leftReaction).toFixed(0)} N
+        </text>
+
+        {support !== "cantilever" && (
+          <>
+            <line
+              x1={width - margin}
+              y1={70}
+              x2={width - margin}
+              y2={reactionY(rightReaction)}
+              stroke="#047857"
+              strokeWidth={2}
+              markerEnd="url(#arrowhead)"
+            />
+            <text x={width - margin + 4} y={reactionY(rightReaction) - 6} fontSize="10" fill="#047857">
+              {Math.abs(rightReaction).toFixed(0)} N
+            </text>
+          </>
+        )}
+
+        <defs>
+          <marker
+            id="arrowhead"
+            viewBox="0 0 10 10"
+            refX="5"
+            refY="5"
+            markerWidth="6"
+            markerHeight="6"
+            orient="auto"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#047857" />
+          </marker>
+        </defs>
       </svg>
     </div>
   );
