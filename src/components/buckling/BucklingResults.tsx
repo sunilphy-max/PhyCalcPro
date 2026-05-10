@@ -15,8 +15,8 @@ export default function BucklingResults({ result, projectName }: Props) {
 
   if (!result) {
     return (
-      <div className="flex items-center justify-center h-80 text-slate-400">
-        Run a calculation to see results
+      <div className="flex items-center justify-center h-80 text-gray-500">
+        <p className="text-gray-500">Run calculation to see results.</p>
       </div>
     );
   }
@@ -30,7 +30,7 @@ export default function BucklingResults({ result, projectName }: Props) {
       const html2canvas = (await import("html2canvas")).default;
 
       const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: "#0f172a",
+        backgroundColor: "#ffffff",
         scale: 2,
       });
 
@@ -68,19 +68,21 @@ export default function BucklingResults({ result, projectName }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-white">Results: {projectName}</h2>
-        <button
-          onClick={handleExportPDF}
-          disabled={exporting}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50"
-        >
-          {exporting ? "Exporting..." : "Export PDF"}
-        </button>
+    <div className="bg-white rounded-xl p-4 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Buckling Results</h2>
+        <p className="text-sm text-gray-500">Export a detailed report of the current analysis.</p>
       </div>
 
-      <div ref={reportRef} className="bg-slate-900 rounded-lg p-6 space-y-4">
+      <button
+        onClick={handleExportPDF}
+        disabled={exporting}
+        className="w-full mb-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50"
+      >
+        {exporting ? "Exporting..." : "Export PDF"}
+      </button>
+
+      <div ref={reportRef}>
         <BucklingDashboard result={result} />
       </div>
     </div>
