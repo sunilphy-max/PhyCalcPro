@@ -1,52 +1,75 @@
-﻿import { FEMModel } from "./femTypes";
+import { FEMModel } from "./femTypes";
 import { Load } from "./types";
 
 export function createLoadVector(
   model: FEMModel,
   loads: Load[]
 ) {
-  const F = Array(model.nodes.length * 2).fill(0);
-  const maxX = model.nodes[model.nodes.length - 1]?.x ?? 1;
+
+  const dof =
+    model.nodes.length * 2;
+
+  const F =
+    Array(dof).fill(0);
 
   for (const load of loads) {
+
+    // --------------------------------
+    // POINT LOAD
+    // --------------------------------
+
     if (load.type === "point") {
-      const nodeIndex = Math.round(
-        (load.position / maxX) * (model.nodes.length - 1)
-      );
-      const index = Math.min(
-        Math.max(nodeIndex, 0),
-        model.nodes.length - 1
-      );
-      F[index * 2] -= load.value;
-      continue;
+
+      let nearest = 0;
+      let best = Infinity;
+
+      for (const node of model.nodes) {
+
+        const dist =
+          Math.abs(node.x - load.position);
+
+        if (dist < best) {
+          best = dist;
+          nearest = node.id;
+        }
+      }
+
+      // vertical DOF
+      F[nearest * 2] -= load.value;
     }
 
-    const start = Math.max(0, load.start);
-    const end = Math.min(load.end, maxX);
-    const length = Math.max(0, end - start);
+    // --------------------------------
+    // UDL
+    // --------------------------------
 
-    if (length === 0) continue;
+    if (load.type === "udl") {
 
-    const total = load.value * length;
-    const activeNodes = model.nodes.filter(
-      (node) => node.x >= start && node.x <= end
-    );
+      for (const element of model.elements) {
 
-    if (activeNodes.length === 0) {
-      const nodeIndex = Math.round(
-        ((start + end) / 2 / maxX) * (model.nodes.length - 1)
-      );
-      const index = Math.min(
-        Math.max(nodeIndex, 0),
-        model.nodes.length - 1
-      );
-      F[index * 2] -= total;
-      continue;
-    }
+        const n1 =
+          model.nodes[element.startNode];
 
-    const forcePerNode = total / activeNodes.length;
-    for (const node of activeNodes) {
-      F[node.id * 2] -= forcePerNode;
+        const n2 =
+          model.nodes[element.endNode];
+
+        const overlapStart =
+          Math.max(load.start, n1.x);
+
+        const overlapEnd =
+          Math.min(load.end, n2.x);
+
+        const overlap =
+          overlapEnd - overlapStart;
+
+        if (overlap > 0) {
+
+          const total =
+            load.value * overlap;
+
+          F[element.startNode * 2] -= total / 2;
+          F[element.endNode * 2] -= total / 2;
+        }
+      }
     }
   }
 

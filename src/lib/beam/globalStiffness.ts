@@ -1,4 +1,4 @@
-﻿import { FEMModel } from "./femTypes";
+import { FEMModel } from "./femTypes";
 import { beamElementStiffness } from "./stiffness";
 
 export function assembleGlobalStiffness(
@@ -21,12 +21,14 @@ export function assembleGlobalStiffness(
     const map = [
       element.startNode * 2,
       element.startNode * 2 + 1,
+
       element.endNode * 2,
       element.endNode * 2 + 1,
     ];
 
     for (let i = 0; i < 4; i++) {
       for (let j = 0; j < 4; j++) {
+
         K[map[i]][map[j]] += ke[i][j];
       }
     }
