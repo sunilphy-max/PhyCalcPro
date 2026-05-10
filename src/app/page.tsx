@@ -70,7 +70,7 @@ export default function HomePage() {
           <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                MITCALC
+                PHYCALCPRO
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto">
@@ -157,13 +157,13 @@ export default function HomePage() {
               <div className="bg-gradient-to-r from-blue-400 to-purple-400 p-2 rounded-lg">
                 <Calculator className="h-6 w-6 text-white" />
               </div>
-              <span className="ml-3 text-xl font-bold text-white">MITCALC</span>
+              <span className="ml-3 text-xl font-bold text-white">PHYCALCPRO</span>
             </div>
             <p className="text-slate-400 text-sm">
               Professional Engineering Calculation Tools • Built for Mechanical Engineers
             </p>
             <p className="text-slate-500 text-xs mt-2">
-              © 2026 MITCALC. All rights reserved.
+              © 2026 PHYCALCPRO. All rights reserved.
             </p>
           </div>
         </div>

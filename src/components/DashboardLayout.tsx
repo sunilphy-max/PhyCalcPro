@@ -42,7 +42,7 @@ export default function DashboardLayout({
             <div className="bg-gradient-to-r from-blue-400 to-purple-400 p-2 rounded-lg">
               <Calculator className="h-6 w-6 text-white" />
             </div>
-            <span className="ml-3 text-xl font-bold text-white">MITCALC</span>
+            <span className="ml-3 text-xl font-bold text-white">PHYCALCPRO</span>
           </div>
 
           {/* Navigation */}
