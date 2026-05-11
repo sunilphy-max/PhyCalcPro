@@ -1,10 +1,10 @@
 /**
  * Area Properties Engine
- * High-level wrapper for area properties solver with validation
+ * High-level wrapper for FEA-based area properties solver with validation
  */
 
 import type { AreaPropertiesConfig, AreaPropertiesResult } from "./types";
-import { solveAreaProperties } from "./solver";
+import { solveAreaPropertiesFEM } from "./femSolver";
 
 /**
  * Solve area properties with validation
@@ -85,6 +85,6 @@ export function solveAreaPropertiesEngine(
       throw new Error(`Unsupported shape type: ${shape}`);
   }
 
-  // Solve
-  return solveAreaProperties(config);
+  // Solve using FEA
+  return solveAreaPropertiesFEM(config);
 }

@@ -1,9 +1,9 @@
 /**
  * Screw Design Engine
- * Validation and calculation wrapper for screw analysis
+ * Validation and FEA-based calculation wrapper for screw analysis
  */
 
-import { solveScrew } from "./solver";
+import { solveScrewFEM } from "./femSolver";
 import { validateScrewConfig } from "./validators";
 import type { ScrewConfig, ScrewResult } from "./types";
 
@@ -15,8 +15,8 @@ export function solveScrewEngine(config: ScrewConfig): ScrewResult {
   }
 
   try {
-    // Solve the screw analysis
-    const result = solveScrew(config);
+    // Solve the screw analysis using FEA
+    const result = solveScrewFEM(config);
 
     // Additional validation on results
     if (result.efficiency < 0 || result.efficiency > 100) {

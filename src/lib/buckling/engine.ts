@@ -1,13 +1,13 @@
 /**
  * Buckling Engine
- * High-level wrapper for buckling solver with validation
+ * High-level wrapper for FEA-based buckling solver with validation
  */
 
 import type { BucklingConfig, BucklingResult } from "./types";
-import { solveBuckling } from "./solver";
+import { solveBucklingFEM } from "./femSolver";
 
 /**
- * Solve buckling with validation and error handling
+ * Solve buckling with validation and FEA-based analysis
  */
 export function solveBucklingEngine(
   config: BucklingConfig
@@ -29,6 +29,6 @@ export function solveBucklingEngine(
     throw new Error("Applied load must be non-negative");
   }
 
-  // Solve
-  return solveBuckling(config);
+  // Solve using FEA
+  return solveBucklingFEM(config);
 }

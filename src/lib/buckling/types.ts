@@ -1,6 +1,6 @@
 /**
  * Buckling Module Types
- * Column buckling analysis using Euler formulas
+ * Column buckling analysis using FEA-based eigenvalue analysis
  */
 
 export type EndCondition = "pinned" | "fixed" | "cantilever" | "guided";
@@ -12,13 +12,15 @@ export type BucklingConfig = {
   A: number; // Cross-sectional area (m^2)
   P: number; // Applied axial load (N)
   endCondition: EndCondition; // Boundary conditions
+  meshSegments?: number; // FEA mesh segments
 };
 
 export type BucklingResult = {
-  // Critical buckling load (N)
+  // Critical buckling load (FEA-based)
   Pcr: number;
+  criticalLoad: number;
 
-  // Euler buckling formula components
+  // Effective length parameters
   k: number; // Effective length factor
   Le: number; // Effective length (m)
 
@@ -31,11 +33,19 @@ export type BucklingResult = {
   slenderness: number; // Le / r
   radius: number; // Radius of gyration (m)
 
-  // Mode shape (for visualization)
+  // Mode shapes (FEA-based)
   x: number[];
-  deflection: number[];
+  deflection: number[]; // Primary (first) mode
+  mode1: number[]; // First buckling mode
+  mode2: number[]; // Second buckling mode
+  mode3: number[]; // Third buckling mode
+  eigenvalues: number[]; // Load factors from eigenvalue analysis
 
-  // Summary
+  // Safety assessment
   isSafe: boolean;
   bucklingMode: "elastic" | "inelastic" | "critical";
+  designStatus: "safe" | "warning" | "critical";
+
+  // Analysis metadata
+  analysisType: "FEA";
 };

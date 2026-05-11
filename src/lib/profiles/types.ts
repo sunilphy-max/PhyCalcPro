@@ -81,18 +81,18 @@ export type AreaPropertiesConfig = {
 };
 
 export type AreaPropertiesResult = {
-  // Basic properties
+  // Basic properties (FEA-computed via numerical integration)
   area: number;
   centroid: { x: number; y: number };
 
-  // Moments of inertia
-  ixx: number; // Second moment about x-axis
-  iyy: number; // Second moment about y-axis
+  // Moments of inertia (about global axes)
+  ixx: number; // Second moment about x-axis (central)
+  iyy: number; // Second moment about y-axis (central)
   ixy: number; // Product moment of area
 
   // Principal moments
-  i1: number; // Principal moment 1
-  i2: number; // Principal moment 2
+  i1: number; // Maximum principal moment
+  i2: number; // Minimum principal moment
   theta: number; // Principal axis angle (degrees)
 
   // Section moduli
@@ -100,8 +100,11 @@ export type AreaPropertiesResult = {
   sy: number; // Section modulus about y-axis
 
   // Polar moment
-  j: number; // Polar moment of inertia
+  j: number; // Polar moment of inertia (J = Ixx + Iyy)
 
   // Shape-specific data
   shapeData: any;
+
+  // Analysis metadata
+  analysisType?: "FEA";
 };
