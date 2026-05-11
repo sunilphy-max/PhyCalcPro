@@ -125,7 +125,7 @@ export default function Page() {
           />
         }
         right={
-          <ScrewsResults result={result} projectName={projectName} />
+          <ScrewsResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
     </DashboardLayout>

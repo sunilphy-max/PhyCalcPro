@@ -31,33 +31,47 @@ export type ShaftConfig = {
 };
 
 export type ShaftResult = {
-  // Geometry properties
-  diameter: number;
-  radius: number;
-  polarMoment: number; // J (m^4)
-  secondMoment: number; // I (m^4)
-
   // Position data
   x: number[];
 
-  // Stress components
+  // Load distributions
+  torqueDistribution: number[];
+  bendingMomentDistribution: number[];
+
+  // Stress components (FEA-based)
   shearStress: number[]; // Torsional shear (Pa)
   bendingStress: number[]; // Bending stress (Pa)
-  combinedStress: number[]; // Von Mises equivalent (Pa)
+  vonMisesStress: number[]; // Combined Von Mises stress (Pa)
 
   // Deflection/rotation
   deflection: number[]; // Bending deflection (m)
   rotation: number[]; // Torsional rotation (rad)
 
   // Summary metrics
+  maxStress: number; // Max Von Mises stress (Pa)
   maxShearStress: number;
   maxBendingStress: number;
-  maxCombinedStress: number;
   maxDeflection: number;
-  maxRotation: number;
+  maxTorque: number;
+  maxBendingMoment: number;
   safetyFactor: number;
+
+  // Design evaluation
+  designStatus: "safe" | "warning" | "critical";
   isSafe: boolean;
 
   // Critical locations
   criticalSection: number; // Position of max stress (m)
+
+  // Dynamic analysis
+  criticalSpeed: number; // First critical speed (RPM)
+
+  // Analysis metadata
+  analysisType: "FEA";
+
+  // Geometry (for display)
+  diameter?: number;
+  radius?: number;
+  polarMoment?: number;
+  secondMoment?: number;
 };

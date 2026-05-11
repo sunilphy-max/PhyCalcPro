@@ -263,19 +263,20 @@ const raw = solveBeamEngine(normalizedInputs);
             removeLoad={removeLoad}
             addPointLoad={addPointLoad}
             addUDL={addUDL}
-            calculate={calculate}
+            onCalculate={calculate}
             saveProject={saveProject}
             saving={saving}
           />
         }
         right={
           <BeamResults
-  result={result}
-  length={length}
-  support={support}
-  loads={loads}
-  onLoadDrag={handleLoadDrag}
-/>
+            key={result ? JSON.stringify(result) : 'empty'}
+            result={result}
+            length={length}
+            support={support}
+            loads={loads}
+            onLoadDrag={handleLoadDrag}
+          />
         }
       />
     </DashboardLayout>

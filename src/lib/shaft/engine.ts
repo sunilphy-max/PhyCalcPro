@@ -1,13 +1,13 @@
 /**
  * Shaft Engine
- * High-level wrapper for shaft solver with validation
+ * High-level wrapper for FEA-based shaft solver with validation
  */
 
 import type { ShaftConfig, ShaftResult } from "./types";
-import { solveShaft } from "./solver";
+import { solveShaftFEM } from "./femSolver";
 
 /**
- * Solve shaft design with validation
+ * Solve shaft design with FEA-based analysis
  */
 export function solveShaftEngine(config: ShaftConfig): ShaftResult {
   // Validate geometry
@@ -26,6 +26,6 @@ export function solveShaftEngine(config: ShaftConfig): ShaftResult {
     throw new Error("Shear modulus must be positive");
   }
 
-  // Solve
-  return solveShaft(config);
+  // Solve using FEA
+  return solveShaftFEM(config);
 }

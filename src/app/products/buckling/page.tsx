@@ -183,7 +183,7 @@ export default function Page() {
           />
         }
         right={
-          <BucklingResults result={result} projectName={projectName} />
+          <BucklingResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
     </DashboardLayout>

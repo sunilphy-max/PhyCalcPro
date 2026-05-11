@@ -36,7 +36,7 @@ type Props = {
   material: string;
   setMaterial: (v: string) => void;
 
-  calculate: () => void;
+  onCalculate: () => void;
   saveProject: () => void;
   saving: boolean;
 
@@ -256,7 +256,7 @@ export default function BeamInputs(props: Props) {
 
       {/* ================= ACTIONS ================= */}
       <button
-        onClick={props.calculate}
+        onClick={props.onCalculate}
         className="w-full bg-black text-white py-2 rounded"
       >
         Solve

@@ -47,7 +47,7 @@ export default function ShaftDashboard({ result }: Props) {
         <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
           <div className="text-xs text-gray-500 mb-1">Diameter</div>
           <div className="text-lg font-bold text-purple-600">
-            {(result.diameter * 1000).toFixed(1)} mm
+            {result.diameter ? (result.diameter * 1000).toFixed(1) : "—"} mm
           </div>
         </div>
 
@@ -62,9 +62,9 @@ export default function ShaftDashboard({ result }: Props) {
       {/* Stress Analysis */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-2">Max Combined Stress</div>
+          <div className="text-xs text-gray-500 mb-2">Max Von Mises Stress</div>
           <div className="text-2xl font-bold text-red-600">
-            {(result.maxCombinedStress / 1e6).toFixed(2)} MPa
+            {(result.maxStress / 1e6).toFixed(2)} MPa
           </div>
         </div>
 
@@ -110,7 +110,7 @@ export default function ShaftDashboard({ result }: Props) {
           <EngineeringPlot
             title="Combined Stress"
             x={result.x}
-            y={result.combinedStress}
+            y={result.vonMisesStress}
             yLabel="Stress (Pa)"
           />
         </div>
@@ -141,14 +141,14 @@ export default function ShaftDashboard({ result }: Props) {
         <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
           <div className="text-gray-500 mb-1">Polar Moment</div>
           <div className="font-semibold text-gray-900">
-            {(result.polarMoment * 1e12).toFixed(2)} mm⁴
+            {result.polarMoment ? (result.polarMoment * 1e12).toFixed(2) : "—"} mm⁴
           </div>
         </div>
 
         <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
           <div className="text-gray-500 mb-1">Second Moment</div>
           <div className="font-semibold text-gray-900">
-            {(result.secondMoment * 1e12).toFixed(2)} mm⁴
+            {result.secondMoment ? (result.secondMoment * 1e12).toFixed(2) : "—"} mm⁴
           </div>
         </div>
 
@@ -162,7 +162,7 @@ export default function ShaftDashboard({ result }: Props) {
         <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
           <div className="text-gray-500 mb-1">Max Rotation</div>
           <div className="font-semibold text-gray-900">
-            {(result.maxRotation * 180 / Math.PI).toFixed(3)}°
+            {((Math.max(...result.rotation) || 0) * 180 / Math.PI).toFixed(3)}°
           </div>
         </div>
       </div>

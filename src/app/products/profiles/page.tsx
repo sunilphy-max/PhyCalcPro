@@ -122,7 +122,7 @@ export default function Page() {
           />
         }
         right={
-          <ProfilesResults result={result} projectName={projectName} />
+          <ProfilesResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
     </DashboardLayout>

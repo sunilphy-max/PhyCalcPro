@@ -213,7 +213,7 @@ export default function Page() {
           />
         }
         right={
-          <ShaftResults result={result} projectName={projectName} />
+          <ShaftResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
     </DashboardLayout>
