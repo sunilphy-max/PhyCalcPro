@@ -1,5 +1,7 @@
 "use client";
 
+import SearchBar from "@/components/SearchBar";
+import { categories, featuredModules } from "@/data/modules";
 import Link from "next/link";
 import {
   Calculator,
@@ -13,88 +15,46 @@ import {
   Layers,
 } from "lucide-react";
 
-/**
- * 🧠 CATEGORY-BASED ENGINEERING STRUCTURE
- * (Foundation for MITCalc-style platform architecture)
- */
-const categories = [
-  {
-    id: "structural",
-    title: "Structural Engineering",
-    description: "Beams, buckling, frames, and structural mechanics",
-    icon: Box,
-    color: "from-blue-500 to-blue-600",
-    modules: [
-      {
-        id: "beams",
-        title: "Beam Analysis",
-        description: "Deflection, bending moment, shear force",
-        href: "/products/structural/beams",
-        icon: BarChart3,
-      },
-      {
-        id: "buckling",
-        title: "Buckling Analysis",
-        description: "Euler buckling and stability analysis",
-        href: "/products/structural/buckling",
-        icon: Zap,
-      },
-    ],
-  },
-
-  {
-    id: "machine",
-    title: "Machine Design",
-    description: "Shafts, screws, gears, and rotating systems",
-    icon: Cog,
-    color: "from-green-500 to-green-600",
-    modules: [
-      {
-        id: "shafts",
-        title: "Shaft Design",
-        description: "Stress, fatigue, torsion analysis",
-        href: "/products/machine/shafts",
-        icon: RotateCcw,
-      },
-      {
-        id: "screws",
-        title: "Screw Design",
-        description: "Power screws and efficiency analysis",
-        href: "/products/machine/screws",
-        icon: Wrench,
-      },
-    ],
-  },
-
-  {
-    id: "materials",
-    title: "Materials & Properties",
-    description: "Material database and section properties",
-    icon: Layers,
-    color: "from-orange-500 to-orange-600",
-    modules: [
-      {
-        id: "materials",
-        title: "Materials Database",
-        description: "Steel, aluminum, and engineering materials",
-        href: "/products/materials",
-        icon: Settings,
-      },
-      {
-        id: "profiles",
-        title: "Section Properties",
-        description: "Inertia, centroid, section modulus",
-        href: "/products/materials/profiles",
-        icon: Calculator,
-      },
-    ],
-  },
-];
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+{/* ================= FEATURED MODULES ================= */}
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
 
+  <div className="text-center mb-8">
+    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+      Quick Access Tools
+    </h2>
+    <p className="text-slate-400">
+      Most frequently used engineering calculations
+    </p>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+    {featuredModules.map((module) => (
+      <Link key={module.id} href={module.route}>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all duration-300 hover:scale-[1.02]">
+
+          <h3 className="text-white font-semibold mb-2">
+            {module.title}
+          </h3>
+
+          <p className="text-slate-400 text-sm mb-3">
+            {module.description}
+          </p>
+
+          <div className="text-blue-400 text-sm font-medium">
+            Open →
+          </div>
+
+        </div>
+      </Link>
+    ))}
+
+  </div>
+</div>
       {/* ================= HERO SECTION ================= */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
@@ -113,6 +73,9 @@ export default function HomePage() {
             </p>
 
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              <div className="flex justify-center mb-10">
+  <SearchBar />
+</div>
               Structural • Machine Design • Fasteners • Materials • Dynamics
             </p>
 
@@ -128,7 +91,7 @@ export default function HomePage() {
             Engineering Categories
           </h2>
           <p className="text-slate-400 text-lg">
-            Structured engineering tool system (MITCalc-style architecture)
+            Structured engineering tool system
           </p>
         </div>
 
@@ -163,7 +126,7 @@ export default function HomePage() {
                     const ModuleIcon = module.icon;
 
                     return (
-                      <Link key={module.id} href={module.href}>
+                      <Link key={module.id} href={module.route}>
                         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all duration-300 hover:scale-[1.02]">
 
                           <div className="flex items-center gap-3 mb-3">

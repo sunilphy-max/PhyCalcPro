@@ -5,4 +5,4 @@ export default function Page() {
       <p>Coming soon</p>
     </div>
   );
-}
+} 
