@@ -1,3 +1,17 @@
+import { ComponentType } from "react";
+import {
+  Box,
+  Cog,
+  Layers,
+  Wrench,
+  Zap,
+  Calculator,
+  Settings,
+} from "lucide-react";
+
+/**
+ * 🧠 ENGINEERING MODULE
+ */
 export type EngineeringModule = {
   id: string;
   title: string;
@@ -8,23 +22,35 @@ export type EngineeringModule = {
   featured?: boolean;
 };
 
+/**
+ * 🧠 ENGINEERING CATEGORY
+ */
 export type EngineeringCategory = {
   id: string;
   title: string;
   description: string;
+
+  // ✅ FIX: icon added properly (this was missing)
+  icon: ComponentType<any>;
+
+  color: string;
+
   modules: EngineeringModule[];
 };
 
 /**
- * 🧠 FULL ENGINEERING TAXONOMY (MITCalc-STYLE)
+ * 🧠 FULL ENGINEERING TAXONOMY
+ * (Clean architecture for scalable platform)
  */
-
 export const categories: EngineeringCategory[] = [
   // ================= STRUCTURAL =================
   {
     id: "structural",
     title: "Structural Engineering",
-    description: "Beams, frames, columns, plates, and structural analysis",
+    description:
+      "Beams, frames, columns, plates, and structural analysis",
+    icon: Box,
+    color: "from-blue-500 to-blue-600",
     modules: [
       {
         id: "beams",
@@ -69,7 +95,10 @@ export const categories: EngineeringCategory[] = [
   {
     id: "machine",
     title: "Machine Design",
-    description: "Shafts, gears, bearings, and rotating systems",
+    description:
+      "Shafts, gears, bearings, and rotating systems",
+    icon: Cog,
+    color: "from-green-500 to-green-600",
     modules: [
       {
         id: "shafts",
@@ -115,6 +144,8 @@ export const categories: EngineeringCategory[] = [
     id: "fasteners",
     title: "Fasteners & Connections",
     description: "Bolts, welds, rivets, threaded joints",
+    icon: Wrench,
+    color: "from-red-500 to-red-600",
     modules: [
       {
         id: "bolts",
@@ -146,6 +177,8 @@ export const categories: EngineeringCategory[] = [
     id: "materials",
     title: "Materials & Sections",
     description: "Material properties and cross-sections",
+    icon: Layers,
+    color: "from-orange-500 to-orange-600",
     modules: [
       {
         id: "material-db",
@@ -164,11 +197,13 @@ export const categories: EngineeringCategory[] = [
     ],
   },
 
-  // ================= PRESSURE SYSTEMS =================
+  // ================= PRESSURE =================
   {
     id: "pressure",
     title: "Pressure Systems",
     description: "Pipes, vessels, and pressure components",
+    icon: Settings,
+    color: "from-purple-500 to-purple-600",
     modules: [
       {
         id: "pipes",
@@ -192,6 +227,8 @@ export const categories: EngineeringCategory[] = [
     id: "dynamics",
     title: "Dynamics & Vibrations",
     description: "Motion, vibration, and dynamic systems",
+    icon: Zap,
+    color: "from-cyan-500 to-cyan-600",
     modules: [
       {
         id: "vibrations",
@@ -209,40 +246,19 @@ export const categories: EngineeringCategory[] = [
       },
     ],
   },
-
-  // ================= MANUFACTURING =================
-  {
-    id: "manufacturing",
-    title: "Manufacturing",
-    description: "Tolerances, fits, and GD&T tools",
-    modules: [
-      {
-        id: "tolerance",
-        title: "Tolerance Stackup",
-        description: "Dimensional variation analysis",
-        route: "/products/manufacturing/tolerance",
-        category: "manufacturing",
-      },
-      {
-        id: "fits",
-        title: "Fits & Clearances",
-        description: "ISO fit system calculations",
-        route: "/products/manufacturing/fits",
-        category: "manufacturing",
-      },
-    ],
-  },
 ];
 
 /**
- * 🔥 FLAT LIST (used by sidebar/search)
+ * 🔥 FLAT LIST (for search + sidebar)
  */
 export const allModules = categories.flatMap((c) => c.modules);
 
 /**
  * ⭐ FEATURED MODULES
  */
-export const featuredModules = allModules.filter((m) => m.featured);
+export const featuredModules = allModules.filter(
+  (m) => m.featured
+);
 
 /**
  * 🧭 HELPERS
