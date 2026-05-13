@@ -72,12 +72,15 @@ export default function HomePage() {
               Engineering Calculation & Design Platform
             </p>
 
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-              <div className="flex justify-center mb-10">
-  <SearchBar />
+            <div className="text-lg text-slate-400 max-w-2xl mx-auto">
+  <p>
+    Structural • Machine Design • Fasteners • Materials • Dynamics
+  </p>
+
+  <div className="mt-6 flex justify-center">
+    <SearchBar />
+  </div>
 </div>
-              Structural • Machine Design • Fasteners • Materials • Dynamics
-            </p>
 
           </div>
         </div>
