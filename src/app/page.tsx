@@ -1,6 +1,7 @@
 "use client";
 
 import SearchBar from "@/components/SearchBar";
+
 import { categories, featuredModules } from "@/data/modules";
 import Link from "next/link";
 import {
@@ -126,7 +127,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                   {category.modules.map((module) => {
-                    const ModuleIcon = module.icon;
+                    const ModuleIcon = module.icon ?? Calculator;
 
                     return (
                       <Link key={module.id} href={module.route}>
