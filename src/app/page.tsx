@@ -21,42 +21,6 @@ import {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-{/* ================= FEATURED MODULES ================= */}
-<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-
-  <div className="text-center mb-8">
-    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-      Quick Access Tools
-    </h2>
-    <p className="text-slate-400">
-      Most frequently used engineering calculations
-    </p>
-  </div>
-
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-    {featuredModules.map((module) => (
-      <Link key={module.id} href={module.route}>
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-5 hover:bg-slate-800/70 transition-all duration-300 hover:scale-[1.02]">
-
-          <h3 className="text-white font-semibold mb-2">
-            {module.title}
-          </h3>
-
-          <p className="text-slate-400 text-sm mb-3">
-            {module.description}
-          </p>
-
-          <div className="text-blue-400 text-sm font-medium">
-            Open →
-          </div>
-
-        </div>
-      </Link>
-    ))}
-
-  </div>
-</div>
       {/* ================= HERO SECTION ================= */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20" />
