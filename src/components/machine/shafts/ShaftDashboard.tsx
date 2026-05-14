@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import type { ShaftResult } from "@/lib/shaft/types";
+import type { ShaftResult } from "@/lib/machine/shafts/types";
 
 type Props = {
   result: ShaftResult;

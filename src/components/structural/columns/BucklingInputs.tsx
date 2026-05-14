@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { EndCondition } from "@/lib/buckling/types";
+import type { EndCondition } from "@/lib/structural/columns/types";
 
 type Props = {
   projectName: string;

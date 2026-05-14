@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Load, SupportType } from "@/lib/beam/types";
+import { Load, SupportType } from "@/lib/structural/beams/types";
 
 type ReactionForces = {
   left?: number;

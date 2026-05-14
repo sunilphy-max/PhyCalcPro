@@ -1,6 +1,6 @@
 "use client";
 
-import { Load } from "@/lib/beam/types";
+import { Load } from "@/lib/structural/beams/types";
 import { materials } from "@/data/materials";
 
 type Props = {

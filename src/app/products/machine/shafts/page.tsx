@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import ShaftInputs from "@/components/shaft/ShaftInputs";
-import ShaftResults from "@/components/shaft/ShaftResults";
+import ShaftInputs from "@/components/machine/shafts/ShaftInputs";
+import ShaftResults from "@/components/machine/shafts/ShaftResults";
 import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
-import { solveShaftEngine } from "@/lib/shaft/engine";
-import type { ShaftConfig, ShaftResult, ShaftMaterial, LoadCase } from "@/lib/shaft/types";
+import { solveShaftEngine } from "@/lib/machine/shafts/engine";
+import type { ShaftConfig, ShaftResult, ShaftMaterial, LoadCase } from "@/lib/machine/shafts/types";
 
 // Standard materials
 const MATERIALS: Record<string, ShaftMaterial> = {

@@ -1,21 +1,21 @@
 "use client";
 
 import { useState, useRef } from "react";
-import ShaftDashboard from "./ShaftDashboard";
-import type { ShaftResult } from "@/lib/shaft/types";
+import BucklingDashboard from "./BucklingDashboard";
+import type { BucklingResult } from "@/lib/structural/columns/types";
 
 type Props = {
-  result: ShaftResult | null;
+  result: BucklingResult | null;
   projectName: string;
 };
 
-export default function ShaftResults({ result, projectName }: Props) {
+export default function BucklingResults({ result, projectName }: Props) {
   const [exporting, setExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
 
   if (!result) {
     return (
-      <div className="bg-white rounded-xl p-4 shadow-sm">
+      <div className="flex items-center justify-center h-80 text-gray-500">
         <p className="text-gray-500">Run calculation to see results.</p>
       </div>
     );
@@ -59,7 +59,7 @@ export default function ShaftResults({ result, projectName }: Props) {
         heightLeft -= pageHeight - 20;
       }
 
-      pdf.save(`${projectName}-shaft-analysis.pdf`);
+      pdf.save(`${projectName}-buckling-analysis.pdf`);
     } catch (error) {
       console.error("PDF export error:", error);
     } finally {
@@ -68,23 +68,22 @@ export default function ShaftResults({ result, projectName }: Props) {
   };
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Shaft Results</h2>
-          <p className="text-sm text-gray-500">Export a detailed report of the current analysis.</p>
-        </div>
-        <button
-          className="rounded bg-slate-900 px-4 py-2 text-white hover:bg-slate-700"
-          onClick={handleExportPDF}
-          disabled={exporting}
-        >
-          {exporting ? "Exporting..." : "Export PDF"}
-        </button>
+    <div className="bg-white rounded-xl p-4 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Buckling Results</h2>
+        <p className="text-sm text-gray-500">Export a detailed report of the current analysis.</p>
       </div>
 
-      <div ref={reportRef} id="shaft-report" className="space-y-4">
-        <ShaftDashboard result={result} />
+      <button
+        onClick={handleExportPDF}
+        disabled={exporting}
+        className="w-full mb-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-semibold transition disabled:opacity-50"
+      >
+        {exporting ? "Exporting..." : "Export PDF"}
+      </button>
+
+      <div ref={reportRef}>
+        <BucklingDashboard result={result} />
       </div>
     </div>
   );

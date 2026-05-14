@@ -2,8 +2,8 @@
 
 import { useRef, useState } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import type { BeamResult, Load, SupportType } from "@/lib/beam/types";
-import BeamDashboard from "@/components/beam/BeamDashboard";
+import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
+import BeamDashboard from "./BeamDashboard";
 
 type Props = {
   result: BeamResult | null;

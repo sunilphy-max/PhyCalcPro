@@ -1,18 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { solveBeam } from "@/lib/beam/solver";
+import { solveBeam } from "@/lib/structural/beams/solver";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
-import type { Load, BeamConfig } from "@/lib/beam/types";
+import type { Load, BeamConfig } from "@/lib/structural/beams/types";
 
-import BeamInputs from "@/components/beam/BeamInputs";
-import BeamResults from "@/components/beam/BeamResults";
-import SavedProjects from "@/components/beam/SavedProjects";
+import BeamInputs from "@/components/structural/beams/BeamInputs";
+import BeamResults from "@/components/structural/beams/BeamResults";
+import SavedProjects from "@/components/structural/beams/SavedProjects";
 import { materials } from "@/data/materials";
-import { solveBeamEngine } from "@/lib/beam/engine";
+import { solveBeamEngine } from "@/lib/structural/beams/engine";
 
 export default function Page() {
   // =========================

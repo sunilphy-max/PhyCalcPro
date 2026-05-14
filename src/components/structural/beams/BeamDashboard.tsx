@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import type { BeamResult, Load, SupportType } from "@/lib/beam/types";
+import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
 
 type Props = {
   result: BeamResult;

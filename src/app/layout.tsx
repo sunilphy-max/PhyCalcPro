@@ -1,8 +1,9 @@
 import "../styles/globals.css";
+import Navbar from "@/components/Navbar";
 
 export const metadata = {
   title: "PhyCalcPro",
-  description: "Engineering Calculation Suite",
+  description: "Engineering Calculation & Design Platform",
 };
 
 export default function RootLayout({
@@ -14,15 +15,7 @@ export default function RootLayout({
     <html lang="en">
       <body style={body}>
         {/* HEADER BAR */}
-        <header style={header}>
-          <div style={logo}>PhyCalcPro</div>
-
-          <nav style={nav}>
-            <a href="/" style={link}>Home</a>
-            <a href="/products/structural/beams" style={link}>Beams</a>
-          </nav>
-        </header>
-
+        <Navbar />
         {/* PAGE CONTENT */}
         <main style={main}>{children}</main>
       </body>

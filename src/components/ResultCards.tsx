@@ -1,6 +1,6 @@
 "use client";
 
-import { BeamResult } from "@/lib/beam/types";
+import { BeamResult } from "@/lib/structural/beams/types";
 
 type Props = {
   result: BeamResult;

@@ -26,9 +26,9 @@ export default function DashboardLayout({
     { href: "/", label: "Home", icon: Home },
     { href: "/products/structural/beams", label: "Beam Analysis", icon: BarChart3 },
     { href: "/products/machine/shafts", label: "Shaft Design", icon: RotateCcw },
-    { href: "/products/structural/buckling", label: "Buckling Analysis", icon: Zap },
+    { href: "/products/structural/columns", label: "Column Buckling", icon: Zap },
     { href: "/products/profiles", label: "Area Properties", icon: Calculator },
-    { href: "/products/screws", label: "Screw Design", icon: Wrench },
+    { href: "/products/fasteners/bolts", label: "Bolt Design", icon: Wrench },
     { href: "/products/materials", label: "Materials", icon: Settings, disabled: true },
   ];
 

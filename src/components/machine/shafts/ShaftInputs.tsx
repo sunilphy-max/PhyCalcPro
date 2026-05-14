@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { LoadCase } from "@/lib/shaft/types";
+import type { LoadCase } from "@/lib/machine/shafts/types";
 
 type Props = {
   projectName: string;

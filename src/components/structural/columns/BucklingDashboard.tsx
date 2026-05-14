@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import type { BucklingResult } from "@/lib/buckling/types";
+import type { BucklingResult } from "@/lib/structural/columns/types";
 
 type Props = {
   result: BucklingResult;

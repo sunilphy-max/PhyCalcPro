@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ScrewConfig, ScrewType, ThreadType } from "@/lib/screws/types";
+import type { ScrewConfig, ScrewType, ThreadType } from "@/lib/fasteners/bolts/types";
 
 type Props = {
   projectName: string;

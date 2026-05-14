@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import ScrewsInputs from "@/components/screws/ScrewsInputs";
-import ScrewsResults from "@/components/screws/ScrewsResults";
+import ScrewsInputs from "@/components/fasteners/bolts/ScrewsInputs";
+import ScrewsResults from "@/components/fasteners/bolts/ScrewsResults";
 import { supabase } from "@/lib/supabase";
-import { solveScrewEngine } from "@/lib/screws/engine";
-import type { ScrewConfig, ScrewResult } from "@/lib/screws/types";
+import { solveScrewEngine } from "@/lib/fasteners/bolts/engine";
+import type { ScrewConfig, ScrewResult } from "@/lib/fasteners/bolts/types";
 
 export default function Page() {
   // =========================
@@ -29,7 +29,7 @@ export default function Page() {
   // UI STATE
   // =========================
   const [result, setResult] = useState<ScrewResult | null>(null);
-  const [projectName, setProjectName] = useState("Screw Design Project");
+  const [projectName, setProjectName] = useState("Bolt Design Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
 
@@ -86,9 +86,9 @@ export default function Page() {
   // UI
   // =========================
   return (
-    <DashboardLayout title="Screws Module">
+    <DashboardLayout title="Bolt Design Module">
       <CalculatorLayout
-        title="Screw Design Analysis"
+        title="Bolt Design Analysis"
         left={
           <div className="space-y-4">
             <div>

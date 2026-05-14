@@ -1,6 +1,6 @@
 "use client";
 
-import type { ScrewResult } from "@/lib/screws/types";
+import type { ScrewResult } from "@/lib/fasteners/bolts/types";
 
 type Props = {
   result: ScrewResult;

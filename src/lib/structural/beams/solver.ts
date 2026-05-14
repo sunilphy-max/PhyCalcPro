@@ -3,7 +3,7 @@ import { BeamConfig, BeamResult } from "./types";
 import { solveBeamFEM } from "./femSolver";
 import { postProcessFEM } from "./femPost";
 
-import { maxAbs } from "../shared/math";
+import { maxAbs } from "../../shared/math";
 
 export function solveBeam(
   config: BeamConfig
