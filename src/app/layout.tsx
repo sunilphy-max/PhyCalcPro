@@ -19,7 +19,7 @@ export default function RootLayout({
 
           <nav style={nav}>
             <a href="/" style={link}>Home</a>
-            <a href="/products/beams" style={link}>Beams</a>
+            <a href="/products/structural/beams" style={link}>Beams</a>
           </nav>
         </header>
 

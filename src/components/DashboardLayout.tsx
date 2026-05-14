@@ -24,7 +24,7 @@ export default function DashboardLayout({
 
   const navigationItems = [
     { href: "/", label: "Home", icon: Home },
-    { href: "/products/beams", label: "Beam Analysis", icon: BarChart3 },
+    { href: "/products/structural/beams", label: "Beam Analysis", icon: BarChart3 },
     { href: "/products/machine/shafts", label: "Shaft Design", icon: RotateCcw },
     { href: "/products/structural/buckling", label: "Buckling Analysis", icon: Zap },
     { href: "/products/profiles", label: "Area Properties", icon: Calculator },

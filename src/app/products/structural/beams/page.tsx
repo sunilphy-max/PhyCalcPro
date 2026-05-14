@@ -1,20 +1,284 @@
-import { getModuleByRoute } from "@/data/modules";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useState, useEffect } from "react";
+import { solveBeam } from "@/lib/beam/solver";
+import DashboardLayout from "@/components/DashboardLayout";
+import CalculatorLayout from "@/components/CalculatorLayout";
+import { supabase } from "@/lib/supabase";
+import { toBase, fromBase } from "@/lib/units/conversions";
+import type { Load, BeamConfig } from "@/lib/beam/types";
+
+import BeamInputs from "@/components/beam/BeamInputs";
+import BeamResults from "@/components/beam/BeamResults";
+import SavedProjects from "@/components/beam/SavedProjects";
+import { materials } from "@/data/materials";
+import { solveBeamEngine } from "@/lib/beam/engine";
 
 export default function Page() {
-  const route = "/products/structural/beams";
-  const module = getModuleByRoute(route);
+  // =========================
+  // INPUTS
+  // =========================
+  const [length, setLength] = useState(5);
+  const [force, setForce] = useState(1000);
+  const [udl, setUdl] = useState(200);
+  const [I, setI] = useState(1e-6);
+  const [c, setC] = useState(0.05);
 
-  if (!module) return notFound();
+  const [support, setSupport] = useState<
+    "simply_supported" | "cantilever" | "fixed_fixed"
+  >("simply_supported");
+  const [material, setMaterial] = useState("Steel");
+  // =========================
+  // UNITS
+  // =========================
+  const [lengthUnit, setLengthUnit] = useState("m");
+  const [forceUnit, setForceUnit] = useState("N");
+  const [udlUnit, setUdlUnit] = useState("N/m");
+  const [inertiaUnit, setInertiaUnit] = useState("m4");
+   
+  // =========================
+  // LOADS (STEP 6)
+  // =========================
+  const createId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+  const [loads, setLoads] = useState<Load[]>([
+    {
+  id: createId(),
+  type: "point",
+  value: 1000,
+  position: 2.5,
+},
+  ]);
+
+  const addPointLoad = () => {
+  setLoads([
+    ...loads,
+    {
+      id: createId(),
+      type: "point",
+      value: 500,
+      position: length / 2,
+    },
+  ]);
+};
+
+ const addUDL = () => {
+  setLoads([
+    ...loads,
+    {
+      id: createId(),
+      type: "udl",
+      value: 200,
+      start: 1,
+      end: 4,
+    },
+  ]);
+};
+const handleLoadDrag = (
+  id: string,
+  updates: Partial<Extract<Load, { type: "point" }>>
+) => {
+  setLoads((prevLoads) =>
+    prevLoads.map((load) => {
+      if (load.id !== id) return load;
+
+      if (load.type === "point") {
+        return {
+          ...load,
+          ...updates,
+        };
+      }
+
+      return load;
+    })
+  );
+};
+  const updateLoad = (index: number, newLoad: Load) => {
+    const updated = [...loads];
+    updated[index] = newLoad;
+    setLoads(updated);
+  };
+
+  const removeLoad = (index: number) => {
+    setLoads(loads.filter((_, i) => i !== index));
+  };
+
+  // =========================
+  // UI STATE
+  // =========================
+  const [result, setResult] = useState<any>(null);
+  const [projectName, setProjectName] = useState("Beam Project");
+  const [saving, setSaving] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<any[]>([]);
+
+  // =========================
+  // LOAD PROJECTS
+  // =========================
+  const loadProjects = async () => {
+    const { data } = await supabase
+      .from("beam_projects")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    setSavedProjects(data || []);
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  // =========================
+  // SOLVER
+  // =========================
+  const selectedMaterial =
+  materials.find((m) => m.name === material) || materials[0];
+  const calculate = () => {
+    const normalizedInputs: BeamConfig = {
+      length: toBase(length, "length", lengthUnit),
+      E: selectedMaterial.E,
+      I: toBase(I, "inertia", inertiaUnit),
+      c: toBase(c, "length", lengthUnit),
+      support,
+
+      loads: loads.map((l) => {
+        if (l.type === "point") {
+          return {
+            ...l,
+            value: toBase(l.value, "force", forceUnit),
+            position: toBase(l.position, "length", lengthUnit),
+          };
+        }
+
+        return {
+          ...l,
+          value: toBase(l.value, "forcePerLength", udlUnit),
+          start: toBase(l.start, "length", lengthUnit),
+          end: toBase(l.end, "length", lengthUnit),
+        };
+      }),
+    };
+
+    
+
+const raw = solveBeamEngine(normalizedInputs);
+
+    const converted = {
+      ...raw,
+      shear: raw.shear.map((v: number) =>
+        fromBase(v, "force", forceUnit)
+      ),
+      moment: raw.moment.map((v: number) =>
+        fromBase(v, "moment", forceUnit)
+      ),
+      deflection: raw.deflection.map((v: number) =>
+        fromBase(v, "length", lengthUnit)
+      ),
+      stress: raw.stress.map((v: number) =>
+        fromBase(v, "stress", forceUnit)
+      ),
+      maxStress: fromBase(raw.maxStress, "stress", forceUnit),
+      maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
+    };
+
+    setResult(converted);
+  };
+
+  // =========================
+  // SAVE
+  // =========================
+  const saveProject = async () => {
+    setSaving(true);
+
+    await supabase.from("beam_projects").insert([
+      {
+        name: projectName,
+        length,
+        force,
+        udl,
+        inertia: I,
+        c,
+      },
+    ]);
+
+    setSaving(false);
+    loadProjects();
+  };
+
+  // =========================
+  // LOAD
+  // =========================
+  const loadProjectIntoForm = (p: any) => {
+    setProjectName(p.name);
+    setLength(p.length);
+    setForce(p.force);
+    setUdl(p.udl);
+    setI(p.inertia);
+    setC(p.c);
+  };
+
+  // =========================
+  // UI
+  // =========================
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-3xl font-bold">{module.title}</h1>
-      <p className="text-slate-400 mt-2">{module.description}</p>
-
-      <div className="mt-6 bg-slate-800 p-6 rounded-xl border border-slate-700">
-        <p>Engineering workspace for undefined</p>
-      </div>
-    </div>
+    <DashboardLayout title="Beam Analysis Module">
+      <CalculatorLayout
+        title="Beam Analysis Module"
+        left={
+          <SavedProjects
+            savedProjects={savedProjects}
+            loadProjectIntoForm={loadProjectIntoForm}
+          />
+        }
+        center={
+          <BeamInputs
+            projectName={projectName}
+            setProjectName={setProjectName}
+            length={length}
+            setLength={setLength}
+            lengthUnit={lengthUnit}
+            setLengthUnit={setLengthUnit}
+            force={force}
+            setForce={setForce}
+            forceUnit={forceUnit}
+            setForceUnit={setForceUnit}
+            udl={udl}
+            setUdl={setUdl}
+            udlUnit={udlUnit}
+            setUdlUnit={setUdlUnit}
+            I={I}
+            setI={setI}
+            inertiaUnit={inertiaUnit}
+            setInertiaUnit={setInertiaUnit}
+            c={c}
+            setC={setC}
+            support={support}
+            setSupport={setSupport}
+            loads={loads}
+            material={material}
+            setMaterial={setMaterial}
+            updateLoad={updateLoad}
+            removeLoad={removeLoad}
+            addPointLoad={addPointLoad}
+            addUDL={addUDL}
+            onCalculate={calculate}
+            saveProject={saveProject}
+            saving={saving}
+          />
+        }
+        right={
+          <BeamResults
+            key={result ? JSON.stringify(result) : 'empty'}
+            result={result}
+            length={length}
+            support={support}
+            loads={loads}
+            onLoadDrag={handleLoadDrag}
+          />
+        }
+      />
+    </DashboardLayout>
   );
 }
