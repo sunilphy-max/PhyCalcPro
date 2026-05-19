@@ -4,11 +4,23 @@ import Link from "next/link";
 import { useState } from "react";
 import { categories } from "@/data/modules";
 
-export default function Sidebar() {
+type SidebarProps = {
+  activeCategoryId?: string; // optional filter (e.g. "structural")
+};
+
+export default function Sidebar({ activeCategoryId }: SidebarProps) {
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+
+  // -----------------------------
+  // Scope categories based on page
+  // -----------------------------
+  const visibleCategories = activeCategoryId
+    ? categories.filter((c) => c.id === activeCategoryId)
+    : categories;
 
   return (
     <div className="h-screen w-72 bg-slate-950 border-r border-slate-800 text-white overflow-y-auto">
+      
       {/* Header */}
       <div className="p-4 border-b border-slate-800">
         <h1 className="text-xl font-bold text-white">PhyCalcPro</h1>
@@ -17,18 +29,17 @@ export default function Sidebar() {
         </p>
       </div>
 
-      {/* Categories */}
+      {/* Navigation */}
       <div className="p-2 space-y-2">
-        {categories.map((cat) => {
+        {visibleCategories.map((cat) => {
           const isOpen = openCategory === cat.id;
 
           return (
             <div key={cat.id} className="rounded-lg overflow-hidden">
+
               {/* Category Button */}
               <button
-                onClick={() =>
-                  setOpenCategory(isOpen ? null : cat.id)
-                }
+                onClick={() => setOpenCategory(isOpen ? null : cat.id)}
                 className="w-full text-left px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 transition"
               >
                 <div className="font-semibold text-sm">
@@ -53,6 +64,7 @@ export default function Sidebar() {
                   ))}
                 </div>
               )}
+
             </div>
           );
         })}
