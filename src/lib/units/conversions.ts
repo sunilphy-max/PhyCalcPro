@@ -31,6 +31,23 @@ export const conversionFactors = {
   moment: {
     "N·m": 1,
     "lbf·ft": 1.35582,
+  },
+
+  pressure: {
+    Pa: 1,
+    psi: 6894.76,
+  },
+
+  density: {
+    "kg/m3": 1,
+    "lb/ft3": 16.0185,
+  },
+
+  area: {
+    m2: 1,
+    mm2: 1e-6,
+    in2: 0.00064516,
+    ft2: 0.092903,
   }
 } as const;
 

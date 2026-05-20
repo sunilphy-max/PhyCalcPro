@@ -22,7 +22,6 @@ export default function RootLayout({
     </html>
   );
 }
-
 /* ================= STYLES ================= */
 
 const body: any = {
