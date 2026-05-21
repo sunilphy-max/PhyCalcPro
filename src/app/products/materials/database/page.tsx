@@ -1,22 +1,25 @@
-import { getModuleByRoute } from "@/data/modules";
-import { notFound } from "next/navigation";
+"use client";
+
+import DashboardLayout from "@/components/DashboardLayout";
+import CalculatorLayout from "@/components/CalculatorLayout";
+import MaterialDatabase from "@/components/materials/MaterialDatabase";
 
 export default function Page() {
-  const route = "/products/materials/database";
-  const module = getModuleByRoute(route);
-
-  if (!module) return notFound();
-
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-3xl font-bold">{module.title}</h1>
-      <p className="text-slate-400 mt-2">{module.description}</p>
-
-      <div className="mt-6 bg-slate-800 p-6 rounded-xl border border-slate-700">
-        <p>
-          Engineering workspace for <b>{module.title}</b>
-        </p>
-      </div>
-    </div>
+    <DashboardLayout title="Material Database">
+      <CalculatorLayout
+        title="Material Database"
+        left={<div className="bg-white rounded-xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold">Materials Reference</h3>
+          <p className="text-sm text-slate-500 mt-1">
+            Lookup elastic modulus and basic material properties for common engineering materials.
+          </p>
+        </div>}
+        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
+          <p>Search the material database by name to view basic mechanical properties and modulus values.</p>
+        </div>}
+        right={<MaterialDatabase />}
+      />
+    </DashboardLayout>
   );
 }

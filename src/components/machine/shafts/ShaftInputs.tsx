@@ -29,6 +29,10 @@ type Props = {
   loads: LoadCase[];
   setLoads: (loads: LoadCase[]) => void;
 
+  // Mesh control
+  meshSegments: number;
+  setMeshSegments: (value: number) => void;
+
   // Actions
   onCalculate: () => void;
   onSave: () => void;
@@ -54,6 +58,8 @@ export default function ShaftInputs({
   setModulusUnit,
   loads,
   setLoads,
+  meshSegments,
+  setMeshSegments,
   onCalculate,
   onSave,
   saving,
@@ -148,9 +154,9 @@ export default function ShaftInputs({
             value={material}
             onChange={(e) => setMaterial(e.target.value)}
           >
-            <option value="steel">Steel</option>
-            <option value="aluminum">Aluminum</option>
-            <option value="titanium">Titanium</option>
+            <option value="Steel">Steel</option>
+            <option value="Aluminum">Aluminum</option>
+            <option value="Titanium">Titanium</option>
             <option value="custom">Custom</option>
           </select>
         </div>
@@ -249,6 +255,7 @@ export default function ShaftInputs({
               <div>Position: {load.position.toFixed(3)} m</div>
               {load.torque && <div>Torque: {load.torque} N·m</div>}
               {load.bendingMoment && <div>Bending: {load.bendingMoment} N·m</div>}
+              {load.axialForce && <div>Axial: {load.axialForce} N</div>}
             </div>
             <button
               onClick={() => removeLoad(index)}
@@ -258,6 +265,19 @@ export default function ShaftInputs({
             </button>
           </div>
         ))}
+
+        <div className="border-t pt-3 mt-3">
+          <h4 className="font-semibold mb-2">FEA Mesh</h4>
+          <label className="block text-sm text-gray-600 mb-1">Mesh segments</label>
+          <input
+            type="number"
+            min={10}
+            step={1}
+            value={meshSegments}
+            onChange={(e) => setMeshSegments(Math.max(10, Number(e.target.value)))}
+            className="w-full border p-2 rounded"
+          />
+        </div>
       </div>
 
       {/* Actions */}

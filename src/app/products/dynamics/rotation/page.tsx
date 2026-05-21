@@ -1,22 +1,66 @@
-import { getModuleByRoute } from "@/data/modules";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import CalculatorLayout from "@/components/CalculatorLayout";
+import RotationInputs from "@/components/dynamics/rotation/RotationInputs";
+import RotationResults from "@/components/dynamics/rotation/RotationResults";
+import { toBase, fromBase } from "@/lib/units/conversions";
+import { solveRotationEngine } from "@/lib/dynamics/rotation/engine";
+import type { RotationResult } from "@/lib/dynamics/rotation/types";
 
 export default function Page() {
-  const route = "/products/dynamics/rotation";
-  const module = getModuleByRoute(route);
+  const [mass, setMass] = useState(10);
+  const [radius, setRadius] = useState(0.3);
+  const [speedRPM, setSpeedRPM] = useState(1500);
+  const [power, setPower] = useState(1000);
+  const [lengthUnit, setLengthUnit] = useState("m");
+  const [powerUnit, setPowerUnit] = useState("W");
+  const [result, setResult] = useState<RotationResult | null>(null);
 
-  if (!module) return notFound();
+  const calculate = () => {
+    const config = {
+      mass: mass,
+      radius: toBase(radius, "length", lengthUnit),
+      speedRPM,
+      power: toBase(power, "power", powerUnit),
+    };
+
+    const raw = solveRotationEngine(config);
+    setResult({
+      ...raw,
+      inertia: raw.inertia,
+      kineticEnergy: raw.kineticEnergy,
+      centripetalAcceleration: raw.centripetalAcceleration,
+      centripetalForce: raw.centripetalForce,
+      torque: raw.torque,
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-3xl font-bold">{module.title}</h1>
-      <p className="text-slate-400 mt-2">{module.description}</p>
-
-      <div className="mt-6 bg-slate-800 p-6 rounded-xl border border-slate-700">
-        <p>
-          Engineering workspace for <b>{module.title}</b>
-        </p>
-      </div>
-    </div>
+    <DashboardLayout title="Rotational Systems">
+      <CalculatorLayout
+        title="Rotational System Calculator"
+        left={<RotationInputs
+          mass={mass}
+          setMass={setMass}
+          radius={radius}
+          setRadius={setRadius}
+          speedRPM={speedRPM}
+          setSpeedRPM={setSpeedRPM}
+          power={power}
+          setPower={setPower}
+          lengthUnit={lengthUnit}
+          setLengthUnit={setLengthUnit}
+          powerUnit={powerUnit}
+          setPowerUnit={setPowerUnit}
+          onCalculate={calculate}
+        />}
+        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
+          <p>Calculate kinetic energy and dynamic forces for a rotating mass and its power requirement.</p>
+        </div>}
+        right={<RotationResults result={result} />}
+      />
+    </DashboardLayout>
   );
 }

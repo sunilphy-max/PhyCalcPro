@@ -58,6 +58,7 @@ export default function Page() {
   // UI STATE
   // =========================
   const [result, setResult] = useState<ShaftResult | null>(null);
+  const [meshSegments, setMeshSegments] = useState(100);
   const [projectName, setProjectName] = useState("Shaft Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<any[]>([]);
@@ -104,7 +105,7 @@ export default function Page() {
         G: toBase(shearModulus, "stress", modulusUnit),
       },
       loads,
-      meshSegments: 200,
+      meshSegments: Math.max(10, Math.round(meshSegments)),
     };
 
     const raw = solveShaftEngine(normalizedInputs);
@@ -207,6 +208,8 @@ export default function Page() {
             setModulusUnit={setModulusUnit}
             loads={loads}
             setLoads={setLoads}
+            meshSegments={meshSegments}
+            setMeshSegments={setMeshSegments}
             onCalculate={calculate}
             onSave={saveProject}
             saving={saving}

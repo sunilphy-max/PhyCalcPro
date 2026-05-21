@@ -1,22 +1,72 @@
-import { getModuleByRoute } from "@/data/modules";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import CalculatorLayout from "@/components/CalculatorLayout";
+import FitInputs from "@/components/manufacturing/FitInputs";
+import FitResults from "@/components/manufacturing/FitResults";
+import { toBase, fromBase } from "@/lib/units/conversions";
+import { solveFitsEngine } from "@/lib/manufacturing/engine";
+import type { FitResult } from "@/lib/manufacturing/types";
 
 export default function Page() {
-  const route = "/products/manufacturing/fits";
-  const module = getModuleByRoute(route);
+  const [nominalSize, setNominalSize] = useState(50);
+  const [nominalUnit, setNominalUnit] = useState("mm");
+  const [holeUpper, setHoleUpper] = useState(0.05);
+  const [holeLower, setHoleLower] = useState(-0.05);
+  const [shaftUpper, setShaftUpper] = useState(-0.01);
+  const [shaftLower, setShaftLower] = useState(-0.07);
+  const [toleranceUnit, setToleranceUnit] = useState("mm");
+  const [result, setResult] = useState<FitResult | null>(null);
 
-  if (!module) return notFound();
+  const calculate = () => {
+    const config = {
+      nominalSize: toBase(nominalSize, "length", nominalUnit),
+      holeUpper: toBase(holeUpper, "length", toleranceUnit),
+      holeLower: toBase(holeLower, "length", toleranceUnit),
+      shaftUpper: toBase(shaftUpper, "length", toleranceUnit),
+      shaftLower: toBase(shaftLower, "length", toleranceUnit),
+    };
+
+    const raw = solveFitsEngine(config);
+
+    setResult({
+      holeMin: fromBase(raw.holeMin, "length", nominalUnit),
+      holeMax: fromBase(raw.holeMax, "length", nominalUnit),
+      shaftMin: fromBase(raw.shaftMin, "length", nominalUnit),
+      shaftMax: fromBase(raw.shaftMax, "length", nominalUnit),
+      clearanceMin: fromBase(raw.clearanceMin, "length", nominalUnit),
+      clearanceMax: fromBase(raw.clearanceMax, "length", nominalUnit),
+      fitType: raw.fitType,
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-3xl font-bold">{module.title}</h1>
-      <p className="text-slate-400 mt-2">{module.description}</p>
-
-      <div className="mt-6 bg-slate-800 p-6 rounded-xl border border-slate-700">
-        <p>
-          Engineering workspace for <b>{module.title}</b>
-        </p>
-      </div>
-    </div>
+    <DashboardLayout title="Fits & Clearances">
+      <CalculatorLayout
+        title="Fits & Clearances Calculator"
+        left={<FitInputs
+          nominalSize={nominalSize}
+          setNominalSize={setNominalSize}
+          nominalUnit={nominalUnit}
+          setNominalUnit={setNominalUnit}
+          holeUpper={holeUpper}
+          setHoleUpper={setHoleUpper}
+          holeLower={holeLower}
+          setHoleLower={setHoleLower}
+          shaftUpper={shaftUpper}
+          setShaftUpper={setShaftUpper}
+          shaftLower={shaftLower}
+          setShaftLower={setShaftLower}
+          toleranceUnit={toleranceUnit}
+          setToleranceUnit={setToleranceUnit}
+          onCalculate={calculate}
+        />}
+        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
+          <p>Use the fit calculator to compute hole and shaft limits, as well as the resulting clearance or interference range.</p>
+        </div>}
+        right={<FitResults result={result} displayUnit={nominalUnit} />}
+      />
+    </DashboardLayout>
   );
 }

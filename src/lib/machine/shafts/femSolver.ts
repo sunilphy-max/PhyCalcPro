@@ -12,104 +12,48 @@ import type { ShaftConfig, ShaftResult, LoadCase } from "./types";
 import type { ShaftFEMModel } from "./femTypes";
 
 export function solveShaftFEM(config: ShaftConfig): ShaftResult {
-  const { geometry, material, loads } = config;
+  const { geometry, material, loads, meshSegments = 50 } = config;
+  const divisions = Math.max(10, Math.round(meshSegments));
+  const model = generateShaftMesh(
+    geometry.length,
+    geometry.diameter,
+    material.E,
+    material.G,
+    divisions
+  );
 
-  // ===========================
-  // FAST ANALYTICAL CALCULATION
-  // Skip mesh generation for performance (use proven formulas)
-  // ===========================
+  const stiffness = assembleGlobalStiffness(model.nodes, model.elements);
+  const { F } = createLoadVector(model.nodes.length, loads, geometry.length);
+  const constraints = applyConstraints(model.nodes.length, "fixed");
+  const displacements = solveLinearSystem(stiffness, F, constraints);
 
-  const diameter = geometry.diameter;
-  const length = geometry.length;
-  const radius = diameter / 2;
-  const area = Math.PI * radius * radius;
-  const polarMoment = (Math.PI * Math.pow(diameter, 4)) / 32;
-  const secondMoment = (Math.PI * Math.pow(diameter, 4)) / 64;
+  const post = recoverStresses(model, displacements, material.yieldStress);
 
-  // ===========================
-  // LOAD DISTRIBUTION
-  // ===========================
-  const n = 100; // Number of analysis points
-  const x: number[] = [];
-  const torqueDistribution: number[] = [];
-  const bendingMomentDistribution: number[] = [];
-  const shearStress: number[] = [];
-  const bendingStress: number[] = [];
-  const vonMisesStress: number[] = [];
-  const deflection: number[] = [];
-  const rotation: number[] = [];
+  const maxStress = Math.max(...post.vonMisesStress, 0);
+  const maxShear = Math.max(...post.shearStress, 0);
+  const maxBending = Math.max(...post.bendingStress, 0);
+  const maxDeflection = Math.max(...post.deflection, 0);
+  const maxTorque = Math.max(...post.torqueDistribution, 0);
+  const maxBendingMoment = Math.max(...post.bendingMomentDistribution, 0);
 
-  for (let i = 0; i < n; i++) {
-    const xi = (i / (n - 1)) * length;
-    x.push(xi);
-
-    // Calculate loads at this position
-    let T = 0,
-      M = 0;
-
-    for (const load of loads) {
-      if (xi >= load.position) {
-        T += load.torque ?? 0;
-        M += load.bendingMoment ?? 0;
-      }
-    }
-
-    torqueDistribution.push(T);
-    bendingMomentDistribution.push(M);
-
-    // Stress calculations
-    const tau = Math.abs((T * radius) / polarMoment);
-    const sigma_b = Math.abs((M * radius) / secondMoment);
-    const sigma_vm = Math.sqrt(sigma_b * sigma_b + 3 * tau * tau);
-
-    shearStress.push(tau);
-    bendingStress.push(sigma_b);
-    vonMisesStress.push(sigma_vm);
-
-    // Deflection and rotation (simplified, linear)
-    const deflectionValue = Math.abs(
-      (M * (xi * xi)) / (6 * material.E * secondMoment)
-    );
-    const rotationValue = Math.abs((T * xi) / (material.G * polarMoment));
-
-    deflection.push(deflectionValue);
-    rotation.push(rotationValue);
-  }
-
-  // ===========================
-  // SUMMARY METRICS
-  // ===========================
-  const maxVonMises = Math.max(...vonMisesStress, 1);
-  const maxShear = Math.max(...shearStress, 1);
-  const maxBending = Math.max(...bendingStress, 1);
-  const maxDeflection = Math.max(...deflection, 1);
-  const maxTorque = Math.max(...torqueDistribution, 1);
-  const maxBendingMoment = Math.max(...bendingMomentDistribution, 1);
-
-  const safetyFactor = Math.max(material.yieldStress / maxVonMises, 0.1);
+  const safetyFactor = Math.max(material.yieldStress / Math.max(maxStress, 1e-12), 0);
   const designStatus =
-    safetyFactor > 1.5 ? "safe" : safetyFactor > 1.2 ? "warning" : "critical";
+    safetyFactor >= 1.5 ? "safe" : safetyFactor >= 1.2 ? "warning" : "critical";
 
-  const criticalIndex = vonMisesStress.indexOf(maxVonMises);
-  const criticalSection = x[criticalIndex] ?? 0;
+  const criticalIndex = post.vonMisesStress.indexOf(maxStress);
+  const criticalSection = model.nodes[criticalIndex]?.x ?? 0;
 
-  // Critical speed (simple approximation)
-  const criticalSpeed =
-    (Math.sqrt(material.E / material.density) * diameter) / (length * length) * 1000;
+  const radius = geometry.diameter / 2;
+  const area = Math.PI * Math.pow(radius, 2);
+  const secondMoment = Math.PI * Math.pow(geometry.diameter, 4) / 64;
+  const beta = 1.875;
+  const omegaCrit = Math.pow(beta, 2) *
+    Math.sqrt((material.E * secondMoment) / (material.density * area * Math.pow(geometry.length, 4)));
+  const criticalSpeed = Math.max((omegaCrit * 60) / (2 * Math.PI), 0);
 
-  // ===========================
-  // RESULTS COMPILATION
-  // ===========================
   return {
-    x,
-    torqueDistribution,
-    bendingMomentDistribution,
-    shearStress,
-    bendingStress,
-    vonMisesStress,
-    deflection,
-    rotation,
-    maxStress: maxVonMises,
+    ...post,
+    maxStress,
     maxShearStress: maxShear,
     maxBendingStress: maxBending,
     maxDeflection,
@@ -119,11 +63,11 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     designStatus,
     isSafe: designStatus === "safe",
     criticalSection,
-    criticalSpeed: Math.max(criticalSpeed, 1000),
+    criticalSpeed,
     analysisType: "FEA",
-    diameter,
+    diameter: geometry.diameter,
     radius,
-    polarMoment,
+    polarMoment: Math.PI * Math.pow(geometry.diameter, 4) / 32,
     secondMoment,
-  } as ShaftResult & { diameter: number; radius: number; polarMoment: number; secondMoment: number };
+  };
 }

@@ -1,22 +1,85 @@
-import { getModuleByRoute } from "@/data/modules";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import CalculatorLayout from "@/components/CalculatorLayout";
+import CamInputs from "@/components/machine/cams/CamInputs";
+import CamResults from "@/components/machine/cams/CamResults";
+import { toBase } from "@/lib/units/conversions";
+import { solveCamEngine } from "@/lib/machine/cams/engine";
+import type { CamResult, MotionLaw, CamProfileType } from "@/lib/machine/cams/types";
+
+const defaultMotionLaw: MotionLaw = "simple_harmonic";
+const defaultProfileType: CamProfileType = "flat_follower";
 
 export default function Page() {
-  const route = "/products/machine/cams";
-  const module = getModuleByRoute(route);
+  const [lift, setLift] = useState(0.02);
+  const [liftUnit, setLiftUnit] = useState("m");
+  const [baseCircle, setBaseCircle] = useState(0.04);
+  const [baseCircleUnit, setBaseCircleUnit] = useState("m");
+  const [radius, setRadius] = useState(0.01);
+  const [radiusUnit, setRadiusUnit] = useState("m");
+  const [speed, setSpeed] = useState(1200);
+  const [dwellAngle, setDwellAngle] = useState(90);
+  const [motionLaw, setMotionLaw] = useState<MotionLaw>(defaultMotionLaw);
+  const [profileType, setProfileType] = useState<CamProfileType>(defaultProfileType);
+  const [result, setResult] = useState<CamResult | null>(null);
 
-  if (!module) return notFound();
+  const calculate = () => {
+    const config = {
+      lift: toBase(lift, "length", liftUnit),
+      baseCircle: toBase(baseCircle, "length", baseCircleUnit),
+      radius: toBase(radius, "length", radiusUnit),
+      speed,
+      dwellAngle,
+      motionLaw,
+      profileType,
+    };
+
+    setResult(solveCamEngine(config));
+  };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8">
-      <h1 className="text-3xl font-bold">{module.title}</h1>
-      <p className="text-slate-400 mt-2">{module.description}</p>
-
-      <div className="mt-6 bg-slate-800 p-6 rounded-xl border border-slate-700">
-        <p>
-          Engineering workspace for <b>{module.title}</b>
-        </p>
-      </div>
-    </div>
+    <DashboardLayout title="Cam Design Module">
+      <CalculatorLayout
+        title="Cam Profile & Kinematics"
+        left={
+          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold">Cam design guidance</h3>
+              <p className="text-sm text-slate-500 mt-1">
+                Choose a motion law and follower type to balance smooth displacement with acceptable pressure angles.
+              </p>
+            </div>
+          </div>
+        }
+        center={
+          <CamInputs
+            lift={lift}
+            setLift={setLift}
+            liftUnit={liftUnit}
+            setLiftUnit={setLiftUnit}
+            baseCircle={baseCircle}
+            setBaseCircle={setBaseCircle}
+            baseCircleUnit={baseCircleUnit}
+            setBaseCircleUnit={setBaseCircleUnit}
+            radius={radius}
+            setRadius={setRadius}
+            radiusUnit={radiusUnit}
+            setRadiusUnit={setRadiusUnit}
+            speed={speed}
+            setSpeed={setSpeed}
+            dwellAngle={dwellAngle}
+            setDwellAngle={setDwellAngle}
+            motionLaw={motionLaw}
+            setMotionLaw={setMotionLaw}
+            profileType={profileType}
+            setProfileType={setProfileType}
+            onCalculate={calculate}
+          />
+        }
+        right={<CamResults result={result} lengthUnit={liftUnit} />}
+      />
+    </DashboardLayout>
   );
 }

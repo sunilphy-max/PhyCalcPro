@@ -1,3 +1,6 @@
+"use client";
+
+import { useSelectedLayoutSegments } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 
 export default function ProductsLayout({
@@ -5,10 +8,12 @@ export default function ProductsLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const segments = useSelectedLayoutSegments();
+  const showSidebar = segments.length === 0;
+
   return (
     <div className="flex min-h-screen">
-      {/* Full catalog sidebar */}
-      <Sidebar />
+      {showSidebar && <Sidebar />}
 
       {/* Main content */}
       <main className="flex-1 bg-slate-900">

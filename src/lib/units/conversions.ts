@@ -20,6 +20,7 @@ export const conversionFactors = {
 
   inertia: {
     m4: 1,
+    mm4: 1e-12,
     in4: 4.16231e-7,
   },
 
@@ -36,6 +37,17 @@ export const conversionFactors = {
   pressure: {
     Pa: 1,
     psi: 6894.76,
+  },
+
+  power: {
+    W: 1,
+    kW: 1000,
+    hp: 745.7,
+  },
+
+  torque: {
+    "N·m": 1,
+    "lbf·ft": 1.35582,
   },
 
   density: {

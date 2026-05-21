@@ -8,5 +8,6 @@ export type Dimension =
   | 'inertia'
   | 'pressure'
   | 'torque'
+  | 'power'
   | 'mass'
   | 'density';
