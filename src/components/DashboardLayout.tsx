@@ -32,11 +32,14 @@ export default function DashboardLayout({
     { href: "/products/materials", label: "Materials", icon: Settings, disabled: true },
   ];
 
+  const showSidebar = !pathname.startsWith("/products");
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 shadow-xl">
-        <div className="flex flex-col h-full">
+      {showSidebar && (
+        <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 shadow-xl">
+          <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center px-6 py-4 border-b border-slate-700">
             <div className="bg-gradient-to-r from-blue-400 to-purple-400 p-2 rounded-lg">
@@ -87,9 +90,10 @@ export default function DashboardLayout({
           </div>
         </div>
       </aside>
+      )}
 
       {/* Main Content */}
-      <div className="pl-64">
+      <div className={showSidebar ? "pl-64" : "pl-0"}>
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-slate-200">
           <div className="px-6 py-4">

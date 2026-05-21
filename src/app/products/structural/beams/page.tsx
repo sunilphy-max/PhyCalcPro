@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { solveBeam } from "@/lib/structural/beams/solver";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import MeshControls from "@/components/shared/MeshControls";
 import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import type { Load, BeamConfig } from "@/lib/structural/beams/types";
@@ -35,7 +35,10 @@ export default function Page() {
   const [forceUnit, setForceUnit] = useState("N");
   const [udlUnit, setUdlUnit] = useState("N/m");
   const [inertiaUnit, setInertiaUnit] = useState("m4");
-   
+  const [momentUnit, setMomentUnit] = useState("N·m");
+  const [stressUnit, setStressUnit] = useState("Pa");
+  const [meshSegments, setMeshSegments] = useState(40);
+
   // =========================
   // LOADS (STEP 6)
   // =========================
@@ -142,7 +145,7 @@ const handleLoadDrag = (
       I: toBase(I, "inertia", inertiaUnit),
       c: toBase(c, "length", lengthUnit),
       support,
-
+      meshSegments: Math.max(10, Math.round(meshSegments)),
       loads: loads.map((l) => {
         if (l.type === "point") {
           return {
@@ -161,9 +164,7 @@ const handleLoadDrag = (
       }),
     };
 
-    
-
-const raw = solveBeamEngine(normalizedInputs);
+    const raw = solveBeamEngine(normalizedInputs);
 
     const converted = {
       ...raw,
@@ -171,15 +172,16 @@ const raw = solveBeamEngine(normalizedInputs);
         fromBase(v, "force", forceUnit)
       ),
       moment: raw.moment.map((v: number) =>
-        fromBase(v, "moment", forceUnit)
+        fromBase(v, "moment", momentUnit)
       ),
       deflection: raw.deflection.map((v: number) =>
         fromBase(v, "length", lengthUnit)
       ),
       stress: raw.stress.map((v: number) =>
-        fromBase(v, "stress", forceUnit)
+        fromBase(v, "stress", stressUnit)
       ),
-      maxStress: fromBase(raw.maxStress, "stress", forceUnit),
+      maxMoment: fromBase(raw.maxMoment, "moment", momentUnit),
+      maxStress: fromBase(raw.maxStress, "stress", stressUnit),
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
     };
 
@@ -227,10 +229,24 @@ const raw = solveBeamEngine(normalizedInputs);
       <CalculatorLayout
         title="Beam Analysis Module"
         left={
-          <SavedProjects
-            savedProjects={savedProjects}
-            loadProjectIntoForm={loadProjectIntoForm}
-          />
+          <div className="space-y-5">
+            <div className="bg-white rounded-xl p-4 shadow-sm">
+              <h3 className="font-semibold mb-3">Mesh refinement</h3>
+              <p className="text-sm text-slate-500">
+                Increase the beam mesh resolution for more accurate internal force and deflection curves.
+              </p>
+              <MeshControls
+                elements={meshSegments}
+                onChangeElements={setMeshSegments}
+                refine
+              />
+            </div>
+
+            <SavedProjects
+              savedProjects={savedProjects}
+              loadProjectIntoForm={loadProjectIntoForm}
+            />
+          </div>
         }
         center={
           <BeamInputs
@@ -252,6 +268,10 @@ const raw = solveBeamEngine(normalizedInputs);
             setI={setI}
             inertiaUnit={inertiaUnit}
             setInertiaUnit={setInertiaUnit}
+            momentUnit={momentUnit}
+            setMomentUnit={setMomentUnit}
+            stressUnit={stressUnit}
+            setStressUnit={setStressUnit}
             c={c}
             setC={setC}
             support={support}

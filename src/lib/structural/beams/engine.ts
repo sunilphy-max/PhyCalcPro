@@ -34,22 +34,17 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
   const maxShear = Math.max(...raw.shear.map(Math.abs));
   const maxDeflection = Math.max(...raw.deflection.map(Math.abs));
 
-  const safeMoment = raw.moment.map((v) => (isFinite(v) ? v : 0));
-
-  const stress = safeMoment.map((m: number) => {
-    if (!isFinite(m)) return 0;
-    return m;
-  });
-
-  const maxStress = Math.max(...stress.map((v) => Math.abs(v || 0)));
   const clean = (arr: number[]) => arr.map((v) => (Number.isFinite(v) ? v : 0));
+
+  const stress = clean(raw.stress);
+  const maxStress = Math.max(...stress.map((v) => Math.abs(v || 0)));
 
   return {
     x: clean(raw.x),
     shear: clean(raw.shear),
     moment: clean(raw.moment),
     deflection: clean(raw.deflection),
-    stress: clean(stress),
+    stress,
     slope: clean(raw.slope),
     reactions: raw.reactions,
 

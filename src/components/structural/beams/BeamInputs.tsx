@@ -26,6 +26,10 @@ type Props = {
   setI: (v: number) => void;
   inertiaUnit: string;
   setInertiaUnit: (v: string) => void;
+  momentUnit: string;
+  setMomentUnit: (v: string) => void;
+  stressUnit: string;
+  setStressUnit: (v: string) => void;
 
   c: number;
   setC: (v: number) => void;
@@ -147,6 +151,32 @@ export default function BeamInputs(props: Props) {
           <option value="m4">m⁴</option>
           <option value="in4">in⁴</option>
         </select>
+      </div>
+
+      {/* ================= MOMENT/STRESS UNITS ================= */}
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm text-gray-500">Moment units</label>
+          <select
+            className="w-full border p-2 rounded"
+            value={props.momentUnit}
+            onChange={(e) => props.setMomentUnit(e.target.value)}
+          >
+            <option value="N·m">N·m</option>
+            <option value="lbf·ft">lbf·ft</option>
+          </select>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-sm text-gray-500">Stress units</label>
+          <select
+            className="w-full border p-2 rounded"
+            value={props.stressUnit}
+            onChange={(e) => props.setStressUnit(e.target.value)}
+          >
+            <option value="Pa">Pa</option>
+            <option value="psi">psi</option>
+          </select>
+        </div>
       </div>
 
       {/* ================= DISTANCE C (Neutral Axis to Extreme Fiber) ================= */}
