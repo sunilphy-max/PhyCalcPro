@@ -1,21 +1,71 @@
+"use client";
+
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import ModulePlaceholder from "@/components/ModulePlaceholder";
+import CalculatorLayout from "@/components/CalculatorLayout";
+import CamToolpathsInputs from "@/components/manufacturing/CamToolpathsInputs";
+import CamToolpathsResults from "@/components/manufacturing/CamToolpathsResults";
+import { solveCamToolpathsEngine } from "@/lib/manufacturing/camToolpaths/engine";
+import type { CamToolpathsResult } from "@/lib/manufacturing/camToolpaths/types";
 
 export default function Page() {
+  const [toolDiameter, setToolDiameter] = useState(12);
+  const [numFlutes, setNumFlutes] = useState(4);
+  const [spindleSpeed, setSpindleSpeed] = useState(4200);
+  const [feedPerTooth, setFeedPerTooth] = useState(0.06);
+  const [axialDepth, setAxialDepth] = useState(2);
+  const [radialDepth, setRadialDepth] = useState(6);
+  const [stockLength, setStockLength] = useState(80);
+  const [stockWidth, setStockWidth] = useState(40);
+  const [stepOverPercent, setStepOverPercent] = useState(60);
+  const [result, setResult] = useState<CamToolpathsResult | null>(null);
+
+  const calculate = () => {
+    const raw = solveCamToolpathsEngine({
+      toolDiameter,
+      numFlutes,
+      spindleSpeed,
+      feedPerTooth,
+      axialDepth,
+      radialDepth,
+      stockLength,
+      stockWidth,
+      stepOverPercent,
+    });
+
+    setResult(raw);
+  };
+
   return (
     <DashboardLayout title="CAM Toolpaths">
-      <div className="min-h-screen bg-slate-50 p-6">
-        <ModulePlaceholder
-          title="CAM Toolpaths"
-          description="Explore basic toolpath planning and machining parameter selection."
-          details="This module will introduce CAM concepts for cutting strategies, tool motion, and roughing/finishing parameter planning."
-          highlights={[
-            "Basic toolpath visualization",
-            "Machining parameter guidance",
-            "CAM workflow overview",
-          ]}
-        />
-      </div>
+      <CalculatorLayout
+        title="CAM Toolpath Calculator"
+        left={<CamToolpathsInputs
+          toolDiameter={toolDiameter}
+          setToolDiameter={setToolDiameter}
+          numFlutes={numFlutes}
+          setNumFlutes={setNumFlutes}
+          spindleSpeed={spindleSpeed}
+          setSpindleSpeed={setSpindleSpeed}
+          feedPerTooth={feedPerTooth}
+          setFeedPerTooth={setFeedPerTooth}
+          axialDepth={axialDepth}
+          setAxialDepth={setAxialDepth}
+          radialDepth={radialDepth}
+          setRadialDepth={setRadialDepth}
+          stockLength={stockLength}
+          setStockLength={setStockLength}
+          stockWidth={stockWidth}
+          setStockWidth={setStockWidth}
+          stepOverPercent={stepOverPercent}
+          setStepOverPercent={setStepOverPercent}
+          onCalculate={calculate}
+        />}
+        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
+          <p>Estimate a basic roughing toolpath with feed, material removal rate, and cut time guidance.</p>
+        </div>}
+        right={<CamToolpathsResults result={result} />}
+      />
     </DashboardLayout>
   );
 }
