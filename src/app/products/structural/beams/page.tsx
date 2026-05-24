@@ -6,12 +6,22 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import MeshControls from "@/components/shared/MeshControls";
 import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
-import type { Load, BeamConfig } from "@/lib/structural/beams/types";
+import type { Load, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
 import SavedProjects from "@/components/structural/beams/SavedProjects";
 import { materials } from "@/data/materials";
+
+type BeamProject = {
+  id?: string;
+  name: string;
+  length: number;
+  force: number;
+  udl: number;
+  inertia: number;
+  c: number;
+};
 import { solveBeamEngine } from "@/lib/structural/beams/engine";
 
 export default function Page() {
@@ -47,13 +57,13 @@ export default function Page() {
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-  const [loads, setLoads] = useState<Load[]>([
+  const [loads, setLoads] = useState<Load[]>(() => [
     {
-  id: createId(),
-  type: "point",
-  value: 1000,
-  position: 2.5,
-},
+      id: createId(),
+      type: "point",
+      value: 1000,
+      position: 2.5,
+    },
   ]);
 
   const addPointLoad = () => {
@@ -112,10 +122,10 @@ const handleLoadDrag = (
   // =========================
   // UI STATE
   // =========================
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<BeamResult | null>(null);
   const [projectName, setProjectName] = useState("Beam Project");
   const [saving, setSaving] = useState(false);
-  const [savedProjects, setSavedProjects] = useState<any[]>([]);
+  const [savedProjects, setSavedProjects] = useState<BeamProject[]>([]);
 
   // =========================
   // LOAD PROJECTS
@@ -126,11 +136,15 @@ const handleLoadDrag = (
       .select("*")
       .order("created_at", { ascending: false });
 
-    setSavedProjects(data || []);
+    setSavedProjects((data as BeamProject[]) || []);
   };
 
   useEffect(() => {
-    loadProjects();
+    const fetchProjects = async () => {
+      await loadProjects();
+    };
+
+    fetchProjects();
   }, []);
 
   // =========================
@@ -155,11 +169,19 @@ const handleLoadDrag = (
           };
         }
 
+        if (l.type === "udl") {
+          return {
+            ...l,
+            value: toBase(l.value, "forcePerLength", udlUnit),
+            start: toBase(l.start, "length", lengthUnit),
+            end: toBase(l.end, "length", lengthUnit),
+          };
+        }
+
         return {
           ...l,
-          value: toBase(l.value, "forcePerLength", udlUnit),
-          start: toBase(l.start, "length", lengthUnit),
-          end: toBase(l.end, "length", lengthUnit),
+          value: toBase(l.value, "moment", momentUnit),
+          position: toBase(l.position, "length", lengthUnit),
         };
       }),
     };
@@ -212,7 +234,7 @@ const handleLoadDrag = (
   // =========================
   // LOAD
   // =========================
-  const loadProjectIntoForm = (p: any) => {
+  const loadProjectIntoForm = (p: BeamProject) => {
     setProjectName(p.name);
     setLength(p.length);
     setForce(p.force);
