@@ -37,17 +37,18 @@ export function solveBeam(
   // POST PROCESS
   // -----------------------------------
 
-  const results =
-  postProcessFEM(
+  const results = postProcessFEM(
     fem.model,
     fem.displacements,
     I,
     c,
-    E
+    E,
+    config.loads,
+    config.support,
+    fem.reactions
   );
 
-results.reactions =
-  fem.reactions;
+  results.reactions = fem.reactions;
 
   return {
     x: results.x,

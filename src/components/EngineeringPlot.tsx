@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import dynamic from "next/dynamic";
 
@@ -11,9 +11,6 @@ type Props = {
   x: number[];
   y: number[];
   yLabel: string;
-
-  probeX?: number | null;
-  peakValue?: number;
 };
 
 export default function EngineeringPlot({
@@ -21,8 +18,6 @@ export default function EngineeringPlot({
   x,
   y,
   yLabel,
-  probeX,
-  peakValue,
 }: Props) {
   const cleanY = y.map((v) => (Number.isFinite(v) ? v : 0));
 
@@ -34,12 +29,8 @@ export default function EngineeringPlot({
       : -1;
 
   return (
-    <div className="bg-white rounded-xl shadow p-3">
-
-      <div className="font-semibold text-sm mb-2">
-        {title}
-      </div>
-
+    <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm p-4">
+      <div className="text-sm font-semibold text-slate-900 mb-3">{title}</div>
       <Plot
         data={[
           {
@@ -47,10 +38,15 @@ export default function EngineeringPlot({
             y: cleanY,
             type: "scatter",
             mode: "lines",
+            line: {
+              color: "#0f172a",
+              width: 3,
+              shape: "spline",
+            },
+            fill: "tozeroy",
+            fillcolor: "rgba(15,23,42,0.08)",
             name: yLabel,
           },
-
-          // PEAK MARKER
           ...(peakIndex >= 0
             ? [
                 {
@@ -60,6 +56,7 @@ export default function EngineeringPlot({
                   mode: "markers",
                   marker: {
                     size: 10,
+                    color: "#ef4444",
                     symbol: "diamond",
                   },
                   name: "Peak",
@@ -69,44 +66,26 @@ export default function EngineeringPlot({
         ]}
         layout={{
           autosize: true,
-          height: 260,
-
-          margin: {
-            l: 40,
-            r: 20,
-            t: 20,
-            b: 40,
-          },
-
+          height: 300,
+          margin: { l: 48, r: 24, t: 24, b: 42 },
+          paper_bgcolor: "rgba(255,255,255,1)",
+          plot_bgcolor: "rgba(248,250,252,1)",
+          font: { color: "#0f172a", family: "Inter, system-ui, sans-serif" },
           xaxis: {
-            title: "Beam Position",
-            zeroline: true,
-
-            // PROBE LINE
-            shapes:
-              typeof probeX === "number"
-                ? [
-                    {
-                      type: "line",
-                      x0: probeX,
-                      x1: probeX,
-                      y0: Math.min(...cleanY),
-                      y1: Math.max(...cleanY),
-
-                      line: {
-                        dash: "dot",
-                        width: 2,
-                      },
-                    },
-                  ]
-                : [],
+            title: "Position",
+            gridcolor: "#e2e8f0",
+            zerolinecolor: "#cbd5e1",
+            zerolinewidth: 1,
+            showgrid: true,
           },
-
           yaxis: {
             title: yLabel,
-            zeroline: true,
+            gridcolor: "#e2e8f0",
+            zerolinecolor: "#cbd5e1",
+            zerolinewidth: 1,
+            showgrid: true,
           },
-
+          hovermode: "x unified",
           showlegend: false,
         }}
         config={{

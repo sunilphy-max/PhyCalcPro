@@ -7,6 +7,13 @@ export type ScrewType = "power_screw" | "ball_screw";
 
 export type ThreadType = "square" | "acme" | "buttress";
 
+export type ThreadMaterial = {
+  E?: number; // Elastic modulus (Pa)
+  yieldStrength?: number; // Yield strength (Pa)
+  shearStrength?: number; // Shear strength (Pa)
+  density?: number; // Density (kg/m^3)
+};
+
 export type PowerScrewConfig = {
   screwType: "power_screw";
   threadType: ThreadType;
@@ -23,6 +30,7 @@ export type PowerScrewConfig = {
 
   // Material properties
   frictionCoefficient: number; // μ - coefficient of friction
+  material?: ThreadMaterial;
   efficiency?: number; // η - mechanical efficiency (calculated if not provided)
 
   // Operating conditions
@@ -45,6 +53,7 @@ export type BallScrewConfig = {
 
   // Material properties
   frictionCoefficient: number; // μ
+  material?: ThreadMaterial;
   dynamicViscosity?: number; // η (Pa·s) for lubrication
 
   // Operating conditions

@@ -3,7 +3,7 @@
  * Input validation for screw calculations
  */
 
-import type { ScrewConfig } from "./types";
+import type { ScrewConfig, PowerScrewConfig, BallScrewConfig } from "./types";
 
 export function validateScrewConfig(config: ScrewConfig): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
@@ -36,46 +36,58 @@ export function validateScrewConfig(config: ScrewConfig): { isValid: boolean; er
 
   // Power screw specific validations
   if (config.screwType === "power_screw") {
-    const c = config as any;
+    const screw = config as PowerScrewConfig;
 
-    if (!c.threadType || !["square", "acme", "buttress"].includes(c.threadType)) {
+    if (!screw.threadType || !["square", "acme", "buttress"].includes(screw.threadType)) {
       errors.push("Invalid thread type for power screw");
     }
 
-    if (c.starts && c.starts < 1) {
+    if (screw.starts && screw.starts < 1) {
       errors.push("Number of starts must be at least 1");
     }
 
-    if (c.efficiency && (c.efficiency < 0 || c.efficiency > 100)) {
+    if (screw.efficiency && (screw.efficiency < 0 || screw.efficiency > 100)) {
       errors.push("Efficiency must be between 0 and 100");
+    }
+
+    if (screw.material) {
+      if (screw.material.E && screw.material.E <= 0) {
+        errors.push("Material elastic modulus must be positive");
+      }
+      if (screw.material.yieldStrength && screw.material.yieldStrength <= 0) {
+        errors.push("Material yield strength must be positive");
+      }
+      if (screw.material.shearStrength && screw.material.shearStrength <= 0) {
+        errors.push("Material shear strength must be positive");
+      }
     }
   }
 
   // Ball screw specific validations
   if (config.screwType === "ball_screw") {
-    const c = config as any;
+    const screw = config as BallScrewConfig;
 
-    if (!c.ballDiameter || c.ballDiameter <= 0) {
+    if (!screw.ballDiameter || screw.ballDiameter <= 0) {
       errors.push("Ball diameter must be positive");
     }
 
-    if (c.contactAngle && (c.contactAngle < 0 || c.contactAngle > 90)) {
+    if (screw.contactAngle && (screw.contactAngle < 0 || screw.contactAngle > 90)) {
       errors.push("Contact angle must be between 0 and 90 degrees");
     }
 
-    if (c.speed && c.speed < 0) {
+    if (screw.speed && screw.speed < 0) {
       errors.push("Speed cannot be negative");
     }
 
-    if (c.preload && c.preload < 0) {
+    if (screw.preload && screw.preload < 0) {
       errors.push("Preload cannot be negative");
     }
 
-    if (c.dynamicViscosity && c.dynamicViscosity < 0) {
+    if (screw.dynamicViscosity && screw.dynamicViscosity < 0) {
       errors.push("Dynamic viscosity cannot be negative");
     }
 
-    if (c.temperature && (c.temperature < -273 || c.temperature > 1000)) {
+    if (screw.temperature && (screw.temperature < -273 || screw.temperature > 1000)) {
       errors.push("Temperature out of reasonable range");
     }
   }

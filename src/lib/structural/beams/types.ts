@@ -15,7 +15,13 @@ export type UDL = BaseLoad & {
   end: number;
 };
 
-export type Load = PointLoad | UDL;
+export type MomentLoad = BaseLoad & {
+  type: "moment";
+  value: number;
+  position: number;
+};
+
+export type Load = PointLoad | UDL | MomentLoad;
 
 export type SupportType =
   | "simply_supported"
