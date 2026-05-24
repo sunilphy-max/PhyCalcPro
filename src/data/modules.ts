@@ -30,6 +30,7 @@ import {
   Orbit,
   Ruler,
   Combine,
+  ShieldCheck,
 } from "lucide-react";
 
 /**
@@ -43,7 +44,7 @@ export type EngineeringModule = {
   category: string;
 
   // ✅ Module icon support
-  icon?: ComponentType<any>;
+  icon?: ComponentType<{ className?: string }>;
 
   tags?: string[];
   featured?: boolean;
@@ -58,7 +59,7 @@ export type EngineeringCategory = {
   description: string;
 
   // ✅ Category icon
-  icon: ComponentType<any>;
+  icon: ComponentType<{ className?: string }>;
 
   color: string;
 
@@ -126,6 +127,22 @@ export const categories: EngineeringCategory[] = [
         route: "/products/structural/plates",
         category: "structural",
         icon: LayoutGrid,
+      },
+      {
+        id: "combined-loading",
+        title: "Combined Loading",
+        description: "Evaluate axial, bending, torsion and shear together",
+        route: "/products/structural/combined-loading",
+        category: "structural",
+        icon: Combine,
+      },
+      {
+        id: "load-case-manager",
+        title: "Load Case Manager",
+        description: "Manage multiple structural load cases and envelopes",
+        route: "/products/structural/load-case-manager",
+        category: "structural",
+        icon: Workflow,
       },
     ],
   },
@@ -230,6 +247,14 @@ export const categories: EngineeringCategory[] = [
         category: "fasteners",
         icon: GitBranch,
       },
+      {
+        id: "safety-factor",
+        title: "Safety Factor",
+        description: "Compute reserve factors for bolts, shafts and joints",
+        route: "/products/fasteners/safety-factor",
+        category: "fasteners",
+        icon: ShieldCheck,
+      },
     ],
   },
 
@@ -261,6 +286,38 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/sections",
         category: "materials",
         icon: Scaling,
+      },
+      {
+        id: "composites",
+        title: "Composite Materials",
+        description: "Design laminate layups and composite section behavior",
+        route: "/products/materials/composites",
+        category: "materials",
+        icon: Layers,
+      },
+      {
+        id: "temperature-properties",
+        title: "Temperature Properties",
+        description: "Evaluate material behavior across temperature ranges",
+        route: "/products/materials/temperature-properties",
+        category: "materials",
+        icon: Flame,
+      },
+      {
+        id: "fatigue",
+        title: "Fatigue Assessment",
+        description: "Estimate life with S-N curves and load cycles",
+        route: "/products/materials/fatigue",
+        category: "materials",
+        icon: Gauge,
+      },
+      {
+        id: "corrosion",
+        title: "Corrosion Allowance",
+        description: "Calculate thickness and allowance for corrosion protection",
+        route: "/products/materials/corrosion",
+        category: "materials",
+        icon: Wrench,
       },
     ],
   },
@@ -294,6 +351,22 @@ export const categories: EngineeringCategory[] = [
         category: "pressure",
         icon: Circle,
       },
+      {
+        id: "hydraulics",
+        title: "Hydraulic Cylinders",
+        description: "Analyze actuator forces and pressure loads",
+        route: "/products/pressure/hydraulics",
+        category: "pressure",
+        icon: Waves,
+      },
+      {
+        id: "heat-exchangers",
+        title: "Heat Exchangers",
+        description: "Estimate heat transfer and pressure drops",
+        route: "/products/pressure/heat-exchangers",
+        category: "pressure",
+        icon: CircleDot,
+      },
     ],
   },
 
@@ -323,6 +396,22 @@ export const categories: EngineeringCategory[] = [
         title: "Rotational Systems",
         description: "Dynamic rotating system analysis",
         route: "/products/dynamics/rotation",
+        category: "dynamics",
+        icon: Orbit,
+      },
+      {
+        id: "impact",
+        title: "Impact & Shock",
+        description: "Assess transient impact and shock response",
+        route: "/products/dynamics/impact",
+        category: "dynamics",
+        icon: Zap,
+      },
+      {
+        id: "suspension",
+        title: "Suspension & Sway",
+        description: "Analyze vehicle suspension and sway dynamics",
+        route: "/products/dynamics/suspension",
         category: "dynamics",
         icon: Orbit,
       },
@@ -357,6 +446,22 @@ export const categories: EngineeringCategory[] = [
         route: "/products/manufacturing/fits",
         category: "manufacturing",
         icon: Combine,
+      },
+      {
+        id: "cost-estimator",
+        title: "Cost Estimation",
+        description: "Estimate manufacturing cost and process selection",
+        route: "/products/manufacturing/cost-estimator",
+        category: "manufacturing",
+        icon: Ruler,
+      },
+      {
+        id: "cam-toolpaths",
+        title: "CAM Toolpaths",
+        description: "Basic toolpath planning and machining parameters",
+        route: "/products/manufacturing/cam-toolpaths",
+        category: "manufacturing",
+        icon: RotateCcw,
       },
     ],
   },

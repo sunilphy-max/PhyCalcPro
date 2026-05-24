@@ -206,7 +206,11 @@ export default function BeamInputs(props: Props) {
           <div key={i} className="mb-2 p-2 border rounded">
 
             <div className="text-sm mb-1">
-              {load.type === "point" ? "Point Load" : "UDL"}
+              {load.type === "point"
+                ? "Point Load"
+                : load.type === "udl"
+                ? "UDL"
+                : "Moment"}
             </div>
 
             {/* VALUE */}
@@ -233,7 +237,7 @@ export default function BeamInputs(props: Props) {
                   })
                 }
               />
-            ) : (
+            ) : load.type === "udl" ? (
               <>
                 <input
                   className="w-full border p-1 mb-1"
@@ -256,6 +260,17 @@ export default function BeamInputs(props: Props) {
                   }
                 />
               </>
+            ) : (
+              <input
+                className="w-full border p-1"
+                value={load.position}
+                onChange={(e) =>
+                  props.updateLoad(i, {
+                    ...load,
+                    position: +e.target.value,
+                  })
+                }
+              />
             )}
 
             <button

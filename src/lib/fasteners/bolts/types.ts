@@ -35,6 +35,7 @@ export type PowerScrewConfig = {
 
   // Operating conditions
   starts: number; // Number of thread starts
+  speed?: number; // n (rpm)
 };
 
 export type BallScrewConfig = {

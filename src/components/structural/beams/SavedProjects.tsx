@@ -3,8 +3,12 @@
 type SavedProject = {
   id: string;
   name: string;
-  length?: number;
+  length: number;
   support?: string;
+  force: number;
+  udl: number;
+  inertia: number;
+  c: number;
   created_at?: string;
 };
 

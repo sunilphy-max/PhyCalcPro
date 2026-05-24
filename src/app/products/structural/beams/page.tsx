@@ -14,7 +14,7 @@ import SavedProjects from "@/components/structural/beams/SavedProjects";
 import { materials } from "@/data/materials";
 
 type BeamProject = {
-  id?: string;
+  id: string;
   name: string;
   length: number;
   force: number;

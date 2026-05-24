@@ -11,6 +11,8 @@ type Props = {
   x: number[];
   y: number[];
   yLabel: string;
+  probeX?: number | null;
+  peakValue?: number;
 };
 
 export default function EngineeringPlot({
@@ -18,6 +20,8 @@ export default function EngineeringPlot({
   x,
   y,
   yLabel,
+  probeX,
+  peakValue,
 }: Props) {
   const cleanY = y.map((v) => (Number.isFinite(v) ? v : 0));
 
