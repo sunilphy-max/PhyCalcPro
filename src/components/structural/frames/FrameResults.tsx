@@ -1,16 +1,22 @@
 "use client";
 
+
+import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FrameDiagram from "./FrameDiagram";
 import type { FrameResult } from "@/lib/structural/frames/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: FrameResult | null;
 };
 
 export default function FrameResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="frame" title="Export Frame results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the frame analysis to visualize deflection and internal action.</p>
       </div>

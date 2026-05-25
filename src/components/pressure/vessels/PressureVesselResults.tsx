@@ -1,15 +1,21 @@
 "use client";
 
+
+import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressureVesselResult } from "@/lib/pressure/vessels/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: PressureVesselResult | null;
 };
 
 export default function PressureVesselResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="pressure-vessel" title="Export Pressure Vessel results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the pressure vessel model to see hoop stress and radial deflection.</p>
       </div>

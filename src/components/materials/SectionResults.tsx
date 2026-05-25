@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import ResultExportControls from "@/components/ResultExportControls";
 type Props = {
   result: {
     shape: string;
@@ -12,8 +14,11 @@ type Props = {
 };
 
 export default function SectionResults({ result, linearUnit, areaUnit, inertiaUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="section" title="Export Section results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Choose a section and calculate its area and inertia properties.</p>
       </div>

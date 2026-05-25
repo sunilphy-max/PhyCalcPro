@@ -1,16 +1,22 @@
 "use client";
 
+
+import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import PlateHeatmap from "./PlateHeatmap";
 import type { PlateResult } from "@/lib/structural/plates/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: PlateResult | null;
 };
 
 export default function PlateResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="plate" title="Export Plate results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the plate analysis to display deflection and moment results.</p>
       </div>

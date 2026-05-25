@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { categories } from "@/data/modules";
 
 type SidebarProps = {
@@ -9,14 +11,49 @@ type SidebarProps = {
 };
 
 export default function Sidebar({ activeCategoryId }: SidebarProps) {
+  const pathname = usePathname();
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // -----------------------------
   // Scope categories based on page
   // -----------------------------
-  const visibleCategories = activeCategoryId
-    ? categories.filter((c) => c.id === activeCategoryId)
-    : categories;
+  const visibleCategories = useMemo(
+    () =>
+      activeCategoryId
+        ? categories.filter((category) => category.id === activeCategoryId)
+        : categories,
+    [activeCategoryId]
+  );
+
+  const activeCategoryFromPath = useMemo(
+    () =>
+      visibleCategories.find((category) =>
+        category.modules.some((module) => pathname?.startsWith(module.route))
+      )?.id,
+    [pathname, visibleCategories]
+  );
+
+  useEffect(() => {
+    if (activeCategoryFromPath) {
+      setOpenCategory(activeCategoryFromPath);
+    } else if (!openCategory) {
+      setOpenCategory(visibleCategories[0]?.id ?? null);
+    }
+  }, [activeCategoryFromPath, openCategory, visibleCategories]);
+
+  const activeModuleRoute = useMemo(
+    () =>
+      visibleCategories
+        .flatMap((category) => category.modules)
+        .find((module) => pathname?.startsWith(module.route))?.route,
+    [pathname, visibleCategories]
+  );
+
+  const moduleCount = visibleCategories.reduce(
+    (total, category) => total + category.modules.length,
+    0
+  );
 
   return (
     <div className="h-screen w-72 bg-white border-r border-slate-200 text-slate-950 shadow-sm overflow-y-auto">

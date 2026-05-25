@@ -1,13 +1,18 @@
+import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { HeatExchangerResult } from "@/lib/pressure/heat-exchangers/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: HeatExchangerResult | null;
 };
 
 export default function HeatExchangerResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="heat-exchanger" title="Export Heat Exchanger results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Run the heat exchanger model to see thermal duty, required area, and effectiveness.</p>
       </div>

@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { RivetResult } from "@/lib/fasteners/rivets/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: RivetResult | null;
@@ -9,8 +11,11 @@ type Props = {
 };
 
 export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="rivet" title="Export Rivet results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Rivet joint results</h2>
         <p className="text-slate-500 mt-2">Run the evaluation to see stress distribution and the controlling failure mode.</p>

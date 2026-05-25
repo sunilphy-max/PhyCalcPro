@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { CamResult } from "@/lib/machine/cams/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: CamResult | null;
@@ -7,8 +9,11 @@ type Props = {
 };
 
 export default function CamResults({ result, lengthUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="cam" title="Export Cam results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Cam analysis results</h2>
         <p className="text-slate-500 mt-2">Run the analysis to preview peak velocity, acceleration, and pressure angle.</p>

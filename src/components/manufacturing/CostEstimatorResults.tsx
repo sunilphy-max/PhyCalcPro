@@ -1,12 +1,17 @@
+import { useRef } from "react";
 import type { CostEstimatorResult } from "@/lib/manufacturing/costEstimator/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: CostEstimatorResult | null;
 };
 
 export default function CostEstimatorResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="cost-estimator" title="Export Cost Estimator results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter material and process assumptions to estimate total production cost.</p>
       </div>

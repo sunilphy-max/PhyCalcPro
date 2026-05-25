@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import ResultExportControls from "@/components/ResultExportControls";
 type Props = {
   result:
     | {
@@ -12,8 +14,11 @@ type Props = {
 };
 
 export default function RotationResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="rotation" title="Export Rotation results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter rotation data and calculate the dynamic response.</p>
       </div>

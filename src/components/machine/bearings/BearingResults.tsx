@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { BearingResult } from "@/lib/machine/bearings/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: BearingResult | null;
@@ -7,8 +9,11 @@ type Props = {
 };
 
 export default function BearingResults({ result, loadUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="bearing" title="Export Bearing results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Bearing life results</h2>
         <p className="text-slate-500 mt-2">

@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { CompositeResult } from "@/lib/materials/composites/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: CompositeResult | null;
@@ -8,8 +10,11 @@ type Props = {
 };
 
 export default function CompositeResults({ result, stressUnit, densityUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="composite" title="Export Composite results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter fiber and matrix properties to estimate composite stiffness, strength, and density.</p>
       </div>

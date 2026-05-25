@@ -1,16 +1,22 @@
 "use client";
 
+
+import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import VibrationDiagram from "./VibrationDiagram";
 import type { VibrationResult } from "@/lib/dynamics/vibrations/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: VibrationResult | null;
 };
 
 export default function VibrationResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="vibration" title="Export Vibration results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the vibration model to view natural frequencies and mode shapes.</p>
       </div>

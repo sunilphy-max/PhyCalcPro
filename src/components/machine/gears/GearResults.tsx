@@ -1,5 +1,7 @@
+import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { GearResult } from "@/lib/machine/gears/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: GearResult | null;
@@ -8,8 +10,11 @@ type Props = {
 };
 
 export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="gear" title="Export Gear results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Results</h2>
         <p className="text-slate-500 mt-2">Run the analysis to review gear geometry and root bending stress.</p>

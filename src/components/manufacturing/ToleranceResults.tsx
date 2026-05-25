@@ -1,3 +1,5 @@
+import { useRef } from "react";
+import ResultExportControls from "@/components/ResultExportControls";
 type Props = {
   result: {
     tolerances: number[];
@@ -10,8 +12,11 @@ type Props = {
 };
 
 export default function ToleranceResults({ result, displayUnit }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="tolerance" title="Export Tolerance results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Apply tolerances to see stackup and variability results.</p>
       </div>

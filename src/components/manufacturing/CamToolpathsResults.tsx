@@ -1,12 +1,17 @@
+import { useRef } from "react";
 import type { CamToolpathsResult } from "@/lib/manufacturing/camToolpaths/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: CamToolpathsResult | null;
 };
 
 export default function CamToolpathsResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="cam-toolpaths" title="Export Cam Toolpaths results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter tool and stock parameters to estimate feed, material removal, and cut time.</p>
       </div>

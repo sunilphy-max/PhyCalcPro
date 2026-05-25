@@ -1,15 +1,21 @@
 "use client";
 
+
+import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: PressurePipeResult | null;
 };
 
 export default function PressurePipeResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="pressure-pipe" title="Export Pressure Pipe results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the pipe model to see hoop stress and radial displacement around the circumference.</p>
       </div>

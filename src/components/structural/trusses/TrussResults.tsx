@@ -1,16 +1,22 @@
 "use client";
 
+
+import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import TrussDiagram from "./TrussDiagram";
 import type { TrussResult } from "@/lib/structural/trusses/types";
+import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: TrussResult | null;
 };
 
 export default function TrussResults({ result }: Props) {
+  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
+    <div className="space-y-6">
+      <ResultExportControls reportRef={reportRef} fileName="truss" title="Export Truss results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the truss analysis to see node displacements and member forces.</p>
       </div>

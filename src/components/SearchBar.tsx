@@ -37,10 +37,17 @@ export default function SearchBar() {
             <div
               key={r.route}
               onClick={() => handleSelect(r.route)}
-              className="px-4 py-2 hover:bg-slate-800 cursor-pointer"
+              className="px-4 py-3 hover:bg-slate-800 cursor-pointer"
             >
-              <div className="text-white text-sm">{r.title}</div>
-              <div className="text-slate-400 text-xs">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-white text-sm">{r.title}</div>
+                {r.comingSoon && (
+                  <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-700">
+                    Coming soon
+                  </span>
+                )}
+              </div>
+              <div className="mt-1 text-slate-400 text-xs">
                 {r.category}
               </div>
             </div>

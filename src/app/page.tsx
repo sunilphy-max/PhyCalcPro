@@ -84,20 +84,25 @@ export default function HomePage() {
       <section className="border-t border-slate-200 bg-white py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-3">
-            {categories.slice(0, 3).map((category) => {
+            {categories.map((category) => {
               const Icon = category.icon;
+              const categoryRoute = category.modules[0]?.route ?? "/products";
               return (
-                <div key={category.id} className="rounded-[2rem] border border-slate-200 bg-slate-50 p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                <Link
+                  key={category.id}
+                  href={categoryRoute}
+                  className="group block overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-50 p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                >
                   <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-900 text-white">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h2 className="mt-6 text-xl font-semibold text-slate-950">{category.title}</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{category.description}</p>
-                  <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <span>Explore</span>
+                  <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-slate-950">
+                    <span>Explore {category.title.split(" ")[0]}</span>
                     <ArrowRight className="h-4 w-4" />
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

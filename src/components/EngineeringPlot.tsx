@@ -4,6 +4,11 @@ import dynamic from "next/dynamic";
 
 const Plot = dynamic(() => import("react-plotly.js"), {
   ssr: false,
+  loading: () => (
+    <div className="flex h-72 items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+      Loading chart…
+    </div>
+  ),
 });
 
 type Props = {
