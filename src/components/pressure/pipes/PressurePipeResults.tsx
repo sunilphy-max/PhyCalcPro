@@ -19,6 +19,7 @@ export default function PressurePipeResults({ result }: Props) {
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the pipe model to see hoop stress and radial displacement around the circumference.</p>
       </div>
+    </div>
     );
   }
 

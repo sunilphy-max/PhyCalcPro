@@ -19,6 +19,7 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Run the hydraulic cylinder model to see force, pressure, and rod stress predictions.</p>
       </div>
+    </div>
     );
   }
 

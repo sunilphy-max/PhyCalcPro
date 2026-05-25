@@ -29,6 +29,7 @@ export default function SafetyFactorResults({
         <h2 className="text-lg font-semibold text-slate-900">Safety factor results</h2>
         <p className="text-slate-500 mt-2">Enter member geometry and loads to calculate combined stress and factor of safety.</p>
       </div>
+    </div>
     );
   }
 

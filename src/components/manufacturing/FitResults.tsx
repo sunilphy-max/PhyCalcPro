@@ -22,6 +22,7 @@ export default function FitResults({ result, displayUnit }: Props) {
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Select values and calculate the fit to view results.</p>
       </div>
+    </div>
     );
   }
 

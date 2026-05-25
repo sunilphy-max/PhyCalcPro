@@ -20,6 +20,7 @@ export default function TrussResults({ result }: Props) {
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the truss analysis to see node displacements and member forces.</p>
       </div>
+    </div>
     );
   }
 

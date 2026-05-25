@@ -15,6 +15,7 @@ export default function CostEstimatorResults({ result }: Props) {
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter material and process assumptions to estimate total production cost.</p>
       </div>
+    </div>
     );
   }
 

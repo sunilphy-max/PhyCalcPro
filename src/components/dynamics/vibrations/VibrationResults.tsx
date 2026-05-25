@@ -20,6 +20,7 @@ export default function VibrationResults({ result }: Props) {
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the vibration model to view natural frequencies and mode shapes.</p>
       </div>
+    </div>
     );
   }
 

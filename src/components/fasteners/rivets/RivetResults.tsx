@@ -20,6 +20,7 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
         <h2 className="text-lg font-semibold text-slate-900">Rivet joint results</h2>
         <p className="text-slate-500 mt-2">Run the evaluation to see stress distribution and the controlling failure mode.</p>
       </div>
+    </div>
     );
   }
 

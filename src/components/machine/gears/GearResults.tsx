@@ -19,6 +19,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
         <h2 className="text-lg font-semibold text-slate-900">Results</h2>
         <p className="text-slate-500 mt-2">Run the analysis to review gear geometry and root bending stress.</p>
       </div>
+    </div>
     );
   }
 

@@ -18,6 +18,7 @@ export default function CamResults({ result, lengthUnit }: Props) {
         <h2 className="text-lg font-semibold text-slate-900">Cam analysis results</h2>
         <p className="text-slate-500 mt-2">Run the analysis to preview peak velocity, acceleration, and pressure angle.</p>
       </div>
+    </div>
     );
   }
 

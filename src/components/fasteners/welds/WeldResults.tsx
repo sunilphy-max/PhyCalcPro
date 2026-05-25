@@ -1,7 +1,5 @@
-import { useRef } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { WeldResult } from "@/lib/fasteners/welds/types";
-import ResultExportControls from "@/components/ResultExportControls";
 
 type Props = {
   result: WeldResult | null;
@@ -11,11 +9,8 @@ type Props = {
 };
 
 export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
-  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
-    <div className="space-y-6">
-      <ResultExportControls reportRef={reportRef} fileName="weld" title="Export Weld results" description="Export the current summary and charts for review." />
       <div className="bg-white rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Weld analysis results</h2>
         <p className="text-slate-500 mt-2">Run the evaluation to see governing weld stress and safety factors.</p>

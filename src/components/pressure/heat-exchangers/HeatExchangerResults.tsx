@@ -16,6 +16,7 @@ export default function HeatExchangerResults({ result }: Props) {
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Run the heat exchanger model to see thermal duty, required area, and effectiveness.</p>
       </div>
+    </div>
     );
   }
 

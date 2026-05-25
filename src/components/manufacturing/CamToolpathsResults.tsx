@@ -15,6 +15,7 @@ export default function CamToolpathsResults({ result }: Props) {
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter tool and stock parameters to estimate feed, material removal, and cut time.</p>
       </div>
+    </div>
     );
   }
 

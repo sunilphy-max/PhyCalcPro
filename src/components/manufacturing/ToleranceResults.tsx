@@ -20,6 +20,7 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Apply tolerances to see stackup and variability results.</p>
       </div>
+    </div>
     );
   }
 

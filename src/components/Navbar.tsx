@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Bars3, Moon, Search, Sun, X } from "lucide-react";
+import { Menu, Moon, Search, Sun, X } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 
 const navigationItems = [
@@ -39,7 +39,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white font-semibold">P</n          </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white font-semibold">P</div>
             <div className="hidden sm:block">
               <div className="text-slate-900 font-semibold dark:text-slate-100">PhyCalcPro</div>
               <div className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Engineering Platform</div>
@@ -85,7 +85,7 @@ export default function Navbar() {
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Bars3 className="h-5 w-5" />}
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>

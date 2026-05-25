@@ -20,6 +20,7 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
         <h2 className="text-lg font-semibold text-slate-900">Flywheel results</h2>
         <p className="text-slate-500 mt-2">Run the calculation to review stored energy, inertia, and rim stress.</p>
       </div>
+    </div>
     );
   }
 

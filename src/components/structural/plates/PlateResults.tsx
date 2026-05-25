@@ -20,6 +20,7 @@ export default function PlateResults({ result }: Props) {
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the plate analysis to display deflection and moment results.</p>
       </div>
+    </div>
     );
   }
 

@@ -20,6 +20,7 @@ export default function FrameResults({ result }: Props) {
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the frame analysis to visualize deflection and internal action.</p>
       </div>
+    </div>
     );
   }
 

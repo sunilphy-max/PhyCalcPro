@@ -18,6 +18,7 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter fiber and matrix properties to estimate composite stiffness, strength, and density.</p>
       </div>
+    </div>
     );
   }
 

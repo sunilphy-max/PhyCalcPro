@@ -11,18 +11,9 @@ export function solveWeldDesign(config: WeldConfig): WeldResult {
   const axialStress = totalThroatArea > 0 ? Math.abs(config.axialForce) / totalThroatArea : 0;
   const resultantStress = Math.sqrt(shearStress * shearStress + axialStress * axialStress);
 
-  const allowableShear =
-    config.weldType === "fillet"
-      ? 0.3 * config.material.strength
-      : 0.4 * config.material.strength;
-  const allowableAxial =
-    config.weldType === "fillet"
-      ? 0.424 * config.material.strength
-      : 0.6 * config.material.strength;
-  const allowableResultant =
-    config.weldType === "fillet"
-      ? 0.424 * config.material.strength
-      : 0.6 * config.material.strength;
+  const allowableShear = 0.6 * config.material.strength;
+  const allowableAxial = 0.4 * config.material.strength;
+  const allowableResultant = 0.5 * config.material.strength;
 
   const safetyFactorShear = allowableShear / Math.max(shearStress, 1e-12);
   const safetyFactorAxial = allowableAxial / Math.max(axialStress, 1e-12);

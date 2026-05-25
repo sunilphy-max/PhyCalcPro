@@ -19,6 +19,7 @@ export default function PressureVesselResults({ result }: Props) {
       <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
         <p>Run the pressure vessel model to see hoop stress and radial deflection.</p>
       </div>
+    </div>
     );
   }
 

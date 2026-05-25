@@ -20,6 +20,7 @@ export default function BearingResults({ result, loadUnit }: Props) {
           Run the calculation to see equivalent loads and dynamic rating requirements.
         </p>
       </div>
+    </div>
     );
   }
 

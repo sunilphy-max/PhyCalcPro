@@ -22,6 +22,7 @@ export default function RotationResults({ result }: Props) {
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Enter rotation data and calculate the dynamic response.</p>
       </div>
+    </div>
     );
   }
 

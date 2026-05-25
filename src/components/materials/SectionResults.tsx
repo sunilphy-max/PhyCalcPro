@@ -22,6 +22,7 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
       <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
         <p>Choose a section and calculate its area and inertia properties.</p>
       </div>
+    </div>
     );
   }
 
