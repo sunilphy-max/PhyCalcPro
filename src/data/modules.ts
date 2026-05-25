@@ -136,7 +136,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/structural/combined-loading",
         category: "structural",
         icon: Combine,
-        comingSoon: true,
       },
       {
         id: "load-case-manager",
@@ -145,7 +144,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/structural/load-case-manager",
         category: "structural",
         icon: Workflow,
-        comingSoon: true,
       },
     ],
   },
@@ -305,7 +303,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/temperature-properties",
         category: "materials",
         icon: Flame,
-        comingSoon: true,
       },
       {
         id: "fatigue",
@@ -314,7 +311,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/fatigue",
         category: "materials",
         icon: Gauge,
-        comingSoon: true,
       },
       {
         id: "corrosion",
@@ -323,7 +319,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/corrosion",
         category: "materials",
         icon: Wrench,
-        comingSoon: true,
       },
     ],
   },
@@ -412,7 +407,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/dynamics/impact",
         category: "dynamics",
         icon: Zap,
-        comingSoon: true,
       },
       {
         id: "suspension",
@@ -421,7 +415,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/dynamics/suspension",
         category: "dynamics",
         icon: Orbit,
-        comingSoon: true,
       },
     ],
   },

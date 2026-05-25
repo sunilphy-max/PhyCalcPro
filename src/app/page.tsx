@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { categories } from "@/data/modules";
+import { categories, featuredModules } from "@/data/modules";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import HeroSchematic from "@/components/HeroSchematic";
 import {
@@ -77,6 +77,43 @@ export default function HomePage() {
               <HeroSchematic />
               <EngineeringPlot title="Deflection profile" x={demoX} y={demoY} yLabel="Deflection (mm)" />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-white py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Quick access</p>
+              <h2 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">Jump straight to the tools you need.</h2>
+            </div>
+            <div className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600 shadow-sm">
+              Access product pages directly from the home experience.
+            </div>
+          </div>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredModules.slice(0, 6).map((module) => {
+              const ModuleIcon = module.icon;
+              return (
+                <Link
+                  key={module.id}
+                  href={module.route}
+                  className="group block overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-900 text-white">
+                    {ModuleIcon ? <ModuleIcon className="h-5 w-5" /> : <CircleDot className="h-5 w-5" />}
+                  </div>
+                  <h3 className="mt-5 text-xl font-semibold text-slate-950">{module.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{module.description}</p>
+                  <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-slate-950">
+                    <span>Open tool</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
