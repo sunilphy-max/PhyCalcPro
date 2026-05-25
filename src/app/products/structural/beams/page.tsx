@@ -6,7 +6,7 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import MeshControls from "@/components/shared/MeshControls";
 import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
-import type { Load, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
+import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
@@ -21,8 +21,15 @@ type BeamProject = {
   udl: number;
   inertia: number;
   c: number;
+  support?: string;
+  created_at?: string;
 };
 import { solveBeamEngine } from "@/lib/structural/beams/engine";
+
+const getNewLoadId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : Math.random().toString(16).slice(2);
 
 export default function Page() {
   // =========================
@@ -52,14 +59,9 @@ export default function Page() {
   // =========================
   // LOADS (STEP 6)
   // =========================
-  const createId = () =>
-  typeof crypto !== "undefined" && crypto.randomUUID
-    ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
   const [loads, setLoads] = useState<Load[]>(() => [
     {
-      id: createId(),
+      id: "initial-point-load",
       type: "point",
       value: 1000,
       position: 2.5,
@@ -70,7 +72,7 @@ export default function Page() {
   setLoads([
     ...loads,
     {
-      id: createId(),
+      id: getNewLoadId(),
       type: "point",
       value: 500,
       position: length / 2,
@@ -82,7 +84,7 @@ export default function Page() {
   setLoads([
     ...loads,
     {
-      id: createId(),
+      id: getNewLoadId(),
       type: "udl",
       value: 200,
       start: 1,
@@ -118,6 +120,8 @@ const handleLoadDrag = (
   const removeLoad = (index: number) => {
     setLoads(loads.filter((_, i) => i !== index));
   };
+
+  const isUDL = (load: Load): load is UDL => load.type === "udl";
 
   // =========================
   // UI STATE
@@ -169,7 +173,7 @@ const handleLoadDrag = (
           };
         }
 
-        if (l.type === "udl") {
+        if (isUDL(l)) {
           return {
             ...l,
             value: toBase(l.value, "forcePerLength", udlUnit),

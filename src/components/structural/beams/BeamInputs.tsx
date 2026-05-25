@@ -1,6 +1,6 @@
 "use client";
 
-import { Load } from "@/lib/structural/beams/types";
+import { Load, UDL } from "@/lib/structural/beams/types";
 import { materials } from "@/data/materials";
 
 type Props = {
@@ -244,7 +244,7 @@ export default function BeamInputs(props: Props) {
                   value={load.start}
                   onChange={(e) =>
                     props.updateLoad(i, {
-                      ...load,
+                      ...(load as UDL),
                       start: +e.target.value,
                     })
                   }
@@ -254,7 +254,7 @@ export default function BeamInputs(props: Props) {
                   value={load.end}
                   onChange={(e) =>
                     props.updateLoad(i, {
-                      ...load,
+                      ...(load as UDL),
                       end: +e.target.value,
                     })
                   }
