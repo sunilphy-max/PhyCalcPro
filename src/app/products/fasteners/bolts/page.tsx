@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ScrewsInputs from "@/components/fasteners/bolts/ScrewsInputs";
 import ScrewsResults from "@/components/fasteners/bolts/ScrewsResults";
-import { supabase } from "@/lib/supabase";
 import { solveScrewEngine } from "@/lib/fasteners/bolts/engine";
 import type { ScrewConfig, ScrewResult } from "@/lib/fasteners/bolts/types";
+import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+
+type ScrewProjectData = {
+  config: ScrewConfig;
+};
+
+type ScrewProject = LocalProject<ScrewProjectData>;
 
 export default function Page() {
   // =========================
@@ -31,23 +37,9 @@ export default function Page() {
   const [result, setResult] = useState<ScrewResult | null>(null);
   const [projectName, setProjectName] = useState("Bolt Design Project");
   const [saving, setSaving] = useState(false);
-  const [savedProjects, setSavedProjects] = useState<any[]>([]);
-
-  // =========================
-  // LOAD PROJECTS
-  // =========================
-  const loadProjects = async () => {
-    const { data } = await supabase
-      .from("screws_projects")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    setSavedProjects(data || []);
-  };
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
+  const [savedProjects, setSavedProjects] = useState<ScrewProject[]>(() =>
+    loadLocalProjects<ScrewProjectData>("screws")
+  );
 
   // =========================
   // SOLVER
@@ -60,24 +52,21 @@ export default function Page() {
   // =========================
   // SAVE
   // =========================
-  const saveProject = async () => {
+  const saveProject = () => {
     setSaving(true);
 
-    await supabase.from("screws_projects").insert([
-      {
-        name: projectName,
-        config,
-      },
-    ]);
+    const projects = saveLocalProject<ScrewProjectData>("screws", projectName, {
+      config,
+    });
 
+    setSavedProjects(projects);
     setSaving(false);
-    loadProjects();
   };
 
   // =========================
   // LOAD
   // =========================
-  const loadProjectIntoForm = (p: any) => {
+  const loadProjectIntoForm = (p: ScrewProject) => {
     setProjectName(p.name);
     setConfig(p.config);
   };

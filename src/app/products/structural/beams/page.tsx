@@ -1,29 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MeshControls from "@/components/shared/MeshControls";
-import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
+import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
 import SavedProjects from "@/components/structural/beams/SavedProjects";
 import { materials } from "@/data/materials";
 
-type BeamProject = {
-  id: string;
-  name: string;
+type BeamProjectData = {
   length: number;
   force: number;
   udl: number;
   inertia: number;
   c: number;
   support?: string;
-  created_at?: string;
+  loads: Load[];
 };
+type BeamProject = LocalProject<BeamProjectData>;
 import { solveBeamEngine } from "@/lib/structural/beams/engine";
 
 const getNewLoadId = () =>
@@ -129,27 +128,9 @@ const handleLoadDrag = (
   const [result, setResult] = useState<BeamResult | null>(null);
   const [projectName, setProjectName] = useState("Beam Project");
   const [saving, setSaving] = useState(false);
-  const [savedProjects, setSavedProjects] = useState<BeamProject[]>([]);
-
-  // =========================
-  // LOAD PROJECTS
-  // =========================
-  const loadProjects = async () => {
-    const { data } = await supabase
-      .from("beam_projects")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    setSavedProjects((data as BeamProject[]) || []);
-  };
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      await loadProjects();
-    };
-
-    fetchProjects();
-  }, []);
+  const [savedProjects, setSavedProjects] = useState<BeamProject[]>(() =>
+    loadLocalProjects<BeamProjectData>("beam")
+  );
 
   // =========================
   // SOLVER
@@ -217,22 +198,21 @@ const handleLoadDrag = (
   // =========================
   // SAVE
   // =========================
-  const saveProject = async () => {
+  const saveProject = () => {
     setSaving(true);
 
-    await supabase.from("beam_projects").insert([
-      {
-        name: projectName,
-        length,
-        force,
-        udl,
-        inertia: I,
-        c,
-      },
-    ]);
+    const projects = saveLocalProject<BeamProjectData>("beam", projectName, {
+      length,
+      force,
+      udl,
+      inertia: I,
+      c,
+      support,
+      loads,
+    });
 
+    setSavedProjects(projects);
     setSaving(false);
-    loadProjects();
   };
 
   // =========================
@@ -245,6 +225,10 @@ const handleLoadDrag = (
     setUdl(p.udl);
     setI(p.inertia);
     setC(p.c);
+    setLoads(p.loads ?? []);
+    if (p.support === "simply_supported" || p.support === "cantilever" || p.support === "fixed_fixed") {
+      setSupport(p.support);
+    }
   };
 
   // =========================

@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ProfilesInputs from "@/components/profiles/ProfilesInputs";
 import ProfilesResults from "@/components/profiles/ProfilesResults";
-import { supabase } from "@/lib/supabase";
 import { solveAreaPropertiesEngine } from "@/lib/profiles/engine";
 import type { AreaPropertiesConfig, AreaPropertiesResult, ShapeProperties } from "@/lib/profiles/types";
+import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+
+type ProfilesProjectData = {
+  shape: ShapeProperties;
+};
+
+type ProfilesProject = LocalProject<ProfilesProjectData>;
 
 export default function Page() {
   // =========================
@@ -24,23 +30,9 @@ export default function Page() {
   const [result, setResult] = useState<AreaPropertiesResult | null>(null);
   const [projectName, setProjectName] = useState("Area Properties Project");
   const [saving, setSaving] = useState(false);
-  const [savedProjects, setSavedProjects] = useState<any[]>([]);
-
-  // =========================
-  // LOAD PROJECTS
-  // =========================
-  const loadProjects = async () => {
-    const { data } = await supabase
-      .from("profiles_projects")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    setSavedProjects(data || []);
-  };
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
+  const [savedProjects, setSavedProjects] = useState<ProfilesProject[]>(() =>
+    loadLocalProjects<ProfilesProjectData>("profiles")
+  );
 
   // =========================
   // SOLVER
@@ -57,24 +49,21 @@ export default function Page() {
   // =========================
   // SAVE
   // =========================
-  const saveProject = async () => {
+  const saveProject = () => {
     setSaving(true);
 
-    await supabase.from("profiles_projects").insert([
-      {
-        name: projectName,
-        shape,
-      },
-    ]);
+    const projects = saveLocalProject<ProfilesProjectData>("profiles", projectName, {
+      shape,
+    });
 
+    setSavedProjects(projects);
     setSaving(false);
-    loadProjects();
   };
 
   // =========================
   // LOAD
   // =========================
-  const loadProjectIntoForm = (p: any) => {
+  const loadProjectIntoForm = (p: ProfilesProject) => {
     setProjectName(p.name);
     setShape(p.shape);
   };

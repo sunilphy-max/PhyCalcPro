@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ShaftInputs from "@/components/machine/shafts/ShaftInputs";
 import ShaftResults from "@/components/machine/shafts/ShaftResults";
-import { supabase } from "@/lib/supabase";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveShaftEngine } from "@/lib/machine/shafts/engine";
 import type { ShaftConfig, ShaftResult, ShaftMaterial, LoadCase } from "@/lib/machine/shafts/types";
+import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 
 // Standard materials
 const MATERIALS: Record<string, ShaftMaterial> = {
@@ -34,6 +34,17 @@ const MATERIALS: Record<string, ShaftMaterial> = {
     yieldStress: 880e6,
   },
 };
+
+type ShaftProjectData = {
+  diameter: number;
+  length: number;
+  material: string;
+  elasticModulus: number;
+  shearModulus: number;
+  loads: LoadCase[];
+};
+
+type ShaftProject = LocalProject<ShaftProjectData>;
 
 export default function Page() {
   // =========================
@@ -61,32 +72,18 @@ export default function Page() {
   const [meshSegments, setMeshSegments] = useState(100);
   const [projectName, setProjectName] = useState("Shaft Project");
   const [saving, setSaving] = useState(false);
-  const [savedProjects, setSavedProjects] = useState<any[]>([]);
+  const [savedProjects, setSavedProjects] = useState<ShaftProject[]>(() =>
+    loadLocalProjects<ShaftProjectData>("shaft")
+  );
 
-  // =========================
-  // LOAD PROJECTS
-  // =========================
-  const loadProjects = async () => {
-    const { data } = await supabase
-      .from("shaft_projects")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    setSavedProjects(data || []);
-  };
-
-  useEffect(() => {
-    loadProjects();
-  }, []);
-
-  // Update modulus when material changes
-  useEffect(() => {
-    const mat = MATERIALS[material];
+  const handleMaterialChange = (nextMaterial: string) => {
+    setMaterial(nextMaterial);
+    const mat = MATERIALS[nextMaterial];
     if (mat) {
       setElasticModulus(mat.E);
       setShearModulus(mat.G);
     }
-  }, [material]);
+  };
 
   // =========================
   // SOLVER
@@ -125,29 +122,26 @@ export default function Page() {
   // =========================
   // SAVE
   // =========================
-  const saveProject = async () => {
+  const saveProject = () => {
     setSaving(true);
 
-    await supabase.from("shaft_projects").insert([
-      {
-        name: projectName,
-        diameter,
-        length,
-        material,
-        elasticModulus,
-        shearModulus,
-        loads,
-      },
-    ]);
+    const projects = saveLocalProject<ShaftProjectData>("shaft", projectName, {
+      diameter,
+      length,
+      material,
+      elasticModulus,
+      shearModulus,
+      loads,
+    });
 
+    setSavedProjects(projects);
     setSaving(false);
-    loadProjects();
   };
 
   // =========================
   // LOAD
   // =========================
-  const loadProjectIntoForm = (p: any) => {
+  const loadProjectIntoForm = (p: ShaftProject) => {
     setProjectName(p.name);
     setDiameter(p.diameter);
     setLength(p.length);
@@ -199,7 +193,7 @@ export default function Page() {
             lengthUnit={lengthUnit}
             setLengthUnit={setLengthUnit}
             material={material}
-            setMaterial={setMaterial}
+            setMaterial={handleMaterialChange}
             elasticModulus={elasticModulus}
             setElasticModulus={setElasticModulus}
             shearModulus={shearModulus}
