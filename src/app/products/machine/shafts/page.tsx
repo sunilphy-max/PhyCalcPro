@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ShaftInputs from "@/components/machine/shafts/ShaftInputs";
 import ShaftResults from "@/components/machine/shafts/ShaftResults";
@@ -158,29 +159,11 @@ export default function Page() {
     <DashboardLayout title="Shaft Design Module">
       <CalculatorLayout
         title="Shaft Stress & Deflection Analysis"
-        left={
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-300 mb-2">
-                Saved Projects
-              </h3>
-              {savedProjects.length === 0 ? (
-                <p className="text-sm text-slate-500">No saved projects</p>
-              ) : (
-                <div className="space-y-2">
-                  {savedProjects.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => loadProjectIntoForm(p)}
-                      className="w-full text-left px-3 py-2 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm transition"
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+        footer={
+          <SavedProjectsFooter
+            projects={savedProjects}
+            onLoad={(project) => loadProjectIntoForm(project as ShaftProject)}
+          />
         }
         center={
           <ShaftInputs

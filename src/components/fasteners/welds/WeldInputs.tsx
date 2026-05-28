@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { WeldType } from "@/lib/fasteners/welds/types";
 
 type Props = {
@@ -84,9 +84,9 @@ export default function WeldInputs({
               onChange={(event) => setWeldSize(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="welds"
+              fieldKey="length"
               value={weldSizeUnit}
               onChange={setWeldSizeUnit}
             />
@@ -102,9 +102,9 @@ export default function WeldInputs({
               onChange={(event) => setWeldLength(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="welds"
+              fieldKey="length"
               value={weldLengthUnit}
               onChange={setWeldLengthUnit}
             />
@@ -131,9 +131,9 @@ export default function WeldInputs({
               onChange={(event) => setShearForce(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="force"
+            <ModuleUnitSelect
+              moduleId="welds"
+              fieldKey="force"
               value={shearForceUnit}
               onChange={setShearForceUnit}
             />
@@ -149,9 +149,9 @@ export default function WeldInputs({
               onChange={(event) => setAxialForce(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="force"
+            <ModuleUnitSelect
+              moduleId="welds"
+              fieldKey="force"
               value={axialForceUnit}
               onChange={setAxialForceUnit}
             />

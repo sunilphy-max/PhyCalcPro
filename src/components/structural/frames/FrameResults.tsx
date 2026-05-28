@@ -1,34 +1,43 @@
 "use client";
 
-
-import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FrameDiagram from "./FrameDiagram";
 import type { FrameResult } from "@/lib/structural/frames/types";
-import ResultExportControls from "@/components/ResultExportControls";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
 import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
+import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
   result: FrameResult | null;
 };
 
 export default function FrameResults({ result }: Props) {
-  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
-    <div className="space-y-6">
-      <ResultExportControls reportRef={reportRef} fileName="frame" title="Export Frame results" description="Export the current summary and charts for review." />
-      <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
-        <p>Run the frame analysis to visualize deflection and internal action.</p>
-      </div>
-    </div>
+      <ExportableReport
+        fileName="frame"
+        title="Export Frame results"
+        description="Export the current summary and charts for review."
+      >
+        <div className="flex min-h-[12rem] items-center justify-center rounded-xl border border-slate-200 bg-white p-6 shadow-sm text-slate-500">
+          <p>Run the frame analysis to visualize deflection and internal action.</p>
+        </div>
+      </ExportableReport>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm p-4">
+    <ExportableReport
+      fileName="frame"
+      title="Export Frame results"
+      description="Export the current summary and charts for review."
+      csvRows={[
+        { metric: "maxDisplacement", value: result.maxDisplacement },
+        { metric: "maxAxial", value: result.maxAxial },
+        { metric: "maxMoment", value: result.maxMoment },
+      ]}
+    >
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="text-xs uppercase tracking-wider text-slate-500">Max displacement</div>
@@ -54,7 +63,6 @@ export default function FrameResults({ result }: Props) {
           exportConsistency: true,
         }}
       />
-
       <EngineeringPlot
         title="Beam midspan deflection"
         x={result.topNodesX}
@@ -62,14 +70,8 @@ export default function FrameResults({ result }: Props) {
         yLabel="Deflection"
         unitLabel="m"
       />
-
       <FrameDiagram result={result} />
-      <FEAColorStrip
-        title="Frame Deflection Intensity"
-        x={result.topNodesX}
-        values={result.topDeflections}
-        unit="m"
-      />
-    </div>
+      <FEAColorStrip title="Frame Deflection Intensity" x={result.topNodesX} values={result.topDeflections} unit="m" />
+    </ExportableReport>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { SectionShape } from "@/lib/materials/types";
 
 type Props = {
@@ -81,11 +81,11 @@ export default function SectionInputs({
           </select>
         </label>
 
-        <UnitSelector
-          dimension="length"
+        <ModuleUnitSelect
+          moduleId="sections"
+          fieldKey="length"
           value={lengthUnit}
           onChange={setLengthUnit}
-          label="Length unit"
         />
       </div>
 

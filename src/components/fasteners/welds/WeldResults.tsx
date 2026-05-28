@@ -1,5 +1,6 @@
 import { fromBase } from "@/lib/units/conversions";
 import type { WeldResult } from "@/lib/fasteners/welds/types";
+import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
   result: WeldResult | null;
@@ -11,22 +12,27 @@ type Props = {
 export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
   if (!result) {
     return (
-      <div className="bg-white rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Weld analysis results</h2>
-        <p className="text-slate-500 mt-2">Run the evaluation to see governing weld stress and safety factors.</p>
-      </div>
+      <ExportableReport
+        fileName="weld"
+        title="Export Weld results"
+        description="Export the current weld analysis summary."
+      >
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-slate-900">Weld analysis results</h2>
+          <p className="mt-2 text-slate-500">Run the evaluation to see governing weld stress and safety factors.</p>
+        </div>
+      </ExportableReport>
     );
   }
 
   const weldSize = fromBase(result.weldSize, "length", lengthUnit);
   const throatSize = fromBase(result.throatSize, "length", lengthUnit);
-  const weldLength = fromBase(result.weldLength, "length", lengthUnit);
 
-  return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
+  const content = (
+    <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <div>
         <h2 className="text-lg font-semibold text-slate-900">Weld design summary</h2>
-        <p className="text-sm text-slate-500 mt-1">Review throat area, stresses, and the controlling failure mode.</p>
+        <p className="mt-1 text-sm text-slate-500">Review throat area, stresses, and the controlling failure mode.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -39,11 +45,15 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
             </div>
             <div className="flex justify-between gap-4">
               <dt>Weld size</dt>
-              <dd>{weldSize.toFixed(3)} {lengthUnit}</dd>
+              <dd>
+                {weldSize.toFixed(3)} {lengthUnit}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Throat size</dt>
-              <dd>{throatSize.toFixed(3)} {lengthUnit}</dd>
+              <dd>
+                {throatSize.toFixed(3)} {lengthUnit}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Total throat area</dt>
@@ -57,15 +67,21 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
           <dl className="mt-3 space-y-3 text-sm text-slate-600">
             <div className="flex justify-between gap-4">
               <dt>Shear stress</dt>
-              <dd>{fromBase(result.shearStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
+              <dd>
+                {fromBase(result.shearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Axial stress</dt>
-              <dd>{fromBase(result.axialStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
+              <dd>
+                {fromBase(result.axialStress, "stress", stressUnit).toFixed(1)} {stressUnit}
+              </dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt>Resultant stress</dt>
-              <dd>{fromBase(result.resultantStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
+              <dd>
+                {fromBase(result.resultantStress, "stress", stressUnit).toFixed(1)} {stressUnit}
+              </dd>
             </div>
           </dl>
         </div>
@@ -75,7 +91,7 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
         <div className="flex items-center justify-between gap-4">
           <div>
             <h3 className="text-sm font-semibold text-slate-700">Safety factors</h3>
-            <p className="text-sm text-slate-500 mt-1">The smallest factor controls the weld design.</p>
+            <p className="mt-1 text-sm text-slate-500">The smallest factor controls the weld design.</p>
           </div>
           <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
             {result.safetyFactorOverall.toFixed(2)}×
@@ -102,5 +118,20 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <ExportableReport
+      fileName="weld"
+      title="Export Weld results"
+      description="Export the current weld analysis summary."
+      csvRows={[
+        { metric: "safetyFactorOverall", value: result.safetyFactorOverall },
+        { metric: "resultantStress", value: fromBase(result.resultantStress, "stress", stressUnit) },
+        { metric: "governingMode", value: result.governingMode },
+      ]}
+    >
+      {content}
+    </ExportableReport>
   );
 }

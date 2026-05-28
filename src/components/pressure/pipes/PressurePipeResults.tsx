@@ -1,34 +1,43 @@
 "use client";
 
-
-import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
-import ResultExportControls from "@/components/ResultExportControls";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
 import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
+import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
   result: PressurePipeResult | null;
 };
 
 export default function PressurePipeResults({ result }: Props) {
-  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
-    <div className="space-y-6">
-      <ResultExportControls reportRef={reportRef} fileName="pressure-pipe" title="Export Pressure Pipe results" description="Export the current summary and charts for review." />
-      <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
-        <p>Run the pipe model to see hoop stress and radial displacement around the circumference.</p>
-      </div>
-    </div>
+      <ExportableReport
+        fileName="pressure-pipe"
+        title="Export Pressure Pipe results"
+        description="Export the current summary and charts for review."
+      >
+        <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
+          <p>Run the pipe model to see hoop stress and radial displacement around the circumference.</p>
+        </div>
+      </ExportableReport>
     );
   }
 
   const angles = result.angles.map((theta) => (theta < 0 ? theta + 2 * Math.PI : theta) * (180 / Math.PI));
 
   return (
-    <div className="space-y-6">
+    <ExportableReport
+      fileName="pressure-pipe"
+      title="Export Pressure Pipe results"
+      description="Export the current summary and charts for review."
+      csvRows={[
+        { metric: "maxRadialDisplacement", value: result.maxRadialDisplacement },
+        { metric: "maxHoopStress", value: result.maxHoopStress },
+        { metric: "segments", value: result.segments },
+      ]}
+    >
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -81,6 +90,6 @@ export default function PressurePipeResults({ result }: Props) {
         values={result.hoopStress}
         unit="Pa"
       />
-    </div>
+    </ExportableReport>
   );
 }

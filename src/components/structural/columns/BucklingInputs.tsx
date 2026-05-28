@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { EndCondition } from "@/lib/structural/columns/types";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
   projectName: string;
@@ -95,15 +96,12 @@ export default function BucklingInputs({
               value={length}
               onChange={(e) => setLength(+e.target.value)}
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="columns"
+              fieldKey="length"
               value={lengthUnit}
-              onChange={(e) => setLengthUnit(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="m">m</option>
-              <option value="mm">mm</option>
-              <option value="cm">cm</option>
-            </select>
+              onChange={setLengthUnit}
+            />
           </div>
         </div>
 
@@ -133,14 +131,12 @@ export default function BucklingInputs({
               value={inertia}
               onChange={(e) => setInertia(+e.target.value)}
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="columns"
+              fieldKey="inertia"
               value={inertiaUnit}
-              onChange={(e) => setInertiaUnit(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="m4">m⁴</option>
-              <option value="mm4">mm⁴</option>
-            </select>
+              onChange={setInertiaUnit}
+            />
           </div>
         </div>
       </div>
@@ -159,15 +155,12 @@ export default function BucklingInputs({
               value={elasticModulus}
               onChange={(e) => setElasticModulus(+e.target.value)}
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="columns"
+              fieldKey="stress"
               value={elasticModulusUnit}
-              onChange={(e) => setElasticModulusUnit(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="Pa">Pa</option>
-              <option value="MPa">MPa</option>
-              <option value="GPa">GPa</option>
-            </select>
+              onChange={setElasticModulusUnit}
+            />
           </div>
         </div>
       </div>
@@ -185,15 +178,12 @@ export default function BucklingInputs({
               value={load}
               onChange={(e) => setLoad(+e.target.value)}
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="columns"
+              fieldKey="load"
               value={loadUnit}
-              onChange={(e) => setLoadUnit(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="N">N</option>
-              <option value="kN">kN</option>
-              <option value="MN">MN</option>
-            </select>
+              onChange={setLoadUnit}
+            />
           </div>
         </div>
 

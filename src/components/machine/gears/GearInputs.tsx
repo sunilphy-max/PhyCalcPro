@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
   power: number;
@@ -66,14 +67,12 @@ export default function GearInputs({
               onChange={(event) => setPower(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="gears"
+              fieldKey="power"
               value={powerUnit}
-              onChange={(event) => setPowerUnit(event.target.value)}
-              className="rounded border border-slate-300 bg-white px-3 py-2"
-            >
-              <option value="kW">kW</option>
-              <option value="W">W</option>
-            </select>
+              onChange={setPowerUnit}
+            />
           </div>
         </label>
 
@@ -118,14 +117,12 @@ export default function GearInputs({
               onChange={(event) => setModule(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="gears"
+              fieldKey="module"
               value={moduleUnit}
-              onChange={(event) => setModuleUnit(event.target.value)}
-              className="rounded border border-slate-300 bg-white px-3 py-2"
-            >
-              <option value="mm">mm</option>
-              <option value="in">in</option>
-            </select>
+              onChange={setModuleUnit}
+            />
           </div>
         </label>
 
@@ -138,14 +135,12 @@ export default function GearInputs({
               onChange={(event) => setFaceWidth(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="gears"
+              fieldKey="faceWidth"
               value={faceWidthUnit}
-              onChange={(event) => setFaceWidthUnit(event.target.value)}
-              className="rounded border border-slate-300 bg-white px-3 py-2"
-            >
-              <option value="mm">mm</option>
-              <option value="in">in</option>
-            </select>
+              onChange={setFaceWidthUnit}
+            />
           </div>
         </label>
       </div>

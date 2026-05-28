@@ -2,6 +2,7 @@
 
 import { Load, UDL } from "@/lib/structural/beams/types";
 import { materials } from "@/data/materials";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
   projectName: string;
@@ -94,15 +95,12 @@ export default function BeamInputs(props: Props) {
           value={props.length}
           onChange={(e) => props.setLength(+e.target.value)}
         />
-        <select
+        <ModuleUnitSelect
+          moduleId="beams"
+          fieldKey="length"
           value={props.lengthUnit}
-          onChange={(e) => props.setLengthUnit(e.target.value)}
-        >
-          <option value="m">m</option>
-          <option value="mm">mm</option>
-          <option value="ft">ft</option>
-          <option value="in">in</option>
-        </select>
+          onChange={props.setLengthUnit}
+        />
       </div>
 
       {/* ================= FORCE ================= */}
@@ -112,13 +110,12 @@ export default function BeamInputs(props: Props) {
           value={props.force}
           onChange={(e) => props.setForce(+e.target.value)}
         />
-        <select
+        <ModuleUnitSelect
+          moduleId="beams"
+          fieldKey="force"
           value={props.forceUnit}
-          onChange={(e) => props.setForceUnit(e.target.value)}
-        >
-          <option value="N">N</option>
-          <option value="lbf">lbf</option>
-        </select>
+          onChange={props.setForceUnit}
+        />
       </div>
 
       {/* ================= UDL ================= */}
@@ -128,13 +125,12 @@ export default function BeamInputs(props: Props) {
           value={props.udl}
           onChange={(e) => props.setUdl(+e.target.value)}
         />
-        <select
+        <ModuleUnitSelect
+          moduleId="beams"
+          fieldKey="udl"
           value={props.udlUnit}
-          onChange={(e) => props.setUdlUnit(e.target.value)}
-        >
-          <option value="N/m">N/m</option>
-          <option value="lbf/ft">lbf/ft</option>
-        </select>
+          onChange={props.setUdlUnit}
+        />
       </div>
 
       {/* ================= INERTIA ================= */}
@@ -144,38 +140,33 @@ export default function BeamInputs(props: Props) {
           value={props.I}
           onChange={(e) => props.setI(+e.target.value)}
         />
-        <select
+        <ModuleUnitSelect
+          moduleId="beams"
+          fieldKey="inertia"
           value={props.inertiaUnit}
-          onChange={(e) => props.setInertiaUnit(e.target.value)}
-        >
-          <option value="m4">m⁴</option>
-          <option value="in4">in⁴</option>
-        </select>
+          onChange={props.setInertiaUnit}
+        />
       </div>
 
       {/* ================= MOMENT/STRESS UNITS ================= */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="text-sm text-gray-500">Moment units</label>
-          <select
-            className="w-full border p-2 rounded"
+          <ModuleUnitSelect
+            moduleId="beams"
+            fieldKey="moment"
             value={props.momentUnit}
-            onChange={(e) => props.setMomentUnit(e.target.value)}
-          >
-            <option value="N·m">N·m</option>
-            <option value="lbf·ft">lbf·ft</option>
-          </select>
+            onChange={props.setMomentUnit}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-sm text-gray-500">Stress units</label>
-          <select
-            className="w-full border p-2 rounded"
+          <ModuleUnitSelect
+            moduleId="beams"
+            fieldKey="stress"
             value={props.stressUnit}
-            onChange={(e) => props.setStressUnit(e.target.value)}
-          >
-            <option value="Pa">Pa</option>
-            <option value="psi">psi</option>
-          </select>
+            onChange={props.setStressUnit}
+          />
         </div>
       </div>
 
@@ -187,15 +178,12 @@ export default function BeamInputs(props: Props) {
           value={props.c}
           onChange={(e) => props.setC(+e.target.value)}
         />
-        <select
+        <ModuleUnitSelect
+          moduleId="beams"
+          fieldKey="length"
           value={props.lengthUnit}
-          onChange={(e) => props.setLengthUnit(e.target.value)}
-        >
-          <option value="m">m</option>
-          <option value="mm">mm</option>
-          <option value="ft">ft</option>
-          <option value="in">in</option>
-        </select>
+          onChange={props.setLengthUnit}
+        />
       </div>
 
       {/* ================= LOADS SECTION ================= */}

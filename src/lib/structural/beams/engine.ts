@@ -16,6 +16,16 @@ export type BeamEngineResult = {
   maxShear: number;
   maxStress: number;
   maxDeflection: number;
+  physicsChecks?: {
+    staticEquilibriumResidual: number;
+    finiteValues: boolean;
+  };
+  solverMeta?: {
+    meshSegments: number;
+    support: BeamConfig["support"];
+    solver: "beam-fem";
+    warnings: string[];
+  };
 };
 type SolverOutput = {
   x: number[];

@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
   fiberVolumeFraction: number;
@@ -87,9 +87,9 @@ export default function CompositeInputs({
               onChange={(event) => setFiberModulus(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="stress"
+            <ModuleUnitSelect
+              moduleId="composites"
+              fieldKey="stress"
               value={stressUnit}
               onChange={setStressUnit}
             />
@@ -105,9 +105,9 @@ export default function CompositeInputs({
               onChange={(event) => setMatrixModulus(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="stress"
+            <ModuleUnitSelect
+              moduleId="composites"
+              fieldKey="stress"
               value={stressUnit}
               onChange={setStressUnit}
             />
@@ -123,9 +123,9 @@ export default function CompositeInputs({
               onChange={(event) => setFiberStrength(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="stress"
+            <ModuleUnitSelect
+              moduleId="composites"
+              fieldKey="stress"
               value={stressUnit}
               onChange={setStressUnit}
             />
@@ -141,9 +141,9 @@ export default function CompositeInputs({
               onChange={(event) => setMatrixStrength(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="stress"
+            <ModuleUnitSelect
+              moduleId="composites"
+              fieldKey="stress"
               value={stressUnit}
               onChange={setStressUnit}
             />
@@ -159,9 +159,9 @@ export default function CompositeInputs({
               onChange={(event) => setFiberDensity(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="density"
+            <ModuleUnitSelect
+              moduleId="composites"
+              fieldKey="density"
               value={densityUnit}
               onChange={setDensityUnit}
             />
@@ -177,9 +177,9 @@ export default function CompositeInputs({
               onChange={(event) => setMatrixDensity(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="density"
+            <ModuleUnitSelect
+              moduleId="composites"
+              fieldKey="density"
               value={densityUnit}
               onChange={setDensityUnit}
             />

@@ -3,24 +3,56 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import ExportableReport from "@/components/shared/ExportableReport";
+import ModuleUnitField, { normalizeFieldValue } from "@/components/shared/ModuleUnitField";
+import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
+import { fromBaseUnit, toBaseUnit } from "@/lib/physics/units";
 import { solveCorrosionEngine } from "@/lib/materials/corrosion/engine";
 import type { CorrosionConfig, CorrosionResult } from "@/lib/materials/corrosion/types";
 
+const defaults = moduleUnitProfiles.corrosion;
+
 export default function Page() {
   const [initialThickness, setInitialThickness] = useState(10);
+  const [thicknessUnit, setThicknessUnit] = useState(defaults.initialThickness.defaultUnit);
   const [corrosionRate, setCorrosionRate] = useState(0.2);
+  const [rateUnit, setRateUnit] = useState(defaults.corrosionRate.defaultUnit);
   const [designLife, setDesignLife] = useState(10);
+  const [lifeUnit, setLifeUnit] = useState(defaults.designLife.defaultUnit);
   const [safetyMargin, setSafetyMargin] = useState(25);
+  const [marginUnit, setMarginUnit] = useState(defaults.safetyMargin.defaultUnit);
   const [result, setResult] = useState<CorrosionResult | null>(null);
 
   const calculate = () => {
     const config: CorrosionConfig = {
-      initialThickness,
-      corrosionRate,
-      designLife,
-      safetyMargin,
+      initialThickness: fromBaseUnit(
+        normalizeFieldValue("corrosion", "initialThickness", initialThickness, thicknessUnit),
+        "length",
+        "mm"
+      ),
+      corrosionRate: fromBaseUnit(
+        normalizeFieldValue("corrosion", "corrosionRate", corrosionRate, rateUnit),
+        "lengthPerTime",
+        "mm/year"
+      ),
+      designLife: fromBaseUnit(
+        normalizeFieldValue("corrosion", "designLife", designLife, lifeUnit),
+        "time",
+        "year"
+      ),
+      safetyMargin:
+        marginUnit === "%" ? safetyMargin : safetyMargin * 100,
     };
-    setResult(solveCorrosionEngine(config));
+    const raw = solveCorrosionEngine(config);
+    const toDisplayLength = (mmValue: number) =>
+      fromBaseUnit(toBaseUnit(mmValue, "length", "mm"), "length", thicknessUnit);
+
+    setResult({
+      ...raw,
+      corrosionAllowance: toDisplayLength(raw.corrosionAllowance),
+      requiredThickness: toDisplayLength(raw.requiredThickness),
+      remainingThickness: toDisplayLength(raw.remainingThickness),
+    });
   };
 
   return (
@@ -33,43 +65,39 @@ export default function Page() {
               <h2 className="text-lg font-semibold text-slate-900">Design inputs</h2>
               <p className="mt-2 text-sm text-slate-600">Estimate required material thickness for corrosion exposure.</p>
             </div>
-            <label className="block text-sm text-slate-700">
-              Initial thickness (mm)
-              <input
-                type="number"
-                value={initialThickness}
-                onChange={(event) => setInitialThickness(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Corrosion rate (mm/year)
-              <input
-                type="number"
-                step="0.01"
-                value={corrosionRate}
-                onChange={(event) => setCorrosionRate(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Design life (years)
-              <input
-                type="number"
-                value={designLife}
-                onChange={(event) => setDesignLife(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Safety margin (%)
-              <input
-                type="number"
-                value={safetyMargin}
-                onChange={(event) => setSafetyMargin(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
+            <ModuleUnitField
+              moduleId="corrosion"
+              fieldKey="initialThickness"
+              value={initialThickness}
+              unit={thicknessUnit}
+              onValueChange={setInitialThickness}
+              onUnitChange={setThicknessUnit}
+            />
+            <ModuleUnitField
+              moduleId="corrosion"
+              fieldKey="corrosionRate"
+              value={corrosionRate}
+              unit={rateUnit}
+              onValueChange={setCorrosionRate}
+              onUnitChange={setRateUnit}
+              step="0.01"
+            />
+            <ModuleUnitField
+              moduleId="corrosion"
+              fieldKey="designLife"
+              value={designLife}
+              unit={lifeUnit}
+              onValueChange={setDesignLife}
+              onUnitChange={setLifeUnit}
+            />
+            <ModuleUnitField
+              moduleId="corrosion"
+              fieldKey="safetyMargin"
+              value={safetyMargin}
+              unit={marginUnit}
+              onValueChange={setSafetyMargin}
+              onUnitChange={setMarginUnit}
+            />
             <button
               type="button"
               onClick={calculate}
@@ -88,31 +116,52 @@ export default function Page() {
           </div>
         }
         right={
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-950">Results</h2>
-            {!result ? (
-              <p className="mt-4 text-sm text-slate-500">Run the analysis to see allowance and required thickness results.</p>
-            ) : (
-              <div className="mt-4 space-y-4">
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Corrosion allowance</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.corrosionAllowance.toFixed(2)} mm</div>
+          <ExportableReport
+            fileName="corrosion"
+            title="Export Corrosion results"
+            description="Export the current summary for review."
+            csvRows={
+              result
+                ? [
+                    { metric: "corrosionAllowance", value: result.corrosionAllowance, unit: thicknessUnit },
+                    { metric: "requiredThickness", value: result.requiredThickness, unit: thicknessUnit },
+                    { metric: "remainingThickness", value: result.remainingThickness, unit: thicknessUnit },
+                  ]
+                : undefined
+            }
+          >
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-950">Results</h2>
+              {!result ? (
+                <p className="mt-4 text-sm text-slate-500">Run the analysis to see allowance and required thickness results.</p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Corrosion allowance</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">
+                      {result.corrosionAllowance.toFixed(2)} {thicknessUnit}
+                    </div>
+                  </div>
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Required thickness</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">
+                      {result.requiredThickness.toFixed(2)} {thicknessUnit}
+                    </div>
+                  </div>
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Remaining thickness after life</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">
+                      {result.remainingThickness.toFixed(2)} {thicknessUnit}
+                    </div>
+                  </div>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
+                    <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
+                    <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
+                  </div>
                 </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Required thickness</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.requiredThickness.toFixed(2)} mm</div>
-                </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Remaining thickness after life</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.remainingThickness.toFixed(2)} mm</div>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
-                  <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
-                  <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </ExportableReport>
         }
       />
     </DashboardLayout>

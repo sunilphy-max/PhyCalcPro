@@ -1,26 +1,26 @@
 "use client";
 
-
-import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import TrussDiagram from "./TrussDiagram";
 import type { TrussResult } from "@/lib/structural/trusses/types";
-import ResultExportControls from "@/components/ResultExportControls";
+import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
   result: TrussResult | null;
 };
 
 export default function TrussResults({ result }: Props) {
-  const reportRef = useRef<HTMLDivElement>(null);
   if (!result) {
     return (
-    <div className="space-y-6">
-      <ResultExportControls reportRef={reportRef} fileName="truss" title="Export Truss results" description="Export the current summary and charts for review." />
-      <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
-        <p>Run the truss analysis to see node displacements and member forces.</p>
-      </div>
-    </div>
+      <ExportableReport
+        fileName="truss"
+        title="Export Truss results"
+        description="Export the current summary and charts for review."
+      >
+        <div className="bg-white rounded-xl shadow-sm p-6 h-full flex items-center justify-center text-slate-500">
+          <p>Run the truss analysis to see node displacements and member forces.</p>
+        </div>
+      </ExportableReport>
     );
   }
 
@@ -35,7 +35,15 @@ export default function TrussResults({ result }: Props) {
   }, result.memberForces[0]);
 
   return (
-    <div className="space-y-6">
+    <ExportableReport
+      fileName="truss"
+      title="Export Truss results"
+      description="Export the current summary and charts for review."
+      csvRows={[
+        { metric: "maxDisplacement", value: result.maxDisplacement },
+        { metric: "maxForce", value: result.maxForce },
+      ]}
+    >
       <div className="bg-white rounded-xl shadow-sm p-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -70,6 +78,6 @@ export default function TrussResults({ result }: Props) {
           <div className="text-sm text-slate-500">{highestCompression.force.toExponential(3)} N</div>
         </div>
       </div>
-    </div>
+    </ExportableReport>
   );
 }

@@ -27,7 +27,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   const constraints = applyConstraints(model.nodes.length, "fixed");
   const displacements = solveLinearSystem(stiffness, F, constraints);
 
-  const post = recoverStresses(model, displacements, material.yieldStress);
+  const post = recoverStresses(model, displacements);
 
   const maxStress = Math.max(...post.vonMisesStress, 0);
   const maxShear = Math.max(...post.shearStress, 0);

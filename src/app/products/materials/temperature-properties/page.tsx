@@ -3,6 +3,7 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import ExportableReport from "@/components/shared/ExportableReport";
 import { solveTemperaturePropertiesEngine } from "@/lib/materials/temperatureProperties/engine";
 import type {
   TemperaturePropertiesConfig,
@@ -91,31 +92,46 @@ export default function Page() {
           </div>
         }
         right={
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-950">Results</h2>
-            {!result ? (
-              <p className="mt-4 text-sm text-slate-500">Run the calculation to see adjusted strength and expansion values.</p>
-            ) : (
-              <div className="mt-4 space-y-4">
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Adjusted yield strength</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.adjustedYield.toFixed(1)} MPa</div>
+          <ExportableReport
+            fileName="temperature-properties"
+            title="Export Temperature Properties results"
+            description="Export the current summary for review."
+            csvRows={
+              result
+                ? [
+                    { metric: "adjustedYield", value: result.adjustedYield },
+                    { metric: "adjustedModulus", value: result.adjustedModulus },
+                    { metric: "expansionPerMeter", value: result.expansionPerMeter },
+                  ]
+                : undefined
+            }
+          >
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-950">Results</h2>
+              {!result ? (
+                <p className="mt-4 text-sm text-slate-500">Run the calculation to see adjusted strength and expansion values.</p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Adjusted yield strength</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.adjustedYield.toFixed(1)} MPa</div>
+                  </div>
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Adjusted modulus</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.adjustedModulus.toFixed(1)} GPa</div>
+                  </div>
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Thermal expansion per meter</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.expansionPerMeter.toExponential(2)} /°C</div>
+                  </div>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
+                    <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
+                    <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
+                  </div>
                 </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Adjusted modulus</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.adjustedModulus.toFixed(1)} GPa</div>
-                </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Thermal expansion per meter</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.expansionPerMeter.toExponential(2)} /°C</div>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
-                  <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
-                  <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </ExportableReport>
         }
       />
     </DashboardLayout>

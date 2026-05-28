@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { CamProfileType, MotionLaw } from "@/lib/machine/cams/types";
 
 type Props = {
@@ -68,8 +68,9 @@ export default function CamInputs({
               onChange={(event) => setLift(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="cams"
+              fieldKey="radius"
               value={liftUnit}
               onChange={setLiftUnit}
             />
@@ -85,8 +86,9 @@ export default function CamInputs({
               onChange={(event) => setBaseCircle(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="cams"
+              fieldKey="radius"
               value={baseCircleUnit}
               onChange={setBaseCircleUnit}
             />
@@ -102,8 +104,9 @@ export default function CamInputs({
               onChange={(event) => setRadius(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="cams"
+              fieldKey="radius"
               value={radiusUnit}
               onChange={setRadiusUnit}
             />

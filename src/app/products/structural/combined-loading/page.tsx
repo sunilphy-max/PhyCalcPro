@@ -3,6 +3,7 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import ExportableReport from "@/components/shared/ExportableReport";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
 import type {
   CombinedLoadingConfig,
@@ -125,37 +126,53 @@ export default function Page() {
           </div>
         }
         right={
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-950">Results</h2>
-            {!result ? (
-              <p className="mt-4 text-sm text-slate-500">Run the calculation to review combined stresses and safety factor.</p>
-            ) : (
-              <div className="mt-4 space-y-4">
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Von Mises stress</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.vonMisesStress.toFixed(1)} MPa</div>
-                </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Safety factor</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.safetyFactor.toFixed(2)}</div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+          <ExportableReport
+            fileName="combined-loading"
+            title="Export Combined Loading results"
+            description="Export the current summary for review."
+            csvRows={
+              result
+                ? [
+                    { metric: "vonMisesStress", value: result.vonMisesStress },
+                    { metric: "safetyFactor", value: result.safetyFactor },
+                    { metric: "axialStress", value: result.axialStress },
+                    { metric: "bendingStress", value: result.bendingStress },
+                  ]
+                : undefined
+            }
+          >
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-950">Results</h2>
+              {!result ? (
+                <p className="mt-4 text-sm text-slate-500">Run the calculation to review combined stresses and safety factor.</p>
+              ) : (
+                <div className="mt-4 space-y-4">
                   <div className="rounded-3xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">Axial stress</div>
-                    <div className="mt-2 text-lg font-semibold text-slate-900">{result.axialStress.toFixed(1)} MPa</div>
+                    <div className="text-sm text-slate-500">Von Mises stress</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.vonMisesStress.toFixed(1)} MPa</div>
                   </div>
                   <div className="rounded-3xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">Bending stress</div>
-                    <div className="mt-2 text-lg font-semibold text-slate-900">{result.bendingStress.toFixed(1)} MPa</div>
+                    <div className="text-sm text-slate-500">Safety factor</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.safetyFactor.toFixed(2)}</div>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-3xl bg-slate-50 p-4">
+                      <div className="text-sm text-slate-500">Axial stress</div>
+                      <div className="mt-2 text-lg font-semibold text-slate-900">{result.axialStress.toFixed(1)} MPa</div>
+                    </div>
+                    <div className="rounded-3xl bg-slate-50 p-4">
+                      <div className="text-sm text-slate-500">Bending stress</div>
+                      <div className="mt-2 text-lg font-semibold text-slate-900">{result.bendingStress.toFixed(1)} MPa</div>
+                    </div>
+                  </div>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
+                    <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
+                    <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
                   </div>
                 </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
-                  <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
-                  <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </ExportableReport>
         }
       />
     </DashboardLayout>

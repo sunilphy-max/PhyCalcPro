@@ -1,6 +1,6 @@
 "use client";
 
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { BoundaryType } from "@/lib/structural/plates/types";
 
 type Props = {
@@ -73,11 +73,11 @@ export default function PlateInputs({
               onChange={(e) => setLength(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="plates"
+              fieldKey="length"
               value={lengthUnit}
               onChange={setLengthUnit}
-              label=""
             />
           </div>
         </div>
@@ -91,11 +91,11 @@ export default function PlateInputs({
               onChange={(e) => setWidth(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="plates"
+              fieldKey="length"
               value={lengthUnit}
               onChange={setLengthUnit}
-              label=""
             />
           </div>
         </div>
@@ -109,11 +109,11 @@ export default function PlateInputs({
               onChange={(e) => setThickness(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="plates"
+              fieldKey="thickness"
               value={thicknessUnit}
               onChange={setThicknessUnit}
-              label=""
             />
           </div>
         </div>
@@ -127,11 +127,11 @@ export default function PlateInputs({
               onChange={(e) => setPressure(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="pressure"
+            <ModuleUnitSelect
+              moduleId="plates"
+              fieldKey="pressure"
               value={pressureUnit}
               onChange={setPressureUnit}
-              label=""
             />
           </div>
         </div>
@@ -145,11 +145,11 @@ export default function PlateInputs({
               onChange={(e) => setE(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="stress"
+            <ModuleUnitSelect
+              moduleId="plates"
+              fieldKey="stress"
               value={EUnit}
               onChange={setEUnit}
-              label=""
             />
           </div>
         </div>

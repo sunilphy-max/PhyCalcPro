@@ -13,7 +13,7 @@ import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
-import SavedProjects from "@/components/structural/beams/SavedProjects";
+import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { materials } from "@/data/materials";
 
 type BeamProjectData = {
@@ -358,11 +358,13 @@ const handleLoadDrag = (
               ) : null}
             </div>
 
-            <SavedProjects
-              savedProjects={savedProjects}
-              loadProjectIntoForm={loadProjectIntoForm}
-            />
           </div>
+        }
+        footer={
+          <SavedProjectsFooter
+            projects={savedProjects}
+            onLoad={(project) => loadProjectIntoForm(project as BeamProject)}
+          />
         }
         center={
           <BeamInputs

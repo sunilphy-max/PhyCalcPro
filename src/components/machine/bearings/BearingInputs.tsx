@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { BearingType } from "@/lib/machine/bearings/types";
 
 type Props = {
@@ -64,9 +64,9 @@ export default function BearingInputs({
               onChange={(event) => setRadialLoad(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="force"
+            <ModuleUnitSelect
+              moduleId="bearings"
+              fieldKey="load"
               value={radialUnit}
               onChange={setRadialUnit}
             />
@@ -82,9 +82,9 @@ export default function BearingInputs({
               onChange={(event) => setAxialLoad(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              label=""
-              dimension="force"
+            <ModuleUnitSelect
+              moduleId="bearings"
+              fieldKey="load"
               value={axialUnit}
               onChange={setAxialUnit}
             />

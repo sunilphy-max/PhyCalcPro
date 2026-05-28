@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { RivetType } from "@/lib/fasteners/rivets/types";
 
 type Props = {
@@ -72,8 +72,9 @@ export default function RivetInputs({
               onChange={(event) => setRivetDiameter(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="rivets"
+              fieldKey="diameter"
               value={rivetDiameterUnit}
               onChange={setRivetDiameterUnit}
             />
@@ -89,8 +90,9 @@ export default function RivetInputs({
               onChange={(event) => setPlateThickness(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="rivets"
+              fieldKey="thickness"
               value={plateThicknessUnit}
               onChange={setPlateThicknessUnit}
             />
@@ -129,8 +131,9 @@ export default function RivetInputs({
               onChange={(event) => setShearForce(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="force"
+            <ModuleUnitSelect
+              moduleId="rivets"
+              fieldKey="force"
               value={shearUnit}
               onChange={setShearUnit}
             />
@@ -146,8 +149,9 @@ export default function RivetInputs({
               onChange={(event) => setAxialForce(Number(event.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="force"
+            <ModuleUnitSelect
+              moduleId="rivets"
+              fieldKey="force"
               value={axialUnit}
               onChange={setAxialUnit}
             />

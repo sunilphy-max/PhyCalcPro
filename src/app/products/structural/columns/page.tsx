@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BucklingInputs from "@/components/structural/columns/BucklingInputs";
 import BucklingResults from "@/components/structural/columns/BucklingResults";
@@ -121,24 +122,11 @@ export default function Page() {
     <DashboardLayout title="Column Buckling Analysis">
       <CalculatorLayout
         title="Column Buckling Analysis"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm">
-            <h3 className="font-semibold mb-3">Saved Projects</h3>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {savedProjects.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => loadProjectIntoForm(p)}
-                  className="w-full text-left p-2 rounded hover:bg-gray-100 border"
-                >
-                  <div className="font-medium">{p.name}</div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(p.created_at).toLocaleDateString()}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
+        footer={
+          <SavedProjectsFooter
+            projects={savedProjects}
+            onLoad={(project) => loadProjectIntoForm(project as BucklingProject)}
+          />
         }
         center={
           <BucklingInputs

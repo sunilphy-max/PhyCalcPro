@@ -3,6 +3,7 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import ExportableReport from "@/components/shared/ExportableReport";
 import { solveLoadCaseManagerEngine } from "@/lib/structural/loadCaseManager/engine";
 import type {
   LoadCase,
@@ -126,31 +127,46 @@ export default function Page() {
           </div>
         }
         right={
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-semibold text-slate-950">Results</h2>
-            {!result ? (
-              <p className="mt-4 text-sm text-slate-500">Run the calculation to see envelope stresses and safety factor.</p>
-            ) : (
-              <div className="mt-4 space-y-4">
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Envelope axial force</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.envelopeAxial.toFixed(0)} N</div>
+          <ExportableReport
+            fileName="load-case-manager"
+            title="Export Load Case Manager results"
+            description="Export the current summary for review."
+            csvRows={
+              result
+                ? [
+                    { metric: "envelopeAxial", value: result.envelopeAxial },
+                    { metric: "envelopeMoment", value: result.envelopeMoment },
+                    { metric: "combinedStress", value: result.combinedStress },
+                  ]
+                : undefined
+            }
+          >
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-950">Results</h2>
+              {!result ? (
+                <p className="mt-4 text-sm text-slate-500">Run the calculation to see envelope stresses and safety factor.</p>
+              ) : (
+                <div className="mt-4 space-y-4">
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Envelope axial force</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.envelopeAxial.toFixed(0)} N</div>
+                  </div>
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Envelope bending moment</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.envelopeMoment.toFixed(0)} N·m</div>
+                  </div>
+                  <div className="rounded-3xl bg-slate-50 p-4">
+                    <div className="text-sm text-slate-500">Combined stress</div>
+                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.combinedStress.toFixed(1)} MPa</div>
+                  </div>
+                  <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
+                    <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
+                    <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
+                  </div>
                 </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Envelope bending moment</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.envelopeMoment.toFixed(0)} N·m</div>
-                </div>
-                <div className="rounded-3xl bg-slate-50 p-4">
-                  <div className="text-sm text-slate-500">Combined stress</div>
-                  <div className="mt-2 text-2xl font-semibold text-slate-900">{result.combinedStress.toFixed(1)} MPa</div>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
-                  <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
-                  <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </ExportableReport>
         }
       />
     </DashboardLayout>

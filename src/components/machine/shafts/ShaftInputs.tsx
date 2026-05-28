@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { LoadCase } from "@/lib/machine/shafts/types";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
   projectName: string;
@@ -108,15 +109,12 @@ export default function ShaftInputs({
               value={diameter}
               onChange={(e) => setDiameter(+e.target.value)}
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="shafts"
+              fieldKey="diameter"
               value={lengthUnit}
-              onChange={(e) => setLengthUnit(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="m">m</option>
-              <option value="mm">mm</option>
-              <option value="in">in</option>
-            </select>
+              onChange={setLengthUnit}
+            />
           </div>
         </div>
 
@@ -130,15 +128,12 @@ export default function ShaftInputs({
               value={length}
               onChange={(e) => setLength(+e.target.value)}
             />
-            <select
+            <ModuleUnitSelect
+              moduleId="shafts"
+              fieldKey="length"
               value={lengthUnit}
-              onChange={(e) => setLengthUnit(e.target.value)}
-              className="border p-2 rounded"
-            >
-              <option value="m">m</option>
-              <option value="mm">mm</option>
-              <option value="in">in</option>
-            </select>
+              onChange={setLengthUnit}
+            />
           </div>
         </div>
       </div>
@@ -173,15 +168,12 @@ export default function ShaftInputs({
                   value={elasticModulus}
                   onChange={(e) => setElasticModulus(+e.target.value)}
                 />
-                <select
+                <ModuleUnitSelect
+                  moduleId="shafts"
+                  fieldKey="stress"
                   value={modulusUnit}
-                  onChange={(e) => setModulusUnit(e.target.value)}
-                  className="border p-2 rounded"
-                >
-                  <option value="Pa">Pa</option>
-                  <option value="GPa">GPa</option>
-                  <option value="psi">psi</option>
-                </select>
+                  onChange={setModulusUnit}
+                />
               </div>
             </div>
 
@@ -195,15 +187,12 @@ export default function ShaftInputs({
                   value={shearModulus}
                   onChange={(e) => setShearModulus(+e.target.value)}
                 />
-                <select
+                <ModuleUnitSelect
+                  moduleId="shafts"
+                  fieldKey="stress"
                   value={modulusUnit}
-                  onChange={(e) => setModulusUnit(e.target.value)}
-                  className="border p-2 rounded"
-                >
-                  <option value="Pa">Pa</option>
-                  <option value="GPa">GPa</option>
-                  <option value="psi">psi</option>
-                </select>
+                  onChange={setModulusUnit}
+                />
               </div>
             </div>
           </>

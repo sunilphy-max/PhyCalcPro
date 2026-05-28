@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RefObject } from "react";
+import { preparePlotsForCapture } from "@/lib/export/plotCapture";
 
 type CSVRow = Record<string, string | number | null | undefined>;
 
@@ -12,6 +13,10 @@ type Props = {
   description?: string;
   csvRows?: CSVRow[];
 };
+
+function sanitizeFileName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9-_]+/g, "-").replace(/^-+|-+$/g, "") || "report";
+}
 
 function downloadCsv(fileName: string, rows: CSVRow[]) {
   if (rows.length === 0) return;
@@ -33,7 +38,7 @@ function downloadCsv(fileName: string, rows: CSVRow[]) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${fileName}.csv`;
+  link.download = `${sanitizeFileName(fileName)}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -49,18 +54,30 @@ export default function ResultExportControls({
 }: Props) {
   const [exporting, setExporting] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusTone, setStatusTone] = useState<"error" | "success">("success");
 
   const exportPdf = async () => {
-    if (!reportRef.current) return;
-    setExporting(true);
+    if (!reportRef.current) {
+      setStatusTone("error");
+      setStatusMessage("Nothing to export yet. Run the calculation first.");
+      return;
+    }
 
+    setExporting(true);
+    setStatusMessage(null);
+
+    let restorePlots: (() => void) | undefined;
     try {
       const { jsPDF } = await import("jspdf");
       const html2canvas = (await import("html2canvas")).default;
 
+      restorePlots = await preparePlotsForCapture(reportRef.current);
+
       const canvas = await html2canvas(reportRef.current, {
         backgroundColor: "#ffffff",
         scale: 2,
+        useCORS: true,
       });
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -70,10 +87,11 @@ export default function ResultExportControls({
       const margin = 10;
       const imgWidth = pageWidth - margin * 2;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
       let position = margin;
 
       pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-      let heightLeft = imgHeight - pageHeight + margin * 2;
+      heightLeft -= pageHeight - margin * 2;
 
       while (heightLeft > 0) {
         pdf.addPage();
@@ -82,28 +100,43 @@ export default function ResultExportControls({
         heightLeft -= pageHeight - margin * 2;
       }
 
-      pdf.save(`${fileName}.pdf`);
+      pdf.save(`${sanitizeFileName(fileName)}.pdf`);
+      setStatusTone("success");
+      setStatusMessage("PDF exported successfully.");
     } catch (error) {
       console.error("PDF export error:", error);
+      setStatusTone("error");
+      setStatusMessage(
+        error instanceof Error ? error.message : "PDF export failed. Try again."
+      );
     } finally {
+      restorePlots?.();
       setExporting(false);
     }
   };
 
   const exportCsv = () => {
-    if (!csvRows || csvRows.length === 0) return;
+    if (!csvRows || csvRows.length === 0) {
+      setStatusTone("error");
+      setStatusMessage("No CSV data available for this module.");
+      return;
+    }
     setDownloading(true);
     try {
       downloadCsv(fileName, csvRows);
+      setStatusTone("success");
+      setStatusMessage("CSV downloaded.");
     } catch (error) {
       console.error("CSV export error:", error);
+      setStatusTone("error");
+      setStatusMessage("CSV export failed.");
     } finally {
       setDownloading(false);
     }
   };
 
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-slate-50 p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
@@ -131,6 +164,15 @@ export default function ResultExportControls({
           ) : null}
         </div>
       </div>
+      {statusMessage ? (
+        <p
+          className={`mt-3 text-xs ${
+            statusTone === "error" ? "text-red-600" : "text-emerald-700"
+          }`}
+        >
+          {statusMessage}
+        </p>
+      ) : null}
     </div>
   );
 }

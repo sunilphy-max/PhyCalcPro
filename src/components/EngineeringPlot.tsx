@@ -53,7 +53,10 @@ export default function EngineeringPlot({
       : -1;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
+    <div
+      className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4"
+      data-export-plot="true"
+    >
       <div className="text-sm font-semibold text-slate-900 mb-3">{title}</div>
       <Plot
         data={[

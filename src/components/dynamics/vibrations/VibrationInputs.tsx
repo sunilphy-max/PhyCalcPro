@@ -1,6 +1,6 @@
 "use client";
 
-import UnitSelector from "@/components/shared/UnitSelector";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { SupportType } from "@/lib/dynamics/vibrations/types";
 
 type Props = {
@@ -79,11 +79,11 @@ export default function VibrationInputs({
               onChange={(e) => setLength(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="length"
+            <ModuleUnitSelect
+              moduleId="vibrations"
+              fieldKey="length"
               value={lengthUnit}
               onChange={setLengthUnit}
-              label=""
             />
           </div>
         </div>
@@ -112,11 +112,11 @@ export default function VibrationInputs({
               onChange={(e) => setE(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="stress"
+            <ModuleUnitSelect
+              moduleId="vibrations"
+              fieldKey="modulus"
               value={EUnit}
               onChange={setEUnit}
-              label=""
             />
           </div>
         </div>
@@ -132,11 +132,11 @@ export default function VibrationInputs({
               onChange={(e) => setRho(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="density"
+            <ModuleUnitSelect
+              moduleId="vibrations"
+              fieldKey="density"
               value={rhoUnit}
               onChange={setRhoUnit}
-              label=""
             />
           </div>
         </div>
@@ -152,11 +152,11 @@ export default function VibrationInputs({
               onChange={(e) => setA(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="area"
+            <ModuleUnitSelect
+              moduleId="vibrations"
+              fieldKey="area"
               value={areaUnit}
               onChange={setAreaUnit}
-              label=""
             />
           </div>
         </div>
@@ -172,11 +172,11 @@ export default function VibrationInputs({
               onChange={(e) => setI(Number(e.target.value))}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-            <UnitSelector
-              dimension="inertia"
+            <ModuleUnitSelect
+              moduleId="vibrations"
+              fieldKey="inertia"
               value={inertiaUnit}
               onChange={setInertiaUnit}
-              label=""
             />
           </div>
         </div>
