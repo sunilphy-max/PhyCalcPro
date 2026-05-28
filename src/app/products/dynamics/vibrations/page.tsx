@@ -10,6 +10,7 @@ import { normalizeInput } from "@/lib/physics";
 import { solveVibrationEngine } from "@/lib/dynamics/vibrations/engine";
 import type { VibrationResult, SupportType } from "@/lib/dynamics/vibrations/types";
 import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
+import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 export default function Page() {
   const [length, setLength] = useState(5);
@@ -25,6 +26,27 @@ export default function Page() {
   const [segments, setSegments] = useState(12);
   const [support, setSupport] = useState<SupportType>("simply_supported");
   const [result, setResult] = useState<VibrationResult | null>(null);
+  const vibrationPipeline = useCalculationPipeline({
+    normalize: (input: {
+      length: number;
+      E: number;
+      A: number;
+      I: number;
+      rho: number;
+      segments: number;
+      support: SupportType;
+    }) => ({
+      length: normalizeInput({ value: input.length, unit: lengthUnit, dimension: "length" }),
+      E: normalizeInput({ value: input.E, unit: EUnit, dimension: "stress" }),
+      A: normalizeInput({ value: input.A, unit: areaUnit, dimension: "area" }),
+      I: normalizeInput({ value: input.I, unit: inertiaUnit, dimension: "inertia" }),
+      rho: normalizeInput({ value: input.rho, unit: rhoUnit, dimension: "density" }),
+      segments: Math.max(2, Math.round(input.segments)),
+      support: input.support,
+    }),
+    solve: (normalized) => solveVibrationEngine(normalized),
+    convertOutput: (raw) => raw,
+  });
   const {
     equationExpression,
     setEquationExpression,
@@ -39,17 +61,15 @@ export default function Page() {
   });
 
   const calculate = async () => {
-    const config = {
-      length: normalizeInput({ value: length, unit: lengthUnit, dimension: "length" }),
-      E: normalizeInput({ value: E, unit: EUnit, dimension: "stress" }),
-      A: normalizeInput({ value: A, unit: areaUnit, dimension: "area" }),
-      I: normalizeInput({ value: I, unit: inertiaUnit, dimension: "inertia" }),
-      rho: normalizeInput({ value: rho, unit: rhoUnit, dimension: "density" }),
-      segments: Math.max(2, Math.round(segments)),
+    const { normalized: config, output: solved } = vibrationPipeline.run({
+      length,
+      E,
+      A,
+      I,
+      rho,
+      segments,
       support,
-    };
-
-    const solved = solveVibrationEngine(config);
+    });
     setResult(solved);
 
     const { baseValue, failure } = evaluateExpression({

@@ -19,6 +19,16 @@ export type VibrationResult = {
   length: number;
   modalMass: number[];
   modalStiffness: number[];
+  physicsChecks?: {
+    positiveFrequencies: boolean;
+    monotonicFrequencyOrder: boolean;
+  };
+  solverMeta?: {
+    meshSegments: number;
+    support: SupportType;
+    solver: "euler-bernoulli-fem";
+    warnings: string[];
+  };
 };
 
 export type VibrationNode = {

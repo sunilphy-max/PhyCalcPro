@@ -9,6 +9,7 @@ import { normalizeInput } from "@/lib/physics";
 import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
+import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
@@ -151,27 +152,34 @@ const handleLoadDrag = (
   // =========================
   const selectedMaterial =
   materials.find((m) => m.name === material) || materials[0];
-  const calculate = async () => {
-    const normalizedInputs: BeamConfig = {
+  const beamPipeline = useCalculationPipeline({
+    normalize: (input: {
+      length: number;
+      I: number;
+      c: number;
+      support: BeamConfig["support"];
+      meshSegments: number;
+      loads: Load[];
+    }): BeamConfig => ({
       length: normalizeInput({
-        value: length,
+        value: input.length,
         unit: lengthUnit,
         dimension: "length",
       }),
       E: selectedMaterial.E,
       I: normalizeInput({
-        value: I,
+        value: input.I,
         unit: inertiaUnit,
         dimension: "inertia",
       }),
       c: normalizeInput({
-        value: c,
+        value: input.c,
         unit: lengthUnit,
         dimension: "length",
       }),
-      support,
-      meshSegments: Math.max(10, Math.round(meshSegments)),
-      loads: loads.map((l) => {
+      support: input.support,
+      meshSegments: Math.max(10, Math.round(input.meshSegments)),
+      loads: input.loads.map((l) => {
         if (l.type === "point") {
           return {
             ...l,
@@ -187,7 +195,6 @@ const handleLoadDrag = (
             }),
           };
         }
-
         if (isUDL(l)) {
           return {
             ...l,
@@ -208,7 +215,6 @@ const handleLoadDrag = (
             }),
           };
         }
-
         return {
           ...l,
           value: normalizeInput({
@@ -223,28 +229,28 @@ const handleLoadDrag = (
           }),
         };
       }),
-    };
-
-    const raw = solveBeamEngine(normalizedInputs);
-
-    const converted = {
+    }),
+    solve: (normalized) => solveBeamEngine(normalized),
+    convertOutput: (raw) => ({
       ...raw,
-      shear: raw.shear.map((v: number) =>
-        fromBase(v, "force", forceUnit)
-      ),
-      moment: raw.moment.map((v: number) =>
-        fromBase(v, "moment", momentUnit)
-      ),
-      deflection: raw.deflection.map((v: number) =>
-        fromBase(v, "length", lengthUnit)
-      ),
-      stress: raw.stress.map((v: number) =>
-        fromBase(v, "stress", stressUnit)
-      ),
+      shear: raw.shear.map((v: number) => fromBase(v, "force", forceUnit)),
+      moment: raw.moment.map((v: number) => fromBase(v, "moment", momentUnit)),
+      deflection: raw.deflection.map((v: number) => fromBase(v, "length", lengthUnit)),
+      stress: raw.stress.map((v: number) => fromBase(v, "stress", stressUnit)),
       maxMoment: fromBase(raw.maxMoment, "moment", momentUnit),
       maxStress: fromBase(raw.maxStress, "stress", stressUnit),
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
-    };
+    }),
+  });
+  const calculate = async () => {
+    const { normalized: normalizedInputs, raw, output: converted } = beamPipeline.run({
+      length,
+      I,
+      c,
+      support,
+      meshSegments,
+      loads,
+    });
 
     const { baseValue: equationStressValue, failure: equationFailure } =
       evaluateExpression({

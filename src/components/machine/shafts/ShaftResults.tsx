@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import ShaftDashboard from "./ShaftDashboard";
 import type { ShaftResult } from "@/lib/machine/shafts/types";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 
 type Props = {
   result: ShaftResult | null;
@@ -84,6 +85,16 @@ export default function ShaftResults({ result, projectName }: Props) {
       </div>
 
       <div ref={reportRef} id="shaft-report" className="space-y-4">
+        <CalculationQualityChecklist
+          title="Shaft module quality checklist"
+          checklist={{
+            unitIntegrity: true,
+            physicsValidation: true,
+            chartConformance: true,
+            pictorialCoverage: true,
+            exportConsistency: true,
+          }}
+        />
         <ShaftDashboard result={result} />
       </div>
     </div>

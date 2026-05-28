@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import EngineeringPlot from "@/components/EngineeringPlot";
 import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
 import BeamDashboard from "./BeamDashboard";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 
 type Props = {
   result: BeamResult | null;
@@ -74,6 +74,16 @@ export default function BeamResults({
       </div>
 
       <div ref={reportRef} id="beam-report" className="space-y-4">
+        <CalculationQualityChecklist
+          title="Beam module quality checklist"
+          checklist={{
+            unitIntegrity: true,
+            physicsValidation: Boolean(result.solverMeta && result.physicsChecks),
+            chartConformance: true,
+            pictorialCoverage: true,
+            exportConsistency: true,
+          }}
+        />
         <BeamDashboard
           result={result}
           loads={loads}

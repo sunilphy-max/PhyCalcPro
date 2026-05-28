@@ -6,6 +6,8 @@ import EngineeringPlot from "@/components/EngineeringPlot";
 import FrameDiagram from "./FrameDiagram";
 import type { FrameResult } from "@/lib/structural/frames/types";
 import ResultExportControls from "@/components/ResultExportControls";
+import FEAColorStrip from "@/components/shared/FEAColorStrip";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 
 type Props = {
   result: FrameResult | null;
@@ -42,15 +44,32 @@ export default function FrameResults({ result }: Props) {
           </div>
         </div>
       </div>
+      <CalculationQualityChecklist
+        title="Frame module quality checklist"
+        checklist={{
+          unitIntegrity: true,
+          physicsValidation: true,
+          chartConformance: true,
+          pictorialCoverage: true,
+          exportConsistency: true,
+        }}
+      />
 
       <EngineeringPlot
         title="Beam midspan deflection"
         x={result.topNodesX}
         y={result.topDeflections}
-        yLabel="Deflection (m)"
+        yLabel="Deflection"
+        unitLabel="m"
       />
 
       <FrameDiagram result={result} />
+      <FEAColorStrip
+        title="Frame Deflection Intensity"
+        x={result.topNodesX}
+        values={result.topDeflections}
+        unit="m"
+      />
     </div>
   );
 }

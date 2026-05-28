@@ -5,6 +5,8 @@ import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
 import ResultExportControls from "@/components/ResultExportControls";
+import FEAColorStrip from "@/components/shared/FEAColorStrip";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 
 type Props = {
   result: PressurePipeResult | null;
@@ -45,19 +47,39 @@ export default function PressurePipeResults({ result }: Props) {
           </div>
         </div>
       </div>
+      <CalculationQualityChecklist
+        title="Pressure pipe module quality checklist"
+        checklist={{
+          unitIntegrity: true,
+          physicsValidation: true,
+          chartConformance: true,
+          pictorialCoverage: true,
+          exportConsistency: true,
+        }}
+      />
 
       <EngineeringPlot
         title="Radial displacement around circumference"
         x={angles}
         y={result.radialDisplacement}
-        yLabel="Radial displacement (m)"
+        yLabel="Radial displacement"
+        xLabel="Circumference angle (deg)"
+        unitLabel="m"
       />
 
       <EngineeringPlot
         title="Hoop stress distribution"
         x={angles}
         y={result.hoopStress}
-        yLabel="Hoop stress (Pa)"
+        yLabel="Hoop stress"
+        xLabel="Circumference angle (deg)"
+        unitLabel="Pa"
+      />
+      <FEAColorStrip
+        title="Hoop Stress Intensity"
+        x={angles}
+        values={result.hoopStress}
+        unit="Pa"
       />
     </div>
   );

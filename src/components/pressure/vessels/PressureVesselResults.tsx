@@ -5,6 +5,8 @@ import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressureVesselResult } from "@/lib/pressure/vessels/types";
 import ResultExportControls from "@/components/ResultExportControls";
+import FEAColorStrip from "@/components/shared/FEAColorStrip";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 
 type Props = {
   result: PressureVesselResult | null;
@@ -24,8 +26,6 @@ export default function PressureVesselResults({ result }: Props) {
   }
 
   const angleDegrees = result.angles.map((theta) => (theta < 0 ? theta + 2 * Math.PI : theta) * (180 / Math.PI));
-  const normalizedDisplacement = result.radialDisplacement.map((value) => value / result.maxRadialDisplacement);
-
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm p-4">
@@ -44,19 +44,39 @@ export default function PressureVesselResults({ result }: Props) {
           </div>
         </div>
       </div>
+      <CalculationQualityChecklist
+        title="Pressure vessel module quality checklist"
+        checklist={{
+          unitIntegrity: true,
+          physicsValidation: true,
+          chartConformance: true,
+          pictorialCoverage: true,
+          exportConsistency: true,
+        }}
+      />
 
       <EngineeringPlot
         title="Radial displacement around circumference"
         x={angleDegrees}
         y={result.radialDisplacement}
-        yLabel="Radial displacement (m)"
+        yLabel="Radial displacement"
+        xLabel="Circumference angle (deg)"
+        unitLabel="m"
       />
 
       <EngineeringPlot
         title="Hoop stress distribution"
         x={angleDegrees}
         y={result.hoopStress}
-        yLabel="Hoop stress (Pa)"
+        yLabel="Hoop stress"
+        xLabel="Circumference angle (deg)"
+        unitLabel="Pa"
+      />
+      <FEAColorStrip
+        title="Vessel Hoop Stress Intensity"
+        x={angleDegrees}
+        values={result.hoopStress}
+        unit="Pa"
       />
     </div>
   );

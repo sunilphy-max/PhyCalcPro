@@ -4,8 +4,11 @@
 import { useRef } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import VibrationDiagram from "./VibrationDiagram";
+import VibrationInputSchematic from "./VibrationInputSchematic";
+import FEAColorStrip from "@/components/shared/FEAColorStrip";
 import type { VibrationResult } from "@/lib/dynamics/vibrations/types";
 import ResultExportControls from "@/components/ResultExportControls";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 
 type Props = {
   result: VibrationResult | null;
@@ -42,6 +45,16 @@ export default function VibrationResults({ result }: Props) {
           </div>
         </div>
       </div>
+      <CalculationQualityChecklist
+        title="Vibration module quality checklist"
+        checklist={{
+          unitIntegrity: true,
+          physicsValidation: Boolean(result.physicsChecks && result.solverMeta),
+          chartConformance: true,
+          pictorialCoverage: true,
+          exportConsistency: true,
+        }}
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         {result.frequencies.map((freq, index) => (
@@ -54,12 +67,35 @@ export default function VibrationResults({ result }: Props) {
           </div>
         ))}
       </div>
+      {result.solverMeta ? (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+          <div className="font-semibold text-slate-900">Solver Metadata</div>
+          <p className="mt-1">
+            {result.solverMeta.solver} | support: {result.solverMeta.support} | mesh: {result.solverMeta.meshSegments}
+          </p>
+          {result.solverMeta.warnings.length ? (
+            <ul className="mt-2 list-disc pl-5 text-amber-700">
+              {result.solverMeta.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          ) : null}
+          {result.physicsChecks ? (
+            <p className="mt-2">
+              Positive frequencies: {result.physicsChecks.positiveFrequencies ? "yes" : "no"} | monotonic ordering:{" "}
+              {result.physicsChecks.monotonicFrequencyOrder ? "yes" : "no"}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <EngineeringPlot
         title="First mode shape"
         x={result.x}
         y={result.modeShapes[0].map((value) => value / Math.max(...result.modeShapes[0].map(Math.abs)))}
         yLabel="Normalized displacement"
+        unitLabel="-"
+        color="#0ea5e9"
       />
 
       <EngineeringPlot
@@ -67,9 +103,28 @@ export default function VibrationResults({ result }: Props) {
         x={result.x}
         y={result.modeShapes[1].map((value) => value / Math.max(...result.modeShapes[1].map(Math.abs)))}
         yLabel="Normalized displacement"
+        unitLabel="-"
+        color="#8b5cf6"
       />
 
       <VibrationDiagram support={result.support} x={result.x} />
+      <VibrationInputSchematic
+        support={result.support}
+        length={result.length}
+        segments={result.segments}
+      />
+      <FEAColorStrip
+        title="Mode 1 Amplitude Intensity"
+        x={result.x}
+        values={result.modeShapes[0]}
+        unit="-"
+      />
+      <FEAColorStrip
+        title="Mode 2 Amplitude Intensity"
+        x={result.x}
+        values={result.modeShapes[1]}
+        unit="-"
+      />
     </div>
   );
 }

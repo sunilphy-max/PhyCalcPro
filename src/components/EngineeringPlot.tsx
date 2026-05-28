@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import dynamic from "next/dynamic";
+import { plotTheme } from "@/components/shared/plotTheme";
 
 const Plot = dynamic(() => import("react-plotly.js"), {
   ssr: false,
@@ -18,6 +19,9 @@ type Props = {
   yLabel: string;
   probeX?: number | null;
   peakValue?: number;
+  xLabel?: string;
+  unitLabel?: string;
+  color?: string;
 };
 
 export default function EngineeringPlot({
@@ -26,7 +30,9 @@ export default function EngineeringPlot({
   y,
   yLabel,
   probeX,
-  peakValue,
+  xLabel = "Position",
+  unitLabel,
+  color,
 }: Props) {
   const cleanY = y.map((v) => (Number.isFinite(v) ? v : 0));
 
@@ -37,8 +43,17 @@ export default function EngineeringPlot({
         )
       : -1;
 
+  const probeIndex =
+    typeof probeX === "number" && x.length
+      ? x.reduce((best, value, index) => {
+          const bestDistance = Math.abs(x[best] - probeX);
+          const distance = Math.abs(value - probeX);
+          return distance < bestDistance ? index : best;
+        }, 0)
+      : -1;
+
   return (
-    <div className="rounded-[2rem] border border-slate-200 bg-white shadow-sm p-4">
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold text-slate-900 mb-3">{title}</div>
       <Plot
         data={[
@@ -48,13 +63,14 @@ export default function EngineeringPlot({
             type: "scatter",
             mode: "lines",
             line: {
-              color: "#0f172a",
-              width: 3,
+              color: color ?? plotTheme.lineColor,
+              width: plotTheme.lineWidth,
               shape: "spline",
             },
             fill: "tozeroy",
-            fillcolor: "rgba(15,23,42,0.08)",
+            fillcolor: "rgba(29,78,216,0.08)",
             name: yLabel,
+            hovertemplate: `%{x:.4f}<br>${yLabel}: %{y:.4f}${unitLabel ? ` ${unitLabel}` : ""}<extra></extra>`,
           },
           ...(peakIndex >= 0
             ? [
@@ -65,41 +81,65 @@ export default function EngineeringPlot({
                   mode: "markers",
                   marker: {
                     size: 10,
-                    color: "#ef4444",
+                    color: plotTheme.peakColor,
                     symbol: "diamond",
                   },
-                  name: "Peak",
+                  name: "Max |value|",
+                },
+              ]
+            : []),
+          ...(probeIndex >= 0
+            ? [
+                {
+                  x: [x[probeIndex]],
+                  y: [cleanY[probeIndex]],
+                  type: "scatter",
+                  mode: "markers",
+                  marker: {
+                    size: 9,
+                    color: plotTheme.accentColor,
+                    line: { color: "#0f172a", width: 1 },
+                  },
+                  name: "Probe",
                 },
               ]
             : []),
         ]}
         layout={{
           autosize: true,
-          height: 300,
-          margin: { l: 48, r: 24, t: 24, b: 42 },
-          paper_bgcolor: "rgba(255,255,255,1)",
-          plot_bgcolor: "rgba(248,250,252,1)",
-          font: { color: "#0f172a", family: "Inter, system-ui, sans-serif" },
+          height: 320,
+          margin: plotTheme.margins,
+          paper_bgcolor: plotTheme.paperBg,
+          plot_bgcolor: plotTheme.plotBg,
+          font: { color: plotTheme.fontColor, family: plotTheme.fontFamily, size: 12 },
           xaxis: {
-            title: "Position",
-            gridcolor: "#e2e8f0",
-            zerolinecolor: "#cbd5e1",
+            title: xLabel,
+            gridcolor: plotTheme.gridColor,
+            zerolinecolor: plotTheme.zeroLineColor,
             zerolinewidth: 1,
             showgrid: true,
+            ticks: "outside",
           },
           yaxis: {
-            title: yLabel,
-            gridcolor: "#e2e8f0",
-            zerolinecolor: "#cbd5e1",
+            title: unitLabel ? `${yLabel} (${unitLabel})` : yLabel,
+            gridcolor: plotTheme.gridColor,
+            zerolinecolor: plotTheme.zeroLineColor,
             zerolinewidth: 1,
             showgrid: true,
+            ticks: "outside",
           },
           hovermode: "x unified",
-          showlegend: false,
+          legend: {
+            orientation: "h",
+            x: 0,
+            y: 1.2,
+          },
+          showlegend: true,
         }}
         config={{
           responsive: true,
           displaylogo: false,
+          modeBarButtonsToRemove: ["lasso2d", "select2d"],
         }}
         style={{ width: "100%" }}
       />

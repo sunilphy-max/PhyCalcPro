@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
+import FEAColorStrip from "@/components/shared/FEAColorStrip";
 import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
 
 type Props = {
@@ -127,7 +128,8 @@ export default function BeamDashboard({
         title="Shear Force V(x)"
         x={result.x}
         y={result.shear}
-        yLabel="V"
+        yLabel="Shear force"
+        unitLabel="N"
         probeX={probeX}
       />
 
@@ -138,7 +140,8 @@ export default function BeamDashboard({
         title="Bending Moment M(x)"
         x={result.x}
         y={result.moment}
-        yLabel="M"
+        yLabel="Moment"
+        unitLabel="N·m"
         probeX={probeX}
       />
 
@@ -149,8 +152,10 @@ export default function BeamDashboard({
         title="Deflection y(x)"
         x={result.x}
         y={result.deflection}
-        yLabel="y"
+        yLabel="Deflection"
+        unitLabel="m"
         probeX={probeX}
+        color="#0891b2"
       />
 
       {/* ========================================= */}
@@ -161,10 +166,24 @@ export default function BeamDashboard({
           title="Stress Distribution σ(x)"
           x={result.x}
           y={result.stress}
-          yLabel="σ"
+          yLabel="Stress"
+          unitLabel="Pa"
           probeX={probeX}
+          color="#7c3aed"
         />
       )}
+      <FEAColorStrip
+        title="FEA-like Deflection Intensity"
+        x={result.x}
+        values={result.deflection}
+        unit="m"
+      />
+      <FEAColorStrip
+        title="FEA-like Stress Intensity"
+        x={result.x}
+        values={result.stress}
+        unit="Pa"
+      />
 
       {/* ========================================= */}
       {/* SUMMARY */}
@@ -215,6 +234,28 @@ export default function BeamDashboard({
           </div>
         </div>
       )}
+      {result.solverMeta ? (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
+          <div className="font-semibold text-slate-900">Solver Metadata</div>
+          <p className="text-slate-600 mt-1">
+            {result.solverMeta.solver} | support: {result.solverMeta.support} | mesh:{" "}
+            {result.solverMeta.meshSegments}
+          </p>
+          {result.solverMeta.warnings.length ? (
+            <ul className="mt-2 list-disc pl-5 text-amber-700">
+              {result.solverMeta.warnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
+          ) : null}
+          {result.physicsChecks ? (
+            <p className="mt-2 text-slate-600">
+              Equilibrium residual: {result.physicsChecks.staticEquilibriumResidual.toExponential(3)} | finite values:{" "}
+              {result.physicsChecks.finiteValues ? "yes" : "no"}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

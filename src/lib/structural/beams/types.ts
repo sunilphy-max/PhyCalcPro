@@ -50,4 +50,14 @@ export type BeamResult = {
   maxMoment: number;
   maxShear: number;
   reactions?: number[];
+  physicsChecks?: {
+    staticEquilibriumResidual: number;
+    finiteValues: boolean;
+  };
+  solverMeta?: {
+    meshSegments: number;
+    support: SupportType;
+    solver: "beam-fem";
+    warnings: string[];
+  };
 };
