@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -48,6 +49,7 @@ type ShaftProjectData = {
 type ShaftProject = LocalProject<ShaftProjectData>;
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("shafts");
   // =========================
   // INPUTS
   // =========================
@@ -117,7 +119,7 @@ export default function Page() {
       criticalSection: fromBase(raw.criticalSection, "length", lengthUnit),
     };
 
-    setResult(converted);
+    setResult(wrapResult(converted));
   };
 
   // =========================
@@ -158,6 +160,7 @@ export default function Page() {
   return (
     <DashboardLayout title="Shaft Design Module">
       <CalculatorLayout
+        moduleId="shafts"
         title="Shaft Stress & Deflection Analysis"
         footer={
           <SavedProjectsFooter

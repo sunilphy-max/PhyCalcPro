@@ -1,12 +1,13 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ShaftDashboard from "./ShaftDashboard";
 import type { ShaftResult } from "@/lib/machine/shafts/types";
 import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: ShaftResult | null;
+  result: WithCalculationSpec<ShaftResult> | null;
   projectName: string;
 };
 
@@ -28,6 +29,7 @@ export default function ShaftResults({ result, projectName }: Props) {
   return (
     <ExportableReport
       fileName={projectName || "shaft"}
+      calculationSpec={result?.calculationSpec}
       title="Export Shaft results"
       description="Export the current summary and charts for review."
       csvRows={[

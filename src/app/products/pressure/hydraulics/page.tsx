@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveHydraulicsEngine } from "@/lib/pressure/hydraulics/engine";
 import type { HydraulicsResult } from "@/lib/pressure/hydraulics/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("hydraulics");
   const [boreDiameter, setBoreDiameter] = useState(0.1);
   const [rodDiameter, setRodDiameter] = useState(0.04);
   const [strokeLength, setStrokeLength] = useState(0.5);
@@ -30,12 +32,13 @@ export default function Page() {
       forceGoal: toBase(forceGoal, "force", forceUnit),
     };
 
-    setResult(solveHydraulicsEngine(config));
+    setResult(wrapResult(solveHydraulicsEngine(config)));
   };
 
   return (
     <DashboardLayout title="Hydraulic Cylinders">
       <CalculatorLayout
+        moduleId="hydraulics"
         title="Hydraulic Actuator Sizing"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveFitsEngine } from "@/lib/manufacturing/engine";
 import type { FitResult } from "@/lib/manufacturing/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("fits");
   const [nominalSize, setNominalSize] = useState(50);
   const [nominalUnit, setNominalUnit] = useState("mm");
   const [holeUpper, setHoleUpper] = useState(0.05);
@@ -30,7 +32,7 @@ export default function Page() {
 
     const raw = solveFitsEngine(config);
 
-    setResult({
+    setResult(wrapResult({
       holeMin: fromBase(raw.holeMin, "length", nominalUnit),
       holeMax: fromBase(raw.holeMax, "length", nominalUnit),
       shaftMin: fromBase(raw.shaftMin, "length", nominalUnit),
@@ -38,12 +40,13 @@ export default function Page() {
       clearanceMin: fromBase(raw.clearanceMin, "length", nominalUnit),
       clearanceMax: fromBase(raw.clearanceMax, "length", nominalUnit),
       fitType: raw.fitType,
-    });
+    }));
   };
 
   return (
     <DashboardLayout title="Fits & Clearances">
       <CalculatorLayout
+        moduleId="fits"
         title="Fits & Clearances Calculator"
         left={<FitInputs
           nominalSize={nominalSize}

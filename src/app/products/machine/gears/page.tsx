@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import GearInputs from "@/components/machine/gears/GearInputs";
@@ -8,6 +9,8 @@ import GearResults from "@/components/machine/gears/GearResults";
 import { toBase } from "@/lib/units/conversions";
 import { solveGearEngine } from "@/lib/machine/gears/engine";
 import type { GearResult, GearMaterial } from "@/lib/machine/gears/types";
+import { useDesignCodeUnits } from "@/hooks/useDesignCodeUnits";
+import type { CalculationSpec } from "@/lib/standards/types";
 
 const MATERIALS: Record<string, GearMaterial> = {
   Steel: {
@@ -31,6 +34,7 @@ const MATERIALS: Record<string, GearMaterial> = {
 };
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("gears");
   const [power, setPower] = useState(15);
   const [powerUnit, setPowerUnit] = useState("kW");
   const [rpm, setRpm] = useState(1200);
@@ -43,7 +47,21 @@ export default function Page() {
   const [material, setMaterial] = useState("Steel");
   const [stressUnit, setStressUnit] = useState("Pa");
   const [lengthUnit, setLengthUnit] = useState("mm");
-  const [result, setResult] = useState<GearResult | null>(null);
+  const [result, setResult] = useState<(GearResult & { calculationSpec?: CalculationSpec }) | null>(null);
+
+  const applyUnits = useCallback((units: Record<string, string>) => {
+    if (units.power) setPowerUnit(units.power);
+    if (units.module) setModuleUnit(units.module);
+    if (units.faceWidth) setFaceWidthUnit(units.faceWidth);
+    if (units.length) setLengthUnit(units.length);
+    if (units.stress) setStressUnit(units.stress);
+  }, []);
+
+  useDesignCodeUnits(
+    "gears",
+    ["power", "module", "faceWidth", "length", "stress"],
+    applyUnits
+  );
 
   const calculate = () => {
     const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
@@ -57,12 +75,14 @@ export default function Page() {
       material: MATERIALS[material] || MATERIALS.Steel,
     };
 
-    setResult(solveGearEngine(config));
+    const raw = solveGearEngine(config);
+    setResult(wrapResult(raw));
   };
 
   return (
     <DashboardLayout title="Gear Design Module">
       <CalculatorLayout
+        moduleId="gears"
         title="Spur Gear Design"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

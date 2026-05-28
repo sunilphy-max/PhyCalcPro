@@ -4,9 +4,10 @@ import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types
 import BeamDashboard from "./BeamDashboard";
 import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 import ExportableReport from "@/components/shared/ExportableReport";
+import type { CalculationSpec } from "@/lib/standards/types";
 
 type Props = {
-  result: BeamResult | null;
+  result: (BeamResult & { calculationSpec?: CalculationSpec }) | null;
   length: number;
   support: SupportType;
   loads: Load[];
@@ -50,6 +51,7 @@ export default function BeamResults({
       title="Export Beam results"
       description="Export the current summary and charts for review."
       csvRows={csvRows}
+      calculationSpec={result.calculationSpec}
     >
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
         <h2 className="text-lg font-semibold">Beam Results</h2>

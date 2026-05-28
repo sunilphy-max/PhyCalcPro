@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { CompositeResult } from "@/lib/materials/composites/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: CompositeResult | null;
+  result: WithCalculationSpec<CompositeResult> | null;
   stressUnit: string;
   densityUnit: string;
 };
@@ -26,6 +27,7 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
   return (
     <ExportableReport
       fileName="composite"
+      calculationSpec={result?.calculationSpec}
       title="Export Composite results"
       description="Export the current summary and charts for review."
       csvRows={[

@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { SafetyFactorResult } from "@/lib/fasteners/safetyFactor/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: SafetyFactorResult | null;
+  result: WithCalculationSpec<SafetyFactorResult> | null;
   lengthUnit: string;
   forceUnit: string;
   momentUnit: string;
@@ -37,6 +38,7 @@ export default function SafetyFactorResults({
   return (
     <ExportableReport
       fileName="safety-factor"
+      calculationSpec={result?.calculationSpec}
       title="Export Safety Factor results"
       description="Export the current summary and charts for review."
       csvRows={[

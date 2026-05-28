@@ -1,8 +1,9 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CostEstimatorResult } from "@/lib/manufacturing/costEstimator/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: CostEstimatorResult | null;
+  result: WithCalculationSpec<CostEstimatorResult> | null;
 };
 
 export default function CostEstimatorResults({ result }: Props) {
@@ -23,6 +24,7 @@ export default function CostEstimatorResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="cost-estimator"
+      calculationSpec={result?.calculationSpec}
       title="Export Cost Estimator results"
       description="Export the current summary and charts for review."
       csvRows={[

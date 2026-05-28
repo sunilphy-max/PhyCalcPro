@@ -1,13 +1,16 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
+type ToleranceResult = {
+  tolerances: number[];
+  count: number;
+  worstCase: number;
+  rss: number;
+  totalTolerance: number;
+};
+
 type Props = {
-  result: {
-    tolerances: number[];
-    count: number;
-    worstCase: number;
-    rss: number;
-    totalTolerance: number;
-  } | null;
+  result: WithCalculationSpec<ToleranceResult> | null;
   displayUnit: string;
 };
 
@@ -31,6 +34,7 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
   return (
     <ExportableReport
       fileName="tolerance"
+      calculationSpec={result.calculationSpec}
       title="Export Tolerance results"
       description="Export the current summary and charts for review."
       csvRows={[

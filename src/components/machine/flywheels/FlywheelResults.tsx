@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { FlywheelResult } from "@/lib/machine/flywheels/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: FlywheelResult | null;
+  result: WithCalculationSpec<FlywheelResult> | null;
   lengthUnit: string;
   densityUnit: string;
   stressUnit: string;
@@ -31,6 +32,7 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
   return (
     <ExportableReport
       fileName="flywheel"
+      calculationSpec={result?.calculationSpec}
       title="Export Flywheel results"
       description="Export the current summary and charts for review."
       csvRows={[

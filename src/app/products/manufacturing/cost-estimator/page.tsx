@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -9,6 +10,7 @@ import { solveCostEstimatorEngine } from "@/lib/manufacturing/costEstimator/engi
 import type { CostEstimatorResult } from "@/lib/manufacturing/costEstimator/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("cost-estimator");
   const [materialVolume, setMaterialVolume] = useState(0.5);
   const [materialDensity, setMaterialDensity] = useState(7800);
   const [materialCostPerKg, setMaterialCostPerKg] = useState(2.5);
@@ -35,12 +37,13 @@ export default function Page() {
       scrapPercent,
     });
 
-    setResult(raw);
+    setResult(wrapResult(raw));
   };
 
   return (
     <DashboardLayout title="Cost Estimation">
       <CalculatorLayout
+        moduleId="cost-estimator"
         title="Manufacturing Cost Estimator"
         left={<CostEstimatorInputs
           materialVolume={materialVolume}

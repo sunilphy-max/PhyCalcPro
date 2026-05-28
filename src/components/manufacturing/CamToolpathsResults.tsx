@@ -1,8 +1,9 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CamToolpathsResult } from "@/lib/manufacturing/camToolpaths/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: CamToolpathsResult | null;
+  result: WithCalculationSpec<CamToolpathsResult> | null;
 };
 
 export default function CamToolpathsResults({ result }: Props) {
@@ -23,6 +24,7 @@ export default function CamToolpathsResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="cam-toolpaths"
+      calculationSpec={result?.calculationSpec}
       title="Export Cam Toolpaths results"
       description="Export the current summary and charts for review."
       csvRows={[

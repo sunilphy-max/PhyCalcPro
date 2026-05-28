@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,6 +12,7 @@ import { solveTrussEngine } from "@/lib/structural/trusses/engine";
 import type { TrussResult } from "@/lib/structural/trusses/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("trusses");
   const [span, setSpan] = useState(6);
   const [height, setHeight] = useState(1.2);
   const [panels, setPanels] = useState(4);
@@ -35,12 +37,13 @@ export default function Page() {
       load: toBase(load, "force", loadUnit),
     };
 
-    setResult(solveTrussEngine(config));
+    setResult(wrapResult(solveTrussEngine(config)));
   };
 
   return (
     <DashboardLayout title="Truss Analysis">
       <CalculatorLayout
+        moduleId="trusses"
         title="Truss Analysis"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">

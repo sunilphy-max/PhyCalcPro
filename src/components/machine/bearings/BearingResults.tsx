@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { BearingResult } from "@/lib/machine/bearings/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: BearingResult | null;
+  result: WithCalculationSpec<BearingResult> | null;
   loadUnit: string;
 };
 
@@ -28,6 +29,7 @@ export default function BearingResults({ result, loadUnit }: Props) {
   return (
     <ExportableReport
       fileName="bearing"
+      calculationSpec={result?.calculationSpec}
       title="Export Bearing results"
       description="Export the current summary and charts for review."
       csvRows={[

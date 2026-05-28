@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -13,6 +14,7 @@ const defaultMotionLaw: MotionLaw = "simple_harmonic";
 const defaultProfileType: CamProfileType = "flat_follower";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("cams");
   const [lift, setLift] = useState(0.02);
   const [liftUnit, setLiftUnit] = useState("m");
   const [baseCircle, setBaseCircle] = useState(0.04);
@@ -36,12 +38,13 @@ export default function Page() {
       profileType,
     };
 
-    setResult(solveCamEngine(config));
+    setResult(wrapResult(solveCamEngine(config)));
   };
 
   return (
     <DashboardLayout title="Cam Design Module">
       <CalculatorLayout
+        moduleId="cams"
         title="Cam Profile & Kinematics"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

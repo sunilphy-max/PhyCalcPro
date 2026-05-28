@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,6 +12,7 @@ import { solvePressureVesselEngine } from "@/lib/pressure/vessels/engine";
 import type { PressureVesselResult } from "@/lib/pressure/vessels/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("vessels");
   const [radius, setRadius] = useState(0.5);
   const [radiusUnit, setRadiusUnit] = useState("m");
   const [thickness, setThickness] = useState(0.02);
@@ -35,12 +37,13 @@ export default function Page() {
       segments: Math.max(8, Math.round(segments)),
     };
 
-    setResult(solvePressureVesselEngine(config));
+    setResult(wrapResult(solvePressureVesselEngine(config)));
   };
 
   return (
     <DashboardLayout title="Pressure Vessel Analysis">
       <CalculatorLayout
+        moduleId="vessels"
         title="Pressure Vessel FEM"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">

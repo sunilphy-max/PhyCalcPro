@@ -1,20 +1,23 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ExportableReport from "@/components/shared/ExportableReport";
 import { solveSuspensionEngine } from "@/lib/dynamics/suspension/engine";
 import type { SuspensionConfig, SuspensionResult } from "@/lib/dynamics/suspension/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("suspension");
   const [sprungMass, setSprungMass] = useState(1200);
   const [trackWidth, setTrackWidth] = useState(1.6);
   const [rollStiffness, setRollStiffness] = useState(55000);
   const [wheelbase, setWheelbase] = useState(2.8);
   const [lateralAcceleration, setLateralAcceleration] = useState(0.9);
   const [cgHeight, setCgHeight] = useState(0.45);
-  const [result, setResult] = useState<SuspensionResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<SuspensionResult> | null>(null);
 
   const calculate = () => {
     const config: SuspensionConfig = {
@@ -25,12 +28,13 @@ export default function Page() {
       lateralAcceleration,
       cgHeight,
     };
-    setResult(solveSuspensionEngine(config));
+    setResult(wrapResult(solveSuspensionEngine(config)));
   };
 
   return (
     <DashboardLayout title="Suspension & Sway Analysis">
       <CalculatorLayout
+        moduleId="suspension"
         title="Suspension Stability Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -116,6 +120,7 @@ export default function Page() {
         right={
           <ExportableReport
             fileName="suspension"
+            calculationSpec={result?.calculationSpec}
             title="Export Suspension results"
             description="Export the current summary for review."
             csvRows={

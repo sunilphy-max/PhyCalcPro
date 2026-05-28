@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { RivetResult } from "@/lib/fasteners/rivets/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: RivetResult | null;
+  result: WithCalculationSpec<RivetResult> | null;
   lengthUnit: string;
   forceUnit: string;
   stressUnit: string;
@@ -31,6 +32,7 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
   return (
     <ExportableReport
       fileName="rivet"
+      calculationSpec={result?.calculationSpec}
       title="Export Rivet results"
       description="Export the current summary and charts for review."
       csvRows={[

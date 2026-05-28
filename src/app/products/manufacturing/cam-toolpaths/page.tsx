@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -9,6 +10,7 @@ import { solveCamToolpathsEngine } from "@/lib/manufacturing/camToolpaths/engine
 import type { CamToolpathsResult } from "@/lib/manufacturing/camToolpaths/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("cam-toolpaths");
   const [toolDiameter, setToolDiameter] = useState(12);
   const [numFlutes, setNumFlutes] = useState(4);
   const [spindleSpeed, setSpindleSpeed] = useState(4200);
@@ -33,12 +35,13 @@ export default function Page() {
       stepOverPercent,
     });
 
-    setResult(raw);
+    setResult(wrapResult(raw));
   };
 
   return (
     <DashboardLayout title="CAM Toolpaths">
       <CalculatorLayout
+        moduleId="cam-toolpaths"
         title="CAM Toolpath Calculator"
         left={<CamToolpathsInputs
           toolDiameter={toolDiameter}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -9,8 +10,10 @@ import type {
   CombinedLoadingConfig,
   CombinedLoadingResult,
 } from "@/lib/structural/combinedLoading/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("combined-loading");
   const [axialForce, setAxialForce] = useState(120000);
   const [bendingMoment, setBendingMoment] = useState(85000);
   const [torque, setTorque] = useState(18000);
@@ -18,7 +21,7 @@ export default function Page() {
   const [width, setWidth] = useState(0.18);
   const [height, setHeight] = useState(0.27);
   const [yieldStrength, setYieldStrength] = useState(250);
-  const [result, setResult] = useState<CombinedLoadingResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<CombinedLoadingResult> | null>(null);
 
   const calculate = () => {
     const config: CombinedLoadingConfig = {
@@ -30,12 +33,13 @@ export default function Page() {
       height,
       yieldStrength,
     };
-    setResult(solveCombinedLoadingEngine(config));
+    setResult(wrapResult(solveCombinedLoadingEngine(config)));
   };
 
   return (
     <DashboardLayout title="Combined Loading">
       <CalculatorLayout
+        moduleId="combined-loading"
         title="Combined Loading Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -130,6 +134,7 @@ export default function Page() {
             fileName="combined-loading"
             title="Export Combined Loading results"
             description="Export the current summary for review."
+            calculationSpec={result?.calculationSpec}
             csvRows={
               result
                 ? [

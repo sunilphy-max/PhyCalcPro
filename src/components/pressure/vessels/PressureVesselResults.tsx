@@ -1,5 +1,6 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressureVesselResult } from "@/lib/pressure/vessels/types";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
@@ -7,7 +8,7 @@ import CalculationQualityChecklist from "@/components/shared/CalculationQualityC
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: PressureVesselResult | null;
+  result: WithCalculationSpec<PressureVesselResult> | null;
 };
 
 export default function PressureVesselResults({ result }: Props) {
@@ -29,6 +30,7 @@ export default function PressureVesselResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="pressure-vessel"
+      calculationSpec={result?.calculationSpec}
       title="Export Pressure Vessel results"
       description="Export the current summary and charts for review."
       csvRows={[

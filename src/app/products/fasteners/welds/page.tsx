@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -28,6 +29,7 @@ const MATERIALS: Record<string, WeldMaterial> = {
 };
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("welds");
   const [weldType, setWeldType] = useState<WeldType>("fillet");
   const [weldSize, setWeldSize] = useState(0.01);
   const [weldSizeUnit, setWeldSizeUnit] = useState("m");
@@ -52,12 +54,13 @@ export default function Page() {
       material: MATERIALS[material] || MATERIALS.Steel,
     };
 
-    setResult(solveWeldEngine(config));
+    setResult(wrapResult(solveWeldEngine(config)));
   };
 
   return (
     <DashboardLayout title="Weld Group Analysis Module">
       <CalculatorLayout
+        moduleId="welds"
         title="Weld Strength Evaluation"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

@@ -1,9 +1,10 @@
 import { fromBase } from "@/lib/units/conversions";
 import type { GearResult } from "@/lib/machine/gears/types";
 import ExportableReport from "@/components/shared/ExportableReport";
+import type { CalculationSpec } from "@/lib/standards/types";
 
 type Props = {
-  result: GearResult | null;
+  result: (GearResult & { calculationSpec?: CalculationSpec }) | null;
   lengthUnit: string;
   stressUnit: string;
 };
@@ -34,6 +35,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
       fileName="gear"
       title="Export Gear results"
       description="Export the current summary and charts for review."
+      calculationSpec={result.calculationSpec}
       csvRows={[
         { metric: "actualRatio", value: result.actualRatio },
         { metric: "torque", value: result.torque },

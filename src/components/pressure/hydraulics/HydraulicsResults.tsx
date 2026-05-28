@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { HydraulicsResult } from "@/lib/pressure/hydraulics/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: HydraulicsResult | null;
+  result: WithCalculationSpec<HydraulicsResult> | null;
   lengthUnit: string;
   pressureUnit: string;
   forceUnit: string;
@@ -27,6 +28,7 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
   return (
     <ExportableReport
       fileName="hydraulics"
+      calculationSpec={result?.calculationSpec}
       title="Export Hydraulics results"
       description="Export the current summary and charts for review."
       csvRows={[

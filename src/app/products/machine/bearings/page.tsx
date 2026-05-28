@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -31,6 +32,7 @@ const MATERIALS: Record<string, BearingMaterial> = {
 };
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("bearings");
   const [radialLoad, setRadialLoad] = useState(500);
   const [radialUnit, setRadialUnit] = useState("N");
   const [axialLoad, setAxialLoad] = useState(100);
@@ -53,12 +55,13 @@ export default function Page() {
       material: MATERIALS[material] || MATERIALS.Steel,
     };
 
-    setResult(solveBearingEngine(config));
+    setResult(wrapResult(solveBearingEngine(config)));
   };
 
   return (
     <DashboardLayout title="Bearing Selection Module">
       <CalculatorLayout
+        moduleId="bearings"
         title="Bearing Load Rating & Life"
         left={
           <div className="space-y-4">

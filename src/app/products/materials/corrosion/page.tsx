@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -9,10 +10,12 @@ import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
 import { fromBaseUnit, toBaseUnit } from "@/lib/physics/units";
 import { solveCorrosionEngine } from "@/lib/materials/corrosion/engine";
 import type { CorrosionConfig, CorrosionResult } from "@/lib/materials/corrosion/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 const defaults = moduleUnitProfiles.corrosion;
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("corrosion");
   const [initialThickness, setInitialThickness] = useState(10);
   const [thicknessUnit, setThicknessUnit] = useState(defaults.initialThickness.defaultUnit);
   const [corrosionRate, setCorrosionRate] = useState(0.2);
@@ -21,7 +24,7 @@ export default function Page() {
   const [lifeUnit, setLifeUnit] = useState(defaults.designLife.defaultUnit);
   const [safetyMargin, setSafetyMargin] = useState(25);
   const [marginUnit, setMarginUnit] = useState(defaults.safetyMargin.defaultUnit);
-  const [result, setResult] = useState<CorrosionResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<CorrosionResult> | null>(null);
 
   const calculate = () => {
     const config: CorrosionConfig = {
@@ -47,17 +50,20 @@ export default function Page() {
     const toDisplayLength = (mmValue: number) =>
       fromBaseUnit(toBaseUnit(mmValue, "length", "mm"), "length", thicknessUnit);
 
-    setResult({
-      ...raw,
-      corrosionAllowance: toDisplayLength(raw.corrosionAllowance),
-      requiredThickness: toDisplayLength(raw.requiredThickness),
-      remainingThickness: toDisplayLength(raw.remainingThickness),
-    });
+    setResult(
+      wrapResult({
+        ...raw,
+        corrosionAllowance: toDisplayLength(raw.corrosionAllowance),
+        requiredThickness: toDisplayLength(raw.requiredThickness),
+        remainingThickness: toDisplayLength(raw.remainingThickness),
+      })
+    );
   };
 
   return (
     <DashboardLayout title="Corrosion Allowance">
       <CalculatorLayout
+        moduleId="corrosion"
         title="Corrosion Allowance Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -118,6 +124,7 @@ export default function Page() {
         right={
           <ExportableReport
             fileName="corrosion"
+            calculationSpec={result?.calculationSpec}
             title="Export Corrosion results"
             description="Export the current summary for review."
             csvRows={

@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -17,6 +18,8 @@ type ProfilesProjectData = {
 type ProfilesProject = LocalProject<ProfilesProjectData>;
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("profiles");
+
   // =========================
   // INPUTS
   // =========================
@@ -44,7 +47,7 @@ export default function Page() {
     };
 
     const raw = solveAreaPropertiesEngine(config);
-    setResult(raw);
+    setResult(wrapResult(raw));
   };
 
   // =========================
@@ -75,6 +78,7 @@ export default function Page() {
   return (
     <DashboardLayout title="Area Properties Module">
       <CalculatorLayout
+        moduleId="profiles"
         title="Cross-Sectional Area Properties"
         footer={
           <SavedProjectsFooter

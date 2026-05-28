@@ -1,5 +1,6 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
@@ -7,7 +8,7 @@ import CalculationQualityChecklist from "@/components/shared/CalculationQualityC
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: PressurePipeResult | null;
+  result: WithCalculationSpec<PressurePipeResult> | null;
 };
 
 export default function PressurePipeResults({ result }: Props) {
@@ -30,6 +31,7 @@ export default function PressurePipeResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="pressure-pipe"
+      calculationSpec={result?.calculationSpec}
       title="Export Pressure Pipe results"
       description="Export the current summary and charts for review."
       csvRows={[

@@ -2,6 +2,7 @@
 
 import { useSelectedLayoutSegments } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import { DesignCodeProvider } from "@/contexts/DesignCodeContext";
 
 export default function ProductsLayout({
   children,
@@ -12,6 +13,7 @@ export default function ProductsLayout({
   const showSidebar = segments.length === 0;
 
   return (
+    <DesignCodeProvider>
     <div className="flex min-h-screen bg-slate-50 text-slate-950">
       {showSidebar && <Sidebar />}
 
@@ -21,5 +23,6 @@ export default function ProductsLayout({
         <div className="relative min-h-screen">{children}</div>
       </main>
     </div>
+    </DesignCodeProvider>
   );
 }

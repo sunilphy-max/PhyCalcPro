@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveCompositeEngine } from "@/lib/materials/composites/engine";
 import type { CompositeResult } from "@/lib/materials/composites/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("composites");
   const [fiberVolumeFraction, setFiberVolumeFraction] = useState(0.6);
   const [fiberModulus, setFiberModulus] = useState(230e9);
   const [matrixModulus, setMatrixModulus] = useState(3.5e9);
@@ -36,12 +38,13 @@ export default function Page() {
       matrixPoisson,
     };
 
-    setResult(solveCompositeEngine(config));
+    setResult(wrapResult(solveCompositeEngine(config)));
   };
 
   return (
     <DashboardLayout title="Composite Materials Module">
       <CalculatorLayout
+        moduleId="composites"
         title="Composite Property Calculator"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

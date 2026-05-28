@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { HeatExchangerResult } from "@/lib/pressure/heat-exchangers/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: HeatExchangerResult | null;
+  result: WithCalculationSpec<HeatExchangerResult> | null;
 };
 
 export default function HeatExchangerResults({ result }: Props) {
@@ -24,6 +25,7 @@ export default function HeatExchangerResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="heat-exchanger"
+      calculationSpec={result?.calculationSpec}
       title="Export Heat Exchanger results"
       description="Export the current summary and charts for review."
       csvRows={[

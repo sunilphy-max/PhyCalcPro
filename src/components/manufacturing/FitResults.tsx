@@ -1,7 +1,8 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: {
+  result: WithCalculationSpec<{
     holeMin: number;
     holeMax: number;
     shaftMin: number;
@@ -9,7 +10,7 @@ type Props = {
     clearanceMin: number;
     clearanceMax: number;
     fitType: "clearance" | "transition" | "interference";
-  } | null;
+  }> | null;
   displayUnit: string;
 };
 
@@ -33,6 +34,7 @@ export default function FitResults({ result, displayUnit }: Props) {
   return (
     <ExportableReport
       fileName="fit"
+      calculationSpec={result.calculationSpec}
       title="Export Fit results"
       description="Export the current summary and charts for review."
       csvRows={[

@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveRotationEngine } from "@/lib/dynamics/rotation/engine";
 import type { RotationResult } from "@/lib/dynamics/rotation/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("rotation");
   const [mass, setMass] = useState(10);
   const [radius, setRadius] = useState(0.3);
   const [speedRPM, setSpeedRPM] = useState(1500);
@@ -27,19 +29,20 @@ export default function Page() {
     };
 
     const raw = solveRotationEngine(config);
-    setResult({
+    setResult(wrapResult({
       ...raw,
       inertia: raw.inertia,
       kineticEnergy: raw.kineticEnergy,
       centripetalAcceleration: raw.centripetalAcceleration,
       centripetalForce: raw.centripetalForce,
       torque: raw.torque,
-    });
+    }));
   };
 
   return (
     <DashboardLayout title="Rotational Systems">
       <CalculatorLayout
+        moduleId="rotation"
         title="Rotational System Calculator"
         left={<RotationInputs
           mass={mass}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -9,13 +10,15 @@ import type {
   TemperaturePropertiesConfig,
   TemperaturePropertiesResult,
 } from "@/lib/materials/temperatureProperties/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("temperature-properties");
   const [baseYield, setBaseYield] = useState(250);
   const [baseModulus, setBaseModulus] = useState(210);
   const [coefficient, setCoefficient] = useState(12e-6);
   const [temperature, setTemperature] = useState(120);
-  const [result, setResult] = useState<TemperaturePropertiesResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<TemperaturePropertiesResult> | null>(null);
 
   const calculate = () => {
     const config: TemperaturePropertiesConfig = {
@@ -24,12 +27,13 @@ export default function Page() {
       coefficientThermalExpansion: coefficient,
       temperature,
     };
-    setResult(solveTemperaturePropertiesEngine(config));
+    setResult(wrapResult(solveTemperaturePropertiesEngine(config)));
   };
 
   return (
     <DashboardLayout title="Temperature Properties">
       <CalculatorLayout
+        moduleId="temperature-properties"
         title="Temperature Derating Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -94,6 +98,7 @@ export default function Page() {
         right={
           <ExportableReport
             fileName="temperature-properties"
+            calculationSpec={result?.calculationSpec}
             title="Export Temperature Properties results"
             description="Export the current summary for review."
             csvRows={

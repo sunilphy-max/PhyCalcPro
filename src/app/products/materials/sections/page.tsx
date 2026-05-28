@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveSectionEngine } from "@/lib/materials/engine";
 import type { SectionConfig, SectionResult } from "@/lib/materials/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("sections");
   const [shape, setShape] = useState<SectionConfig["shape"]>("rectangle");
   const [width, setWidth] = useState(0.1);
   const [height, setHeight] = useState(0.2);
@@ -37,18 +39,19 @@ export default function Page() {
     const areaUnit = `${lengthUnit}2`;
     const inertiaUnit = lengthUnit === "mm" ? "mm4" : lengthUnit === "in" ? "in4" : "m4";
 
-    setResult({
+    setResult(wrapResult({
       ...raw,
       area: fromBase(raw.area, "area", areaUnit),
       centroidY: fromBase(raw.centroidY, "length", lengthUnit),
       Ixx: fromBase(raw.Ixx, "inertia", inertiaUnit),
       Iyy: fromBase(raw.Iyy, "inertia", inertiaUnit),
-    });
+    }));
   };
 
   return (
     <DashboardLayout title="Section Properties">
       <CalculatorLayout
+        moduleId="sections"
         title="Section Property Calculator"
         left={<SectionInputs
           shape={shape}

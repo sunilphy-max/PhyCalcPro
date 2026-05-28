@@ -1,12 +1,13 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import TrussDiagram from "./TrussDiagram";
 import type { TrussResult } from "@/lib/structural/trusses/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: TrussResult | null;
+  result: WithCalculationSpec<TrussResult> | null;
 };
 
 export default function TrussResults({ result }: Props) {
@@ -37,6 +38,7 @@ export default function TrussResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="truss"
+      calculationSpec={result?.calculationSpec}
       title="Export Truss results"
       description="Export the current summary and charts for review."
       csvRows={[

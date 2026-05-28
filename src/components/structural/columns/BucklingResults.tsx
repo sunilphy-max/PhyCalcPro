@@ -1,11 +1,12 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import BucklingDashboard from "./BucklingDashboard";
 import type { BucklingResult } from "@/lib/structural/columns/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: BucklingResult | null;
+  result: WithCalculationSpec<BucklingResult> | null;
   projectName: string;
 };
 
@@ -27,6 +28,7 @@ export default function BucklingResults({ result, projectName }: Props) {
   return (
     <ExportableReport
       fileName={projectName || "buckling"}
+      calculationSpec={result?.calculationSpec}
       title="Export Buckling results"
       description="Export a detailed report of the current analysis."
       csvRows={[

@@ -1,11 +1,12 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ProfilesDashboard from "./ProfilesDashboard";
 import type { AreaPropertiesResult } from "@/lib/profiles/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: AreaPropertiesResult | null;
+  result: WithCalculationSpec<AreaPropertiesResult> | null;
   projectName: string;
 };
 
@@ -27,6 +28,7 @@ export default function ProfilesResults({ result, projectName }: Props) {
   return (
     <ExportableReport
       fileName={projectName || "profiles"}
+      calculationSpec={result?.calculationSpec}
       title="Export Area Properties results"
       description="Export a detailed report of the current analysis."
       csvRows={[

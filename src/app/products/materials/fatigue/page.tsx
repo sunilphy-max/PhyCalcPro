@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,10 +12,12 @@ import ModuleUnitField, {
 import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
 import { solveFatigueEngine } from "@/lib/materials/fatigue/engine";
 import type { FatigueConfig, FatigueResult } from "@/lib/materials/fatigue/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 const defaults = moduleUnitProfiles.fatigue;
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("fatigue");
   const [alternatingStress, setAlternatingStress] = useState(120);
   const [alternatingUnit, setAlternatingUnit] = useState(defaults.alternatingStress.defaultUnit);
   const [meanStress, setMeanStress] = useState(30);
@@ -23,7 +26,7 @@ export default function Page() {
   const [ultimateUnit, setUltimateUnit] = useState(defaults.ultimateStrength.defaultUnit);
   const [enduranceLimit, setEnduranceLimit] = useState(240);
   const [enduranceUnit, setEnduranceUnit] = useState(defaults.enduranceLimit.defaultUnit);
-  const [result, setResult] = useState<FatigueResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<FatigueResult> | null>(null);
 
   const toStressPa = (value: number, unit: string) =>
     normalizeFieldValue("fatigue", "alternatingStress", value, unit);
@@ -36,16 +39,29 @@ export default function Page() {
       enduranceLimit: toStressPa(enduranceLimit, enduranceUnit),
     };
     const raw = solveFatigueEngine(config);
-    setResult({
-      ...raw,
-      allowableStress: displayFieldValue("fatigue", "alternatingStress", raw.allowableStress, alternatingUnit),
-      correctedEndurance: displayFieldValue("fatigue", "enduranceLimit", raw.correctedEndurance, enduranceUnit),
-    });
+    setResult(
+      wrapResult({
+        ...raw,
+        allowableStress: displayFieldValue(
+          "fatigue",
+          "alternatingStress",
+          raw.allowableStress,
+          alternatingUnit
+        ),
+        correctedEndurance: displayFieldValue(
+          "fatigue",
+          "enduranceLimit",
+          raw.correctedEndurance,
+          enduranceUnit
+        ),
+      })
+    );
   };
 
   return (
     <DashboardLayout title="Fatigue Assessment">
       <CalculatorLayout
+        moduleId="fatigue"
         title="Fatigue Life Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -105,6 +121,7 @@ export default function Page() {
         right={
           <ExportableReport
             fileName="fatigue"
+            calculationSpec={result?.calculationSpec}
             title="Export Fatigue results"
             description="Export the current summary for review."
             csvRows={

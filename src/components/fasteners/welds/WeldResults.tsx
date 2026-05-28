@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { WeldResult } from "@/lib/fasteners/welds/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: WeldResult | null;
+  result: WithCalculationSpec<WeldResult> | null;
   lengthUnit: string;
   forceUnit: string;
   stressUnit: string;
@@ -123,6 +124,7 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
   return (
     <ExportableReport
       fileName="weld"
+      calculationSpec={result?.calculationSpec}
       title="Export Weld results"
       description="Export the current weld analysis summary."
       csvRows={[

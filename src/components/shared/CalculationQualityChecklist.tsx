@@ -4,7 +4,7 @@ import {
   checklistScore,
   moduleChecklistItems,
   type ModuleQualityChecklist,
-} from "@/lib/calculation/standards";
+} from "@/lib/calculation/qualityChecklist";
 
 type Props = {
   title: string;

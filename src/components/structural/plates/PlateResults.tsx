@@ -1,12 +1,13 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import PlateHeatmap from "./PlateHeatmap";
 import type { PlateResult } from "@/lib/structural/plates/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: PlateResult | null;
+  result: WithCalculationSpec<PlateResult> | null;
 };
 
 export default function PlateResults({ result }: Props) {
@@ -27,6 +28,7 @@ export default function PlateResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="plate"
+      calculationSpec={result?.calculationSpec}
       title="Export Plate results"
       description="Export the current summary and charts for review."
       csvRows={[

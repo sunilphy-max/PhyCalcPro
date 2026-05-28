@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { useCallback, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MeshControls from "@/components/shared/MeshControls";
@@ -27,6 +28,10 @@ type BeamProjectData = {
 };
 type BeamProject = LocalProject<BeamProjectData>;
 import { solveBeamEngine } from "@/lib/structural/beams/engine";
+import { useDesignCode } from "@/contexts/DesignCodeContext";
+import { attachBeamCalculationSpec } from "@/lib/standards";
+import { useDesignCodeUnits } from "@/hooks/useDesignCodeUnits";
+import type { CalculationSpec } from "@/lib/standards/types";
 
 const getNewLoadId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
@@ -128,7 +133,23 @@ const handleLoadDrag = (
   // =========================
   // UI STATE
   // =========================
-  const [result, setResult] = useState<BeamResult | null>(null);
+  const [result, setResult] = useState<(BeamResult & { calculationSpec?: CalculationSpec }) | null>(null);
+  const { designCode } = useDesignCode();
+
+  const applyUnits = useCallback((units: Record<string, string>) => {
+    if (units.length) setLengthUnit(units.length);
+    if (units.force) setForceUnit(units.force);
+    if (units.udl) setUdlUnit(units.udl);
+    if (units.inertia) setInertiaUnit(units.inertia);
+    if (units.moment) setMomentUnit(units.moment);
+    if (units.stress) setStressUnit(units.stress);
+  }, []);
+
+  useDesignCodeUnits(
+    "beams",
+    ["length", "force", "udl", "inertia", "moment", "stress"],
+    applyUnits
+  );
   const [projectName, setProjectName] = useState("Beam Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<BeamProject[]>(() =>
@@ -259,7 +280,13 @@ const handleLoadDrag = (
         I: normalizedInputs.I,
       });
 
-    setResult(converted);
+    setResult(
+      attachBeamCalculationSpec(converted, designCode, {
+        yieldStressPa: 250e6,
+        deflectionLimit: length > 0 ? length / 360 : undefined,
+      })
+    );
+    
     await recordRun({
       projectId: "beam-local",
       modelId: "beam-analysis",
@@ -319,6 +346,7 @@ const handleLoadDrag = (
   return (
     <DashboardLayout title="Beam Analysis Module">
       <CalculatorLayout
+        moduleId="beams"
         title="Beam Analysis Module"
         left={
           <div className="space-y-5">

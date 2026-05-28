@@ -1,13 +1,16 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
+type SectionResult = {
+  shape: string;
+  area: number;
+  centroidY: number;
+  Ixx: number;
+  Iyy: number;
+};
+
 type Props = {
-  result: {
-    shape: string;
-    area: number;
-    centroidY: number;
-    Ixx: number;
-    Iyy: number;
-  } | null;
+  result: WithCalculationSpec<SectionResult> | null;
   linearUnit: string;
   areaUnit: string;
   inertiaUnit: string;
@@ -35,6 +38,7 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
   return (
     <ExportableReport
       fileName="section"
+      calculationSpec={result.calculationSpec}
       title="Export Section results"
       description="Export the current summary and charts for review."
       csvRows={[

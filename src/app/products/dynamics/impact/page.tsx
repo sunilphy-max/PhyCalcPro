@@ -1,19 +1,22 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ExportableReport from "@/components/shared/ExportableReport";
 import { solveImpactEngine } from "@/lib/dynamics/impact/engine";
 import type { ImpactConfig, ImpactResult } from "@/lib/dynamics/impact/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("impact");
   const [mass, setMass] = useState(60);
   const [velocityChange, setVelocityChange] = useState(8);
   const [impactDuration, setImpactDuration] = useState(50);
   const [crossSectionArea, setCrossSectionArea] = useState(100);
   const [yieldStrength, setYieldStrength] = useState(250);
-  const [result, setResult] = useState<ImpactResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<ImpactResult> | null>(null);
 
   const calculate = () => {
     const config: ImpactConfig = {
@@ -23,12 +26,13 @@ export default function Page() {
       crossSectionArea,
       yieldStrength,
     };
-    setResult(solveImpactEngine(config));
+    setResult(wrapResult(solveImpactEngine(config)));
   };
 
   return (
     <DashboardLayout title="Impact & Shock Analysis">
       <CalculatorLayout
+        moduleId="impact"
         title="Impact Force Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -101,6 +105,7 @@ export default function Page() {
         right={
           <ExportableReport
             fileName="impact"
+            calculationSpec={result?.calculationSpec}
             title="Export Impact results"
             description="Export the current summary for review."
             csvRows={

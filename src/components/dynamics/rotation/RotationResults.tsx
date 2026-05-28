@@ -1,16 +1,17 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
-type Props = {
-  result:
-    | {
+type RotationResult = {
         inertia: number;
         omega: number;
         kineticEnergy: number;
         centripetalAcceleration: number;
         centripetalForce: number;
         torque: number;
-      }
-    | null;
+      };
+
+type Props = {
+  result: WithCalculationSpec<RotationResult> | null;
 };
 
 export default function RotationResults({ result }: Props) {
@@ -31,6 +32,7 @@ export default function RotationResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="rotation"
+      calculationSpec={result.calculationSpec}
       title="Export Rotation results"
       description="Export the current summary and charts for review."
       csvRows={[

@@ -1,5 +1,6 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FrameDiagram from "./FrameDiagram";
 import type { FrameResult } from "@/lib/structural/frames/types";
@@ -8,7 +9,7 @@ import CalculationQualityChecklist from "@/components/shared/CalculationQualityC
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: FrameResult | null;
+  result: WithCalculationSpec<FrameResult> | null;
 };
 
 export default function FrameResults({ result }: Props) {
@@ -29,6 +30,7 @@ export default function FrameResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="frame"
+      calculationSpec={result?.calculationSpec}
       title="Export Frame results"
       description="Export the current summary and charts for review."
       csvRows={[

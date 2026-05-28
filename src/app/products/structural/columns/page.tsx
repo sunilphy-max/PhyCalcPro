@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -23,6 +24,7 @@ type BucklingProjectData = {
 type BucklingProject = LocalProject<BucklingProjectData>;
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("columns");
   // =========================
   // INPUTS
   // =========================
@@ -80,7 +82,7 @@ export default function Page() {
       x: raw.x.map((v) => fromBase(v, "length", lengthUnit)),
     };
 
-    setResult(converted);
+    setResult(wrapResult(converted));
   };
 
   // =========================
@@ -121,6 +123,7 @@ export default function Page() {
   return (
     <DashboardLayout title="Column Buckling Analysis">
       <CalculatorLayout
+        moduleId="columns"
         title="Column Buckling Analysis"
         footer={
           <SavedProjectsFooter

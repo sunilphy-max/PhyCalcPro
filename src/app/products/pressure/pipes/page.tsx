@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,6 +12,7 @@ import { solvePressurePipeEngine } from "@/lib/pressure/pipes/engine";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("pipes");
   const [radius, setRadius] = useState(0.5);
   const [radiusUnit, setRadiusUnit] = useState("m");
   const [thickness, setThickness] = useState(0.02);
@@ -34,12 +36,13 @@ export default function Page() {
       segments: Math.max(8, Math.round(segments)),
     };
 
-    setResult(solvePressurePipeEngine(config));
+    setResult(wrapResult(solvePressurePipeEngine(config)));
   };
 
   return (
     <DashboardLayout title="Pipe Stress Analysis">
       <CalculatorLayout
+        moduleId="pipes"
         title="Pressure Pipe FEM"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">

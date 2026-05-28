@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,8 +11,10 @@ import type {
   LoadCaseManagerConfig,
   LoadCaseManagerResult,
 } from "@/lib/structural/loadCaseManager/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("load-case-manager");
   const [cases, setCases] = useState<LoadCase[]>([
     { name: "Case 1", axialForce: 50000, bendingMoment: 60000, shearForce: 12000 },
     { name: "Case 2", axialForce: 30000, bendingMoment: 90000, shearForce: 15000 },
@@ -20,7 +23,7 @@ export default function Page() {
   const [width, setWidth] = useState(0.2);
   const [height, setHeight] = useState(0.25);
   const [yieldStrength, setYieldStrength] = useState(250);
-  const [result, setResult] = useState<LoadCaseManagerResult | null>(null);
+  const [result, setResult] = useState<WithCalculationSpec<LoadCaseManagerResult> | null>(null);
 
   const updateCase = (index: number, key: keyof LoadCase, value: number | string) => {
     setCases((current) =>
@@ -34,12 +37,13 @@ export default function Page() {
 
   const calculate = () => {
     const config: LoadCaseManagerConfig = { cases, width, height, yieldStrength };
-    setResult(solveLoadCaseManagerEngine(config));
+    setResult(wrapResult(solveLoadCaseManagerEngine(config)));
   };
 
   return (
     <DashboardLayout title="Load Case Manager">
       <CalculatorLayout
+        moduleId="load-case-manager"
         title="Load Case Envelope Calculator"
         left={
           <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -129,6 +133,7 @@ export default function Page() {
         right={
           <ExportableReport
             fileName="load-case-manager"
+            calculationSpec={result?.calculationSpec}
             title="Export Load Case Manager results"
             description="Export the current summary for review."
             csvRows={

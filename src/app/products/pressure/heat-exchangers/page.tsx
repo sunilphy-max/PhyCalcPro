@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -9,6 +10,7 @@ import { solveHeatExchangerEngine } from "@/lib/pressure/heat-exchangers/engine"
 import type { HeatExchangerResult, HeatExchangerFlowType } from "@/lib/pressure/heat-exchangers/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("heat-exchangers");
   const [hotFlowRate, setHotFlowRate] = useState(1.2);
   const [coldFlowRate, setColdFlowRate] = useState(1.5);
   const [hotCp, setHotCp] = useState(4180);
@@ -23,24 +25,27 @@ export default function Page() {
 
   const calculate = () => {
     setResult(
-      solveHeatExchangerEngine({
-        hotFlowRate,
-        coldFlowRate,
-        hotCp,
-        coldCp,
-        hotInletTemp,
-        coldInletTemp,
-        hotOutletTemp,
-        U,
-        area,
-        flowType,
-      })
+      wrapResult(
+        solveHeatExchangerEngine({
+          hotFlowRate,
+          coldFlowRate,
+          hotCp,
+          coldCp,
+          hotInletTemp,
+          coldInletTemp,
+          hotOutletTemp,
+          U,
+          area,
+          flowType,
+        })
+      )
     );
   };
 
   return (
     <DashboardLayout title="Heat Exchangers">
       <CalculatorLayout
+        moduleId="heat-exchangers"
         title="Heat Exchanger Sizing"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

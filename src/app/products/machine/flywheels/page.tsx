@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
 import type { FlywheelResult } from "@/lib/machine/flywheels/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("flywheels");
   const [outerDiameter, setOuterDiameter] = useState(1);
   const [outerDiameterUnit, setOuterDiameterUnit] = useState("m");
   const [thickness, setThickness] = useState(0.1);
@@ -33,12 +35,13 @@ export default function Page() {
       yieldStress: toBase(yieldStress, "stress", yieldStressUnit),
     };
 
-    setResult(solveFlywheelEngine(config));
+    setResult(wrapResult(solveFlywheelEngine(config)));
   };
 
   return (
     <DashboardLayout title="Flywheel Design Module">
       <CalculatorLayout
+        moduleId="flywheels"
         title="Flywheel Energy & Stress"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

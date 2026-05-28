@@ -1,9 +1,10 @@
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { CamResult } from "@/lib/machine/cams/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: CamResult | null;
+  result: WithCalculationSpec<CamResult> | null;
   lengthUnit: string;
 };
 
@@ -30,6 +31,7 @@ export default function CamResults({ result, lengthUnit }: Props) {
   return (
     <ExportableReport
       fileName="cam"
+      calculationSpec={result?.calculationSpec}
       title="Export Cam results"
       description="Export the current summary and charts for review."
       csvRows={[

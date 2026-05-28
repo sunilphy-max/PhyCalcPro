@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -17,6 +18,7 @@ type ScrewProjectData = {
 type ScrewProject = LocalProject<ScrewProjectData>;
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("bolts");
   // =========================
   // INPUTS
   // =========================
@@ -47,7 +49,7 @@ export default function Page() {
   // =========================
   const calculate = () => {
     const raw = solveScrewEngine(config);
-    setResult(raw);
+    setResult(wrapResult(raw));
   };
 
   // =========================
@@ -78,6 +80,7 @@ export default function Page() {
   return (
     <DashboardLayout title="Bolt Design Module">
       <CalculatorLayout
+        moduleId="bolts"
         title="Bolt Design Analysis"
         footer={
           <SavedProjectsFooter

@@ -1,5 +1,6 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import VibrationDiagram from "./VibrationDiagram";
 import VibrationInputSchematic from "./VibrationInputSchematic";
@@ -9,7 +10,7 @@ import CalculationQualityChecklist from "@/components/shared/CalculationQualityC
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: VibrationResult | null;
+  result: WithCalculationSpec<VibrationResult> | null;
 };
 
 export default function VibrationResults({ result }: Props) {
@@ -37,6 +38,7 @@ export default function VibrationResults({ result }: Props) {
   return (
     <ExportableReport
       fileName="vibration"
+      calculationSpec={result?.calculationSpec}
       title="Export Vibration results"
       description="Export the current summary and charts for review."
       csvRows={csvRows}

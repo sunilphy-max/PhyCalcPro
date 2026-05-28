@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,6 +12,7 @@ import { solvePlateEngine } from "@/lib/structural/plates/engine";
 import type { BoundaryType, PlateResult } from "@/lib/structural/plates/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("plates");
   const [length, setLength] = useState(2);
   const [width, setWidth] = useState(1.2);
   const [thickness, setThickness] = useState(0.015);
@@ -38,12 +40,13 @@ export default function Page() {
       boundaryType,
     };
 
-    setResult(solvePlateEngine(config));
+    setResult(wrapResult(solvePlateEngine(config)));
   };
 
   return (
     <DashboardLayout title="Plate Bending Analysis">
       <CalculatorLayout
+        moduleId="plates"
         title="Plate Bending Analysis"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">

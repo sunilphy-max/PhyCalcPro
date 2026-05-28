@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -10,6 +11,7 @@ import { solveSafetyFactorEngine } from "@/lib/fasteners/safetyFactor/engine";
 import type { SafetyFactorResult } from "@/lib/fasteners/safetyFactor/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("safety-factor");
   const [diameter, setDiameter] = useState(0.02);
   const [diameterUnit, setDiameterUnit] = useState("m");
   const [axialForce, setAxialForce] = useState(15000);
@@ -36,12 +38,13 @@ export default function Page() {
       ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
     };
 
-    setResult(solveSafetyFactorEngine(config));
+    setResult(wrapResult(solveSafetyFactorEngine(config)));
   };
 
   return (
     <DashboardLayout title="Safety Factor Module">
       <CalculatorLayout
+        moduleId="safety-factor"
         title="Combined Safety Factor Analysis"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

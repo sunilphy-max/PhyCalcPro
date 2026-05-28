@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -31,6 +32,7 @@ const MATERIALS: Record<string, RivetMaterial> = {
 };
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("rivets");
   const [rivetDiameter, setRivetDiameter] = useState(0.01);
   const [rivetDiameterUnit, setRivetDiameterUnit] = useState("m");
   const [plateThickness, setPlateThickness] = useState(0.006);
@@ -55,12 +57,13 @@ export default function Page() {
       rivetType,
     };
 
-    setResult(solveRivetEngine(config));
+    setResult(wrapResult(solveRivetEngine(config)));
   };
 
   return (
     <DashboardLayout title="Rivet Analysis Module">
       <CalculatorLayout
+        moduleId="rivets"
         title="Rivet Joint Strength"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">

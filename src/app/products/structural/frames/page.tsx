@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,6 +12,7 @@ import { solveFrameEngine } from "@/lib/structural/frames/engine";
 import type { FrameResult } from "@/lib/structural/frames/types";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("frames");
   const [span, setSpan] = useState(6);
   const [height, setHeight] = useState(3);
   const [segments, setSegments] = useState(3);
@@ -37,12 +39,13 @@ export default function Page() {
       load: toBase(load, "force", loadUnit),
     };
 
-    setResult(solveFrameEngine(config));
+    setResult(wrapResult(solveFrameEngine(config)));
   };
 
   return (
     <DashboardLayout title="Frame Analysis">
       <CalculatorLayout
+        moduleId="frames"
         title="Frame Analysis"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">

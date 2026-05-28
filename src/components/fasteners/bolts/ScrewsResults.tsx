@@ -1,11 +1,12 @@
 "use client";
 
+import type { WithCalculationSpec } from "@/lib/standards/types";
 import ScrewsDashboard from "./ScrewsDashboard";
 import type { ScrewResult } from "@/lib/fasteners/bolts/types";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
-  result: ScrewResult | null;
+  result: WithCalculationSpec<ScrewResult> | null;
   projectName: string;
 };
 
@@ -27,6 +28,7 @@ export default function ScrewsResults({ result, projectName }: Props) {
   return (
     <ExportableReport
       fileName={projectName || "screw"}
+      calculationSpec={result?.calculationSpec}
       title="Export Screw results"
       description="Export a detailed report of the current analysis."
       csvRows={[

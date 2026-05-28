@@ -1,5 +1,6 @@
 "use client";
 
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -13,6 +14,7 @@ import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 export default function Page() {
+  const { wrapResult } = useStandardCalculation("vibrations");
   const [length, setLength] = useState(5);
   const [lengthUnit, setLengthUnit] = useState("m");
   const [E, setE] = useState(210e9);
@@ -70,7 +72,7 @@ export default function Page() {
       segments,
       support,
     });
-    setResult(solved);
+    setResult(wrapResult(solved));
 
     const { baseValue, failure } = evaluateExpression({
       L: config.length,
@@ -99,6 +101,7 @@ export default function Page() {
   return (
     <DashboardLayout title="Vibration Analysis">
       <CalculatorLayout
+        moduleId="vibrations"
         title="Dynamic Vibration FEM"
         left={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
