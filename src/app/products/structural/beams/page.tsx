@@ -4,9 +4,11 @@ import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MeshControls from "@/components/shared/MeshControls";
-import { toBase, fromBase } from "@/lib/units/conversions";
+import { fromBase } from "@/lib/units/conversions";
+import { normalizeInput } from "@/lib/physics";
 import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
@@ -131,42 +133,94 @@ const handleLoadDrag = (
   const [savedProjects, setSavedProjects] = useState<BeamProject[]>(() =>
     loadLocalProjects<BeamProjectData>("beam")
   );
+  const {
+    equationExpression,
+    setEquationExpression,
+    equationValueDisplay,
+    equationError,
+    runStatusMessage,
+    evaluateExpression,
+    recordRun,
+  } = useEquationWorkflow({
+    initialExpression: "(M*c)/I",
+    fromBaseOutput: (value) => fromBase(value, "stress", stressUnit),
+  });
 
   // =========================
   // SOLVER
   // =========================
   const selectedMaterial =
   materials.find((m) => m.name === material) || materials[0];
-  const calculate = () => {
+  const calculate = async () => {
     const normalizedInputs: BeamConfig = {
-      length: toBase(length, "length", lengthUnit),
+      length: normalizeInput({
+        value: length,
+        unit: lengthUnit,
+        dimension: "length",
+      }),
       E: selectedMaterial.E,
-      I: toBase(I, "inertia", inertiaUnit),
-      c: toBase(c, "length", lengthUnit),
+      I: normalizeInput({
+        value: I,
+        unit: inertiaUnit,
+        dimension: "inertia",
+      }),
+      c: normalizeInput({
+        value: c,
+        unit: lengthUnit,
+        dimension: "length",
+      }),
       support,
       meshSegments: Math.max(10, Math.round(meshSegments)),
       loads: loads.map((l) => {
         if (l.type === "point") {
           return {
             ...l,
-            value: toBase(l.value, "force", forceUnit),
-            position: toBase(l.position, "length", lengthUnit),
+            value: normalizeInput({
+              value: l.value,
+              unit: forceUnit,
+              dimension: "force",
+            }),
+            position: normalizeInput({
+              value: l.position,
+              unit: lengthUnit,
+              dimension: "length",
+            }),
           };
         }
 
         if (isUDL(l)) {
           return {
             ...l,
-            value: toBase(l.value, "forcePerLength", udlUnit),
-            start: toBase(l.start, "length", lengthUnit),
-            end: toBase(l.end, "length", lengthUnit),
+            value: normalizeInput({
+              value: l.value,
+              unit: udlUnit,
+              dimension: "forcePerLength",
+            }),
+            start: normalizeInput({
+              value: l.start,
+              unit: lengthUnit,
+              dimension: "length",
+            }),
+            end: normalizeInput({
+              value: l.end,
+              unit: lengthUnit,
+              dimension: "length",
+            }),
           };
         }
 
         return {
           ...l,
-          value: toBase(l.value, "moment", momentUnit),
-          position: toBase(l.position, "length", lengthUnit),
+          value: normalizeInput({
+            value: l.value,
+            unit: momentUnit,
+            dimension: "moment",
+          }),
+          position: normalizeInput({
+            value: l.position,
+            unit: lengthUnit,
+            dimension: "length",
+          }),
         };
       }),
     };
@@ -192,7 +246,29 @@ const handleLoadDrag = (
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
     };
 
+    const { baseValue: equationStressValue, failure: equationFailure } =
+      evaluateExpression({
+        M: raw.maxMoment,
+        c: normalizedInputs.c,
+        I: normalizedInputs.I,
+      });
+
     setResult(converted);
+    await recordRun({
+      projectId: "beam-local",
+      modelId: "beam-analysis",
+      equationId: "beam-stress-live",
+      input: {
+        normalizedInputs,
+        units: { lengthUnit, forceUnit, udlUnit, inertiaUnit, momentUnit, stressUnit },
+      },
+      output: {
+        maxMomentBase: raw.maxMoment,
+        maxStressBase: raw.maxStress,
+        evaluatedEquationStressBase: equationStressValue,
+        equationError: equationFailure,
+      },
+    });
   };
 
   // =========================
@@ -250,6 +326,30 @@ const handleLoadDrag = (
                 onChangeElements={setMeshSegments}
                 refine
               />
+            </div>
+            <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
+              <h3 className="font-semibold">Custom equation check</h3>
+              <p className="text-sm text-slate-500">
+                Evaluate a deterministic user equation with current beam results.
+              </p>
+              <input
+                className="w-full border rounded p-2 font-mono text-sm"
+                value={equationExpression}
+                onChange={(event) => setEquationExpression(event.target.value)}
+                placeholder="(M*c)/I"
+              />
+              <p className="text-xs text-slate-500">Variables: M, c, I</p>
+              {equationValueDisplay !== null ? (
+                <p className="text-sm">
+                  Equation stress: <span className="font-semibold">{equationValueDisplay.toFixed(3)} {stressUnit}</span>
+                </p>
+              ) : null}
+              {equationError ? (
+                <p className="text-xs text-red-600">{equationError}</p>
+              ) : null}
+              {runStatusMessage ? (
+                <p className="text-xs text-slate-500">{runStatusMessage}</p>
+              ) : null}
             </div>
 
             <SavedProjects

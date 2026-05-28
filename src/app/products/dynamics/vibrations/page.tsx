@@ -6,9 +6,10 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import MeshControls from "@/components/shared/MeshControls";
 import VibrationInputs from "@/components/dynamics/vibrations/VibrationInputs";
 import VibrationResults from "@/components/dynamics/vibrations/VibrationResults";
-import { toBase } from "@/lib/units/conversions";
+import { normalizeInput } from "@/lib/physics";
 import { solveVibrationEngine } from "@/lib/dynamics/vibrations/engine";
 import type { VibrationResult, SupportType } from "@/lib/dynamics/vibrations/types";
+import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
 
 export default function Page() {
   const [length, setLength] = useState(5);
@@ -24,19 +25,55 @@ export default function Page() {
   const [segments, setSegments] = useState(12);
   const [support, setSupport] = useState<SupportType>("simply_supported");
   const [result, setResult] = useState<VibrationResult | null>(null);
+  const {
+    equationExpression,
+    setEquationExpression,
+    equationValueDisplay,
+    equationError,
+    runStatusMessage,
+    evaluateExpression,
+    recordRun,
+  } = useEquationWorkflow({
+    initialExpression: "(pi/(2*L^2))*sqrt((E*I)/(rho*A))",
+    fromBaseOutput: (value) => value,
+  });
 
-  const calculate = () => {
+  const calculate = async () => {
     const config = {
-      length: toBase(length, "length", lengthUnit),
-      E: toBase(E, "stress", EUnit),
-      A: toBase(A, "area", areaUnit),
-      I: toBase(I, "inertia", inertiaUnit),
-      rho: toBase(rho, "density", rhoUnit),
+      length: normalizeInput({ value: length, unit: lengthUnit, dimension: "length" }),
+      E: normalizeInput({ value: E, unit: EUnit, dimension: "stress" }),
+      A: normalizeInput({ value: A, unit: areaUnit, dimension: "area" }),
+      I: normalizeInput({ value: I, unit: inertiaUnit, dimension: "inertia" }),
+      rho: normalizeInput({ value: rho, unit: rhoUnit, dimension: "density" }),
       segments: Math.max(2, Math.round(segments)),
       support,
     };
 
-    setResult(solveVibrationEngine(config));
+    const solved = solveVibrationEngine(config);
+    setResult(solved);
+
+    const { baseValue, failure } = evaluateExpression({
+      L: config.length,
+      E: config.E,
+      I: config.I,
+      rho: config.rho,
+      A: config.A,
+    });
+
+    await recordRun({
+      projectId: "vibration-local",
+      modelId: "vibration-analysis",
+      equationId: "vibration-first-mode",
+      input: {
+        config,
+        units: { lengthUnit, EUnit, areaUnit, inertiaUnit, rhoUnit },
+      },
+      output: {
+        firstModeHz: solved.frequencies[0] ?? null,
+        customEquationHz: baseValue,
+        equationError: failure,
+      },
+    });
   };
 
   return (
@@ -56,6 +93,27 @@ export default function Page() {
               onChangeElements={setSegments}
               refine
             />
+            <div className="space-y-2 border-t border-slate-200 pt-4">
+              <h3 className="font-semibold">Custom mode equation</h3>
+              <p className="text-sm text-slate-500">
+                Evaluate a deterministic equation with variables: L, E, I, rho, A.
+              </p>
+              <input
+                className="w-full border rounded p-2 font-mono text-sm"
+                value={equationExpression}
+                onChange={(event) => setEquationExpression(event.target.value)}
+              />
+              {equationValueDisplay !== null ? (
+                <p className="text-sm">
+                  Equation estimate:{" "}
+                  <span className="font-semibold">{equationValueDisplay.toFixed(4)} Hz</span>
+                </p>
+              ) : null}
+              {equationError ? <p className="text-xs text-red-600">{equationError}</p> : null}
+              {runStatusMessage ? (
+                <p className="text-xs text-slate-500">{runStatusMessage}</p>
+              ) : null}
+            </div>
           </div>
         }
         center={

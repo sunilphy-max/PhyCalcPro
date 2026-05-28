@@ -1,13 +1,3 @@
-export type Dimension =
-  | 'length'
-  | 'force'
-  | 'area'
-  | 'stress'
-  | 'moment'
-  | 'deflection'
-  | 'inertia'
-  | 'pressure'
-  | 'torque'
-  | 'power'
-  | 'mass'
-  | 'density';
+import type { PhysicsDimension } from "@/lib/physics/units";
+
+export type Dimension = PhysicsDimension | "deflection" | "mass";
