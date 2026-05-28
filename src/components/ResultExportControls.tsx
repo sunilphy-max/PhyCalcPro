@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { RefObject } from "react";
-import { preparePlotsForCapture } from "@/lib/export/plotCapture";
 
 type CSVRow = Record<string, string | number | null | undefined>;
 
@@ -72,6 +71,7 @@ export default function ResultExportControls({
       const { jsPDF } = await import("jspdf");
       const html2canvas = (await import("html2canvas")).default;
 
+      const { preparePlotsForCapture } = await import("@/lib/export/plotCapture");
       restorePlots = await preparePlotsForCapture(reportRef.current);
 
       const canvas = await html2canvas(reportRef.current, {

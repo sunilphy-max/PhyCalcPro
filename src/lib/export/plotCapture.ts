@@ -6,8 +6,11 @@ type PlotlyModule = {
 };
 
 async function getPlotly(): Promise<PlotlyModule | null> {
+  if (typeof window === "undefined") return null;
+
   try {
-    const mod = await import("plotly.js");
+    // Browser bundle only — full plotly.js pulls Node buffer/glslify into Turbopack.
+    const mod = await import("plotly.js-dist-min");
     return (mod.default ?? mod) as PlotlyModule;
   } catch {
     return null;
