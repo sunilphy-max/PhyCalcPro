@@ -32,6 +32,7 @@ Copy `.env.example` to `.env.local` and set:
 - `LICENSE_SIGNING_SECRET` — HMAC secret for entitlement tokens (32+ random bytes)
 - `NEXT_PUBLIC_APP_URL` — e.g. `https://phycalcpro.com` or `http://localhost:3000`
 - `NEXT_PUBLIC_DEV_ENTITLEMENT` — `free` \| `pro` \| `supporter` \| unset (local dev only; unset = normal Free)
+- `NEXT_PUBLIC_VALIDATION_MODE=true` — unlocks Indicative + US + EU + ISO + PDF for site-wide validation (never on public production)
 - `NEXT_PUBLIC_SUPABASE_ENABLED` — must be `true` to use cloud sign-in (off by default)
 
 ## Stripe setup (test mode)

@@ -14,7 +14,7 @@ type Props = {
 
 export default function DesignCodeSelector({ compact = false }: Props) {
   const { designCode, setDesignCode, option } = useDesignCode();
-  const { canUseDesignCode } = useEntitlement();
+  const { canUseDesignCode, setDevTier, canSwitchTier } = useEntitlement();
 
   useEffect(() => {
     if (!canUseDesignCode(designCode)) {
@@ -50,7 +50,20 @@ export default function DesignCodeSelector({ compact = false }: Props) {
         </p>
       ) : null}
       {!canUseDesignCode("US") ? (
-        <UpgradePrompt feature="US / EU / ISO design standards" compact />
+        canSwitchTier ? (
+          <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+            <p className="font-medium">Unlock US / EU / ISO for testing</p>
+            <button
+              type="button"
+              onClick={() => setDevTier("pro")}
+              className="mt-2 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+            >
+              Enable Pro (this browser)
+            </button>
+          </div>
+        ) : (
+          <UpgradePrompt feature="US / EU / ISO design standards" compact />
+        )
       ) : null}
     </div>
   );

@@ -1,4 +1,5 @@
 import type { DesignCodeId } from "@/lib/standards/types";
+import { allFeaturesUnlocked } from "./validationMode";
 import type { Entitlement, PlanTier } from "./types";
 
 export function defaultEntitlement(): Entitlement {
@@ -24,11 +25,13 @@ export function hasMinTier(entitlement: Entitlement, required: PlanTier): boolea
 }
 
 export function canUseDesignCode(entitlement: Entitlement, code: DesignCodeId): boolean {
+  if (allFeaturesUnlocked()) return true;
   if (code === "INDICATIVE") return true;
   return hasMinTier(entitlement, "pro");
 }
 
 export function canExportPdf(entitlement: Entitlement): boolean {
+  if (allFeaturesUnlocked()) return true;
   return hasMinTier(entitlement, "pro");
 }
 

@@ -15,17 +15,23 @@ import {
   defaultEntitlement,
   tierLabel,
 } from "@/lib/licensing/entitlements";
+import { isValidationMode } from "@/lib/licensing/validationMode";
 import type { Entitlement, PlanTier } from "@/lib/licensing/types";
 import type { DesignCodeId } from "@/lib/standards/types";
 
 const STORAGE_KEY = "phycalcpro-entitlement-token";
+const DEV_TIER_KEY = "phycalcpro-dev-tier";
 
 type EntitlementContextValue = {
   entitlement: Entitlement;
   tierLabel: string;
   isLoading: boolean;
+  isLocalDev: boolean;
+  isValidationMode: boolean;
+  canSwitchTier: boolean;
   setEntitlementToken: (token: string | null) => void;
   clearEntitlement: () => void;
+  setDevTier: (tier: PlanTier) => void;
   canUseDesignCode: (code: DesignCodeId) => boolean;
   canExportPdf: () => boolean;
   refreshFromDev: () => void;
@@ -33,7 +39,11 @@ type EntitlementContextValue = {
 
 const EntitlementContext = createContext<EntitlementContextValue | null>(null);
 
-function devEntitlement(): Entitlement | null {
+function isLocalDevRuntime(): boolean {
+  return process.env.NODE_ENV === "development";
+}
+
+function devEntitlementFromEnv(): Entitlement | null {
   const raw = process.env.NEXT_PUBLIC_DEV_ENTITLEMENT?.trim().toLowerCase();
   if (raw === "pro" || raw === "supporter" || raw === "free") {
     return {
@@ -45,12 +55,43 @@ function devEntitlement(): Entitlement | null {
   return null;
 }
 
+function canUseSessionTier(): boolean {
+  return isLocalDevRuntime() || isValidationMode();
+}
+
+function devEntitlementFromSession(): Entitlement | null {
+  if (!canUseSessionTier() || devEntitlementFromEnv()) return null;
+  try {
+    const raw = sessionStorage.getItem(DEV_TIER_KEY)?.trim().toLowerCase();
+    if (raw === "pro" || raw === "supporter" || raw === "free") {
+      return {
+        tier: raw === "free" ? "free" : raw,
+        expiresAt: null,
+        source: "dev",
+      };
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function resolveDevEntitlement(): Entitlement | null {
+  return devEntitlementFromEnv() ?? devEntitlementFromSession();
+}
+
 export function EntitlementProvider({ children }: { children: ReactNode }) {
   const [entitlement, setEntitlement] = useState<Entitlement>(defaultEntitlement());
   const [isLoading, setIsLoading] = useState(true);
 
   const loadStored = useCallback(async () => {
-    const dev = devEntitlement();
+    if (isValidationMode() && !resolveDevEntitlement()) {
+      setEntitlement({ tier: "pro", expiresAt: null, source: "dev" });
+      setIsLoading(false);
+      return;
+    }
+
+    const dev = resolveDevEntitlement();
     if (dev) {
       setEntitlement(dev);
       setIsLoading(false);
@@ -102,7 +143,7 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
         } catch {
           // ignore
         }
-        setEntitlement(devEntitlement() ?? defaultEntitlement());
+        setEntitlement(resolveDevEntitlement() ?? defaultEntitlement());
         return;
       }
       try {
@@ -120,7 +161,24 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
   }, [setEntitlementToken]);
 
   const refreshFromDev = useCallback(() => {
-    setEntitlement(devEntitlement() ?? defaultEntitlement());
+    setEntitlement(resolveDevEntitlement() ?? defaultEntitlement());
+  }, []);
+
+  const setDevTier = useCallback((tier: PlanTier) => {
+    if (!canUseSessionTier()) return;
+    if (devEntitlementFromEnv()) {
+      return;
+    }
+    try {
+      sessionStorage.setItem(DEV_TIER_KEY, tier);
+    } catch {
+      // ignore
+    }
+    setEntitlement({
+      tier,
+      expiresAt: null,
+      source: "dev",
+    });
   }, []);
 
   const value = useMemo(
@@ -128,13 +186,17 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
       entitlement,
       tierLabel: tierLabel(entitlement.tier),
       isLoading,
+      isLocalDev: isLocalDevRuntime(),
+      isValidationMode: isValidationMode(),
+      canSwitchTier: canUseSessionTier() && !devEntitlementFromEnv(),
       setEntitlementToken,
       clearEntitlement,
+      setDevTier,
       canUseDesignCode: (code: DesignCodeId) => canUseDesignCode(entitlement, code),
       canExportPdf: () => canExportPdf(entitlement),
       refreshFromDev,
     }),
-    [entitlement, isLoading, setEntitlementToken, clearEntitlement, refreshFromDev]
+    [entitlement, isLoading, setEntitlementToken, clearEntitlement, setDevTier, refreshFromDev]
   );
 
   return (

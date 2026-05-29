@@ -6,7 +6,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 export default function AccountClient() {
   const { configured, user, loading, signInWithEmail, signOut } = useAuth();
-  const { entitlement, tierLabel, clearEntitlement, setEntitlementToken } = useEntitlement();
+  const {
+    entitlement,
+    tierLabel,
+    clearEntitlement,
+    setEntitlementToken,
+    setDevTier,
+    canSwitchTier,
+    isValidationMode,
+  } = useEntitlement();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -107,14 +115,43 @@ export default function AccountClient() {
         </div>
       </div>
 
-      {process.env.NODE_ENV === "development" ? (
+      {canSwitchTier ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-300">
-          <p className="font-semibold text-slate-800 dark:text-slate-100">Local tier (no Stripe)</p>
+          <p className="font-semibold text-slate-800 dark:text-slate-100">
+            {isValidationMode ? "Validation tier preview" : "Local tier (no Stripe)"}
+          </p>
           <p className="mt-1">
-            Set in <code className="rounded bg-white px-1 dark:bg-slate-800">.env.local</code>:{" "}
-            <code className="rounded bg-white px-1 dark:bg-slate-800">NEXT_PUBLIC_DEV_ENTITLEMENT=free</code> or{" "}
-            <code className="rounded bg-white px-1 dark:bg-slate-800">pro</code>, then restart{" "}
-            <code className="rounded bg-white px-1 dark:bg-slate-800">npm run dev</code>.
+            {isValidationMode
+              ? "All design standards and PDF are unlocked. Switch label to preview Free vs Pro UI."
+              : "Switch plan for this browser session, or set a fixed tier in .env.local."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setDevTier("free")}
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                entitlement.tier === "free"
+                  ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                  : "border border-slate-300"
+              }`}
+            >
+              Free
+            </button>
+            <button
+              type="button"
+              onClick={() => setDevTier("pro")}
+              className={`rounded-full px-4 py-2 text-sm font-semibold ${
+                entitlement.tier === "pro"
+                  ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                  : "border border-slate-300"
+              }`}
+            >
+              Pro
+            </button>
+          </div>
+          <p className="mt-2 text-xs">
+            Or add <code className="rounded bg-white px-1 dark:bg-slate-800">NEXT_PUBLIC_DEV_ENTITLEMENT=pro</code> to{" "}
+            <code className="rounded bg-white px-1 dark:bg-slate-800">.env.local</code> and restart dev.
           </p>
         </div>
       ) : null}
