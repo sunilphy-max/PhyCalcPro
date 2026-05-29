@@ -1,0 +1,26 @@
+{
+  "id": "gears-indicative-01",
+  "moduleId": "gears",
+  "designCode": "INDICATIVE",
+  "description": "Spur gear Lewis bending — 15 kW @ 1200 rpm, m=3 mm",
+  "inputs": {
+    "power": 15000,
+    "speed": 1200,
+    "module": 0.003,
+    "pinionTeeth": 20,
+    "gearRatio": 2,
+    "faceWidth": 0.025,
+    "material": {
+      "name": "steel",
+      "E": 210000000000,
+      "yieldStress": 250000000,
+      "poisson": 0.3
+    }
+  },
+  "expected": {
+    "actualRatio": 2,
+    "safetyFactor": 1.6045684478209867
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — gears solver v1"
+}

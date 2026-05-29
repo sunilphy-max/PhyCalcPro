@@ -1,0 +1,20 @@
+{
+  "id": "columns-indicative-01",
+  "moduleId": "columns",
+  "designCode": "INDICATIVE",
+  "description": "Pinned-pinned steel column — 3 m, W310-like section",
+  "inputs": {
+    "length": 3,
+    "E": 210000000000,
+    "I": 8.5e-5,
+    "A": 0.012,
+    "P": 120000,
+    "endCondition": "pinned",
+    "meshSegments": 24
+  },
+  "expected": {
+    "safetyFactor": 163.12262829578245
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — columns FEA buckling v1"
+}

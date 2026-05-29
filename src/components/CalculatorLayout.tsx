@@ -2,6 +2,9 @@
 
 import { ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
+import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
+import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
+import { computeReleaseTier } from "@/lib/qa/maturityGates";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 
 type Props = {
@@ -22,6 +25,12 @@ export default function CalculatorLayout({
   moduleId,
 }: Props) {
   const profile = moduleId ? getModuleStandardProfile(moduleId) : undefined;
+  const benchmarkStats = moduleId
+    ? getBenchmarkStatsFromLastRun()[moduleId]
+    : undefined;
+  const releaseTier = moduleId
+    ? computeReleaseTier(moduleId, benchmarkStats)
+    : null;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),transparent_35%),radial-gradient(circle_at_top_right,_rgba(168,85,247,0.1),transparent_35%),#f8fafc] p-6">
@@ -32,9 +41,12 @@ export default function CalculatorLayout({
               <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Engineering module</p>
               <h1 className="mt-2 text-3xl font-semibold text-slate-900">{title}</h1>
               {profile ? (
-                <p className="mt-2 text-sm text-slate-500 capitalize">
-                  Validation status: {profile.validationStatus}
-                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {releaseTier ? <ReleaseTierBadge tier={releaseTier} /> : null}
+                  <span className="text-sm text-slate-500 capitalize">
+                    Catalog: {profile.validationStatus}
+                  </span>
+                </div>
               ) : null}
             </div>
             {moduleId ? (

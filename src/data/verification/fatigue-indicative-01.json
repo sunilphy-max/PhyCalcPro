@@ -1,0 +1,17 @@
+{
+  "id": "fatigue-indicative-01",
+  "moduleId": "fatigue",
+  "designCode": "INDICATIVE",
+  "description": "Modified Goodman — alternating 120 MPa, mean 30 MPa",
+  "inputs": {
+    "alternatingStress": 120000000,
+    "meanStress": 30000000,
+    "ultimateStrength": 520000000,
+    "enduranceLimit": 260000000
+  },
+  "expected": {
+    "safetyFactor": 2.0416666666666665
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — fatigue v1"
+}

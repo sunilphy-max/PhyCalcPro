@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { RefObject } from "react";
+import Link from "next/link";
+import { useEntitlement } from "@/contexts/EntitlementContext";
 
 type CSVRow = Record<string, string | number | null | undefined>;
 
@@ -51,12 +53,18 @@ export default function ResultExportControls({
   description,
   csvRows,
 }: Props) {
+  const { canExportPdf } = useEntitlement();
   const [exporting, setExporting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"error" | "success">("success");
 
   const exportPdf = async () => {
+    if (!canExportPdf()) {
+      setStatusTone("error");
+      setStatusMessage("PDF export requires a Pro license.");
+      return;
+    }
     if (!reportRef.current) {
       setStatusTone("error");
       setStatusMessage("Nothing to export yet. Run the calculation first.");
@@ -147,10 +155,10 @@ export default function ResultExportControls({
           <button
             type="button"
             onClick={exportPdf}
-            disabled={exporting}
+            disabled={exporting || !canExportPdf()}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {exporting ? "Exporting PDF…" : "Export PDF"}
+            {exporting ? "Exporting PDF…" : canExportPdf() ? "Export PDF" : "PDF (Pro)"}
           </button>
           {csvRows && csvRows.length > 0 ? (
             <button
@@ -164,6 +172,15 @@ export default function ResultExportControls({
           ) : null}
         </div>
       </div>
+      {!canExportPdf() ? (
+        <p className="mt-3 text-xs text-slate-600">
+          PDF reports with engineering checks are included in{" "}
+          <Link href="/pricing" className="font-semibold underline">
+            Pro
+          </Link>
+          .
+        </p>
+      ) : null}
       {statusMessage ? (
         <p
           className={`mt-3 text-xs ${

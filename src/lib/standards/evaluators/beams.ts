@@ -1,6 +1,7 @@
 import type { DesignCodeId, CalculationSpec } from "../types";
 import { buildCalculationSpec, makeUtilizationCheck } from "../buildSpec";
 import type { BeamResult } from "@/lib/structural/beams/types";
+import { buildBeamCodeChecks, beamCodeMethod } from "../codeChecks/beams";
 
 export function attachBeamCalculationSpec(
   result: BeamResult,
@@ -16,36 +17,35 @@ export function attachBeamCalculationSpec(
       ? result.maxDeflection / deflectionLimit
       : undefined;
 
-  const implementedChecks = [];
-
-  if (designCode === "INDICATIVE") {
-    implementedChecks.push(
-      makeUtilizationCheck(
-        "bending_stress",
-        "Bending stress utilization (σ / σy, indicative)",
-        stressUtilization,
-        designCode
-      )
-    );
-    if (deflectionUtilization != null) {
-      implementedChecks.push(
-        makeUtilizationCheck(
-          "deflection_serviceability",
-          "Deflection serviceability utilization",
-          deflectionUtilization,
-          designCode
-        )
-      );
-    }
-  }
+  const implementedChecks =
+    designCode === "INDICATIVE"
+      ? [
+          makeUtilizationCheck(
+            "bending_stress",
+            "Bending stress utilization (σ / σy, indicative)",
+            stressUtilization,
+            designCode
+          ),
+          ...(deflectionUtilization != null
+            ? [
+                makeUtilizationCheck(
+                  "deflection_serviceability",
+                  "Deflection serviceability utilization",
+                  deflectionUtilization,
+                  designCode
+                ),
+              ]
+            : []),
+        ]
+      : buildBeamCodeChecks(result, designCode, {
+          yieldStressPa: yieldStress,
+          deflectionLimit,
+        });
 
   const calculationSpec = buildCalculationSpec({
     moduleId: "beams",
     designCode,
-    method:
-      designCode === "INDICATIVE"
-        ? "1D beam FEM (Euler-Bernoulli)"
-        : "Code-check workflow pending verified AISC / EN implementation",
+    method: beamCodeMethod(designCode),
     implementedChecks,
   });
 

@@ -4,10 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, Moon, Search, Sun, X } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
+import PlanBadge from "@/components/licensing/PlanBadge";
 
 const navigationItems = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/account", label: "Account" },
+  { href: "/status", label: "Quality" },
   { href: "/support", label: "Support" },
   { href: "/documentation", label: "Docs" },
 ];
@@ -59,6 +63,8 @@ export default function Navbar() {
               </Link>
             ))}
           </nav>
+
+          <PlanBadge />
 
           <button
             type="button"

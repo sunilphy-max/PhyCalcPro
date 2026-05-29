@@ -6,4 +6,6 @@ export * from "./buildSpec";
 export { attachGearCalculationSpec } from "./evaluators/gears";
 export { attachBeamCalculationSpec } from "./evaluators/beams";
 export { attachModuleCalculationSpec } from "./evaluators/generic";
+export { attachColumnCalculationSpec } from "./evaluators/columns";
 export { withCalculationSpec } from "./withCalculationSpec";
+export * from "./codeChecks";

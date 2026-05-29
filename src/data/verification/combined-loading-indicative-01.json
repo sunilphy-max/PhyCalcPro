@@ -1,0 +1,21 @@
+{
+  "id": "combined-loading-indicative-01",
+  "moduleId": "combined-loading",
+  "designCode": "INDICATIVE",
+  "description": "Rectangular block — combined axial, bending, torsion, shear",
+  "inputs": {
+    "axialForce": 120000,
+    "bendingMoment": 85000,
+    "torque": 18000,
+    "shearForce": 15000,
+    "width": 0.18,
+    "height": 0.27,
+    "yieldStrength": 250000000
+  },
+  "expected": {
+    "vonMisesStress": 41488516.00274373,
+    "safetyFactor": 6.025763851940786
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — combined loading v1"
+}

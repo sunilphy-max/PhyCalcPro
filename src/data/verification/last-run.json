@@ -1,0 +1,73 @@
+{
+  "ranAt": "2026-05-29T04:30:37.802Z",
+  "total": 4,
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0,
+  "results": [
+    {
+      "caseId": "columns-indicative-01",
+      "moduleId": "columns",
+      "pass": true,
+      "fields": [
+        {
+          "field": "safetyFactor",
+          "expected": 163.12262829578245,
+          "actual": 163.12262829578245,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "combined-loading-indicative-01",
+      "moduleId": "combined-loading",
+      "pass": true,
+      "fields": [
+        {
+          "field": "vonMisesStress",
+          "expected": 41488516.00274373,
+          "actual": 41488516.00274373,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 6.025763851940786,
+          "actual": 6.025763851940786,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "fatigue-indicative-01",
+      "moduleId": "fatigue",
+      "pass": true,
+      "fields": [
+        {
+          "field": "safetyFactor",
+          "expected": 2.0416666666666665,
+          "actual": 2.0416666666666665,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "gears-indicative-01",
+      "moduleId": "gears",
+      "pass": true,
+      "fields": [
+        {
+          "field": "actualRatio",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 1.6045684478209867,
+          "actual": 1.6045684478209867,
+          "pass": true
+        }
+      ]
+    }
+  ]
+}

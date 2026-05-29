@@ -10,7 +10,7 @@ import {
 } from "./moduleCatalog";
 import { getDesignCodeOption } from "./designCodes";
 
-const ENGINE_VERSION = "phase0-0.1.0";
+const ENGINE_VERSION = "phase1-0.1.0";
 
 function statusFromFactor(
   factor: number,

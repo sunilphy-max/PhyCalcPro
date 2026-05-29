@@ -1,5 +1,5 @@
 import type { DesignCodeId, ModuleStandardProfile } from "./types";
-import { beamChecks, gearChecks, genericIndicativeCheck } from "./checkTemplates";
+import { beamChecks, gearChecks, genericIndicativeCheck, checkDef } from "./checkTemplates";
 
 function profile(
   moduleId: string,
@@ -35,7 +35,10 @@ const withCodeChecks = (
 export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   beams: withCodeChecks("beams", "Beam Analysis", beamChecks, {
     validationStatus: "beta",
-    limitations: ["2D beam model; no lateral-torsional buckling in indicative mode."],
+    limitations: [
+      "2D beam model; no lateral-torsional buckling in Phase 1.",
+      "Phase 1 β: ASD/EN flexure & deflection; shear check not yet coded.",
+    ],
   }),
   frames: withCodeChecks("frames", "Frame Analysis", [
     genericIndicativeCheck("member_stress", "Member stress utilization", "utilization"),
@@ -44,22 +47,65 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   trusses: withCodeChecks("trusses", "Truss Analysis", [
     genericIndicativeCheck("axial_utilization", "Member axial utilization", "utilization"),
   ]),
-  columns: withCodeChecks("columns", "Column Buckling", [
-    genericIndicativeCheck("buckling_utilization", "Buckling utilization", "utilization"),
-    genericIndicativeCheck("euler_critical", "Euler critical load check", "safety_factor"),
-  ], {
-    standardsByCode: {
-      US: [{ body: "AISC", document: "360-22", clause: "Ch. E" }],
-      EU: [{ body: "EN", document: "1993-1-1", clause: "Buckling" }],
-    },
-  }),
+  columns: withCodeChecks(
+    "columns",
+    "Column Buckling",
+    [
+      checkDef(
+        "buckling_utilization",
+        "Buckling utilization",
+        "utilization",
+        {
+          INDICATIVE: { body: "Mechanics", document: "Euler buckling" },
+          US: { body: "AISC", document: "360-22", clause: "Ch. E" },
+          EU: { body: "EN", document: "1993-1-1", clause: "Buckling" },
+          ISO: { body: "ISO", document: "10721", note: "Steel compression members" },
+        },
+        { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
+      ),
+      checkDef(
+        "euler_critical",
+        "Euler critical load check",
+        "safety_factor",
+        {
+          INDICATIVE: { body: "Mechanics", document: "Pcr / P" },
+          US: { body: "AISC", document: "360-22", clause: "Ch. E" },
+          EU: { body: "EN", document: "1993-1-1", clause: "Buckling" },
+        },
+        { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
+      ),
+    ],
+    {
+      validationStatus: "beta",
+      standardsByCode: {
+        US: [{ body: "AISC", document: "360-22", clause: "Ch. E" }],
+        EU: [{ body: "EN", document: "1993-1-1", clause: "Buckling" }],
+      },
+    }
+  ),
   plates: withCodeChecks("plates", "Plate Bending", [
     genericIndicativeCheck("bending_stress", "Plate bending stress", "stress"),
     genericIndicativeCheck("deflection", "Plate deflection", "deflection"),
   ]),
-  "combined-loading": withCodeChecks("combined-loading", "Combined Loading", [
-    genericIndicativeCheck("von_mises", "Equivalent (von Mises) stress check", "utilization"),
-  ]),
+  "combined-loading": withCodeChecks(
+    "combined-loading",
+    "Combined Loading",
+    [
+      checkDef(
+        "von_mises",
+        "Equivalent (von Mises) stress check",
+        "utilization",
+        {
+          INDICATIVE: { body: "Mechanics", document: "Von Mises combined stress" },
+          US: { body: "AISC", document: "360-22", clause: "Ch. H" },
+          EU: { body: "EN", document: "1993-1-1", clause: "Cl. 6.2" },
+          ISO: { body: "ISO", document: "10828", note: "Equivalent stress" },
+        },
+        { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
+      ),
+    ],
+    { validationStatus: "beta" }
+  ),
   "load-case-manager": withCodeChecks("load-case-manager", "Load Case Manager", [
     genericIndicativeCheck("envelope_stress", "Envelope stress utilization", "utilization"),
   ]),
@@ -76,6 +122,9 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   gears: withCodeChecks("gears", "Gear Design", gearChecks, {
     validationStatus: "beta",
     indicativeMethod: "Lewis bending and simplified Hertzian contact (indicative)",
+    limitations: [
+      "Phase 1 β: bending/contact vs simplified allowables; scuffing & fatigue checks still pending.",
+    ],
   }),
   bearings: withCodeChecks("bearings", "Bearing Selection", [
     genericIndicativeCheck("dynamic_capacity", "Dynamic load rating utilization", "utilization"),
@@ -104,15 +153,41 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       ],
     },
   }),
-  welds: withCodeChecks("welds", "Weld Group Analysis", [
-    genericIndicativeCheck("throat_shear", "Throat shear utilization", "utilization"),
-    genericIndicativeCheck("throat_combined", "Combined throat stress", "utilization"),
-  ], {
-    standardsByCode: {
-      US: [{ body: "AWS", document: "D1.1" }],
-      EU: [{ body: "EN", document: "1993-1-8" }],
-    },
-  }),
+  welds: withCodeChecks(
+    "welds",
+    "Weld Group Analysis",
+    [
+      checkDef(
+        "throat_shear",
+        "Throat shear utilization",
+        "utilization",
+        {
+          INDICATIVE: { body: "Mechanics", document: "Throat shear" },
+          US: { body: "AWS", document: "D1.1" },
+          EU: { body: "EN", document: "1993-1-8" },
+        },
+        { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
+      ),
+      checkDef(
+        "throat_combined",
+        "Combined throat stress",
+        "utilization",
+        {
+          INDICATIVE: { body: "Mechanics", document: "Resultant throat stress" },
+          US: { body: "AWS", document: "D1.1" },
+          EU: { body: "EN", document: "1993-1-8" },
+        },
+        { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
+      ),
+    ],
+    {
+      validationStatus: "beta",
+      standardsByCode: {
+        US: [{ body: "AWS", document: "D1.1" }],
+        EU: [{ body: "EN", document: "1993-1-8" }],
+      },
+    }
+  ),
   rivets: withCodeChecks("rivets", "Rivet Analysis", [
     genericIndicativeCheck("shear", "Shear safety factor", "safety_factor"),
     genericIndicativeCheck("bearing", "Bearing safety factor", "safety_factor"),

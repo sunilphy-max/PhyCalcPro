@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { useDesignCode } from "@/contexts/DesignCodeContext";
+import { useEntitlement } from "@/contexts/EntitlementContext";
 import { designCodeOptions } from "@/lib/standards/designCodes";
 import type { DesignCodeId } from "@/lib/standards/types";
+import UpgradePrompt from "@/components/licensing/UpgradePrompt";
 
 type Props = {
   moduleId?: string;
@@ -11,6 +14,18 @@ type Props = {
 
 export default function DesignCodeSelector({ compact = false }: Props) {
   const { designCode, setDesignCode, option } = useDesignCode();
+  const { canUseDesignCode } = useEntitlement();
+
+  useEffect(() => {
+    if (!canUseDesignCode(designCode)) {
+      setDesignCode("INDICATIVE");
+    }
+  }, [designCode, canUseDesignCode, setDesignCode]);
+
+  const onChange = (code: DesignCodeId) => {
+    if (!canUseDesignCode(code)) return;
+    setDesignCode(code);
+  };
 
   return (
     <div className={compact ? "space-y-1" : "space-y-2"}>
@@ -18,13 +33,14 @@ export default function DesignCodeSelector({ compact = false }: Props) {
         Design standard
       </label>
       <select
-        value={designCode}
-        onChange={(e) => setDesignCode(e.target.value as DesignCodeId)}
+        value={canUseDesignCode(designCode) ? designCode : "INDICATIVE"}
+        onChange={(e) => onChange(e.target.value as DesignCodeId)}
         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm"
       >
         {designCodeOptions.map((item) => (
-          <option key={item.id} value={item.id}>
+          <option key={item.id} value={item.id} disabled={!canUseDesignCode(item.id)}>
             {item.label}
+            {!canUseDesignCode(item.id) ? " (Pro)" : ""}
           </option>
         ))}
       </select>
@@ -32,6 +48,9 @@ export default function DesignCodeSelector({ compact = false }: Props) {
         <p className="text-xs text-slate-500">
           {option.description} Units switch automatically for supported fields.
         </p>
+      ) : null}
+      {!canUseDesignCode("US") ? (
+        <UpgradePrompt feature="US / EU / ISO design standards" compact />
       ) : null}
     </div>
   );

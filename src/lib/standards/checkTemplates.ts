@@ -30,7 +30,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       EU: ref("DIN", "3990", "Bending stress"),
       ISO: ref("ISO", "6336-3", "Bending strength rating"),
     },
-    { INDICATIVE: "implemented", US: "planned", EU: "planned", ISO: "planned" }
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
   checkDef(
     "contact_strength",
@@ -42,7 +42,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       EU: ref("DIN", "3990", "Hertzian pressure"),
       ISO: ref("ISO", "6336-2", "Surface durability"),
     },
-    { INDICATIVE: "implemented", US: "planned", EU: "planned", ISO: "planned" }
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
   checkDef(
     "scuffing",
@@ -99,7 +99,7 @@ export const beamChecks: ModuleCheckDefinition[] = [
       US: ref("AISC", "360-22", "Ch. F flexure"),
       EU: ref("EN", "1993-1-1", "Cl. 6.2.5"),
     },
-    { INDICATIVE: "implemented", US: "planned", EU: "planned" }
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
   checkDef(
     "shear_stress",
@@ -121,7 +121,7 @@ export const beamChecks: ModuleCheckDefinition[] = [
       US: ref("AISC", "360-22", "Serviceability Appendix"),
       EU: ref("EN", "1993-1-1", "Serviceability limits"),
     },
-    { INDICATIVE: "implemented", US: "planned", EU: "planned" }
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
   checkDef(
     "lateral_torsional_buckling",

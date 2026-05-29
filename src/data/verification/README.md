@@ -1,6 +1,12 @@
-# Verification cases (Phase 0)
+# Verification cases (Phase 4)
 
-Add benchmark JSON files here as you verify each module against US, EU, or ISO references.
+Add benchmark JSON files here. CI runs them via:
+
+```bash
+npm run test:verification
+```
+
+Results are written to `last-run.json` (committed after passing) and `reports/verification-latest.json` (local).
 
 ## File naming
 
@@ -12,17 +18,26 @@ Example: `beams-US-cantilever-tip.json`
 
 ```json
 {
-  "id": "beams-US-cantilever-tip",
-  "moduleId": "beams",
-  "designCode": "US",
-  "description": "Cantilever with end load — compare to manual calc",
+  "id": "gears-indicative-01",
+  "moduleId": "gears",
+  "designCode": "INDICATIVE",
+  "description": "Short description",
   "inputs": {},
-  "expected": {
-    "maxDeflection": 0.012
-  },
-  "tolerancePercent": 5,
+  "expected": { "safetyFactor": 1.6 },
+  "tolerancePercent": 2,
   "source": "Your worksheet / code example"
 }
 ```
 
-The CI runner will be wired in a follow-up step to execute these cases automatically.
+## Automated modules
+
+`gears`, `columns`, `combined-loading`, `impact`, `fatigue`, `corrosion`, `suspension`, `rotation`
+
+Extend runners in `src/lib/qa/benchmarkRunner.ts`.
+
+## After you verify against a standard
+
+1. Add a case with your inputs and expected values from your worksheet.
+2. Run `npm run test:verification` until PASS.
+3. Commit the JSON + updated `last-run.json`.
+4. Module release tier on `/status` moves toward **verified**.
