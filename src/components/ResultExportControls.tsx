@@ -53,7 +53,7 @@ export default function ResultExportControls({
   description,
   csvRows,
 }: Props) {
-  const { canExportPdf } = useEntitlement();
+  const { canExportPdf, unlockAllFeatures, featuresUnlocked } = useEntitlement();
   const [exporting, setExporting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -173,13 +173,22 @@ export default function ResultExportControls({
         </div>
       </div>
       {!canExportPdf() ? (
-        <p className="mt-3 text-xs text-slate-600">
-          PDF reports with engineering checks are included in{" "}
-          <Link href="/pricing" className="font-semibold underline">
-            Pro
-          </Link>
-          .
-        </p>
+        <div className="mt-3 space-y-2 text-xs text-slate-600">
+          <p>
+            PDF reports with engineering checks are included in{" "}
+            <Link href="/pricing" className="font-semibold underline">
+              Pro
+            </Link>
+            .
+          </p>
+          <button
+            type="button"
+            onClick={unlockAllFeatures}
+            className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950"
+          >
+            Unlock PDF for validation (this browser)
+          </button>
+        </div>
       ) : null}
       {statusMessage ? (
         <p

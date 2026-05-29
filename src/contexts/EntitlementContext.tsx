@@ -15,7 +15,8 @@ import {
   defaultEntitlement,
   tierLabel,
 } from "@/lib/licensing/entitlements";
-import { isValidationMode } from "@/lib/licensing/validationMode";
+import { setClientUnlockAll } from "@/lib/licensing/clientUnlock";
+import { allFeaturesUnlocked, isValidationMode } from "@/lib/licensing/validationMode";
 import type { Entitlement, PlanTier } from "@/lib/licensing/types";
 import type { DesignCodeId } from "@/lib/standards/types";
 
@@ -32,8 +33,10 @@ type EntitlementContextValue = {
   setEntitlementToken: (token: string | null) => void;
   clearEntitlement: () => void;
   setDevTier: (tier: PlanTier) => void;
+  featuresUnlocked: boolean;
   canUseDesignCode: (code: DesignCodeId) => boolean;
   canExportPdf: () => boolean;
+  unlockAllFeatures: () => void;
   refreshFromDev: () => void;
 };
 
@@ -80,13 +83,33 @@ function resolveDevEntitlement(): Entitlement | null {
   return devEntitlementFromEnv() ?? devEntitlementFromSession();
 }
 
+function initialEntitlementState(): Entitlement {
+  return resolveDevEntitlement() ?? (allFeaturesUnlocked() ? proDevEntitlement() : defaultEntitlement());
+}
+
+function proDevEntitlement(): Entitlement {
+  return { tier: "pro", expiresAt: null, source: "dev" };
+}
+
 export function EntitlementProvider({ children }: { children: ReactNode }) {
-  const [entitlement, setEntitlement] = useState<Entitlement>(defaultEntitlement());
+  const [entitlement, setEntitlement] = useState<Entitlement>(initialEntitlementState);
+  const [featuresUnlocked, setFeaturesUnlocked] = useState(allFeaturesUnlocked);
   const [isLoading, setIsLoading] = useState(true);
 
+  const syncUnlockState = useCallback(() => {
+    const unlocked = allFeaturesUnlocked();
+    setFeaturesUnlocked(unlocked);
+    if (unlocked) {
+      setClientUnlockAll(true);
+    }
+  }, []);
+
   const loadStored = useCallback(async () => {
-    if (isValidationMode() && !resolveDevEntitlement()) {
-      setEntitlement({ tier: "pro", expiresAt: null, source: "dev" });
+    syncUnlockState();
+
+    if (allFeaturesUnlocked()) {
+      const dev = resolveDevEntitlement();
+      setEntitlement(dev ?? proDevEntitlement());
       setIsLoading(false);
       return;
     }
@@ -132,8 +155,12 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    loadStored();
+    void loadStored();
   }, [loadStored]);
+
+  useEffect(() => {
+    syncUnlockState();
+  }, [syncUnlockState]);
 
   const setEntitlementToken = useCallback(
     (token: string | null) => {
@@ -164,6 +191,12 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
     setEntitlement(resolveDevEntitlement() ?? defaultEntitlement());
   }, []);
 
+  const unlockAllFeatures = useCallback(() => {
+    setClientUnlockAll(true);
+    setFeaturesUnlocked(true);
+    setEntitlement(proDevEntitlement());
+  }, []);
+
   const setDevTier = useCallback((tier: PlanTier) => {
     if (!canUseSessionTier()) return;
     if (devEntitlementFromEnv()) {
@@ -192,11 +225,23 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
       setEntitlementToken,
       clearEntitlement,
       setDevTier,
-      canUseDesignCode: (code: DesignCodeId) => canUseDesignCode(entitlement, code),
-      canExportPdf: () => canExportPdf(entitlement),
+      featuresUnlocked,
+      canUseDesignCode: (code: DesignCodeId) =>
+        featuresUnlocked || canUseDesignCode(entitlement, code),
+      canExportPdf: () => featuresUnlocked || canExportPdf(entitlement),
+      unlockAllFeatures,
       refreshFromDev,
     }),
-    [entitlement, isLoading, setEntitlementToken, clearEntitlement, setDevTier, refreshFromDev]
+    [
+      entitlement,
+      isLoading,
+      featuresUnlocked,
+      setEntitlementToken,
+      clearEntitlement,
+      setDevTier,
+      unlockAllFeatures,
+      refreshFromDev,
+    ]
   );
 
   return (

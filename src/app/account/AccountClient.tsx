@@ -14,6 +14,8 @@ export default function AccountClient() {
     setDevTier,
     canSwitchTier,
     isValidationMode,
+    unlockAllFeatures,
+    featuresUnlocked,
   } = useEntitlement();
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -88,6 +90,19 @@ export default function AccountClient() {
             ? ` · expires ${new Date(entitlement.expiresAt).toLocaleDateString()}`
             : ""}
         </p>
+        {featuresUnlocked ? (
+          <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-300">
+            All design standards and PDF export are unlocked in this browser.
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={unlockAllFeatures}
+            className="mt-3 rounded-full bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            Unlock all features (validation)
+          </button>
+        )}
         <div className="mt-4 flex flex-wrap gap-3">
           <Link
             href="/pricing"
