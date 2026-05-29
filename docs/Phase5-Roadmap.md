@@ -22,7 +22,7 @@ Phases 0–4 built standards traceability, code checks (pilots), monetization, a
 
 ## Accounts (optional)
 
-If `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set:
+If `NEXT_PUBLIC_SUPABASE_ENABLED=true` and URL/keys are set:
 
 - Sign in on `/account` (email magic link)
 - Save Pro license token to your profile (service role on server)

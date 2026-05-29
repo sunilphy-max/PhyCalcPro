@@ -107,6 +107,18 @@ export default function AccountClient() {
         </div>
       </div>
 
+      {process.env.NODE_ENV === "development" ? (
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-600 dark:bg-slate-900/50 dark:text-slate-300">
+          <p className="font-semibold text-slate-800 dark:text-slate-100">Local tier (no Stripe)</p>
+          <p className="mt-1">
+            Set in <code className="rounded bg-white px-1 dark:bg-slate-800">.env.local</code>:{" "}
+            <code className="rounded bg-white px-1 dark:bg-slate-800">NEXT_PUBLIC_DEV_ENTITLEMENT=free</code> or{" "}
+            <code className="rounded bg-white px-1 dark:bg-slate-800">pro</code>, then restart{" "}
+            <code className="rounded bg-white px-1 dark:bg-slate-800">npm run dev</code>.
+          </p>
+        </div>
+      ) : null}
+
       {configured ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h2 className="text-lg font-semibold">Sign in</h2>
@@ -156,12 +168,7 @@ export default function AccountClient() {
             </form>
           )}
         </div>
-      ) : (
-        <p className="text-sm text-slate-500">
-          Cloud sign-in is optional. Set Supabase env vars and run{" "}
-          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">docs/supabase-schema.sql</code>.
-        </p>
-      )}
+      ) : null}
 
       {message ? <p className="text-sm text-slate-600">{message}</p> : null}
 

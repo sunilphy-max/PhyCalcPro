@@ -31,7 +31,8 @@ Copy `.env.example` to `.env.local` and set:
 - `STRIPE_PRICE_DONATION` — Price ID for one-time donation
 - `LICENSE_SIGNING_SECRET` — HMAC secret for entitlement tokens (32+ random bytes)
 - `NEXT_PUBLIC_APP_URL` — e.g. `https://phycalcpro.com` or `http://localhost:3000`
-- `NEXT_PUBLIC_DEV_ENTITLEMENT` — `pro` \| `supporter` \| unset (local dev only)
+- `NEXT_PUBLIC_DEV_ENTITLEMENT` — `free` \| `pro` \| `supporter` \| unset (local dev only; unset = normal Free)
+- `NEXT_PUBLIC_SUPABASE_ENABLED` — must be `true` to use cloud sign-in (off by default)
 
 ## Stripe setup (test mode)
 

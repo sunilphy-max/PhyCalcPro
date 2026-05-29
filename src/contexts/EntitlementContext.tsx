@@ -34,9 +34,13 @@ type EntitlementContextValue = {
 const EntitlementContext = createContext<EntitlementContextValue | null>(null);
 
 function devEntitlement(): Entitlement | null {
-  const tier = process.env.NEXT_PUBLIC_DEV_ENTITLEMENT as PlanTier | undefined;
-  if (tier === "pro" || tier === "supporter") {
-    return { tier, expiresAt: null, source: "dev" };
+  const raw = process.env.NEXT_PUBLIC_DEV_ENTITLEMENT?.trim().toLowerCase();
+  if (raw === "pro" || raw === "supporter" || raw === "free") {
+    return {
+      tier: raw === "free" ? "free" : raw,
+      expiresAt: null,
+      source: "dev",
+    };
   }
   return null;
 }
