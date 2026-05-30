@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 
 export type MetricTone =
   | "default"
@@ -15,7 +16,9 @@ export type MetricStatus = "safe" | "warning" | "danger";
 
 type Props = {
   label: string;
-  value: ReactNode;
+  value?: ReactNode;
+  /** When set, value is auto-formatted (scientific for large/small magnitudes). */
+  numericValue?: number | null;
   tone?: MetricTone;
   status?: MetricStatus;
   size?: "sm" | "lg";
@@ -44,6 +47,7 @@ const statusStyles: Record<
 export default function CalculatorMetricCard({
   label,
   value,
+  numericValue,
   tone = "default",
   status,
   size = "sm",
@@ -56,13 +60,21 @@ export default function CalculatorMetricCard({
     ? statusStyles[status].value
     : toneValueClass[tone];
   const valueSize = size === "lg" ? "text-2xl" : "text-lg";
+  const display =
+    numericValue !== undefined
+      ? formatDisplayNumber(numericValue)
+      : value;
 
   return (
     <div
       className={`rounded-xl border p-3 ${cardStyle} ${className}`.trim()}
     >
       <div className="mb-1 text-xs text-gray-500">{label}</div>
-      <div className={`font-bold ${valueSize} ${valueStyle}`}>{value}</div>
+      <div
+        className={`break-all font-bold leading-tight ${valueSize} ${valueStyle}`}
+      >
+        {display}
+      </div>
     </div>
   );
 }

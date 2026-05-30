@@ -46,7 +46,7 @@ export default function DesignCodeSelector({ compact = false }: Props) {
       </select>
       {!compact ? (
         <p className="text-xs text-slate-500">
-          {option.description} Units switch automatically for supported fields.
+          {option.description} Applies recommended default units when you change standard; unit dropdowns stay fully editable.
         </p>
       ) : null}
       {!canUseDesignCode("US") ? (

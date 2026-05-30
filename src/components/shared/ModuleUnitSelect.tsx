@@ -9,16 +9,24 @@ type Props = {
   fieldKey: string;
   value: string;
   onChange: (unit: string) => void;
+  /** When true, only units listed on the module profile are shown (legacy). Default: all compatible units. */
+  restrictToProfile?: boolean;
 };
 
-export default function ModuleUnitSelect({ moduleId, fieldKey, value, onChange }: Props) {
+export default function ModuleUnitSelect({
+  moduleId,
+  fieldKey,
+  value,
+  onChange,
+  restrictToProfile = false,
+}: Props) {
   const profile = getModuleFieldProfile(moduleId, fieldKey);
   if (!profile) {
     return (
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded border border-slate-300 px-2 py-2 text-sm"
+        className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
       >
         <option value={value}>{value}</option>
       </select>
@@ -30,7 +38,7 @@ export default function ModuleUnitSelect({ moduleId, fieldKey, value, onChange }
       dimension={profile.dimension as PhysicsDimension}
       value={value}
       onChange={onChange}
-      allowedUnits={profile.units}
+      allowedUnits={restrictToProfile ? profile.units : undefined}
     />
   );
 }

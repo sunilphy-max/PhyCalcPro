@@ -28,8 +28,8 @@ export default function BucklingDashboard({ result }: Props) {
           status={status}
         />
         <CalculatorMetricCard
-          label="Safety Factor"
-          value={result.safetyFactor.toFixed(2)}
+          label="Safety factor"
+          numericValue={result.safetyFactor}
           tone="blue"
         />
         <CalculatorMetricCard

@@ -46,4 +46,16 @@
   .text-slate-950 {
     color: #0f172a;
   }
+
+  /* Calculator numeric fields: hide spin buttons so values are not clipped */
+  .calculator-number-input {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .calculator-number-input::-webkit-outer-spin-button,
+  .calculator-number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }

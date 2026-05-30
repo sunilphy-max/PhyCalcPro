@@ -53,6 +53,9 @@ export default function Page() {
     applyUnitMap(units, {
       length: setLengthUnit,
       stress: setModulusUnit,
+      torque: setTorqueUnit,
+      moment: setMomentUnit,
+      force: setForceUnit,
     })
   );
   // =========================
@@ -72,6 +75,9 @@ export default function Page() {
   // =========================
   const [lengthUnit, setLengthUnit] = useState("m");
   const [modulusUnit, setModulusUnit] = useState("Pa");
+  const [torqueUnit, setTorqueUnit] = useState("N·m");
+  const [momentUnit, setMomentUnit] = useState("N·m");
+  const [forceUnit, setForceUnit] = useState("N");
 
   // =========================
   // UI STATE
@@ -109,7 +115,18 @@ export default function Page() {
         E: toBase(elasticModulus, "stress", modulusUnit),
         G: toBase(shearModulus, "stress", modulusUnit),
       },
-      loads,
+      loads: loads.map((load) => ({
+        position: toBase(load.position, "length", lengthUnit),
+        ...(load.torque !== undefined
+          ? { torque: toBase(load.torque, "torque", torqueUnit) }
+          : {}),
+        ...(load.bendingMoment !== undefined
+          ? { bendingMoment: toBase(load.bendingMoment, "moment", momentUnit) }
+          : {}),
+        ...(load.axialForce !== undefined
+          ? { axialForce: toBase(load.axialForce, "force", forceUnit) }
+          : {}),
+      })),
       meshSegments: Math.max(10, Math.round(meshSegments)),
     };
 
@@ -163,17 +180,17 @@ export default function Page() {
   // UI
   // =========================
   return (
-          <CalculatorLayout
-        moduleId="shafts"
-        title="Shaft Stress & Deflection Analysis"
-        footer={
-          <SavedProjectsFooter
-            projects={savedProjects}
-            onLoad={(project) => loadProjectIntoForm(project as ShaftProject)}
-          />
-        }
-        center={
-          <ShaftInputs
+    <CalculatorLayout
+      moduleId="shafts"
+      title="Shaft Stress & Deflection Analysis"
+      footer={
+        <SavedProjectsFooter
+          projects={savedProjects}
+          onLoad={(project) => loadProjectIntoForm(project as ShaftProject)}
+        />
+      }
+      inputs={
+        <ShaftInputs
             projectName={projectName}
             setProjectName={setProjectName}
             diameter={diameter}
@@ -188,20 +205,30 @@ export default function Page() {
             setElasticModulus={setElasticModulus}
             shearModulus={shearModulus}
             setShearModulus={setShearModulus}
-            modulusUnit={modulusUnit}
-            setModulusUnit={setModulusUnit}
-            loads={loads}
-            setLoads={setLoads}
-            meshSegments={meshSegments}
-            setMeshSegments={setMeshSegments}
-            onCalculate={calculate}
-            onSave={saveProject}
-            saving={saving}
-          />
-        }
-        right={
-          <ShaftResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
-        }
-      />
+          modulusUnit={modulusUnit}
+          setModulusUnit={setModulusUnit}
+          torqueUnit={torqueUnit}
+          setTorqueUnit={setTorqueUnit}
+          momentUnit={momentUnit}
+          setMomentUnit={setMomentUnit}
+          forceUnit={forceUnit}
+          setForceUnit={setForceUnit}
+          loads={loads}
+          setLoads={setLoads}
+          meshSegments={meshSegments}
+          setMeshSegments={setMeshSegments}
+          onCalculate={calculate}
+          onSave={saveProject}
+          saving={saving}
+        />
+      }
+      results={
+        <ShaftResults
+          key={result ? JSON.stringify(result) : "empty"}
+          result={result}
+          projectName={projectName}
+        />
+      }
+    />
   );
 }

@@ -1,6 +1,8 @@
 import type { DesignCodeId } from "./types";
 import { getModuleFieldProfile } from "@/lib/units/moduleProfiles";
 import { getDesignCodeOption } from "./designCodes";
+import { unitFactors } from "@/lib/physics/units";
+import type { PhysicsDimension } from "@/lib/physics/units";
 
 export type ModuleUnitDefaults = Record<string, string>;
 
@@ -107,11 +109,14 @@ export function resolveFieldUnit(
   const unitSystem = getDesignCodeOption(designCode).unitSystem;
 
   if (profile) {
-    if (preferred && profile.units.includes(preferred)) return preferred;
+    const dim = profile.dimension as PhysicsDimension;
+    const isValid = (u: string) => u in (unitFactors[dim] ?? {});
+
+    if (preferred && isValid(preferred)) return preferred;
+
     if (unitSystem === "US") {
-      const usPick = profile.units.find((u) =>
-        ["in", "lbf", "psi", "ksi", "lbf·ft", "hp", "lb/ft3", "in2", "in4", "lbf/ft", "gpm"].includes(u)
-      );
+      const usCandidates = ["in", "lbf", "psi", "ksi", "lbf·ft", "hp", "lb/ft3", "in2", "in4", "lbf/ft", "gpm"];
+      const usPick = usCandidates.find(isValid);
       if (usPick) return usPick;
     }
     return profile.defaultUnit;

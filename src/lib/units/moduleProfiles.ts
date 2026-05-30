@@ -81,7 +81,9 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Length" },
     diameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Diameter" },
     torque: { dimension: "torque", defaultUnit: "N\u00b7m", units: ["N\u00b7m", "lbf\u00b7ft"], label: "Torque" },
-    stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi"], label: "Stress" },
+    moment: { dimension: "moment", defaultUnit: "N\u00b7m", units: ["N\u00b7m", "kN\u00b7m", "lbf\u00b7ft"], label: "Bending moment" },
+    force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Axial force" },
+    stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi", "ksi"], label: "Stress" },
   },
   vessels: {
     radius: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Radius" },

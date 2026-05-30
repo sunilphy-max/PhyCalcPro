@@ -2,6 +2,7 @@
 
 import UnitSelector from "@/components/shared/UnitSelector";
 import MeshControls from "@/components/shared/MeshControls";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 
 type Props = {
   span: number;
@@ -72,125 +73,103 @@ export default function FrameInputs({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Span</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={span}
-              min={0.5}
-              step={0.1}
-              onChange={(e) => setSpan(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Span"
+          value={span}
+          onChange={setSpan}
+          min={0.5}
+          step={0.1}
+          unit={
             <UnitSelector
               dimension="length"
               value={spanUnit}
               onChange={setSpanUnit}
               label=""
             />
-          </div>
-        </div>
+          }
+        />
 
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Height</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={height}
-              min={0.5}
-              step={0.1}
-              onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Height"
+          value={height}
+          onChange={setHeight}
+          min={0.5}
+          step={0.1}
+          unit={
             <UnitSelector
               dimension="length"
               value={heightUnit}
               onChange={setHeightUnit}
               label=""
             />
-          </div>
-        </div>
+          }
+        />
 
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Axial area</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={area}
-              min={1e-6}
-              step={1e-5}
-              onChange={(e) => setArea(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Axial area"
+          value={area}
+          onChange={setArea}
+          min={1e-6}
+          step="any"
+          unit={
             <UnitSelector
               dimension="area"
               value={areaUnit}
               onChange={setAreaUnit}
               label=""
             />
-          </div>
-        </div>
+          }
+        />
 
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Moment of inertia</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={I}
-              min={1e-10}
-              step={1e-9}
-              onChange={(e) => setI(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Moment of inertia"
+          value={I}
+          onChange={setI}
+          min={1e-10}
+          step="any"
+          unit={
             <UnitSelector
               dimension="inertia"
               value={inertiaUnit}
               onChange={setInertiaUnit}
               label=""
             />
-          </div>
-        </div>
+          }
+        />
 
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Young&apos;s modulus</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={E}
-              min={1e8}
-              step={1e8}
-              onChange={(e) => setE(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Young's modulus"
+          value={E}
+          onChange={setE}
+          min={1e8}
+          step="any"
+          colSpan
+          unit={
             <UnitSelector
               dimension="stress"
               value={EUnit}
               onChange={setEUnit}
               label=""
             />
-          </div>
-        </div>
+          }
+        />
 
-        <div className="space-y-3 col-span-full">
-          <label className="block text-sm font-medium text-slate-700">Midspan downward load</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={load}
-              min={0}
-              step={100}
-              onChange={(e) => setLoad(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Midspan downward load"
+          value={load}
+          onChange={setLoad}
+          min={0}
+          step={100}
+          colSpan
+          unit={
             <UnitSelector
               dimension="force"
               value={loadUnit}
               onChange={setLoadUnit}
               label=""
             />
-          </div>
-        </div>
+          }
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">

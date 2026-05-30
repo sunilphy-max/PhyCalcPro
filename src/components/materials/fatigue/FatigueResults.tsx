@@ -64,7 +64,7 @@ export default function FatigueResults({ result, alternatingUnit }: Props) {
             />
             <CalculatorMetricCard
               label="Safety factor"
-              value={result.safetyFactor.toFixed(2)}
+              numericValue={result.safetyFactor}
               tone="orange"
               size="lg"
             />
