@@ -7,35 +7,28 @@ type PlotlyModule = {
 
 type WindowWithPlotly = Window & { Plotly?: PlotlyModule };
 
+/**
+ * Browser-safe Plotly for PDF snapshots. Do not import full `plotly.js` here —
+ * it pulls Node `buffer` and breaks Turbopack client builds on Vercel.
+ */
 async function getPlotly(): Promise<PlotlyModule | null> {
   if (typeof window === "undefined") return null;
 
   const win = window as WindowWithPlotly;
   if (typeof win.Plotly?.toImage === "function") return win.Plotly;
 
-  const attach = (Plotly: PlotlyModule) => {
-    if (typeof Plotly.toImage !== "function") return null;
-    win.Plotly = Plotly;
-    return Plotly;
-  };
-
-  try {
-    // Match react-plotly.js (uses full plotly.js, not dist-min only).
-    const mod = await import("plotly.js");
-    const Plotly = (mod as { default?: PlotlyModule }).default ?? (mod as unknown as PlotlyModule);
-    const loaded = attach(Plotly);
-    if (loaded) return loaded;
-  } catch {
-    // Fall back to browser bundle if full package fails to load in Turbopack.
-  }
-
   try {
     const mod = await import("plotly.js-dist-min");
     const Plotly = (mod as { default?: PlotlyModule }).default ?? (mod as unknown as PlotlyModule);
-    return attach(Plotly);
+    if (typeof Plotly.toImage === "function") {
+      win.Plotly = Plotly;
+      return Plotly;
+    }
   } catch {
     return null;
   }
+
+  return null;
 }
 
 export async function preparePlotsForCapture(container: HTMLElement): Promise<() => void> {
