@@ -1,6 +1,7 @@
 "use client";
 
 import UnitSelector from "@/components/shared/UnitSelector";
+import MeshControls from "@/components/shared/MeshControls";
 
 type Props = {
   span: number;
@@ -104,18 +105,6 @@ export default function TrussInputs({
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Panel count</label>
-          <input
-            type="number"
-            min={2}
-            max={20}
-            value={panels}
-            onChange={(e) => setPanels(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </div>
-
-        <div className="space-y-3">
           <label className="block text-sm font-medium text-slate-700">Axial area</label>
           <div className="flex gap-2">
             <input
@@ -174,6 +163,12 @@ export default function TrussInputs({
             />
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
+        <p className="text-xs text-slate-500">{panels} panels along the span</p>
+        <MeshControls elements={panels} onChangeElements={setPanels} refine />
       </div>
 
       <button

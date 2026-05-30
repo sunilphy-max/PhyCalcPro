@@ -15,6 +15,7 @@ export default function PressureVesselResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="vessels"
         fileName="pressure-vessel"
         title="Export Pressure Vessel results"
         description="Export the current summary and charts for review."
@@ -29,6 +30,7 @@ export default function PressureVesselResults({ result }: Props) {
   const angleDegrees = result.angles.map((theta) => (theta < 0 ? theta + 2 * Math.PI : theta) * (180 / Math.PI));
   return (
     <ExportableReport
+      moduleId="vessels"
       fileName="pressure-vessel"
       calculationSpec={result?.calculationSpec}
       title="Export Pressure Vessel results"

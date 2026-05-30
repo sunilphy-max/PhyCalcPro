@@ -1,6 +1,7 @@
 "use client";
 
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MeshControls from "@/components/shared/MeshControls";
 import type { SupportType } from "@/lib/dynamics/vibrations/types";
 
 type Props = {
@@ -181,16 +182,9 @@ export default function VibrationInputs({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Mesh segments</label>
-          <input
-            type="number"
-            value={segments}
-            min={2}
-            max={120}
-            onChange={(e) => setSegments(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 sm:col-span-2">
+          <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
+          <MeshControls elements={segments} onChangeElements={setSegments} refine />
         </div>
       </div>
 

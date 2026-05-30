@@ -1,6 +1,7 @@
 "use client";
 
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MeshControls from "@/components/shared/MeshControls";
 import type { BoundaryType } from "@/lib/structural/plates/types";
 
 type Props = {
@@ -26,6 +27,8 @@ type Props = {
   setEUnit: (value: string) => void;
   boundaryType: BoundaryType;
   setBoundaryType: (value: BoundaryType) => void;
+  meshSegments: number;
+  setMeshSegments: (value: number) => void;
   onCalculate: () => void;
 };
 
@@ -52,6 +55,8 @@ export default function PlateInputs({
   setEUnit,
   boundaryType,
   setBoundaryType,
+  meshSegments,
+  setMeshSegments,
   onCalculate,
 }: Props) {
   return (
@@ -166,6 +171,11 @@ export default function PlateInputs({
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
+        <MeshControls elements={meshSegments} onChangeElements={setMeshSegments} refine />
       </div>
 
       <div className="space-y-2">

@@ -18,6 +18,7 @@ export default function RotationResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="rotation"
         fileName="rotation"
         title="Export Rotation results"
         description="Export the current summary and charts for review."
@@ -31,6 +32,7 @@ export default function RotationResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="rotation"
       fileName="rotation"
       calculationSpec={result.calculationSpec}
       title="Export Rotation results"

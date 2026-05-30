@@ -2,9 +2,7 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import FrameInputs from "@/components/structural/frames/FrameInputs";
 import FrameResults from "@/components/structural/frames/FrameResults";
 import { toBase } from "@/lib/units/conversions";
@@ -43,58 +41,41 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Frame Analysis">
-      <CalculatorLayout
-        moduleId="frames"
-        title="Frame Analysis"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold">Analysis control</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Adjust the beam mesh density and review the portal frame response.
-              </p>
-            </div>
-            <MeshControls
-              elements={segments}
-              onChangeElements={setSegments}
-              refine
-            />
-          </div>
-        }
-        center={
-          <FrameInputs
-            span={span}
-            setSpan={setSpan}
-            height={height}
-            setHeight={setHeight}
-            segments={segments}
-            setSegments={setSegments}
-            area={area}
-            setArea={setArea}
-            I={I}
-            setI={setI}
-            E={E}
-            setE={setE}
-            load={load}
-            setLoad={setLoad}
-            spanUnit={spanUnit}
-            setSpanUnit={setSpanUnit}
-            heightUnit={heightUnit}
-            setHeightUnit={setHeightUnit}
-            areaUnit={areaUnit}
-            setAreaUnit={setAreaUnit}
-            inertiaUnit={inertiaUnit}
-            setInertiaUnit={setInertiaUnit}
-            loadUnit={loadUnit}
-            setLoadUnit={setLoadUnit}
-            EUnit={EUnit}
-            setEUnit={setEUnit}
-            onCalculate={calculate}
-          />
-        }
-        right={<FrameResults result={result} />}
-      />
-    </DashboardLayout>
+    <CalculatorLayout
+      moduleId="frames"
+      title="Frame Analysis"
+      inputs={
+        <FrameInputs
+          span={span}
+          setSpan={setSpan}
+          height={height}
+          setHeight={setHeight}
+          segments={segments}
+          setSegments={setSegments}
+          area={area}
+          setArea={setArea}
+          I={I}
+          setI={setI}
+          E={E}
+          setE={setE}
+          load={load}
+          setLoad={setLoad}
+          spanUnit={spanUnit}
+          setSpanUnit={setSpanUnit}
+          heightUnit={heightUnit}
+          setHeightUnit={setHeightUnit}
+          areaUnit={areaUnit}
+          setAreaUnit={setAreaUnit}
+          inertiaUnit={inertiaUnit}
+          setInertiaUnit={setInertiaUnit}
+          loadUnit={loadUnit}
+          setLoadUnit={setLoadUnit}
+          EUnit={EUnit}
+          setEUnit={setEUnit}
+          onCalculate={calculate}
+        />
+      }
+      results={<FrameResults result={result} />}
+    />
   );
 }

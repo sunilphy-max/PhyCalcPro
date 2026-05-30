@@ -12,6 +12,7 @@ export default function CamResults({ result, lengthUnit }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="cams"
         fileName="cam"
         title="Export Cam results"
         description="Export the current summary and charts for review."
@@ -30,6 +31,7 @@ export default function CamResults({ result, lengthUnit }: Props) {
 
   return (
     <ExportableReport
+      moduleId="cams"
       fileName="cam"
       calculationSpec={result?.calculationSpec}
       title="Export Cam results"

@@ -22,7 +22,7 @@ export async function preparePlotsForCapture(container: HTMLElement): Promise<()
   if (!plotly) return () => undefined;
 
   const plotNodes = Array.from(
-    container.querySelectorAll<HTMLElement>("[data-export-plot]")
+    container.querySelectorAll<HTMLElement>("[data-export-plot], [data-export-diagram]")
   );
   const restores: Array<() => void> = [];
 

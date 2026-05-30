@@ -14,6 +14,7 @@ export default function PlateResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="plates"
         fileName="plate"
         title="Export Plate results"
         description="Export the current summary and charts for review."
@@ -27,6 +28,7 @@ export default function PlateResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="plates"
       fileName="plate"
       calculationSpec={result?.calculationSpec}
       title="Export Plate results"

@@ -23,6 +23,7 @@ export default function SafetyFactorResults({
   if (!result) {
     return (
       <ExportableReport
+      moduleId="safety-factor"
         fileName="safety-factor"
         title="Export Safety Factor results"
         description="Export the current summary and charts for review."
@@ -37,6 +38,7 @@ export default function SafetyFactorResults({
 
   return (
     <ExportableReport
+      moduleId="safety-factor"
       fileName="safety-factor"
       calculationSpec={result?.calculationSpec}
       title="Export Safety Factor results"

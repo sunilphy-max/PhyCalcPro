@@ -14,6 +14,7 @@ export default function BucklingResults({ result, projectName }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="columns"
         fileName={projectName || "buckling"}
         title="Export Buckling results"
         description="Export a detailed report of the current analysis."
@@ -27,6 +28,7 @@ export default function BucklingResults({ result, projectName }: Props) {
 
   return (
     <ExportableReport
+      moduleId="columns"
       fileName={projectName || "buckling"}
       calculationSpec={result?.calculationSpec}
       title="Export Buckling results"

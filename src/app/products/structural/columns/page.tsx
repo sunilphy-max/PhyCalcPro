@@ -1,6 +1,8 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -24,7 +26,14 @@ type BucklingProjectData = {
 type BucklingProject = LocalProject<BucklingProjectData>;
 
 export default function Page() {
-  const { wrapResult } = useStandardCalculation("columns");
+  const { wrapResult } = useStandardCalculation("columns", (units) =>
+    applyUnitMap(units, {
+      length: setLengthUnit,
+      load: setLoadUnit,
+      inertia: setInertiaUnit,
+      stress: setElasticModulusUnit,
+    })
+  );
   // =========================
   // INPUTS
   // =========================
@@ -131,7 +140,7 @@ export default function Page() {
             onLoad={(project) => loadProjectIntoForm(project as BucklingProject)}
           />
         }
-        center={
+        left={
           <BucklingInputs
             projectName={projectName}
             setProjectName={setProjectName}
@@ -159,6 +168,14 @@ export default function Page() {
             onSave={saveProject}
             saving={saving}
           />
+        }
+        center={
+          <CalculatorGuidancePanel title="Buckling analysis">
+            <p>
+              Euler and effective-length buckling for columns with selectable end conditions. Results include
+              critical load, stress, and buckling mode shapes.
+            </p>
+          </CalculatorGuidancePanel>
         }
         right={
           <BucklingResults

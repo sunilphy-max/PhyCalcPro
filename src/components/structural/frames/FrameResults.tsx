@@ -16,6 +16,7 @@ export default function FrameResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="frames"
         fileName="frame"
         title="Export Frame results"
         description="Export the current summary and charts for review."
@@ -29,6 +30,7 @@ export default function FrameResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="frames"
       fileName="frame"
       calculationSpec={result?.calculationSpec}
       title="Export Frame results"

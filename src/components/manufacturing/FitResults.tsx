@@ -1,5 +1,5 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<{
@@ -17,7 +17,8 @@ type Props = {
 export default function FitResults({ result, displayUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
+        moduleId="fits"
         fileName="fit"
         title="Export Fit results"
         description="Export the current summary and charts for review."
@@ -25,16 +26,18 @@ export default function FitResults({ result, displayUnit }: Props) {
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Select values and calculate the fit to view results.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   const format = (value: number) => `${value.toFixed(4)} ${displayUnit}`;
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
+      moduleId="fits"
       fileName="fit"
       calculationSpec={result.calculationSpec}
+      result={result}
       title="Export Fit results"
       description="Export the current summary and charts for review."
       csvRows={[
@@ -64,6 +67,6 @@ export default function FitResults({ result, displayUnit }: Props) {
           <div className="mt-2 text-slate-900">{format(result.clearanceMin)} to {format(result.clearanceMax)}</div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

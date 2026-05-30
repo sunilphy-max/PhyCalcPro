@@ -2,9 +2,7 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import PressureVesselInputs from "@/components/pressure/vessels/PressureVesselInputs";
 import PressureVesselResults from "@/components/pressure/vessels/PressureVesselResults";
 import { toBase } from "@/lib/units/conversions";
@@ -41,50 +39,37 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Pressure Vessel Analysis">
-      <CalculatorLayout
-        moduleId="vessels"
-        title="Pressure Vessel FEM"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold">Mesh settings</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Refine the ring mesh to improve the cross-section FEM solution.
-              </p>
-            </div>
-            <MeshControls elements={segments} onChangeElements={setSegments} refine />
-          </div>
-        }
-        center={
-          <PressureVesselInputs
-            radius={radius}
-            setRadius={setRadius}
-            radiusUnit={radiusUnit}
-            setRadiusUnit={setRadiusUnit}
-            thickness={thickness}
-            setThickness={setThickness}
-            thicknessUnit={thicknessUnit}
-            setThicknessUnit={setThicknessUnit}
-            length={length}
-            setLength={setLength}
-            lengthUnit={lengthUnit}
-            setLengthUnit={setLengthUnit}
-            pressure={pressure}
-            setPressure={setPressure}
-            pressureUnit={pressureUnit}
-            setPressureUnit={setPressureUnit}
-            E={E}
-            setE={setE}
-            EUnit={EUnit}
-            setEUnit={setEUnit}
-            segments={segments}
-            setSegments={setSegments}
-            onCalculate={calculate}
-          />
-        }
-        right={<PressureVesselResults result={result} />}
-      />
-    </DashboardLayout>
+    <CalculatorLayout
+      moduleId="vessels"
+      title="Pressure Vessel Analysis"
+      inputs={
+        <PressureVesselInputs
+          radius={radius}
+          setRadius={setRadius}
+          radiusUnit={radiusUnit}
+          setRadiusUnit={setRadiusUnit}
+          thickness={thickness}
+          setThickness={setThickness}
+          thicknessUnit={thicknessUnit}
+          setThicknessUnit={setThicknessUnit}
+          length={length}
+          setLength={setLength}
+          lengthUnit={lengthUnit}
+          setLengthUnit={setLengthUnit}
+          pressure={pressure}
+          setPressure={setPressure}
+          pressureUnit={pressureUnit}
+          setPressureUnit={setPressureUnit}
+          E={E}
+          setE={setE}
+          EUnit={EUnit}
+          setEUnit={setEUnit}
+          segments={segments}
+          setSegments={setSegments}
+          onCalculate={calculate}
+        />
+      }
+      results={<PressureVesselResults result={result} />}
+    />
   );
 }

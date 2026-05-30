@@ -13,6 +13,7 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
   if (!result) {
     return (
       <ExportableReport
+      moduleId="composites"
         fileName="composite"
         title="Export Composite results"
         description="Export the current summary and charts for review."
@@ -26,6 +27,7 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
 
   return (
     <ExportableReport
+      moduleId="composites"
       fileName="composite"
       calculationSpec={result?.calculationSpec}
       title="Export Composite results"

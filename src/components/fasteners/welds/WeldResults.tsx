@@ -14,6 +14,7 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
   if (!result) {
     return (
       <ExportableReport
+      moduleId="welds"
         fileName="weld"
         title="Export Weld results"
         description="Export the current weld analysis summary."
@@ -123,6 +124,7 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
 
   return (
     <ExportableReport
+      moduleId="welds"
       fileName="weld"
       calculationSpec={result?.calculationSpec}
       title="Export Weld results"

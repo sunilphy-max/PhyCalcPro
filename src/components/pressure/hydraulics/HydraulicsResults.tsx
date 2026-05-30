@@ -14,6 +14,7 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
   if (!result) {
     return (
       <ExportableReport
+      moduleId="hydraulics"
         fileName="hydraulics"
         title="Export Hydraulics results"
         description="Export the current summary and charts for review."
@@ -27,6 +28,7 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
 
   return (
     <ExportableReport
+      moduleId="hydraulics"
       fileName="hydraulics"
       calculationSpec={result?.calculationSpec}
       title="Export Hydraulics results"

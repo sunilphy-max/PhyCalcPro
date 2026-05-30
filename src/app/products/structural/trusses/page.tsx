@@ -2,9 +2,7 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import TrussInputs from "@/components/structural/trusses/TrussInputs";
 import TrussResults from "@/components/structural/trusses/TrussResults";
 import { toBase } from "@/lib/units/conversions";
@@ -41,58 +39,37 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Truss Analysis">
-      <CalculatorLayout
-        moduleId="trusses"
-        title="Truss Analysis"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold">Mesh & loading</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Refine the truss panels and visualize the solution with accurate axial force results.
-              </p>
-            </div>
-            <MeshControls
-              elements={meshSegments}
-              onChangeElements={setMeshSegments}
-              refine
-            />
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="text-sm font-semibold">Panel count</div>
-              <div className="text-slate-700 mt-2">{meshSegments} panels</div>
-            </div>
-          </div>
-        }
-        center={
-          <TrussInputs
-            span={span}
-            setSpan={setSpan}
-            height={height}
-            setHeight={setHeight}
-            panels={meshSegments}
-            setPanels={setMeshSegments}
-            area={area}
-            setArea={setArea}
-            E={E}
-            setE={setE}
-            load={load}
-            setLoad={setLoad}
-            spanUnit={spanUnit}
-            setSpanUnit={setSpanUnit}
-            heightUnit={heightUnit}
-            setHeightUnit={setHeightUnit}
-            areaUnit={areaUnit}
-            setAreaUnit={setAreaUnit}
-            loadUnit={loadUnit}
-            setLoadUnit={setLoadUnit}
-            EUnit={EUnit}
-            setEUnit={setEUnit}
-            onCalculate={calculate}
-          />
-        }
-        right={<TrussResults result={result} />}
-      />
-    </DashboardLayout>
+    <CalculatorLayout
+      moduleId="trusses"
+      title="Truss Analysis"
+      inputs={
+        <TrussInputs
+          span={span}
+          setSpan={setSpan}
+          height={height}
+          setHeight={setHeight}
+          panels={meshSegments}
+          setPanels={setMeshSegments}
+          area={area}
+          setArea={setArea}
+          E={E}
+          setE={setE}
+          load={load}
+          setLoad={setLoad}
+          spanUnit={spanUnit}
+          setSpanUnit={setSpanUnit}
+          heightUnit={heightUnit}
+          setHeightUnit={setHeightUnit}
+          areaUnit={areaUnit}
+          setAreaUnit={setAreaUnit}
+          loadUnit={loadUnit}
+          setLoadUnit={setLoadUnit}
+          EUnit={EUnit}
+          setEUnit={setEUnit}
+          onCalculate={calculate}
+        />
+      }
+      results={<TrussResults result={result} />}
+    />
   );
 }

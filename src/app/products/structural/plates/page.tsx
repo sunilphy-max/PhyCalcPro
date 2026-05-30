@@ -2,9 +2,7 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import PlateInputs from "@/components/structural/plates/PlateInputs";
 import PlateResults from "@/components/structural/plates/PlateResults";
 import { toBase } from "@/lib/units/conversions";
@@ -44,58 +42,39 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Plate Bending Analysis">
-      <CalculatorLayout
-        moduleId="plates"
-        title="Plate Bending Analysis"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold">Mesh control</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Refine the plate mesh for higher accuracy. Larger meshes increase the solver resolution.
-              </p>
-            </div>
-            <MeshControls
-              elements={meshSegments}
-              onChangeElements={setMeshSegments}
-              refine
-            />
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="text-sm uppercase tracking-wider text-slate-500">Boundary support</div>
-              <div className="mt-3 text-slate-900 font-medium">{boundaryType === "clamped" ? "Clamped all edges" : "Simply supported all edges"}</div>
-            </div>
-          </div>
-        }
-        center={
-          <PlateInputs
-            length={length}
-            setLength={setLength}
-            width={width}
-            setWidth={setWidth}
-            thickness={thickness}
-            setThickness={setThickness}
-            pressure={pressure}
-            setPressure={setPressure}
-            E={E}
-            setE={setE}
-            nu={nu}
-            setNu={setNu}
-            lengthUnit={lengthUnit}
-            setLengthUnit={setLengthUnit}
-            thicknessUnit={thicknessUnit}
-            setThicknessUnit={setThicknessUnit}
-            pressureUnit={pressureUnit}
-            setPressureUnit={setPressureUnit}
-            EUnit={EUnit}
-            setEUnit={setEUnit}
-            boundaryType={boundaryType}
-            setBoundaryType={setBoundaryType}
-            onCalculate={calculate}
-          />
-        }
-        right={<PlateResults result={result} />}
-      />
-    </DashboardLayout>
+    <CalculatorLayout
+      moduleId="plates"
+      title="Plate Bending Analysis"
+      inputs={
+        <PlateInputs
+          length={length}
+          setLength={setLength}
+          width={width}
+          setWidth={setWidth}
+          thickness={thickness}
+          setThickness={setThickness}
+          pressure={pressure}
+          setPressure={setPressure}
+          E={E}
+          setE={setE}
+          nu={nu}
+          setNu={setNu}
+          lengthUnit={lengthUnit}
+          setLengthUnit={setLengthUnit}
+          thicknessUnit={thicknessUnit}
+          setThicknessUnit={setThicknessUnit}
+          pressureUnit={pressureUnit}
+          setPressureUnit={setPressureUnit}
+          EUnit={EUnit}
+          setEUnit={setEUnit}
+          boundaryType={boundaryType}
+          setBoundaryType={setBoundaryType}
+          meshSegments={meshSegments}
+          setMeshSegments={setMeshSegments}
+          onCalculate={calculate}
+        />
+      }
+      results={<PlateResults result={result} />}
+    />
   );
 }

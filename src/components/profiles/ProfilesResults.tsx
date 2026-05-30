@@ -14,6 +14,7 @@ export default function ProfilesResults({ result, projectName }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="profiles"
         fileName={projectName || "profiles"}
         title="Export Area Properties results"
         description="Export a detailed report of the current analysis."
@@ -27,6 +28,7 @@ export default function ProfilesResults({ result, projectName }: Props) {
 
   return (
     <ExportableReport
+      moduleId="profiles"
       fileName={projectName || "profiles"}
       calculationSpec={result?.calculationSpec}
       title="Export Area Properties results"

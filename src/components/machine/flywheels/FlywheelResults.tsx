@@ -14,6 +14,7 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
   if (!result) {
     return (
       <ExportableReport
+      moduleId="flywheels"
         fileName="flywheel"
         title="Export Flywheel results"
         description="Export the current summary and charts for review."
@@ -31,6 +32,7 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
 
   return (
     <ExportableReport
+      moduleId="flywheels"
       fileName="flywheel"
       calculationSpec={result?.calculationSpec}
       title="Export Flywheel results"

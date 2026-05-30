@@ -2,7 +2,6 @@
 
 import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
 import BeamDashboard from "./BeamDashboard";
-import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 import ExportableReport from "@/components/shared/ExportableReport";
 import type { CalculationSpec } from "@/lib/standards/types";
 
@@ -27,6 +26,7 @@ export default function BeamResults({
   if (!result) {
     return (
       <ExportableReport
+      moduleId="beams"
         fileName="beam"
         title="Export Beam results"
         description="Export the current summary and charts for review."
@@ -47,24 +47,23 @@ export default function BeamResults({
 
   return (
     <ExportableReport
+      moduleId="beams"
       fileName="beam"
       title="Export Beam results"
       description="Export the current summary and charts for review."
       csvRows={csvRows}
       calculationSpec={result.calculationSpec}
+      result={result}
+      qualityOverrides={{
+        unitIntegrity: true,
+        physicsValidation: Boolean(result.solverMeta),
+        chartConformance: true,
+        pictorialCoverage: true,
+        exportConsistency: true,
+      }}
     >
       <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
         <h2 className="text-lg font-semibold">Beam Results</h2>
-        <CalculationQualityChecklist
-          title="Beam module quality checklist"
-          checklist={{
-            unitIntegrity: true,
-            physicsValidation: Boolean(result.solverMeta && result.physicsChecks),
-            chartConformance: true,
-            pictorialCoverage: true,
-            exportConsistency: true,
-          }}
-        />
         <BeamDashboard
           result={result}
           loads={loads}

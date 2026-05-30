@@ -10,6 +10,7 @@ export default function CostEstimatorResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="cost-estimator"
         fileName="cost-estimator"
         title="Export Cost Estimator results"
         description="Export the current summary and charts for review."
@@ -23,6 +24,7 @@ export default function CostEstimatorResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="cost-estimator"
       fileName="cost-estimator"
       calculationSpec={result?.calculationSpec}
       title="Export Cost Estimator results"

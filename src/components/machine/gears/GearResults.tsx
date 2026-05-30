@@ -13,6 +13,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="gears"
         fileName="gear"
         title="Export Gear results"
         description="Export the current summary and charts for review."
@@ -32,6 +33,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
 
   return (
     <ExportableReport
+      moduleId="gears"
       fileName="gear"
       title="Export Gear results"
       description="Export the current summary and charts for review."

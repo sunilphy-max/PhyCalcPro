@@ -3,7 +3,6 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import ShaftDashboard from "./ShaftDashboard";
 import type { ShaftResult } from "@/lib/machine/shafts/types";
-import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 import ExportableReport from "@/components/shared/ExportableReport";
 
 type Props = {
@@ -15,6 +14,7 @@ export default function ShaftResults({ result, projectName }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="shafts"
         fileName={projectName || "shaft"}
         title="Export Shaft results"
         description="Export the current summary and charts for review."
@@ -28,8 +28,17 @@ export default function ShaftResults({ result, projectName }: Props) {
 
   return (
     <ExportableReport
+      moduleId="shafts"
       fileName={projectName || "shaft"}
       calculationSpec={result?.calculationSpec}
+      result={result}
+      qualityOverrides={{
+        unitIntegrity: true,
+        physicsValidation: true,
+        chartConformance: true,
+        pictorialCoverage: true,
+        exportConsistency: true,
+      }}
       title="Export Shaft results"
       description="Export the current summary and charts for review."
       csvRows={[
@@ -40,16 +49,6 @@ export default function ShaftResults({ result, projectName }: Props) {
     >
       <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <h2 className="text-lg font-semibold">Shaft Results</h2>
-        <CalculationQualityChecklist
-          title="Shaft module quality checklist"
-          checklist={{
-            unitIntegrity: true,
-            physicsValidation: true,
-            chartConformance: true,
-            pictorialCoverage: true,
-            exportConsistency: true,
-          }}
-        />
         <ShaftDashboard result={result} />
       </div>
     </ExportableReport>

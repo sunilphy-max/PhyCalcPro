@@ -14,6 +14,7 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
   if (!result) {
     return (
       <ExportableReport
+      moduleId="rivets"
         fileName="rivet"
         title="Export Rivet results"
         description="Export the current summary and charts for review."
@@ -31,6 +32,7 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
 
   return (
     <ExportableReport
+      moduleId="rivets"
       fileName="rivet"
       calculationSpec={result?.calculationSpec}
       title="Export Rivet results"

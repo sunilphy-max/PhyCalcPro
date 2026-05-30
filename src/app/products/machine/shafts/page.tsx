@@ -1,6 +1,7 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -49,7 +50,12 @@ type ShaftProjectData = {
 type ShaftProject = LocalProject<ShaftProjectData>;
 
 export default function Page() {
-  const { wrapResult } = useStandardCalculation("shafts");
+  const { wrapResult } = useStandardCalculation("shafts", (units) =>
+    applyUnitMap(units, {
+      length: setLengthUnit,
+      stress: setModulusUnit,
+    })
+  );
   // =========================
   // INPUTS
   // =========================

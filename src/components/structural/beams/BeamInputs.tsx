@@ -3,6 +3,7 @@
 import { Load, UDL } from "@/lib/structural/beams/types";
 import { materials } from "@/data/materials";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MeshControls from "@/components/shared/MeshControls";
 
 type Props = {
   projectName: string;
@@ -51,6 +52,9 @@ type Props = {
   removeLoad: (i: number) => void;
   addPointLoad: () => void;
   addUDL: () => void;
+
+  meshSegments: number;
+  setMeshSegments: (value: number) => void;
 };
 
 export default function BeamInputs(props: Props) {
@@ -285,6 +289,18 @@ export default function BeamInputs(props: Props) {
             + UDL
           </button>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
+        <p className="text-xs text-slate-500">
+          Increase element count for smoother moment, shear, and deflection curves.
+        </p>
+        <MeshControls
+          elements={props.meshSegments}
+          onChangeElements={props.setMeshSegments}
+          refine
+        />
       </div>
 
       {/* ================= ACTIONS ================= */}

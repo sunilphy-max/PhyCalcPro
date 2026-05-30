@@ -4,16 +4,23 @@ import { useRef, type ReactNode } from "react";
 import ResultExportControls from "@/components/ResultExportControls";
 import EngineeringChecksPanel from "@/components/shared/EngineeringChecksPanel";
 import CalculationBasisPanel from "@/components/shared/CalculationBasisPanel";
+import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
+import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaults";
+import { buildCsvRowsFromResult, mergeCsvRows, type CsvRow } from "@/lib/export/csvRows";
 import type { CalculationSpec } from "@/lib/standards/types";
-
-type CSVRow = Record<string, string | number | null | undefined>;
+import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 
 type Props = {
   fileName: string;
+  /** When set, enables standard quality checklist and default CSV rows from result. */
+  moduleId?: string;
   title?: string;
   description?: string;
-  csvRows?: CSVRow[];
+  csvRows?: CsvRow[];
   calculationSpec?: CalculationSpec | null;
+  result?: Record<string, unknown> | null;
+  qualityOverrides?: Partial<ModuleQualityChecklist>;
+  showQualityChecklist?: boolean;
   children: ReactNode;
   className?: string;
   showControlsWhenEmpty?: boolean;
@@ -21,15 +28,21 @@ type Props = {
 
 export default function ExportableReport({
   fileName,
+  moduleId,
   title,
   description,
   csvRows,
   calculationSpec,
+  result,
+  qualityOverrides,
+  showQualityChecklist = true,
   children,
   className = "space-y-6",
   showControlsWhenEmpty = true,
 }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
+  const mergedCsv = mergeCsvRows(buildCsvRowsFromResult(result ?? undefined), csvRows);
+  const checklist = moduleId ? getModuleQualityChecklist(moduleId, qualityOverrides) : null;
 
   return (
     <div className={className}>
@@ -39,7 +52,7 @@ export default function ExportableReport({
           fileName={fileName}
           title={title}
           description={description}
-          csvRows={csvRows}
+          csvRows={mergedCsv}
         />
       ) : null}
       <div ref={reportRef} className="space-y-6 export-report-content">
@@ -48,6 +61,9 @@ export default function ExportableReport({
             <EngineeringChecksPanel spec={calculationSpec} />
             <CalculationBasisPanel spec={calculationSpec} />
           </>
+        ) : null}
+        {moduleId && showQualityChecklist && checklist ? (
+          <CalculationQualityChecklist title="Module quality" checklist={checklist} />
         ) : null}
         {children}
       </div>

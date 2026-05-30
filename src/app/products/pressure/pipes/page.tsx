@@ -1,10 +1,9 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import PressurePipeInputs from "@/components/pressure/pipes/PressurePipeInputs";
 import PressurePipeResults from "@/components/pressure/pipes/PressurePipeResults";
 import { toBase } from "@/lib/units/conversions";
@@ -12,7 +11,15 @@ import { solvePressurePipeEngine } from "@/lib/pressure/pipes/engine";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
 
 export default function Page() {
-  const { wrapResult } = useStandardCalculation("pipes");
+  const { wrapResult } = useStandardCalculation("pipes", (units) =>
+    applyUnitMap(units, {
+      radius: setRadiusUnit,
+      thickness: setThicknessUnit,
+      length: setLengthUnit,
+      pressure: setPressureUnit,
+      modulus: setEUnit,
+    })
+  );
   const [radius, setRadius] = useState(0.5);
   const [radiusUnit, setRadiusUnit] = useState("m");
   const [thickness, setThickness] = useState(0.02);
@@ -40,23 +47,11 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Pipe Stress Analysis">
-      <CalculatorLayout
-        moduleId="pipes"
-        title="Pressure Pipe FEM"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold">Pipe mesh control</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Refine the circumferential mesh and review ring stress distribution.
-              </p>
-            </div>
-            <MeshControls elements={segments} onChangeElements={setSegments} refine />
-          </div>
-        }
-        center={
-          <PressurePipeInputs
+    <CalculatorLayout
+      moduleId="pipes"
+      title="Pressure Pipe Analysis"
+      inputs={
+        <PressurePipeInputs
             radius={radius}
             setRadius={setRadius}
             radiusUnit={radiusUnit}
@@ -79,11 +74,10 @@ export default function Page() {
             setEUnit={setEUnit}
             segments={segments}
             setSegments={setSegments}
-            onCalculate={calculate}
-          />
-        }
-        right={<PressurePipeResults result={result} />}
-      />
-    </DashboardLayout>
+          onCalculate={calculate}
+        />
+      }
+      results={<PressurePipeResults result={result} />}
+    />
   );
 }

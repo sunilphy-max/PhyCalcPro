@@ -118,7 +118,6 @@ export default function BeamDashboard({
         setProbeX={setProbeX}
         xPositions={result.x}
         deflection={result.deflection}
-        reactions={result.reactions}
       />
 
       {/* ========================================= */}
@@ -173,13 +172,13 @@ export default function BeamDashboard({
         />
       )}
       <FEAColorStrip
-        title="FEA-like Deflection Intensity"
+        title="Deflection intensity"
         x={result.x}
         values={result.deflection}
         unit="m"
       />
       <FEAColorStrip
-        title="FEA-like Stress Intensity"
+        title="Stress intensity"
         x={result.x}
         values={result.stress}
         unit="Pa"
@@ -219,21 +218,6 @@ export default function BeamDashboard({
         </div>
       </div>
 
-      {/* ========================================= */}
-      {/* REACTIONS */}
-      {/* ========================================= */}
-      {result.reactions && (
-        <div className="bg-white border rounded-xl p-4 mt-4">
-          <div className="font-semibold mb-3">Support Reactions</div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            {result.reactions.map((r: number, i: number) => (
-              <div key={i} className="bg-gray-50 rounded p-2">
-                DOF {i}: {r.toFixed(2)}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       {result.solverMeta ? (
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
           <div className="font-semibold text-slate-900">Solver Metadata</div>
@@ -247,12 +231,6 @@ export default function BeamDashboard({
                 <li key={warning}>{warning}</li>
               ))}
             </ul>
-          ) : null}
-          {result.physicsChecks ? (
-            <p className="mt-2 text-slate-600">
-              Equilibrium residual: {result.physicsChecks.staticEquilibriumResidual.toExponential(3)} | finite values:{" "}
-              {result.physicsChecks.finiteValues ? "yes" : "no"}
-            </p>
           ) : null}
         </div>
       ) : null}

@@ -12,6 +12,7 @@ export default function BearingResults({ result, loadUnit }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="bearings"
         fileName="bearing"
         title="Export Bearing results"
         description="Export the current summary and charts for review."
@@ -28,6 +29,7 @@ export default function BearingResults({ result, loadUnit }: Props) {
 
   return (
     <ExportableReport
+      moduleId="bearings"
       fileName="bearing"
       calculationSpec={result?.calculationSpec}
       title="Export Bearing results"

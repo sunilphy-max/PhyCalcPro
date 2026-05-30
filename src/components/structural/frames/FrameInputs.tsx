@@ -1,6 +1,7 @@
 "use client";
 
 import UnitSelector from "@/components/shared/UnitSelector";
+import MeshControls from "@/components/shared/MeshControls";
 
 type Props = {
   span: number;
@@ -112,18 +113,6 @@ export default function FrameInputs({
         </div>
 
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Beam segments</label>
-          <input
-            type="number"
-            value={segments}
-            min={1}
-            max={12}
-            onChange={(e) => setSegments(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </div>
-
-        <div className="space-y-3">
           <label className="block text-sm font-medium text-slate-700">Axial area</label>
           <div className="flex gap-2">
             <input
@@ -202,6 +191,11 @@ export default function FrameInputs({
             />
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
+        <MeshControls elements={segments} onChangeElements={setSegments} refine />
       </div>
 
       <button

@@ -18,6 +18,7 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="tolerance"
         fileName="tolerance"
         title="Export Tolerance results"
         description="Export the current summary and charts for review."
@@ -33,6 +34,7 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
 
   return (
     <ExportableReport
+      moduleId="tolerance"
       fileName="tolerance"
       calculationSpec={result.calculationSpec}
       title="Export Tolerance results"

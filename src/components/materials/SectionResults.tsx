@@ -20,6 +20,7 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
   if (!result) {
     return (
       <ExportableReport
+      moduleId="sections"
         fileName="section"
         title="Export Section results"
         description="Export the current summary and charts for review."
@@ -37,6 +38,7 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
 
   return (
     <ExportableReport
+      moduleId="sections"
       fileName="section"
       calculationSpec={result.calculationSpec}
       title="Export Section results"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -88,7 +89,7 @@ export default function Page() {
             onLoad={(project) => loadProjectIntoForm(project as ScrewProject)}
           />
         }
-        center={
+        left={
           <ScrewsInputs
             projectName={projectName}
             setProjectName={setProjectName}
@@ -98,6 +99,11 @@ export default function Page() {
             onSave={saveProject}
             saving={saving}
           />
+        }
+        center={
+          <CalculatorGuidancePanel title="Bolt design">
+            <p>VDI-style bolt checks for tensile, shear, and bearing utilization. Save projects for design iterations.</p>
+          </CalculatorGuidancePanel>
         }
         right={
           <ScrewsResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />

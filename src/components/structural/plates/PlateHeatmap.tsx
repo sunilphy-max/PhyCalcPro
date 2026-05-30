@@ -17,7 +17,7 @@ export default function PlateHeatmap({ title, x, y, z }: Props) {
   const cleanZ = z.map((row) => row.map((value) => (Number.isFinite(value) ? value : 0)));
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm" data-export-plot="true">
       <div className="font-semibold text-sm mb-3">{title}</div>
       <Plot
         data={[

@@ -14,6 +14,7 @@ export default function TrussResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="trusses"
         fileName="truss"
         title="Export Truss results"
         description="Export the current summary and charts for review."
@@ -37,6 +38,7 @@ export default function TrussResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="trusses"
       fileName="truss"
       calculationSpec={result?.calculationSpec}
       title="Export Truss results"

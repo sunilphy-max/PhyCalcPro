@@ -2,14 +2,11 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useCallback, useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import { fromBase } from "@/lib/units/conversions";
 import { normalizeInput } from "@/lib/physics";
 import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
-import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
@@ -155,19 +152,6 @@ const handleLoadDrag = (
   const [savedProjects, setSavedProjects] = useState<BeamProject[]>(() =>
     loadLocalProjects<BeamProjectData>("beam")
   );
-  const {
-    equationExpression,
-    setEquationExpression,
-    equationValueDisplay,
-    equationError,
-    runStatusMessage,
-    evaluateExpression,
-    recordRun,
-  } = useEquationWorkflow({
-    initialExpression: "(M*c)/I",
-    fromBaseOutput: (value) => fromBase(value, "stress", stressUnit),
-  });
-
   // =========================
   // SOLVER
   // =========================
@@ -263,8 +247,8 @@ const handleLoadDrag = (
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
     }),
   });
-  const calculate = async () => {
-    const { normalized: normalizedInputs, raw, output: converted } = beamPipeline.run({
+  const calculate = () => {
+    const { output: converted } = beamPipeline.run({
       length,
       I,
       c,
@@ -273,35 +257,12 @@ const handleLoadDrag = (
       loads,
     });
 
-    const { baseValue: equationStressValue, failure: equationFailure } =
-      evaluateExpression({
-        M: raw.maxMoment,
-        c: normalizedInputs.c,
-        I: normalizedInputs.I,
-      });
-
     setResult(
       attachBeamCalculationSpec(converted, designCode, {
         yieldStressPa: 250e6,
         deflectionLimit: length > 0 ? length / 360 : undefined,
       })
     );
-    
-    await recordRun({
-      projectId: "beam-local",
-      modelId: "beam-analysis",
-      equationId: "beam-stress-live",
-      input: {
-        normalizedInputs,
-        units: { lengthUnit, forceUnit, udlUnit, inertiaUnit, momentUnit, stressUnit },
-      },
-      output: {
-        maxMomentBase: raw.maxMoment,
-        maxStressBase: raw.maxStress,
-        evaluatedEquationStressBase: equationStressValue,
-        equationError: equationFailure,
-      },
-    });
   };
 
   // =========================
@@ -344,58 +305,17 @@ const handleLoadDrag = (
   // UI
   // =========================
   return (
-    <DashboardLayout title="Beam Analysis Module">
-      <CalculatorLayout
-        moduleId="beams"
-        title="Beam Analysis Module"
-        left={
-          <div className="space-y-5">
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <h3 className="font-semibold mb-3">Mesh refinement</h3>
-              <p className="text-sm text-slate-500">
-                Increase the beam mesh resolution for more accurate internal force and deflection curves.
-              </p>
-              <MeshControls
-                elements={meshSegments}
-                onChangeElements={setMeshSegments}
-                refine
-              />
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm space-y-2">
-              <h3 className="font-semibold">Custom equation check</h3>
-              <p className="text-sm text-slate-500">
-                Evaluate a deterministic user equation with current beam results.
-              </p>
-              <input
-                className="w-full border rounded p-2 font-mono text-sm"
-                value={equationExpression}
-                onChange={(event) => setEquationExpression(event.target.value)}
-                placeholder="(M*c)/I"
-              />
-              <p className="text-xs text-slate-500">Variables: M, c, I</p>
-              {equationValueDisplay !== null ? (
-                <p className="text-sm">
-                  Equation stress: <span className="font-semibold">{equationValueDisplay.toFixed(3)} {stressUnit}</span>
-                </p>
-              ) : null}
-              {equationError ? (
-                <p className="text-xs text-red-600">{equationError}</p>
-              ) : null}
-              {runStatusMessage ? (
-                <p className="text-xs text-slate-500">{runStatusMessage}</p>
-              ) : null}
-            </div>
-
-          </div>
-        }
-        footer={
-          <SavedProjectsFooter
-            projects={savedProjects}
-            onLoad={(project) => loadProjectIntoForm(project as BeamProject)}
-          />
-        }
-        center={
-          <BeamInputs
+    <CalculatorLayout
+      moduleId="beams"
+      title="Beam Analysis Module"
+      footer={
+        <SavedProjectsFooter
+          projects={savedProjects}
+          onLoad={(project) => loadProjectIntoForm(project as BeamProject)}
+        />
+      }
+      inputs={
+        <BeamInputs
             projectName={projectName}
             setProjectName={setProjectName}
             length={length}
@@ -432,19 +352,20 @@ const handleLoadDrag = (
             onCalculate={calculate}
             saveProject={saveProject}
             saving={saving}
+            meshSegments={meshSegments}
+            setMeshSegments={setMeshSegments}
           />
-        }
-        right={
-          <BeamResults
-            key={result ? JSON.stringify(result) : 'empty'}
-            result={result}
-            length={length}
-            support={support}
-            loads={loads}
-            onLoadDrag={handleLoadDrag}
-          />
-        }
-      />
-    </DashboardLayout>
+      }
+      results={
+        <BeamResults
+          key={result ? JSON.stringify(result) : "empty"}
+          result={result}
+          length={length}
+          support={support}
+          loads={loads}
+          onLoadDrag={handleLoadDrag}
+        />
+      }
+    />
   );
 }

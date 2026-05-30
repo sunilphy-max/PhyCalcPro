@@ -1,6 +1,8 @@
 "use client";
 
-import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { useCalculatorModule } from "@/hooks/useCalculatorModule";
+import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -11,7 +13,12 @@ import { solveFitsEngine } from "@/lib/manufacturing/engine";
 import type { FitResult } from "@/lib/manufacturing/types";
 
 export default function Page() {
-  const { wrapResult } = useStandardCalculation("fits");
+  const { wrapResult } = useCalculatorModule("fits", (units) =>
+    applyUnitMap(units, {
+      nominalSize: setNominalUnit,
+      tolerance: setToleranceUnit,
+    })
+  );
   const [nominalSize, setNominalSize] = useState(50);
   const [nominalUnit, setNominalUnit] = useState("mm");
   const [holeUpper, setHoleUpper] = useState(0.05);
@@ -65,9 +72,14 @@ export default function Page() {
           setToleranceUnit={setToleranceUnit}
           onCalculate={calculate}
         />}
-        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Use the fit calculator to compute hole and shaft limits, as well as the resulting clearance or interference range.</p>
-        </div>}
+        center={
+          <CalculatorGuidancePanel title="Fit overview">
+            <p>
+              Compute hole and shaft limits and the resulting clearance or interference range. Change design
+              standard above to align units with US / EU / ISO practice.
+            </p>
+          </CalculatorGuidancePanel>
+        }
         right={<FitResults result={result} displayUnit={nominalUnit} />}
       />
     </DashboardLayout>

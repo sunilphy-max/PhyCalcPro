@@ -15,6 +15,7 @@ export default function PressurePipeResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="pipes"
         fileName="pressure-pipe"
         title="Export Pressure Pipe results"
         description="Export the current summary and charts for review."
@@ -30,6 +31,7 @@ export default function PressurePipeResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="pipes"
       fileName="pressure-pipe"
       calculationSpec={result?.calculationSpec}
       title="Export Pressure Pipe results"

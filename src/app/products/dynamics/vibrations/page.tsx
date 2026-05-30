@@ -2,15 +2,12 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import MeshControls from "@/components/shared/MeshControls";
 import VibrationInputs from "@/components/dynamics/vibrations/VibrationInputs";
 import VibrationResults from "@/components/dynamics/vibrations/VibrationResults";
 import { normalizeInput } from "@/lib/physics";
 import { solveVibrationEngine } from "@/lib/dynamics/vibrations/engine";
 import type { VibrationResult, SupportType } from "@/lib/dynamics/vibrations/types";
-import { useEquationWorkflow } from "@/hooks/useEquationWorkflow";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 export default function Page() {
@@ -49,21 +46,9 @@ export default function Page() {
     solve: (normalized) => solveVibrationEngine(normalized),
     convertOutput: (raw) => raw,
   });
-  const {
-    equationExpression,
-    setEquationExpression,
-    equationValueDisplay,
-    equationError,
-    runStatusMessage,
-    evaluateExpression,
-    recordRun,
-  } = useEquationWorkflow({
-    initialExpression: "(pi/(2*L^2))*sqrt((E*I)/(rho*A))",
-    fromBaseOutput: (value) => value,
-  });
 
-  const calculate = async () => {
-    const { normalized: config, output: solved } = vibrationPipeline.run({
+  const calculate = () => {
+    const { output: solved } = vibrationPipeline.run({
       length,
       E,
       A,
@@ -73,103 +58,42 @@ export default function Page() {
       support,
     });
     setResult(wrapResult(solved));
-
-    const { baseValue, failure } = evaluateExpression({
-      L: config.length,
-      E: config.E,
-      I: config.I,
-      rho: config.rho,
-      A: config.A,
-    });
-
-    await recordRun({
-      projectId: "vibration-local",
-      modelId: "vibration-analysis",
-      equationId: "vibration-first-mode",
-      input: {
-        config,
-        units: { lengthUnit, EUnit, areaUnit, inertiaUnit, rhoUnit },
-      },
-      output: {
-        firstModeHz: solved.frequencies[0] ?? null,
-        customEquationHz: baseValue,
-        equationError: failure,
-      },
-    });
   };
 
   return (
-    <DashboardLayout title="Vibration Analysis">
-      <CalculatorLayout
-        moduleId="vibrations"
-        title="Dynamic Vibration FEM"
-        left={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-5">
-            <div>
-              <h3 className="text-lg font-semibold">Analysis control</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Adjust mesh density and support conditions to capture the first vibration modes.
-              </p>
-            </div>
-            <MeshControls
-              elements={segments}
-              onChangeElements={setSegments}
-              refine
-            />
-            <div className="space-y-2 border-t border-slate-200 pt-4">
-              <h3 className="font-semibold">Custom mode equation</h3>
-              <p className="text-sm text-slate-500">
-                Evaluate a deterministic equation with variables: L, E, I, rho, A.
-              </p>
-              <input
-                className="w-full border rounded p-2 font-mono text-sm"
-                value={equationExpression}
-                onChange={(event) => setEquationExpression(event.target.value)}
-              />
-              {equationValueDisplay !== null ? (
-                <p className="text-sm">
-                  Equation estimate:{" "}
-                  <span className="font-semibold">{equationValueDisplay.toFixed(4)} Hz</span>
-                </p>
-              ) : null}
-              {equationError ? <p className="text-xs text-red-600">{equationError}</p> : null}
-              {runStatusMessage ? (
-                <p className="text-xs text-slate-500">{runStatusMessage}</p>
-              ) : null}
-            </div>
-          </div>
-        }
-        center={
-          <VibrationInputs
-            length={length}
-            setLength={setLength}
-            lengthUnit={lengthUnit}
-            setLengthUnit={setLengthUnit}
-            E={E}
-            setE={setE}
-            EUnit={EUnit}
-            setEUnit={setEUnit}
-            I={I}
-            setI={setI}
-            inertiaUnit={inertiaUnit}
-            setInertiaUnit={setInertiaUnit}
-            A={A}
-            setA={setA}
-            areaUnit={areaUnit}
-            setAreaUnit={setAreaUnit}
-            rho={rho}
-            setRho={setRho}
-            rhoUnit={rhoUnit}
-            setRhoUnit={setRhoUnit}
-            segments={segments}
-            setSegments={setSegments}
-            support={support}
-            setSupport={setSupport}
-            onCalculate={calculate}
-          />
-        }
-        right={<VibrationResults result={result} />}
-      />
-    </DashboardLayout>
+    <CalculatorLayout
+      moduleId="vibrations"
+      title="Vibration Analysis"
+      inputs={
+        <VibrationInputs
+          length={length}
+          setLength={setLength}
+          lengthUnit={lengthUnit}
+          setLengthUnit={setLengthUnit}
+          E={E}
+          setE={setE}
+          EUnit={EUnit}
+          setEUnit={setEUnit}
+          I={I}
+          setI={setI}
+          inertiaUnit={inertiaUnit}
+          setInertiaUnit={setInertiaUnit}
+          A={A}
+          setA={setA}
+          areaUnit={areaUnit}
+          setAreaUnit={setAreaUnit}
+          rho={rho}
+          setRho={setRho}
+          rhoUnit={rhoUnit}
+          setRhoUnit={setRhoUnit}
+          segments={segments}
+          setSegments={setSegments}
+          support={support}
+          setSupport={setSupport}
+          onCalculate={calculate}
+        />
+      }
+      results={<VibrationResults result={result} />}
+    />
   );
 }

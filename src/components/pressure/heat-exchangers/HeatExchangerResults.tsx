@@ -11,6 +11,7 @@ export default function HeatExchangerResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="heat-exchangers"
         fileName="heat-exchanger"
         title="Export Heat Exchanger results"
         description="Export the current summary and charts for review."
@@ -24,6 +25,7 @@ export default function HeatExchangerResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="heat-exchangers"
       fileName="heat-exchanger"
       calculationSpec={result?.calculationSpec}
       title="Export Heat Exchanger results"

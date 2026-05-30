@@ -1,6 +1,7 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -29,7 +30,9 @@ const MATERIALS: Record<string, WeldMaterial> = {
 };
 
 export default function Page() {
-  const { wrapResult } = useStandardCalculation("welds");
+  const { wrapResult } = useStandardCalculation("welds", (units) =>
+    applyUnitMap(units, { length: setWeldLengthUnit, force: setShearForceUnit })
+  );
   const [weldType, setWeldType] = useState<WeldType>("fillet");
   const [weldSize, setWeldSize] = useState(0.01);
   const [weldSizeUnit, setWeldSizeUnit] = useState("m");

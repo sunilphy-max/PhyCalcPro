@@ -10,6 +10,7 @@ export default function CamToolpathsResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="cam-toolpaths"
         fileName="cam-toolpaths"
         title="Export Cam Toolpaths results"
         description="Export the current summary and charts for review."
@@ -23,6 +24,7 @@ export default function CamToolpathsResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="cam-toolpaths"
       fileName="cam-toolpaths"
       calculationSpec={result?.calculationSpec}
       title="Export Cam Toolpaths results"

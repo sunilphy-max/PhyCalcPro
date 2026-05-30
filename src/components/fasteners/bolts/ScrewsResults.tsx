@@ -14,6 +14,7 @@ export default function ScrewsResults({ result, projectName }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="bolts"
         fileName={projectName || "screw"}
         title="Export Screw results"
         description="Export a detailed report of the current analysis."
@@ -27,6 +28,7 @@ export default function ScrewsResults({ result, projectName }: Props) {
 
   return (
     <ExportableReport
+      moduleId="bolts"
       fileName={projectName || "screw"}
       calculationSpec={result?.calculationSpec}
       title="Export Screw results"

@@ -1,37 +1,60 @@
 "use client";
 
-import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+import CombinedLoadingInputs from "@/components/structural/combinedLoading/CombinedLoadingInputs";
+import CombinedLoadingResults from "@/components/structural/combinedLoading/CombinedLoadingResults";
+import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
+import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
+import { normalizeFieldValue } from "@/components/shared/ModuleUnitField";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
-import type {
-  CombinedLoadingConfig,
-  CombinedLoadingResult,
-} from "@/lib/structural/combinedLoading/types";
+import type { CombinedLoadingConfig, CombinedLoadingResult } from "@/lib/structural/combinedLoading/types";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 
+const defaults = moduleUnitProfiles["combined-loading"];
+
 export default function Page() {
-  const { wrapResult } = useStandardCalculation("combined-loading");
+  const { wrapResult } = useStandardCalculation("combined-loading", (units) =>
+    applyUnitMap(units, {
+      axialForce: setAxialUnit,
+      bendingMoment: setMomentUnit,
+      torque: setTorqueUnit,
+      shearForce: setShearUnit,
+      sectionWidth: setWidthUnit,
+      sectionHeight: setHeightUnit,
+      yieldStrength: setStressUnit,
+    })
+  );
+
   const [axialForce, setAxialForce] = useState(120000);
+  const [axialUnit, setAxialUnit] = useState(defaults.axialForce.defaultUnit);
   const [bendingMoment, setBendingMoment] = useState(85000);
+  const [momentUnit, setMomentUnit] = useState(defaults.bendingMoment.defaultUnit);
   const [torque, setTorque] = useState(18000);
+  const [torqueUnit, setTorqueUnit] = useState(defaults.torque.defaultUnit);
   const [shearForce, setShearForce] = useState(15000);
+  const [shearUnit, setShearUnit] = useState(defaults.shearForce.defaultUnit);
   const [width, setWidth] = useState(0.18);
+  const [widthUnit, setWidthUnit] = useState(defaults.sectionWidth.defaultUnit);
   const [height, setHeight] = useState(0.27);
+  const [heightUnit, setHeightUnit] = useState(defaults.sectionHeight.defaultUnit);
   const [yieldStrength, setYieldStrength] = useState(250);
+  const [stressUnit, setStressUnit] = useState(defaults.yieldStrength.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<CombinedLoadingResult> | null>(null);
 
   const calculate = () => {
     const config: CombinedLoadingConfig = {
-      axialForce,
-      bendingMoment,
-      torque,
-      shearForce,
-      width,
-      height,
-      yieldStrength,
+      axialForce: normalizeFieldValue("combined-loading", "axialForce", axialForce, axialUnit),
+      bendingMoment: normalizeFieldValue("combined-loading", "bendingMoment", bendingMoment, momentUnit),
+      torque: normalizeFieldValue("combined-loading", "torque", torque, torqueUnit),
+      shearForce: normalizeFieldValue("combined-loading", "shearForce", shearForce, shearUnit),
+      width: normalizeFieldValue("combined-loading", "sectionWidth", width, widthUnit),
+      height: normalizeFieldValue("combined-loading", "sectionHeight", height, heightUnit),
+      yieldStrength:
+        normalizeFieldValue("combined-loading", "yieldStrength", yieldStrength, stressUnit) / 1e6,
     };
     setResult(wrapResult(solveCombinedLoadingEngine(config)));
   };
@@ -42,143 +65,47 @@ export default function Page() {
         moduleId="combined-loading"
         title="Combined Loading Calculator"
         left={
-          <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-900">Loading inputs</h2>
-              <p className="mt-2 text-sm text-slate-600">Combine different load types for a unified stress check.</p>
-            </div>
-            <label className="block text-sm text-slate-700">
-              Axial force (N)
-              <input
-                type="number"
-                value={axialForce}
-                onChange={(event) => setAxialForce(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Bending moment (N·m)
-              <input
-                type="number"
-                value={bendingMoment}
-                onChange={(event) => setBendingMoment(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Torsion (N·m)
-              <input
-                type="number"
-                value={torque}
-                onChange={(event) => setTorque(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Shear force (N)
-              <input
-                type="number"
-                value={shearForce}
-                onChange={(event) => setShearForce(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Section width (m)
-              <input
-                type="number"
-                step="0.01"
-                value={width}
-                onChange={(event) => setWidth(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Section height (m)
-              <input
-                type="number"
-                step="0.01"
-                value={height}
-                onChange={(event) => setHeight(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <label className="block text-sm text-slate-700">
-              Yield strength (MPa)
-              <input
-                type="number"
-                value={yieldStrength}
-                onChange={(event) => setYieldStrength(Number(event.target.value))}
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
-              />
-            </label>
-            <button
-              type="button"
-              onClick={calculate}
-              className="mt-4 w-full rounded-3xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-            >
-              Calculate combined stress
-            </button>
-          </div>
+          <CombinedLoadingInputs
+            axialForce={axialForce}
+            setAxialForce={setAxialForce}
+            axialUnit={axialUnit}
+            setAxialUnit={setAxialUnit}
+            bendingMoment={bendingMoment}
+            setBendingMoment={setBendingMoment}
+            momentUnit={momentUnit}
+            setMomentUnit={setMomentUnit}
+            torque={torque}
+            setTorque={setTorque}
+            torqueUnit={torqueUnit}
+            setTorqueUnit={setTorqueUnit}
+            shearForce={shearForce}
+            setShearForce={setShearForce}
+            shearUnit={shearUnit}
+            setShearUnit={setShearUnit}
+            width={width}
+            setWidth={setWidth}
+            widthUnit={widthUnit}
+            setWidthUnit={setWidthUnit}
+            height={height}
+            setHeight={setHeight}
+            heightUnit={heightUnit}
+            setHeightUnit={setHeightUnit}
+            yieldStrength={yieldStrength}
+            setYieldStrength={setYieldStrength}
+            stressUnit={stressUnit}
+            setStressUnit={setStressUnit}
+            onCalculate={calculate}
+          />
         }
         center={
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm text-slate-600">
-            <h2 className="text-xl font-semibold text-slate-950">Combined loading overview</h2>
-            <p className="mt-4 leading-7">
-              This calculator combines axial, bending, torsion, and shear loads into a von Mises-style stress check for a rectangular cross-section.
+          <CalculatorGuidancePanel title="Combined loading overview">
+            <p>
+              Combines axial, bending, torsion, and shear loads into a von Mises-style stress check for a rectangular
+              cross-section.
             </p>
-          </div>
+          </CalculatorGuidancePanel>
         }
-        right={
-          <ExportableReport
-            fileName="combined-loading"
-            title="Export Combined Loading results"
-            description="Export the current summary for review."
-            calculationSpec={result?.calculationSpec}
-            csvRows={
-              result
-                ? [
-                    { metric: "vonMisesStress", value: result.vonMisesStress },
-                    { metric: "safetyFactor", value: result.safetyFactor },
-                    { metric: "axialStress", value: result.axialStress },
-                    { metric: "bendingStress", value: result.bendingStress },
-                  ]
-                : undefined
-            }
-          >
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-950">Results</h2>
-              {!result ? (
-                <p className="mt-4 text-sm text-slate-500">Run the calculation to review combined stresses and safety factor.</p>
-              ) : (
-                <div className="mt-4 space-y-4">
-                  <div className="rounded-3xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">Von Mises stress</div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.vonMisesStress.toFixed(1)} MPa</div>
-                  </div>
-                  <div className="rounded-3xl bg-slate-50 p-4">
-                    <div className="text-sm text-slate-500">Safety factor</div>
-                    <div className="mt-2 text-2xl font-semibold text-slate-900">{result.safetyFactor.toFixed(2)}</div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-3xl bg-slate-50 p-4">
-                      <div className="text-sm text-slate-500">Axial stress</div>
-                      <div className="mt-2 text-lg font-semibold text-slate-900">{result.axialStress.toFixed(1)} MPa</div>
-                    </div>
-                    <div className="rounded-3xl bg-slate-50 p-4">
-                      <div className="text-sm text-slate-500">Bending stress</div>
-                      <div className="mt-2 text-lg font-semibold text-slate-900">{result.bendingStress.toFixed(1)} MPa</div>
-                    </div>
-                  </div>
-                  <div className="rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white">
-                    <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
-                    <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </ExportableReport>
-        }
+        right={<CombinedLoadingResults result={result} />}
       />
     </DashboardLayout>
   );

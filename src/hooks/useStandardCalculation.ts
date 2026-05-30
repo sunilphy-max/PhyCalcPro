@@ -10,7 +10,13 @@ import { useDesignCodeUnits } from "@/hooks/useDesignCodeUnits";
 /**
  * Attach CalculationSpec to solver output and apply region units for a module.
  */
-export function useStandardCalculation(moduleId: string) {
+/**
+ * Standard calculator hook — attaches CalculationSpec and syncs region units when `onRegionUnits` is provided.
+ */
+export function useStandardCalculation(
+  moduleId: string,
+  onRegionUnits?: (units: Record<string, string>) => void
+) {
   const { designCode } = useDesignCode();
 
   const fieldKeys = Object.keys(moduleUnitProfiles[moduleId] ?? {});
@@ -26,6 +32,8 @@ export function useStandardCalculation(moduleId: string) {
     },
     [moduleId, designCode, fieldKeys]
   );
+
+  useDesignCodeUnits(moduleId, fieldKeys, onRegionUnits ?? (() => undefined));
 
   return { designCode, wrapResult, fieldKeys, applyModuleUnits };
 }

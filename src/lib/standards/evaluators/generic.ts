@@ -47,10 +47,6 @@ function buildChecksFromResult(
   designCode: DesignCodeId,
   result: ResultRecord
 ): EngineeringCheck[] {
-  if (designCode !== "INDICATIVE") {
-    return [];
-  }
-
   const profile = getModuleStandardProfile(moduleId);
   const overrides = MODULE_FIELD_OVERRIDES[moduleId] ?? {};
   const checks: EngineeringCheck[] = [];
@@ -93,10 +89,15 @@ export function attachModuleCalculationSpec<T extends ResultRecord>(
   const profile = getModuleStandardProfile(moduleId);
   const implementedChecks = buildChecksFromResult(moduleId, designCode, result);
 
+  const method =
+    designCode === "INDICATIVE"
+      ? profile?.indicativeMethod
+      : `${designCode} screening (solver output mapped to catalog checks; verify against code worksheets)`;
+
   const calculationSpec = buildCalculationSpec({
     moduleId,
     designCode,
-    method: profile?.indicativeMethod,
+    method,
     implementedChecks,
   });
 

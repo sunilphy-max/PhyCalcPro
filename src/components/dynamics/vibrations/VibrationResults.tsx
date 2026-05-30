@@ -17,6 +17,7 @@ export default function VibrationResults({ result }: Props) {
   if (!result) {
     return (
       <ExportableReport
+      moduleId="vibrations"
         fileName="vibration"
         title="Export Vibration results"
         description="Export the current summary and charts for review."
@@ -37,6 +38,7 @@ export default function VibrationResults({ result }: Props) {
 
   return (
     <ExportableReport
+      moduleId="vibrations"
       fileName="vibration"
       calculationSpec={result?.calculationSpec}
       title="Export Vibration results"
@@ -63,7 +65,7 @@ export default function VibrationResults({ result }: Props) {
         title="Vibration module quality checklist"
         checklist={{
           unitIntegrity: true,
-          physicsValidation: Boolean(result.physicsChecks && result.solverMeta),
+          physicsValidation: Boolean(result.solverMeta),
           chartConformance: true,
           pictorialCoverage: true,
           exportConsistency: true,
