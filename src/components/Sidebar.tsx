@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, X } from "lucide-react";
 import { categories } from "@/data/modules";
 
 type SidebarProps = {
@@ -13,7 +12,6 @@ type SidebarProps = {
 export default function Sidebar({ activeCategoryId }: SidebarProps) {
   const pathname = usePathname();
   const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   // -----------------------------
   // Scope categories based on page
@@ -34,13 +32,18 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
     [pathname, visibleCategories]
   );
 
+  // Sync open section when the route changes — do not depend on openCategory or manual toggles are undone.
   useEffect(() => {
     if (activeCategoryFromPath) {
       setOpenCategory(activeCategoryFromPath);
-    } else if (!openCategory) {
-      setOpenCategory(visibleCategories[0]?.id ?? null);
     }
-  }, [activeCategoryFromPath, openCategory, visibleCategories]);
+  }, [activeCategoryFromPath]);
+
+  useEffect(() => {
+    if (!activeCategoryFromPath && visibleCategories.length > 0) {
+      setOpenCategory((prev) => prev ?? visibleCategories[0]!.id);
+    }
+  }, [activeCategoryFromPath, visibleCategories]);
 
   const activeModuleRoute = useMemo(
     () =>
@@ -50,13 +53,8 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
     [pathname, visibleCategories]
   );
 
-  const moduleCount = visibleCategories.reduce(
-    (total, category) => total + category.modules.length,
-    0
-  );
-
   return (
-    <div className="h-screen w-72 bg-white border-r border-slate-200 text-slate-950 shadow-sm overflow-y-auto">
+    <aside className="relative z-20 h-screen w-72 shrink-0 bg-white border-r border-slate-200 text-slate-950 shadow-sm overflow-y-auto">
       {/* Header */}
       <div className="px-5 py-6 border-b border-slate-200 bg-slate-50">
         <h1 className="text-lg font-semibold text-slate-950">PhyCalcPro</h1>
@@ -84,7 +82,11 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
                     <Link
                       key={mod.id}
                       href={mod.route}
-                      className="block rounded-2xl px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                      className={`block rounded-2xl px-3 py-2 text-sm transition hover:bg-slate-100 ${
+                        activeModuleRoute === mod.route
+                          ? "bg-slate-900 font-medium text-white hover:bg-slate-800 hover:text-white"
+                          : "text-slate-700 hover:text-slate-900"
+                      }`}
                     >
                       {mod.title}
                     </Link>
@@ -96,6 +98,6 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
           );
         })}
       </div>
-    </div>
+    </aside>
   );
 }

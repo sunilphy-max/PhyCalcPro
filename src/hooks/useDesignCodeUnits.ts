@@ -17,8 +17,12 @@ export function useDesignCodeUnits(
   const { designCode } = useDesignCode();
   const applyRef = useRef(applyUnits);
   applyRef.current = applyUnits;
+  const fieldKeysRef = useRef(fieldKeys);
+  fieldKeysRef.current = fieldKeys;
+  /** Stable dep: array identity changes every render if callers pass inline literals. */
+  const fieldKeysKey = fieldKeys.join("\0");
 
   useEffect(() => {
-    applyRef.current(buildModuleUnitMap(moduleId, fieldKeys, designCode));
-  }, [designCode, moduleId, fieldKeys]);
+    applyRef.current(buildModuleUnitMap(moduleId, fieldKeysRef.current, designCode));
+  }, [designCode, moduleId, fieldKeysKey]);
 }

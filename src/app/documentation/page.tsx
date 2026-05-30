@@ -1,76 +1,102 @@
 import Link from "next/link";
-
-export const metadata = {
-  title: "Documentation — PhyCalcPro",
-  description: "How to use design codes, exports, and verification in PhyCalcPro.",
-};
+import { categories } from "@/data/modules";
 
 export default function DocumentationPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">Documentation</h1>
-      <p className="mt-4 text-slate-600 leading-7 dark:text-slate-300">
-        Quick reference for engineers using PhyCalcPro in production workflows.
+    <div>
+      <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">
+        PhyCalcPro documentation
+      </h1>
+      <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
+        Engineering reference for all calculator modules: governing formulas, numerical methods,
+        design-code checks, assumptions, limitations, and known gaps.
       </p>
 
-      <div className="mt-10 space-y-10 text-slate-700 dark:text-slate-200">
-        <section>
-          <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Design standards</h2>
-          <p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">
-            Each calculator includes a <strong>Design standard</strong> selector: Indicative (free),
-            US, EU, or ISO (Pro). Indicative uses educational mechanics without a code compliance
-            claim. Pro unlocks the full check list defined for that module in the standards catalog.
+      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+        <Link
+          href="/documentation/reference"
+          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+        >
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Full technical reference</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Complete manual — platform architecture, all 35 modules, maturity matrix, and roadmap.
           </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Engineering checks</h2>
-          <p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">
-            After you calculate, the results panel shows pass / warning / fail / not available per
-            check. <em>Not available</em> means the standard expects that check but the solver is not
-            yet verified for your selected code — not a passing result.
+        </Link>
+        <Link
+          href="/documentation/modules"
+          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+        >
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Browse by module</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Jump to any module for purpose, equations, inputs/outputs, and gaps.
           </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Export</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-6 text-slate-600 dark:text-slate-300">
-            <li>CSV export — all tiers</li>
-            <li>PDF export with checks and calculation basis — Pro</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Verification</h2>
-          <p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">
-            See <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">docs/VerificationGuide.md</code> and the Excel template under{" "}
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">docs/</code>.
-            Regenerate the template with{" "}
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">npm run generate:verification-template</code>.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Trust & launch</h2>
-          <p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">
-            Read <Link href="/trust" className="font-medium underline">Trust & responsibility</Link>{" "}
-            before using results in formal deliverables. Manage your plan on{" "}
-            <Link href="/account" className="font-medium underline">Account</Link>.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Quality dashboard</h2>
-          <p className="mt-3 leading-7 text-slate-600 dark:text-slate-300">
-            See <Link href="/status" className="font-medium underline">Quality & maturity</Link> for
-            per-module release tiers and export audit. Run{" "}
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
-              npm run test:verification
-            </code>{" "}
-            before releases.
-          </p>
-        </section>
+        </Link>
       </div>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Quick start</h2>
+        <ul className="mt-4 list-disc space-y-2 pl-6 text-slate-600 dark:text-slate-300">
+          <li>
+            Each calculator has a <strong>Design standard</strong> selector (Indicative, US, EU, ISO).
+            Changing the standard sets default units; you can still edit units freely.
+          </li>
+          <li>
+            After calculate, review <strong>engineering checks</strong> in the results panel.{" "}
+            <em>Not available</em> means the check is catalogued but not yet verified for that code.
+          </li>
+          <li>
+            Export CSV on all tiers; PDF with checks and basis — Pro (or validation unlock in dev).
+          </li>
+        </ul>
+        <p className="mt-4 text-sm text-slate-500">
+          <Link href="/trust" className="font-medium underline">
+            Trust & responsibility
+          </Link>
+          {" · "}
+          <Link href="/status" className="font-medium underline">
+            Quality & maturity
+          </Link>
+        </p>
+      </section>
+
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Modules by category</h2>
+        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+          {categories.map((cat) => (
+            <div
+              key={cat.id}
+              className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-900/50"
+            >
+              <h3 className="font-semibold text-slate-900 dark:text-white">{cat.title}</h3>
+              <ul className="mt-3 space-y-1">
+                {cat.modules.map((mod) => (
+                  <li key={mod.id}>
+                    <Link
+                      href={`/documentation/modules/${mod.id}`}
+                      className="text-sm text-blue-700 hover:underline dark:text-blue-400"
+                    >
+                      {mod.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 dark:border-slate-700 dark:bg-slate-900/50">
+            <h3 className="font-semibold text-slate-900 dark:text-white">Other</h3>
+            <ul className="mt-3">
+              <li>
+                <Link
+                  href="/documentation/modules/profiles"
+                  className="text-sm text-blue-700 hover:underline dark:text-blue-400"
+                >
+                  Area properties (profiles)
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

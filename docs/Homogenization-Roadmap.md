@@ -1,5 +1,7 @@
 # Homogenization roadmap
 
+**Module reference (formulas, methods, gaps):** [Modules-Technical-Reference.md](./Modules-Technical-Reference.md) — published on the site at `/documentation/reference` and `/documentation/modules/[moduleId]`.
+
 ## Calculator module contract
 
 Every product module should follow:

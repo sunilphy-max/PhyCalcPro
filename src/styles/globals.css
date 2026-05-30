@@ -58,4 +58,11 @@
     -webkit-appearance: none;
     margin: 0;
   }
+
+  /* Documentation — KaTeX display equations */
+  .documentation-prose .katex-display {
+    margin: 1rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
 }

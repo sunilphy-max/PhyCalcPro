@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useDesignCode } from "@/contexts/DesignCodeContext";
 import { withCalculationSpec } from "@/lib/standards/withCalculationSpec";
 import { buildModuleUnitMap } from "@/lib/standards/unitPreferences";
@@ -19,7 +19,10 @@ export function useStandardCalculation(
 ) {
   const { designCode } = useDesignCode();
 
-  const fieldKeys = Object.keys(moduleUnitProfiles[moduleId] ?? {});
+  const fieldKeys = useMemo(
+    () => Object.keys(moduleUnitProfiles[moduleId] ?? {}),
+    [moduleId]
+  );
 
   const wrapResult = useCallback(
     <T extends object>(result: T) => withCalculationSpec(moduleId, designCode, result),
@@ -42,7 +45,6 @@ export function useModuleDesignCodeUnits(
   moduleId: string,
   applyUnits: (units: Record<string, string>) => void
 ) {
-  const { fieldKeys, applyModuleUnits } = useStandardCalculation(moduleId);
-  useDesignCodeUnits(moduleId, fieldKeys, applyUnits);
+  const { applyModuleUnits } = useStandardCalculation(moduleId, applyUnits);
   return applyModuleUnits;
 }

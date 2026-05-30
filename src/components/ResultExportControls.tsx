@@ -77,16 +77,12 @@ export default function ResultExportControls({
     let restorePlots: (() => void) | undefined;
     try {
       const { jsPDF } = await import("jspdf");
-      const html2canvas = (await import("html2canvas")).default;
-
       const { preparePlotsForCapture } = await import("@/lib/export/plotCapture");
+      const { captureElementToCanvas } = await import("@/lib/export/reportCapture");
+
       restorePlots = await preparePlotsForCapture(reportRef.current);
 
-      const canvas = await html2canvas(reportRef.current, {
-        backgroundColor: "#ffffff",
-        scale: 2,
-        useCORS: true,
-      });
+      const canvas = await captureElementToCanvas(reportRef.current);
 
       const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
       const imgData = canvas.toDataURL("image/png");

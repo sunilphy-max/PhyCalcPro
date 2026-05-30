@@ -1,6 +1,5 @@
 "use client";
 
-import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useCallback, useState } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import { fromBase } from "@/lib/units/conversions";
@@ -34,6 +33,15 @@ const getNewLoadId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : Math.random().toString(16).slice(2);
+
+const BEAM_UNIT_FIELD_KEYS = [
+  "length",
+  "force",
+  "udl",
+  "inertia",
+  "moment",
+  "stress",
+] as const;
 
 export default function Page() {
   // =========================
@@ -142,11 +150,7 @@ const handleLoadDrag = (
     if (units.stress) setStressUnit(units.stress);
   }, []);
 
-  useDesignCodeUnits(
-    "beams",
-    ["length", "force", "udl", "inertia", "moment", "stress"],
-    applyUnits
-  );
+  useDesignCodeUnits("beams", BEAM_UNIT_FIELD_KEYS as unknown as string[], applyUnits);
   const [projectName, setProjectName] = useState("Beam Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<BeamProject[]>(() =>
