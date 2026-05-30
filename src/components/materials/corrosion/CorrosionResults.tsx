@@ -1,6 +1,6 @@
 "use client";
 
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CorrosionResult } from "@/lib/materials/corrosion/types";
 
@@ -11,7 +11,7 @@ type Props = {
 
 export default function CorrosionResults({ result, thicknessUnit }: Props) {
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="corrosion"
       fileName="corrosion"
       calculationSpec={result?.calculationSpec}
@@ -44,7 +44,7 @@ export default function CorrosionResults({ result, thicknessUnit }: Props) {
           </div>
         )}
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }
 

@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ProfilesInputs from "@/components/profiles/ProfilesInputs";
@@ -76,8 +75,7 @@ export default function Page() {
   // UI
   // =========================
   return (
-    <DashboardLayout title="Area Properties Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="profiles"
         title="Cross-Sectional Area Properties"
         footer={
@@ -101,6 +99,5 @@ export default function Page() {
           <ProfilesResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
-    </DashboardLayout>
   );
 }

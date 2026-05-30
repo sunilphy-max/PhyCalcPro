@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { CamResult } from "@/lib/machine/cams/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<CamResult> | null;
@@ -11,7 +11,7 @@ type Props = {
 export default function CamResults({ result, lengthUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="cams"
         fileName="cam"
         title="Export Cam results"
@@ -21,7 +21,7 @@ export default function CamResults({ result, lengthUnit }: Props) {
           <h2 className="text-lg font-semibold text-slate-900">Cam analysis results</h2>
           <p className="text-slate-500 mt-2">Run the analysis to preview peak velocity, acceleration, and pressure angle.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
@@ -30,7 +30,7 @@ export default function CamResults({ result, lengthUnit }: Props) {
   const radius = fromBase(result.radius, "length", lengthUnit);
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="cams"
       fileName="cam"
       calculationSpec={result?.calculationSpec}
@@ -95,6 +95,6 @@ export default function CamResults({ result, lengthUnit }: Props) {
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

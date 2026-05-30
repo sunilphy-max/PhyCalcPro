@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { HydraulicsResult } from "@/lib/pressure/hydraulics/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<HydraulicsResult> | null;
@@ -13,7 +13,7 @@ type Props = {
 export default function HydraulicsResults({ result, lengthUnit, pressureUnit, forceUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="hydraulics"
         fileName="hydraulics"
         title="Export Hydraulics results"
@@ -22,12 +22,12 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Run the hydraulic cylinder model to see force, pressure, and rod stress predictions.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="hydraulics"
       fileName="hydraulics"
       calculationSpec={result?.calculationSpec}
@@ -111,6 +111,6 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

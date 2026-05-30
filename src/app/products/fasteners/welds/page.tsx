@@ -3,7 +3,6 @@
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import WeldInputs from "@/components/fasteners/welds/WeldInputs";
 import WeldResults from "@/components/fasteners/welds/WeldResults";
@@ -61,8 +60,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Weld Group Analysis Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="welds"
         title="Weld Strength Evaluation"
         left={
@@ -111,6 +109,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

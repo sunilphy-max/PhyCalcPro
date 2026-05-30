@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import FlywheelInputs from "@/components/machine/flywheels/FlywheelInputs";
 import FlywheelResults from "@/components/machine/flywheels/FlywheelResults";
@@ -39,8 +38,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Flywheel Design Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="flywheels"
         title="Flywheel Energy & Stress"
         left={
@@ -89,6 +87,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

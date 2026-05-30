@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { WeldResult } from "@/lib/fasteners/welds/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<WeldResult> | null;
@@ -13,7 +13,7 @@ type Props = {
 export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="welds"
         fileName="weld"
         title="Export Weld results"
@@ -23,7 +23,7 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
           <h2 className="text-lg font-semibold text-slate-900">Weld analysis results</h2>
           <p className="mt-2 text-slate-500">Run the evaluation to see governing weld stress and safety factors.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
@@ -123,7 +123,7 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
   );
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="welds"
       fileName="weld"
       calculationSpec={result?.calculationSpec}
@@ -136,6 +136,6 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
       ]}
     >
       {content}
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

@@ -10,5 +10,10 @@ export const plotTheme = {
   accentColor: "#0ea5e9",
   peakColor: "#ef4444",
   contourScale: "Turbo",
-  margins: { l: 58, r: 30, t: 26, b: 52 },
+  /** Room for axis titles (bottom/left) */
+  margins: { l: 72, r: 28, t: 24, b: 64 },
+  /** Extra top space when a horizontal legend is shown */
+  marginsWithLegend: { l: 72, r: 28, t: 88, b: 64 },
+  plotHeight: 340,
+  heatmapHeight: 360,
 } as const;

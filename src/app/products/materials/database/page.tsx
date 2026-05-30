@@ -1,15 +1,13 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MaterialDatabase from "@/components/materials/MaterialDatabase";
 
 export default function Page() {
   const { wrapResult } = useStandardCalculation("material-db");
   return (
-    <DashboardLayout title="Material Database">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="material-db"
         title="Material Database"
         left={<div className="bg-white rounded-xl p-6 shadow-sm">
@@ -23,6 +21,5 @@ export default function Page() {
         </div>}
         right={<MaterialDatabase />}
       />
-    </DashboardLayout>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { SuspensionResult } from "@/lib/dynamics/suspension/types";
 
@@ -10,7 +10,7 @@ type Props = {
 
 export default function SuspensionResults({ result }: Props) {
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="suspension"
       fileName="suspension"
       calculationSpec={result?.calculationSpec}
@@ -34,7 +34,7 @@ export default function SuspensionResults({ result }: Props) {
           </div>
         )}
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }
 

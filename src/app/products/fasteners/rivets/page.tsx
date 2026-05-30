@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import RivetInputs from "@/components/fasteners/rivets/RivetInputs";
 import RivetResults from "@/components/fasteners/rivets/RivetResults";
@@ -61,8 +60,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Rivet Analysis Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="rivets"
         title="Rivet Joint Strength"
         left={
@@ -111,6 +109,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

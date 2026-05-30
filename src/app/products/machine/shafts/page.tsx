@@ -3,7 +3,6 @@
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ShaftInputs from "@/components/machine/shafts/ShaftInputs";
@@ -164,8 +163,7 @@ export default function Page() {
   // UI
   // =========================
   return (
-    <DashboardLayout title="Shaft Design Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="shafts"
         title="Shaft Stress & Deflection Analysis"
         footer={
@@ -205,6 +203,5 @@ export default function Page() {
           <ShaftResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
-    </DashboardLayout>
   );
 }

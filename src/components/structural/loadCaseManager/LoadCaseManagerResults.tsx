@@ -1,6 +1,6 @@
 "use client";
 
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { LoadCaseManagerResult } from "@/lib/structural/loadCaseManager/types";
 
@@ -10,7 +10,7 @@ type Props = {
 
 export default function LoadCaseManagerResults({ result }: Props) {
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="load-case-manager"
       fileName="load-case-manager"
       calculationSpec={result?.calculationSpec}
@@ -34,7 +34,7 @@ export default function LoadCaseManagerResults({ result }: Props) {
           </div>
         )}
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }
 

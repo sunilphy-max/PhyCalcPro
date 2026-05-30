@@ -75,7 +75,15 @@ export default function HomePage() {
 
             <div className="space-y-6">
               <HeroSchematic />
-              <EngineeringPlot title="Deflection profile" x={demoX} y={demoY} yLabel="Deflection (mm)" />
+              <EngineeringPlot
+                title="Deflection profile"
+                x={demoX}
+                y={demoY}
+                yLabel="Deflection"
+                xLabel="Position"
+                xUnit="m"
+                unitLabel="mm"
+              />
             </div>
           </div>
         </div>

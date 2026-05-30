@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { HeatExchangerResult } from "@/lib/pressure/heat-exchangers/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<HeatExchangerResult> | null;
@@ -10,7 +10,7 @@ type Props = {
 export default function HeatExchangerResults({ result }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="heat-exchangers"
         fileName="heat-exchanger"
         title="Export Heat Exchanger results"
@@ -19,12 +19,12 @@ export default function HeatExchangerResults({ result }: Props) {
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Run the heat exchanger model to see thermal duty, required area, and effectiveness.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="heat-exchangers"
       fileName="heat-exchanger"
       calculationSpec={result?.calculationSpec}
@@ -99,6 +99,6 @@ export default function HeatExchangerResults({ result }: Props) {
           </dl>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import GearInputs from "@/components/machine/gears/GearInputs";
 import GearResults from "@/components/machine/gears/GearResults";
@@ -75,8 +74,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Gear Design Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="gears"
         title="Spur Gear Design"
         left={
@@ -114,6 +112,5 @@ export default function Page() {
         }
         right={<GearResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
       />
-    </DashboardLayout>
   );
 }

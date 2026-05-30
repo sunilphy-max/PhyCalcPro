@@ -1,6 +1,6 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CostEstimatorResult } from "@/lib/manufacturing/costEstimator/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<CostEstimatorResult> | null;
@@ -9,7 +9,7 @@ type Props = {
 export default function CostEstimatorResults({ result }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="cost-estimator"
         fileName="cost-estimator"
         title="Export Cost Estimator results"
@@ -18,12 +18,12 @@ export default function CostEstimatorResults({ result }: Props) {
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Enter material and process assumptions to estimate total production cost.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="cost-estimator"
       fileName="cost-estimator"
       calculationSpec={result?.calculationSpec}
@@ -105,6 +105,6 @@ export default function CostEstimatorResults({ result }: Props) {
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

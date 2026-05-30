@@ -1,6 +1,6 @@
 "use client";
 
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { TemperaturePropertiesResult } from "@/lib/materials/temperatureProperties/types";
 
@@ -10,7 +10,7 @@ type Props = {
 
 export default function TemperaturePropertiesResults({ result }: Props) {
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="temperature-properties"
       fileName="temperature-properties"
       calculationSpec={result?.calculationSpec}
@@ -34,7 +34,7 @@ export default function TemperaturePropertiesResults({ result }: Props) {
           </div>
         )}
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }
 

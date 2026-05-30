@@ -5,6 +5,8 @@ import ExportableReport from "@/components/shared/ExportableReport";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { CsvRow } from "@/lib/export/csvRows";
+import CalculatorEmptyResults from "./CalculatorEmptyResults";
+import CalculatorResultsPanel from "./CalculatorResultsPanel";
 
 type Props = {
   moduleId: string;
@@ -18,14 +20,30 @@ type Props = {
   showQualityChecklist?: boolean;
   children: ReactNode;
   showControlsWhenEmpty?: boolean;
+  /** Panel heading when results are present */
+  heading?: string;
+  /** Shown when `empty` is true */
+  emptyMessage?: string;
+  /** When true, renders standard empty state instead of children */
+  empty?: boolean;
 };
 
-/** Standard right column — thin wrapper over ExportableReport with required moduleId. */
-export default function CalculatorResultsShell(props: Props) {
-  const { moduleId, children, ...rest } = props;
+/** Standard right column — export wrapper + buckling-style results panel. */
+export default function CalculatorResultsShell({
+  moduleId,
+  children,
+  heading,
+  emptyMessage,
+  empty = false,
+  ...rest
+}: Props) {
   return (
     <ExportableReport moduleId={moduleId} {...rest}>
-      {children}
+      {empty ? (
+        <CalculatorEmptyResults message={emptyMessage} />
+      ) : (
+        <CalculatorResultsPanel title={heading}>{children}</CalculatorResultsPanel>
+      )}
     </ExportableReport>
   );
 }

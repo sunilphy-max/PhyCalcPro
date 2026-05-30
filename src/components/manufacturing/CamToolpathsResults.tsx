@@ -1,6 +1,6 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CamToolpathsResult } from "@/lib/manufacturing/camToolpaths/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<CamToolpathsResult> | null;
@@ -9,7 +9,7 @@ type Props = {
 export default function CamToolpathsResults({ result }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="cam-toolpaths"
         fileName="cam-toolpaths"
         title="Export Cam Toolpaths results"
@@ -18,12 +18,12 @@ export default function CamToolpathsResults({ result }: Props) {
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Enter tool and stock parameters to estimate feed, material removal, and cut time.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="cam-toolpaths"
       fileName="cam-toolpaths"
       calculationSpec={result?.calculationSpec}
@@ -68,6 +68,6 @@ export default function CamToolpathsResults({ result }: Props) {
           <div className="flex justify-between"><span>Total cut time</span><span>{result.totalCutTime.toFixed(2)} min</span></div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

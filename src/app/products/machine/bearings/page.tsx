@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BearingInputs from "@/components/machine/bearings/BearingInputs";
 import BearingResults from "@/components/machine/bearings/BearingResults";
@@ -59,8 +58,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Bearing Selection Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="bearings"
         title="Bearing Load Rating & Life"
         left={
@@ -98,6 +96,5 @@ export default function Page() {
         }
         right={<BearingResults result={result} loadUnit={radialUnit} />}
       />
-    </DashboardLayout>
   );
 }

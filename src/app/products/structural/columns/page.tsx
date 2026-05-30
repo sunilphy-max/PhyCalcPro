@@ -4,7 +4,6 @@ import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BucklingInputs from "@/components/structural/columns/BucklingInputs";
@@ -130,8 +129,7 @@ export default function Page() {
   // UI
   // =========================
   return (
-    <DashboardLayout title="Column Buckling Analysis">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="columns"
         title="Column Buckling Analysis"
         footer={
@@ -184,6 +182,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

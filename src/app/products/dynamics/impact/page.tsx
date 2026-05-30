@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ImpactInputs from "@/components/dynamics/impact/ImpactInputs";
@@ -56,8 +55,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Impact & Shock Analysis">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="impact"
         title="Impact Force Calculator"
         left={
@@ -95,6 +93,5 @@ export default function Page() {
         }
         right={<ImpactResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

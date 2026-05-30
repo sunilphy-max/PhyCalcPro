@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CorrosionInputs from "@/components/materials/corrosion/CorrosionInputs";
@@ -71,8 +70,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Corrosion Allowance">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="corrosion"
         title="Corrosion Allowance Calculator"
         left={
@@ -106,6 +104,5 @@ export default function Page() {
         }
         right={<CorrosionResults result={result} thicknessUnit={thicknessUnit} />}
       />
-    </DashboardLayout>
   );
 }

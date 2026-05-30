@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import TemperaturePropertiesInputs from "@/components/materials/temperatureProperties/TemperaturePropertiesInputs";
@@ -49,8 +48,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Temperature Properties">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="temperature-properties"
         title="Temperature Derating Calculator"
         left={
@@ -84,6 +82,5 @@ export default function Page() {
         }
         right={<TemperaturePropertiesResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

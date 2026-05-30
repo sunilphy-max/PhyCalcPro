@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { CompositeResult } from "@/lib/materials/composites/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<CompositeResult> | null;
@@ -12,7 +12,7 @@ type Props = {
 export default function CompositeResults({ result, stressUnit, densityUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="composites"
         fileName="composite"
         title="Export Composite results"
@@ -21,12 +21,12 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Enter fiber and matrix properties to estimate composite stiffness, strength, and density.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="composites"
       fileName="composite"
       calculationSpec={result?.calculationSpec}
@@ -101,6 +101,6 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
           </dl>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

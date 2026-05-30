@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CamToolpathsInputs from "@/components/manufacturing/CamToolpathsInputs";
 import CamToolpathsResults from "@/components/manufacturing/CamToolpathsResults";
@@ -39,8 +38,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="CAM Toolpaths">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="cam-toolpaths"
         title="CAM Toolpath Calculator"
         left={<CamToolpathsInputs
@@ -69,6 +67,5 @@ export default function Page() {
         </div>}
         right={<CamToolpathsResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

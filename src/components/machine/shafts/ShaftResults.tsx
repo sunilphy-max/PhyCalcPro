@@ -3,7 +3,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import ShaftDashboard from "./ShaftDashboard";
 import type { ShaftResult } from "@/lib/machine/shafts/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<ShaftResult> | null;
@@ -11,27 +11,16 @@ type Props = {
 };
 
 export default function ShaftResults({ result, projectName }: Props) {
-  if (!result) {
-    return (
-      <ExportableReport
-      moduleId="shafts"
-        fileName={projectName || "shaft"}
-        title="Export Shaft results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-          <p className="text-slate-500">Run calculation to see results.</p>
-        </div>
-      </ExportableReport>
-    );
-  }
-
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="shafts"
       fileName={projectName || "shaft"}
       calculationSpec={result?.calculationSpec}
-      result={result}
+      result={result ?? undefined}
+      title="Export Shaft results"
+      description="Export the current summary and charts for review."
+      empty={!result}
+      heading="Shaft Results"
       qualityOverrides={{
         unitIntegrity: true,
         physicsValidation: true,
@@ -39,18 +28,17 @@ export default function ShaftResults({ result, projectName }: Props) {
         pictorialCoverage: true,
         exportConsistency: true,
       }}
-      title="Export Shaft results"
-      description="Export the current summary and charts for review."
-      csvRows={[
-        { metric: "maxStress", value: result.maxStress },
-        { metric: "maxDeflection", value: result.maxDeflection },
-        { metric: "criticalSpeed", value: result.criticalSpeed },
-      ]}
+      csvRows={
+        result
+          ? [
+              { metric: "maxStress", value: result.maxStress },
+              { metric: "maxDeflection", value: result.maxDeflection },
+              { metric: "criticalSpeed", value: result.criticalSpeed },
+            ]
+          : undefined
+      }
     >
-      <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-        <h2 className="text-lg font-semibold">Shaft Results</h2>
-        <ShaftDashboard result={result} />
-      </div>
-    </ExportableReport>
+      {result ? <ShaftDashboard result={result} /> : null}
+    </CalculatorResultsShell>
   );
 }

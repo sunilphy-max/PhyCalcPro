@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import SuspensionInputs from "@/components/dynamics/suspension/SuspensionInputs";
@@ -52,8 +51,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Suspension & Sway Analysis">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="suspension"
         title="Suspension Stability Calculator"
         left={
@@ -92,6 +90,5 @@ export default function Page() {
         }
         right={<SuspensionResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

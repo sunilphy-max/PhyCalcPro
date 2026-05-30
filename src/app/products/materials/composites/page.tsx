@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CompositeInputs from "@/components/materials/composites/CompositeInputs";
 import CompositeResults from "@/components/materials/composites/CompositeResults";
@@ -42,8 +41,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Composite Materials Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="composites"
         title="Composite Property Calculator"
         left={
@@ -91,6 +89,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

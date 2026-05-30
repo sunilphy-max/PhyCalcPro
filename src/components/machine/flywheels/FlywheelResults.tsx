@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { FlywheelResult } from "@/lib/machine/flywheels/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<FlywheelResult> | null;
@@ -13,7 +13,7 @@ type Props = {
 export default function FlywheelResults({ result, lengthUnit, densityUnit, stressUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="flywheels"
         fileName="flywheel"
         title="Export Flywheel results"
@@ -23,7 +23,7 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
           <h2 className="text-lg font-semibold text-slate-900">Flywheel results</h2>
           <p className="text-slate-500 mt-2">Run the calculation to review stored energy, inertia, and rim stress.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
@@ -31,7 +31,7 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
   const thickness = fromBase(result.thickness, "length", lengthUnit);
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="flywheels"
       fileName="flywheel"
       calculationSpec={result?.calculationSpec}
@@ -96,6 +96,6 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

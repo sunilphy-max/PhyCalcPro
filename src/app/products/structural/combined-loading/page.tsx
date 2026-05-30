@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CombinedLoadingInputs from "@/components/structural/combinedLoading/CombinedLoadingInputs";
@@ -60,8 +59,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Combined Loading">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="combined-loading"
         title="Combined Loading Calculator"
         left={
@@ -107,6 +105,5 @@ export default function Page() {
         }
         right={<CombinedLoadingResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

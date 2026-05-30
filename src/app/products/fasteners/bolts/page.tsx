@@ -3,7 +3,6 @@
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ScrewsInputs from "@/components/fasteners/bolts/ScrewsInputs";
@@ -79,8 +78,7 @@ export default function Page() {
   // UI
   // =========================
   return (
-    <DashboardLayout title="Bolt Design Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="bolts"
         title="Bolt Design Analysis"
         footer={
@@ -109,6 +107,5 @@ export default function Page() {
           <ScrewsResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
         }
       />
-    </DashboardLayout>
   );
 }

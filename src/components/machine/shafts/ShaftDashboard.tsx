@@ -2,6 +2,11 @@
 
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  CalculatorPlotSection,
+} from "@/components/calculator/results";
 import type { ShaftResult } from "@/lib/machine/shafts/types";
 
 type Props = {
@@ -9,163 +14,143 @@ type Props = {
 };
 
 export default function ShaftDashboard({ result }: Props) {
-  const safetyStatus = useMemo(() => {
-    if (result.isSafe) {
-      return {
-        label: "Safe",
-        color: "text-green-600",
-        bg: "bg-green-50",
-        border: "border-green-200",
-      };
-    }
-    return {
-      label: "Unsafe",
-      color: "text-red-600",
-      bg: "bg-red-50",
-      border: "border-red-200",
-    };
-  }, [result.isSafe]);
+  const status = useMemo<"safe" | "danger">(
+    () => (result.isSafe ? "safe" : "danger"),
+    [result.isSafe]
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className={`rounded-xl p-3 ${safetyStatus.bg} border ${safetyStatus.border}`}>
-          <div className="text-xs text-gray-500 mb-1">Status</div>
-          <div className={`text-lg font-bold ${safetyStatus.color}`}>
-            {safetyStatus.label}
-          </div>
-        </div>
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label="Status"
+          value={result.isSafe ? "Safe" : "Unsafe"}
+          status={status}
+        />
+        <CalculatorMetricCard
+          label="Safety Factor"
+          value={result.safetyFactor.toFixed(2)}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Diameter"
+          value={
+            result.diameter ? `${(result.diameter * 1000).toFixed(1)} mm` : "—"
+          }
+          tone="purple"
+        />
+        <CalculatorMetricCard
+          label="Critical Section"
+          value={`@ ${result.criticalSection.toFixed(3)} m`}
+          tone="orange"
+        />
+      </CalculatorMetricGrid>
 
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Safety Factor</div>
-          <div className="text-lg font-bold text-blue-600">
-            {result.safetyFactor.toFixed(2)}
-          </div>
-        </div>
+      <CalculatorMetricGrid cols={3}>
+        <CalculatorMetricCard
+          label="Max Von Mises Stress"
+          value={`${(result.maxStress / 1e6).toFixed(2)} MPa`}
+          tone="red"
+          size="lg"
+        />
+        <CalculatorMetricCard
+          label="Max Shear Stress"
+          value={`${(result.maxShearStress / 1e6).toFixed(2)} MPa`}
+          tone="orange"
+          size="lg"
+        />
+        <CalculatorMetricCard
+          label="Max Bending Stress"
+          value={`${(result.maxBendingStress / 1e6).toFixed(2)} MPa`}
+          tone="amber"
+          size="lg"
+        />
+      </CalculatorMetricGrid>
 
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Diameter</div>
-          <div className="text-lg font-bold text-purple-600">
-            {result.diameter ? (result.diameter * 1000).toFixed(1) : "—"} mm
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Critical Section</div>
-          <div className="text-sm font-bold text-orange-600">
-            @ {result.criticalSection.toFixed(3)} m
-          </div>
-        </div>
-      </div>
-
-      {/* Stress Analysis */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-2">Max Von Mises Stress</div>
-          <div className="text-2xl font-bold text-red-600">
-            {(result.maxStress / 1e6).toFixed(2)} MPa
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-2">Max Shear Stress</div>
-          <div className="text-2xl font-bold text-orange-600">
-            {(result.maxShearStress / 1e6).toFixed(2)} MPa
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-2">Max Bending Stress</div>
-          <div className="text-2xl font-bold text-yellow-600">
-            {(result.maxBendingStress / 1e6).toFixed(2)} MPa
-          </div>
-        </div>
-      </div>
-
-      {/* Plots */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Shear Stress Distribution</h3>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <CalculatorPlotSection title="Shear Stress Distribution">
           <EngineeringPlot
             title="Torsional Shear Stress"
             x={result.x}
             y={result.shearStress}
-            yLabel="Shear Stress (Pa)"
+            yLabel="Shear stress"
+            xLabel="Position along shaft"
+            xUnit="m"
+            unitLabel="Pa"
           />
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Bending Stress Distribution</h3>
+        </CalculatorPlotSection>
+        <CalculatorPlotSection title="Bending Stress Distribution">
           <EngineeringPlot
             title="Bending Stress"
             x={result.x}
             y={result.bendingStress}
-            yLabel="Bending Stress (Pa)"
+            yLabel="Bending stress"
+            xLabel="Position along shaft"
+            xUnit="m"
+            unitLabel="Pa"
           />
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Combined Stress (Von Mises)</h3>
+        </CalculatorPlotSection>
+        <CalculatorPlotSection title="Combined Stress (Von Mises)">
           <EngineeringPlot
             title="Combined Stress"
             x={result.x}
             y={result.vonMisesStress}
-            yLabel="Stress (Pa)"
+            yLabel="Von Mises stress"
+            xLabel="Position along shaft"
+            xUnit="m"
+            unitLabel="Pa"
           />
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Deflection</h3>
+        </CalculatorPlotSection>
+        <CalculatorPlotSection title="Deflection">
           <EngineeringPlot
             title="Bending Deflection"
             x={result.x}
             y={result.deflection}
-            yLabel="Deflection (m)"
+            yLabel="Deflection"
+            xLabel="Position along shaft"
+            xUnit="m"
+            unitLabel="m"
           />
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Torsional Rotation</h3>
+        </CalculatorPlotSection>
+        <CalculatorPlotSection title="Torsional Rotation">
           <EngineeringPlot
             title="Rotation"
             x={result.x}
             y={result.rotation}
-            yLabel="Rotation (rad)"
+            yLabel="Rotation"
+            xLabel="Position along shaft"
+            xUnit="m"
+            unitLabel="rad"
           />
-        </div>
+        </CalculatorPlotSection>
       </div>
 
-      {/* Geometry Info */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-gray-500 mb-1">Polar Moment</div>
-          <div className="font-semibold text-gray-900">
-            {result.polarMoment ? (result.polarMoment * 1e12).toFixed(2) : "—"} mm⁴
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-gray-500 mb-1">Second Moment</div>
-          <div className="font-semibold text-gray-900">
-            {result.secondMoment ? (result.secondMoment * 1e12).toFixed(2) : "—"} mm⁴
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-gray-500 mb-1">Max Deflection</div>
-          <div className="font-semibold text-gray-900">
-            {(result.maxDeflection * 1000).toFixed(3)} mm
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-gray-500 mb-1">Max Rotation</div>
-          <div className="font-semibold text-gray-900">
-            {((Math.max(...result.rotation) || 0) * 180 / Math.PI).toFixed(3)}°
-          </div>
-        </div>
-      </div>
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label="Polar Moment"
+          value={
+            result.polarMoment
+              ? `${(result.polarMoment * 1e12).toFixed(2)} mm⁴`
+              : "—"
+          }
+        />
+        <CalculatorMetricCard
+          label="Second Moment"
+          value={
+            result.secondMoment
+              ? `${(result.secondMoment * 1e12).toFixed(2)} mm⁴`
+              : "—"
+          }
+        />
+        <CalculatorMetricCard
+          label="Max Deflection"
+          value={`${(result.maxDeflection * 1000).toFixed(3)} mm`}
+        />
+        <CalculatorMetricCard
+          label="Max Rotation"
+          value={`${(((Math.max(...result.rotation) || 0) * 180) / Math.PI).toFixed(3)}°`}
+        />
+      </CalculatorMetricGrid>
     </div>
   );
 }

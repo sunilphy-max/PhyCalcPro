@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import SectionInputs from "@/components/materials/SectionInputs";
 import SectionResults from "@/components/materials/SectionResults";
@@ -49,8 +48,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Section Properties">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="sections"
         title="Section Property Calculator"
         left={<SectionInputs
@@ -84,6 +82,5 @@ export default function Page() {
           inertiaUnit={lengthUnit === "mm" ? "mm4" : lengthUnit === "in" ? "in4" : "m4"}
         />}
       />
-    </DashboardLayout>
   );
 }

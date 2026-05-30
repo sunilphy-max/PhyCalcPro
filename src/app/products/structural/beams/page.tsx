@@ -242,6 +242,7 @@ const handleLoadDrag = (
       moment: raw.moment.map((v: number) => fromBase(v, "moment", momentUnit)),
       deflection: raw.deflection.map((v: number) => fromBase(v, "length", lengthUnit)),
       stress: raw.stress.map((v: number) => fromBase(v, "stress", stressUnit)),
+      maxShear: fromBase(raw.maxShear, "force", forceUnit),
       maxMoment: fromBase(raw.maxMoment, "moment", momentUnit),
       maxStress: fromBase(raw.maxStress, "stress", stressUnit),
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
@@ -364,6 +365,12 @@ const handleLoadDrag = (
           support={support}
           loads={loads}
           onLoadDrag={handleLoadDrag}
+          units={{
+            length: lengthUnit,
+            force: forceUnit,
+            moment: momentUnit,
+            stress: stressUnit,
+          }}
         />
       }
     />

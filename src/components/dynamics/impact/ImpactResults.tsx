@@ -3,6 +3,10 @@
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { ImpactResult } from "@/lib/dynamics/impact/types";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+} from "@/components/calculator/results";
 
 type Props = {
   result: WithCalculationSpec<ImpactResult> | null;
@@ -17,34 +21,46 @@ export default function ImpactResults({ result }: Props) {
       description="Export the current summary for review."
       calculationSpec={result?.calculationSpec}
       result={result ?? undefined}
+      empty={!result}
+      heading="Impact Results"
+      csvRows={
+        result
+          ? [
+              { metric: "impulse", value: result.impulse },
+              { metric: "averageForce", value: result.averageForce },
+              { metric: "safetyFactor", value: result.safetyFactor },
+            ]
+          : undefined
+      }
     >
       {result ? (
-        <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Impact summary</h3>
-          <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <dt className="text-slate-500">Impulse</dt>
-              <dd className="font-medium text-slate-900">{result.impulse.toFixed(2)} N·s</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Average force</dt>
-              <dd className="font-medium text-slate-900">{result.averageForce.toFixed(2)} N</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Dynamic stress</dt>
-              <dd className="font-medium text-slate-900">{result.dynamicStress.toFixed(2)} MPa</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Safety factor</dt>
-              <dd className="font-medium text-slate-900">{result.safetyFactor.toFixed(2)}</dd>
-            </div>
-          </dl>
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm">
-          Run a calculation to view impact results.
-        </div>
-      )}
+        <CalculatorMetricGrid cols={2}>
+          <CalculatorMetricCard
+            label="Impulse"
+            value={`${result.impulse.toFixed(2)} N·s`}
+            tone="blue"
+            size="lg"
+          />
+          <CalculatorMetricCard
+            label="Average force"
+            value={`${result.averageForce.toFixed(2)} N`}
+            tone="purple"
+            size="lg"
+          />
+          <CalculatorMetricCard
+            label="Dynamic stress"
+            value={`${result.dynamicStress.toFixed(2)} MPa`}
+            tone="orange"
+            size="lg"
+          />
+          <CalculatorMetricCard
+            label="Safety factor"
+            value={result.safetyFactor.toFixed(2)}
+            tone="green"
+            size="lg"
+          />
+        </CalculatorMetricGrid>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ToleranceInputs from "@/components/manufacturing/ToleranceInputs";
 import ToleranceResults from "@/components/manufacturing/ToleranceResults";
@@ -32,8 +31,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Tolerance Stackup">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="tolerance"
         title="Tolerance Stackup Calculator"
         left={<ToleranceInputs
@@ -48,6 +46,5 @@ export default function Page() {
         </div>}
         right={<ToleranceResults result={result} displayUnit={toleranceUnit} />}
       />
-    </DashboardLayout>
   );
 }

@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { SafetyFactorResult } from "@/lib/fasteners/safetyFactor/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<SafetyFactorResult> | null;
@@ -22,7 +22,7 @@ export default function SafetyFactorResults({
 }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="safety-factor"
         fileName="safety-factor"
         title="Export Safety Factor results"
@@ -32,12 +32,12 @@ export default function SafetyFactorResults({
           <h2 className="text-lg font-semibold text-slate-900">Safety factor results</h2>
           <p className="text-slate-500 mt-2">Enter member geometry and loads to calculate combined stress and factor of safety.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="safety-factor"
       fileName="safety-factor"
       calculationSpec={result?.calculationSpec}
@@ -140,6 +140,6 @@ export default function SafetyFactorResults({
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

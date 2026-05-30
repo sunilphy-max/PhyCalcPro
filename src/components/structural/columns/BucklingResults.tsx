@@ -3,7 +3,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import BucklingDashboard from "./BucklingDashboard";
 import type { BucklingResult } from "@/lib/structural/columns/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<BucklingResult> | null;
@@ -11,39 +11,28 @@ type Props = {
 };
 
 export default function BucklingResults({ result, projectName }: Props) {
-  if (!result) {
-    return (
-      <ExportableReport
-      moduleId="columns"
-        fileName={projectName || "buckling"}
-        title="Export Buckling results"
-        description="Export a detailed report of the current analysis."
-      >
-        <div className="flex items-center justify-center h-80 text-gray-500">
-          <p className="text-gray-500">Run calculation to see results.</p>
-        </div>
-      </ExportableReport>
-    );
-  }
-
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="columns"
       fileName={projectName || "buckling"}
       calculationSpec={result?.calculationSpec}
       title="Export Buckling results"
       description="Export a detailed report of the current analysis."
-      csvRows={[
-        { metric: "Pcr", value: result.Pcr },
-        { metric: "criticalLoad", value: result.criticalLoad },
-        { metric: "safetyFactor", value: result.safetyFactor },
-        { metric: "slenderness", value: result.slenderness },
-      ]}
+      empty={!result}
+      emptyMessage="Run calculation to see results."
+      heading="Buckling Results"
+      csvRows={
+        result
+          ? [
+              { metric: "Pcr", value: result.Pcr },
+              { metric: "criticalLoad", value: result.criticalLoad },
+              { metric: "safetyFactor", value: result.safetyFactor },
+              { metric: "slenderness", value: result.slenderness },
+            ]
+          : undefined
+      }
     >
-      <div className="bg-white rounded-xl p-4 shadow-sm">
-        <h2 className="text-lg font-semibold mb-4">Buckling Results</h2>
-        <BucklingDashboard result={result} />
-      </div>
-    </ExportableReport>
+      {result ? <BucklingDashboard result={result} /> : null}
+    </CalculatorResultsShell>
   );
 }

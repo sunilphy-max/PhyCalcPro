@@ -1,6 +1,6 @@
 import { fromBase } from "@/lib/units/conversions";
 import type { GearResult } from "@/lib/machine/gears/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="gears"
         fileName="gear"
         title="Export Gear results"
@@ -22,7 +22,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
           <h2 className="text-lg font-semibold text-slate-900">Results</h2>
           <p className="text-slate-500 mt-2">Run the analysis to review gear geometry and root bending stress.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
@@ -32,7 +32,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
   const allowableStress = fromBase(result.allowableStress, "stress", stressUnit);
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="gears"
       fileName="gear"
       title="Export Gear results"
@@ -109,6 +109,6 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

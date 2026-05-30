@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CostEstimatorInputs from "@/components/manufacturing/CostEstimatorInputs";
 import CostEstimatorResults from "@/components/manufacturing/CostEstimatorResults";
@@ -41,8 +40,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Cost Estimation">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="cost-estimator"
         title="Manufacturing Cost Estimator"
         left={<CostEstimatorInputs
@@ -73,6 +71,5 @@ export default function Page() {
         </div>}
         right={<CostEstimatorResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

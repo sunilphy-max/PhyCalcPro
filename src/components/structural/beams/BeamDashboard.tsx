@@ -5,13 +5,26 @@ import { useMemo, useState } from "react";
 import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+} from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
+
+type DisplayUnits = {
+  length: string;
+  force: string;
+  moment: string;
+  stress: string;
+};
 
 type Props = {
   result: BeamResult;
   loads: Load[];
   length: number;
   support: SupportType;
+  units?: DisplayUnits;
   caseLabel?: string;
   combinationMode?: "active" | "envelope";
   onLoadDrag?: (
@@ -28,6 +41,7 @@ export default function BeamDashboard({
   caseLabel,
   combinationMode = "active",
   onLoadDrag,
+  units = { length: "m", force: "N", moment: "N·m", stress: "Pa" },
 }: Props) {
   const [probeX, setProbeX] = useState<number | null>(null);
 
@@ -78,30 +92,40 @@ export default function BeamDashboard({
         </div>
 
         <div>
-          <div className="text-slate-400">Position</div>
+          <div className="text-slate-400">Position ({units.length})</div>
           <div className="font-semibold">
-            {probeData ? probeData.x.toFixed(2) : "--"}
+            {probeData
+              ? formatEngineeringValue(probeData.x, units.length, { digits: 3 })
+              : "—"}
           </div>
         </div>
 
         <div>
-          <div className="text-slate-400">Shear V(x)</div>
+          <div className="text-slate-400">Shear V(x) ({units.force})</div>
           <div className="font-semibold">
-            {probeData ? probeData.shear.toFixed(2) : "--"}
+            {probeData
+              ? formatEngineeringValue(probeData.shear, units.force)
+              : "—"}
           </div>
         </div>
 
         <div>
-          <div className="text-slate-400">Moment M(x)</div>
+          <div className="text-slate-400">Moment M(x) ({units.moment})</div>
           <div className="font-semibold">
-            {probeData ? probeData.moment.toFixed(2) : "--"}
+            {probeData
+              ? formatEngineeringValue(probeData.moment, units.moment)
+              : "—"}
           </div>
         </div>
 
         <div>
-          <div className="text-slate-400">Deflection y(x)</div>
+          <div className="text-slate-400">Deflection y(x) ({units.length})</div>
           <div className="font-semibold">
-            {probeData ? probeData.deflection.toExponential(3) : "--"}
+            {probeData
+              ? formatEngineeringValue(probeData.deflection, units.length, {
+                  useExponential: true,
+                })
+              : "—"}
           </div>
         </div>
       </div>
@@ -128,7 +152,9 @@ export default function BeamDashboard({
         x={result.x}
         y={result.shear}
         yLabel="Shear force"
-        unitLabel="N"
+        xLabel="Position along beam"
+        xUnit={units.length}
+        unitLabel={units.force}
         probeX={probeX}
       />
 
@@ -139,8 +165,10 @@ export default function BeamDashboard({
         title="Bending Moment M(x)"
         x={result.x}
         y={result.moment}
-        yLabel="Moment"
-        unitLabel="N·m"
+        yLabel="Bending moment"
+        xLabel="Position along beam"
+        xUnit={units.length}
+        unitLabel={units.moment}
         probeX={probeX}
       />
 
@@ -152,7 +180,9 @@ export default function BeamDashboard({
         x={result.x}
         y={result.deflection}
         yLabel="Deflection"
-        unitLabel="m"
+        xLabel="Position along beam"
+        xUnit={units.length}
+        unitLabel={units.length}
         probeX={probeX}
         color="#0891b2"
       />
@@ -166,7 +196,9 @@ export default function BeamDashboard({
           x={result.x}
           y={result.stress}
           yLabel="Stress"
-          unitLabel="Pa"
+          xLabel="Position along beam"
+          xUnit={units.length}
+          unitLabel={units.stress}
           probeX={probeX}
           color="#7c3aed"
         />
@@ -175,48 +207,43 @@ export default function BeamDashboard({
         title="Deflection intensity"
         x={result.x}
         values={result.deflection}
-        unit="m"
+        unit={units.length}
+        xUnit={units.length}
       />
       <FEAColorStrip
         title="Stress intensity"
         x={result.x}
         values={result.stress}
-        unit="Pa"
+        unit={units.stress}
+        xUnit={units.length}
       />
 
-      {/* ========================================= */}
-      {/* SUMMARY */}
-      {/* ========================================= */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="text-xs text-gray-500">Max Moment</div>
-          <div className="text-lg font-semibold">
-            {result.maxMoment?.toFixed(2) ?? "--"}
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="text-xs text-gray-500">Max Shear</div>
-          <div className="text-lg font-semibold">
-            {result.maxShear?.toFixed(2) ?? "--"}
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="text-xs text-gray-500">Max Stress</div>
-          <div className="text-lg font-semibold">
-            {result.maxStress?.toFixed(2) ?? "--"}
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3">
-          <div className="text-xs text-gray-500">Max Deflection</div>
-          <div className="text-lg font-semibold">
-            {result.maxDeflection?.toExponential(2) ?? "--"}
-          </div>
-        </div>
-      </div>
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label={`Max moment (${units.moment})`}
+          value={formatEngineeringValue(result.maxMoment, units.moment)}
+          tone="purple"
+        />
+        <CalculatorMetricCard
+          label={`Max shear (${units.force})`}
+          value={formatEngineeringValue(result.maxShear, units.force)}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label={`Max stress (${units.stress})`}
+          value={formatEngineeringValue(result.maxStress, units.stress, {
+            useExponential: true,
+          })}
+          tone="orange"
+        />
+        <CalculatorMetricCard
+          label={`Max deflection (${units.length})`}
+          value={formatEngineeringValue(result.maxDeflection, units.length, {
+            useExponential: true,
+          })}
+          tone="green"
+        />
+      </CalculatorMetricGrid>
 
       {result.solverMeta ? (
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">

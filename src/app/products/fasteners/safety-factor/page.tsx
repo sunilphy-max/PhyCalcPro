@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import SafetyFactorInputs from "@/components/fasteners/safety-factor/SafetyFactorInputs";
 import SafetyFactorResults from "@/components/fasteners/safety-factor/SafetyFactorResults";
@@ -42,8 +41,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Safety Factor Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="safety-factor"
         title="Combined Safety Factor Analysis"
         left={
@@ -98,6 +96,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

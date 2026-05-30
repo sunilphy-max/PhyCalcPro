@@ -1,5 +1,5 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type SectionResult = {
   shape: string;
@@ -19,7 +19,7 @@ type Props = {
 export default function SectionResults({ result, linearUnit, areaUnit, inertiaUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="sections"
         fileName="section"
         title="Export Section results"
@@ -28,7 +28,7 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Choose a section and calculate its area and inertia properties.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
@@ -37,7 +37,7 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
   const formatInertia = (value: number) => `${value.toFixed(8)} ${inertiaUnit}`;
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="sections"
       fileName="section"
       calculationSpec={result.calculationSpec}
@@ -78,6 +78,6 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

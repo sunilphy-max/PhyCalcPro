@@ -1,6 +1,6 @@
 "use client";
 
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CombinedLoadingResult } from "@/lib/structural/combinedLoading/types";
 
@@ -10,7 +10,7 @@ type Props = {
 
 export default function CombinedLoadingResults({ result }: Props) {
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="combined-loading"
       fileName="combined-loading"
       title="Export Combined Loading results"
@@ -37,7 +37,7 @@ export default function CombinedLoadingResults({ result }: Props) {
           </div>
         )}
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }
 

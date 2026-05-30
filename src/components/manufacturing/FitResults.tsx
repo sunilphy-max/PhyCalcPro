@@ -1,5 +1,9 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+} from "@/components/calculator/results";
 
 type Props = {
   result: WithCalculationSpec<{
@@ -15,58 +19,63 @@ type Props = {
 };
 
 export default function FitResults({ result, displayUnit }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-        moduleId="fits"
-        fileName="fit"
-        title="Export Fit results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Select values and calculate the fit to view results.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
   const format = (value: number) => `${value.toFixed(4)} ${displayUnit}`;
+
+  const fitTone =
+    result?.fitType === "clearance"
+      ? "green"
+      : result?.fitType === "interference"
+        ? "red"
+        : "amber";
 
   return (
     <CalculatorResultsShell
       moduleId="fits"
       fileName="fit"
-      calculationSpec={result.calculationSpec}
-      result={result}
+      calculationSpec={result?.calculationSpec}
+      result={result ?? undefined}
       title="Export Fit results"
       description="Export the current summary and charts for review."
-      csvRows={[
-        { metric: "clearanceMin", value: result.clearanceMin },
-        { metric: "clearanceMax", value: result.clearanceMax },
-      ]}
+      empty={!result}
+      emptyMessage="Select values and calculate the fit to view results."
+      heading="Fit Results"
+      csvRows={
+        result
+          ? [
+              { metric: "clearanceMin", value: result.clearanceMin },
+              { metric: "clearanceMax", value: result.clearanceMax },
+            ]
+          : undefined
+      }
     >
-      <div className="space-y-4 bg-white rounded-xl p-6 shadow-sm">
-        <div>
-          <div className="text-lg font-semibold text-slate-900">Fit Results</div>
-          <div className="text-sm text-slate-500 mt-1">Type: {result.fitType}</div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-sm uppercase tracking-wide text-slate-500">Hole</div>
-            <div className="mt-2 text-slate-900">{format(result.holeMin)} to {format(result.holeMax)}</div>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-sm uppercase tracking-wide text-slate-500">Shaft</div>
-            <div className="mt-2 text-slate-900">{format(result.shaftMin)} to {format(result.shaftMax)}</div>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-sm uppercase tracking-wide text-slate-500">Clearance range</div>
-          <div className="mt-2 text-slate-900">{format(result.clearanceMin)} to {format(result.clearanceMax)}</div>
-        </div>
-      </div>
+      {result ? (
+        <>
+          <CalculatorMetricCard
+            label="Fit type"
+            value={result.fitType}
+            tone={fitTone}
+            size="lg"
+          />
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Hole"
+              value={`${format(result.holeMin)} to ${format(result.holeMax)}`}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Shaft"
+              value={`${format(result.shaftMin)} to ${format(result.shaftMax)}`}
+              tone="purple"
+            />
+          </CalculatorMetricGrid>
+          <CalculatorMetricCard
+            label="Clearance range"
+            value={`${format(result.clearanceMin)} to ${format(result.clearanceMax)}`}
+            tone="orange"
+            size="lg"
+          />
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

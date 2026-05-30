@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import LoadCaseManagerInputs from "@/components/structural/loadCaseManager/LoadCaseManagerInputs";
@@ -60,8 +59,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Load Case Manager">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="load-case-manager"
         title="Load Case Envelope Calculator"
         left={
@@ -93,6 +91,5 @@ export default function Page() {
         }
         right={<LoadCaseManagerResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

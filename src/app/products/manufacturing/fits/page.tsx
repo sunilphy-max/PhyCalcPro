@@ -4,7 +4,6 @@ import { useCalculatorModule } from "@/hooks/useCalculatorModule";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import FitInputs from "@/components/manufacturing/FitInputs";
 import FitResults from "@/components/manufacturing/FitResults";
@@ -51,8 +50,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Fits & Clearances">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="fits"
         title="Fits & Clearances Calculator"
         left={<FitInputs
@@ -82,6 +80,5 @@ export default function Page() {
         }
         right={<FitResults result={result} displayUnit={nominalUnit} />}
       />
-    </DashboardLayout>
   );
 }

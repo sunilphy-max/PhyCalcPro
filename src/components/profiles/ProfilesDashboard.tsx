@@ -1,7 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
 import type { AreaPropertiesResult } from "@/lib/profiles/types";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  CalculatorPlotSection,
+} from "@/components/calculator/results";
 
 type Props = {
   result: AreaPropertiesResult;
@@ -27,41 +31,31 @@ export default function ProfilesDashboard({ result }: Props) {
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      {/* Basic Properties */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Cross-Sectional Area</div>
-          <div className="text-lg font-bold text-blue-600">
-            {formatArea(result.area)}
-          </div>
-        </div>
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label="Cross-Sectional Area"
+          value={formatArea(result.area)}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Centroid X"
+          value={`${(result.centroid.x * 1000).toFixed(2)} mm`}
+          tone="green"
+        />
+        <CalculatorMetricCard
+          label="Centroid Y"
+          value={`${(result.centroid.y * 1000).toFixed(2)} mm`}
+          tone="green"
+        />
+        <CalculatorMetricCard
+          label="Polar Moment"
+          value={formatInertia(result.j)}
+          tone="purple"
+        />
+      </CalculatorMetricGrid>
 
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Centroid X</div>
-          <div className="text-lg font-bold text-green-600">
-            {(result.centroid.x * 1000).toFixed(2)} mm
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Centroid Y</div>
-          <div className="text-lg font-bold text-green-600">
-            {(result.centroid.y * 1000).toFixed(2)} mm
-          </div>
-        </div>
-
-        <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-          <div className="text-xs text-gray-500 mb-1">Polar Moment</div>
-          <div className="text-sm font-bold text-purple-600">
-            {formatInertia(result.j)}
-          </div>
-        </div>
-      </div>
-
-      {/* Moments of Inertia */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Second Moments of Area</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <CalculatorPlotSection title="Second Moments of Area">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Ixx (about x-axis):</span>
@@ -76,10 +70,9 @@ export default function ProfilesDashboard({ result }: Props) {
               <span className="text-gray-900 font-mono">{formatInertia(result.ixy)}</span>
             </div>
           </div>
-        </div>
+        </CalculatorPlotSection>
 
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Principal Moments</h3>
+        <CalculatorPlotSection title="Principal Moments">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">I₁ (max principal):</span>
@@ -94,13 +87,11 @@ export default function ProfilesDashboard({ result }: Props) {
               <span className="text-gray-900 font-mono">{result.theta.toFixed(2)}°</span>
             </div>
           </div>
-        </div>
+        </CalculatorPlotSection>
       </div>
 
-      {/* Section Moduli */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Section Moduli</h3>
+        <CalculatorPlotSection title="Section Moduli">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Sx (about x-axis):</span>
@@ -111,10 +102,9 @@ export default function ProfilesDashboard({ result }: Props) {
               <span className="text-gray-900 font-mono">{formatInertia(result.sy)}/m</span>
             </div>
           </div>
-        </div>
+        </CalculatorPlotSection>
 
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Shape Information</h3>
+        <CalculatorPlotSection title="Shape Information">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-600">Shape type:</span>
@@ -133,12 +123,10 @@ export default function ProfilesDashboard({ result }: Props) {
               </span>
             </div>
           </div>
-        </div>
+        </CalculatorPlotSection>
       </div>
 
-      {/* Shape Visualization Placeholder */}
-      <div className="bg-white rounded-xl p-4 border border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Cross-Section Visualization</h3>
+      <CalculatorPlotSection title="Cross-Section Visualization">
         <div className="flex items-center justify-center h-48 bg-gray-50 rounded border border-gray-200">
           <div className="text-center text-gray-500">
             <div className="text-4xl mb-2">📐</div>
@@ -150,7 +138,7 @@ export default function ProfilesDashboard({ result }: Props) {
             </div>
           </div>
         </div>
-      </div>
+      </CalculatorPlotSection>
     </div>
   );
 }

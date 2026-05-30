@@ -1,7 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { BearingResult } from "@/lib/machine/bearings/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type Props = {
   result: WithCalculationSpec<BearingResult> | null;
@@ -11,7 +11,7 @@ type Props = {
 export default function BearingResults({ result, loadUnit }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="bearings"
         fileName="bearing"
         title="Export Bearing results"
@@ -23,12 +23,12 @@ export default function BearingResults({ result, loadUnit }: Props) {
             Run the calculation to see equivalent loads and dynamic rating requirements.
           </p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="bearings"
       fileName="bearing"
       calculationSpec={result?.calculationSpec}
@@ -85,6 +85,6 @@ export default function BearingResults({ result, loadUnit }: Props) {
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

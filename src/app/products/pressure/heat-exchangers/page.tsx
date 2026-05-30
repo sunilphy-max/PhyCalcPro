@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import HeatExchangerInputs from "@/components/pressure/heat-exchangers/HeatExchangerInputs";
 import HeatExchangerResults from "@/components/pressure/heat-exchangers/HeatExchangerResults";
@@ -43,8 +42,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Heat Exchangers">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="heat-exchangers"
         title="Heat Exchanger Sizing"
         left={
@@ -84,6 +82,5 @@ export default function Page() {
         }
         right={<HeatExchangerResults result={result} />}
       />
-    </DashboardLayout>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CamInputs from "@/components/machine/cams/CamInputs";
 import CamResults from "@/components/machine/cams/CamResults";
@@ -42,8 +41,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Cam Design Module">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="cams"
         title="Cam Profile & Kinematics"
         left={
@@ -83,6 +81,5 @@ export default function Page() {
         }
         right={<CamResults result={result} lengthUnit={liftUnit} />}
       />
-    </DashboardLayout>
   );
 }

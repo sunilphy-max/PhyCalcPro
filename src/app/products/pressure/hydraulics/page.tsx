@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import HydraulicsInputs from "@/components/pressure/hydraulics/HydraulicsInputs";
 import HydraulicsResults from "@/components/pressure/hydraulics/HydraulicsResults";
@@ -36,8 +35,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Hydraulic Cylinders">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="hydraulics"
         title="Hydraulic Actuator Sizing"
         left={
@@ -82,6 +80,5 @@ export default function Page() {
           />
         }
       />
-    </DashboardLayout>
   );
 }

@@ -1,5 +1,5 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
-import ExportableReport from "@/components/shared/ExportableReport";
+import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 
 type RotationResult = {
         inertia: number;
@@ -17,7 +17,7 @@ type Props = {
 export default function RotationResults({ result }: Props) {
   if (!result) {
     return (
-      <ExportableReport
+      <CalculatorResultsShell
       moduleId="rotation"
         fileName="rotation"
         title="Export Rotation results"
@@ -26,12 +26,12 @@ export default function RotationResults({ result }: Props) {
         <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Enter rotation data and calculate the dynamic response.</p>
         </div>
-      </ExportableReport>
+      </CalculatorResultsShell>
     );
   }
 
   return (
-    <ExportableReport
+    <CalculatorResultsShell
       moduleId="rotation"
       fileName="rotation"
       calculationSpec={result.calculationSpec}
@@ -84,6 +84,6 @@ export default function RotationResults({ result }: Props) {
           </div>
         </div>
       </div>
-    </ExportableReport>
+    </CalculatorResultsShell>
   );
 }

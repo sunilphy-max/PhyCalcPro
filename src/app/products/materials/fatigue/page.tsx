@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import FatigueInputs from "@/components/materials/fatigue/FatigueInputs";
@@ -57,8 +56,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Fatigue Assessment">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="fatigue"
         title="Fatigue Life Calculator"
         left={
@@ -92,6 +90,5 @@ export default function Page() {
         }
         right={<FatigueResults result={result} alternatingUnit={alternatingUnit} />}
       />
-    </DashboardLayout>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import RotationInputs from "@/components/dynamics/rotation/RotationInputs";
 import RotationResults from "@/components/dynamics/rotation/RotationResults";
@@ -40,8 +39,7 @@ export default function Page() {
   };
 
   return (
-    <DashboardLayout title="Rotational Systems">
-      <CalculatorLayout
+          <CalculatorLayout
         moduleId="rotation"
         title="Rotational System Calculator"
         left={<RotationInputs
@@ -64,6 +62,5 @@ export default function Page() {
         </div>}
         right={<RotationResults result={result} />}
       />
-    </DashboardLayout>
   );
 }
