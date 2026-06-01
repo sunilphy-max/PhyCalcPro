@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { categories } from "@/data/modules";
 
@@ -11,7 +11,10 @@ type SidebarProps = {
 
 export default function Sidebar({ activeCategoryId }: SidebarProps) {
   const pathname = usePathname();
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [manualOpenCategory, setManualOpenCategory] = useState<{
+    pathname: string | null;
+    categoryId: string | null;
+  } | null>(null);
 
   // -----------------------------
   // Scope categories based on page
@@ -32,18 +35,15 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
     [pathname, visibleCategories]
   );
 
-  // Sync open section when the route changes — do not depend on openCategory or manual toggles are undone.
-  useEffect(() => {
-    if (activeCategoryFromPath) {
-      setOpenCategory(activeCategoryFromPath);
-    }
-  }, [activeCategoryFromPath]);
+  const defaultOpenCategory = useMemo(
+    () => activeCategoryFromPath ?? visibleCategories[0]?.id ?? null,
+    [activeCategoryFromPath, visibleCategories]
+  );
 
-  useEffect(() => {
-    if (!activeCategoryFromPath && visibleCategories.length > 0) {
-      setOpenCategory((prev) => prev ?? visibleCategories[0]!.id);
-    }
-  }, [activeCategoryFromPath, visibleCategories]);
+  const openCategory =
+    manualOpenCategory?.pathname === pathname
+      ? manualOpenCategory.categoryId
+      : defaultOpenCategory;
 
   const activeModuleRoute = useMemo(
     () =>
@@ -69,7 +69,12 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
           return (
             <div key={cat.id} className="rounded-3xl border border-slate-200 bg-slate-50 shadow-sm overflow-hidden">
               <button
-                onClick={() => setOpenCategory(isOpen ? null : cat.id)}
+                onClick={() =>
+                  setManualOpenCategory({
+                    pathname,
+                    categoryId: isOpen ? null : cat.id,
+                  })
+                }
                 className="w-full text-left px-4 py-3 transition hover:bg-slate-100"
               >
                 <div className="font-semibold text-sm text-slate-950">{cat.title}</div>
