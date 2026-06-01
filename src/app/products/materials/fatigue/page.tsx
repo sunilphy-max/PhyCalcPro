@@ -33,6 +33,7 @@ export default function Page() {
   const [ultimateUnit, setUltimateUnit] = useState(defaults.ultimateStrength.defaultUnit);
   const [enduranceLimit, setEnduranceLimit] = useState(240);
   const [enduranceUnit, setEnduranceUnit] = useState(defaults.enduranceLimit.defaultUnit);
+  const [meanStressMethod, setMeanStressMethod] = useState<"goodman" | "gerber" | "morrow">("goodman");
   const [result, setResult] = useState<WithCalculationSpec<FatigueResult> | null>(null);
 
   const toStressPa = (value: number, unit: string) =>
@@ -44,6 +45,7 @@ export default function Page() {
       meanStress: toStressPa(meanStress, meanUnit),
       ultimateStrength: toStressPa(ultimateStrength, ultimateUnit),
       enduranceLimit: toStressPa(enduranceLimit, enduranceUnit),
+      meanStressMethod,
     };
     const raw = solveFatigueEngine(config);
     setResult(
@@ -77,6 +79,8 @@ export default function Page() {
             setEnduranceLimit={setEnduranceLimit}
             enduranceUnit={enduranceUnit}
             setEnduranceUnit={setEnduranceUnit}
+            meanStressMethod={meanStressMethod}
+            setMeanStressMethod={setMeanStressMethod}
             onCalculate={calculate}
           />
         }

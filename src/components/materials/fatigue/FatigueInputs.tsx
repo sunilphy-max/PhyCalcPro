@@ -21,6 +21,8 @@ type Props = {
   setEnduranceLimit: (v: number) => void;
   enduranceUnit: string;
   setEnduranceUnit: (u: string) => void;
+  meanStressMethod: "goodman" | "gerber" | "morrow";
+  setMeanStressMethod: (m: "goodman" | "gerber" | "morrow") => void;
   onCalculate: () => void;
 };
 
@@ -35,6 +37,18 @@ export default function FatigueInputs(props: Props) {
       <ModuleUnitField moduleId="fatigue" fieldKey="meanStress" value={props.meanStress} unit={props.meanUnit} onValueChange={props.setMeanStress} onUnitChange={props.setMeanUnit} />
       <ModuleUnitField moduleId="fatigue" fieldKey="ultimateStrength" value={props.ultimateStrength} unit={props.ultimateUnit} onValueChange={props.setUltimateStrength} onUnitChange={props.setUltimateUnit} />
       <ModuleUnitField moduleId="fatigue" fieldKey="enduranceLimit" value={props.enduranceLimit} unit={props.enduranceUnit} onValueChange={props.setEnduranceLimit} onUnitChange={props.setEnduranceUnit} />
+      <label className="space-y-2 text-sm text-slate-700">
+        <span>Mean-stress criterion</span>
+        <select
+          value={props.meanStressMethod}
+          onChange={(e) => props.setMeanStressMethod(e.target.value as "goodman" | "gerber" | "morrow")}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          <option value="goodman">Goodman (linear)</option>
+          <option value="gerber">Gerber (parabolic)</option>
+          <option value="morrow">Morrow (σf&apos; mean stress)</option>
+        </select>
+      </label>
     </CalculatorInputPanel>
   );
 }

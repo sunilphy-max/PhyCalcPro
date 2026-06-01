@@ -1,13 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
-
-type ToleranceResult = {
-  tolerances: number[];
-  count: number;
-  worstCase: number;
-  rss: number;
-  totalTolerance: number;
-};
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import type { ToleranceResult } from "@/lib/manufacturing/types";
 
 type Props = {
   result: WithCalculationSpec<ToleranceResult> | null;
@@ -15,58 +9,52 @@ type Props = {
 };
 
 export default function ToleranceResults({ result, displayUnit }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-      moduleId="tolerance"
-        fileName="tolerance"
-        title="Export Tolerance results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Apply tolerances to see stackup and variability results.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
-  const format = (value: number) => `${value.toFixed(4)} ${displayUnit}`;
+  const format = (value: number | undefined) =>
+    value === undefined ? "—" : `${value.toFixed(4)} ${displayUnit}`;
 
   return (
     <CalculatorResultsShell
       moduleId="tolerance"
       fileName="tolerance"
-      calculationSpec={result.calculationSpec}
       title="Export Tolerance results"
       description="Export the current summary and charts for review."
-      csvRows={[
-        { metric: "worstCase", value: result.worstCase },
-        { metric: "rss", value: result.rss },
-        { metric: "totalTolerance", value: result.totalTolerance },
-      ]}
+      calculationSpec={result?.calculationSpec}
+      empty={!result}
+      emptyMessage="Apply tolerances to see stackup and variability results."
+      heading="Stackup results"
+      csvRows={
+        result
+          ? [
+              { metric: "worstCase", value: result.worstCase },
+              { metric: "rss", value: result.rss },
+              { metric: "worstCaseY", value: result.worstCaseY ?? 0 },
+              { metric: "monteCarloMean", value: result.monteCarloMean ?? 0 },
+            ]
+          : undefined
+      }
     >
-      <div className="space-y-4 bg-white rounded-xl p-6 shadow-sm">
-        <div>
-          <h3 className="text-lg font-semibold">Stackup Results</h3>
-          <p className="text-sm text-slate-500 mt-1">Computed from {result.count} tolerance elements.</p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-sm uppercase tracking-wide text-slate-500">Worst-case stackup</div>
-            <div className="mt-2 text-slate-900">{format(result.worstCase)}</div>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="text-sm uppercase tracking-wide text-slate-500">RSS stackup</div>
-            <div className="mt-2 text-slate-900">{format(result.rss)}</div>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-sm uppercase tracking-wide text-slate-500">Total absolute tolerance</div>
-          <div className="mt-2 text-slate-900">{format(result.totalTolerance)}</div>
-        </div>
-      </div>
+      {result ? (
+        <>
+          <p className="text-sm text-slate-500">Computed from {result.count} X-axis tolerance elements.</p>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard label="Worst-case (X)" value={format(result.worstCase)} tone="orange" />
+            <CalculatorMetricCard label="RSS (X)" value={format(result.rss)} tone="blue" />
+            {result.worstCaseY !== undefined ? (
+              <>
+                <CalculatorMetricCard label="Worst-case (Y)" value={format(result.worstCaseY)} tone="orange" />
+                <CalculatorMetricCard label="RSS (Y)" value={format(result.rssY)} tone="blue" />
+              </>
+            ) : null}
+          </CalculatorMetricGrid>
+          <CalculatorMetricCard label="Total absolute (X)" value={format(result.totalTolerance)} tone="purple" />
+          {result.monteCarloMean !== undefined ? (
+            <CalculatorMetricGrid cols={2}>
+              <CalculatorMetricCard label="Monte Carlo mean" value={format(result.monteCarloMean)} tone="blue" />
+              <CalculatorMetricCard label="Monte Carlo σ" value={format(result.monteCarloStdDev)} tone="blue" />
+            </CalculatorMetricGrid>
+          ) : null}
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

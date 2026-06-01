@@ -42,6 +42,8 @@ export default function Page() {
   const [shearForceUnit, setShearForceUnit] = useState("N");
   const [axialForce, setAxialForce] = useState(5000);
   const [axialForceUnit, setAxialForceUnit] = useState("N");
+  const [eccentricity, setEccentricity] = useState(0.05);
+  const [eccentricityUnit, setEccentricityUnit] = useState("m");
   const [material, setMaterial] = useState("Steel");
   const [result, setResult] = useState<WeldResult | null>(null);
 
@@ -53,6 +55,7 @@ export default function Page() {
       weldCount: Math.max(1, Math.round(weldCount)),
       shearForce: toBase(shearForce, "force", shearForceUnit),
       axialForce: toBase(axialForce, "force", axialForceUnit),
+      eccentricity: toBase(eccentricity, "length", eccentricityUnit),
       material: MATERIALS[material] || MATERIALS.Steel,
     };
 
@@ -95,6 +98,10 @@ export default function Page() {
             setAxialForce={setAxialForce}
             axialForceUnit={axialForceUnit}
             setAxialForceUnit={setAxialForceUnit}
+            eccentricity={eccentricity}
+            setEccentricity={setEccentricity}
+            eccentricityUnit={eccentricityUnit}
+            setEccentricityUnit={setEccentricityUnit}
             material={material}
             setMaterial={setMaterial}
             onCalculate={calculate}

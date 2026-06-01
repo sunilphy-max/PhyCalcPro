@@ -21,5 +21,18 @@ export function solvePressureVesselEngine(config: PressureVesselConfig): Pressur
     throw new Error("Mesh must use at least 8 segments");
   }
 
-  return solvePressureVesselFEM(config);
+  return {
+    ...solvePressureVesselFEM(config),
+    ...computeThickWallScreening(config),
+  };
+}
+
+function computeThickWallScreening(config: PressureVesselConfig) {
+  const ri = config.radius;
+  const ro = config.radius + config.thickness;
+  const p = config.pressure;
+  const lameHoopInner = (p * (ro ** 2 + ri ** 2)) / (ro ** 2 - ri ** 2);
+  const lameRadialInner = -p;
+  const dishedHeadStress = (p * ri) / (2 * config.thickness);
+  return { lameHoopInner, lameRadialInner, dishedHeadStress };
 }

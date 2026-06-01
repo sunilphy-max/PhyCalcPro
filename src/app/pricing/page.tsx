@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import CheckoutButton from "@/components/licensing/CheckoutButton";
 import { plans } from "@/lib/licensing/plans";
+import { isFreeLaunch } from "@/lib/licensing/validationMode";
 
 export const metadata = {
   title: "Pricing — PhyCalcPro",
@@ -8,6 +10,10 @@ export const metadata = {
 };
 
 export default function PricingPage() {
+  if (isFreeLaunch()) {
+    redirect("/products");
+  }
+
   return (
     <div className="bg-slate-50 dark:bg-slate-950">
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">

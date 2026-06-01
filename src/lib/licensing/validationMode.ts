@@ -5,7 +5,17 @@ export function isValidationMode(): boolean {
   return publicEnv.validationMode;
 }
 
+export function isFreeLaunch(): boolean {
+  return publicEnv.freeLaunch;
+}
+
+/** When false, hide Pricing/Account/Pro upsell UI (Stripe routes may remain for later). */
+export function isMonetizationEnabled(): boolean {
+  return !publicEnv.freeLaunch;
+}
+
 function envUnlocksAll(): boolean {
+  if (publicEnv.freeLaunch) return true;
   if (publicEnv.validationMode) return true;
   if (publicEnv.devEntitlement === "pro" || publicEnv.devEntitlement === "supporter") {
     return true;

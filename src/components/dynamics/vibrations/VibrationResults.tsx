@@ -53,6 +53,12 @@ export default function VibrationResults({ result }: Props) {
               size="lg"
             />
             <CalculatorMetricCard
+              label={`1st damped natural (ζ=${result.dampingRatio})`}
+              value={`${(result.dampedNaturalFrequencies[0] ?? 0).toFixed(2)} Hz`}
+              tone="green"
+              size="lg"
+            />
+            <CalculatorMetricCard
               label="Mesh segments"
               value={result.segments}
               tone="purple"
@@ -75,6 +81,11 @@ export default function VibrationResults({ result }: Props) {
               />
             ))}
           </CalculatorMetricGrid>
+          {result.resonanceNote ? (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+              {result.resonanceNote}
+            </p>
+          ) : null}
           {result.solverMeta ? (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
               <div className="font-semibold text-gray-900">Solver metadata</div>

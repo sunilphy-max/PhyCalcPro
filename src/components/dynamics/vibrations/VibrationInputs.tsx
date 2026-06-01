@@ -29,6 +29,8 @@ type Props = {
   setSegments: (value: number) => void;
   support: SupportType;
   setSupport: (value: SupportType) => void;
+  dampingRatio: number;
+  setDampingRatio: (value: number) => void;
   onCalculate: () => void;
 };
 
@@ -57,6 +59,8 @@ export default function VibrationInputs({
   setSegments,
   support,
   setSupport,
+  dampingRatio,
+  setDampingRatio,
   onCalculate,
 }: Props) {
   return (
@@ -180,6 +184,20 @@ export default function VibrationInputs({
               onChange={setInertiaUnit}
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-slate-700">Damping ratio ζ</label>
+          <input
+            type="number"
+            min={0}
+            max={0.5}
+            step={0.01}
+            value={dampingRatio}
+            onChange={(e) => setDampingRatio(Number(e.target.value))}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+          />
+          <p className="text-xs text-slate-500">Light damping (ζ ≈ 0.02–0.05) for damped natural frequency estimate.</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 sm:col-span-2">

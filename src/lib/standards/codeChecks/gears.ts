@@ -58,6 +58,12 @@ export function buildGearCodeChecks(
       contactSf,
       designCode
     ),
+    makeSafetyFactorCheck(
+      "micropitting",
+      "Micropitting safety factor",
+      result.micropittingSafetyFactor,
+      designCode
+    ),
   ];
 }
 

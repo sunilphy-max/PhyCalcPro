@@ -1,6 +1,8 @@
 /** Inlined at build time from .env.local — see next.config.ts env passthrough. */
 export const publicEnv = {
   validationMode: process.env.NEXT_PUBLIC_VALIDATION_MODE === "true",
+  /** Public launch: all design standards + PDF export unlocked; monetization UI hidden. */
+  freeLaunch: process.env.NEXT_PUBLIC_FREE_LAUNCH === "true",
   devEntitlement: (process.env.NEXT_PUBLIC_DEV_ENTITLEMENT ?? "").trim().toLowerCase(),
   nodeEnv: process.env.NODE_ENV ?? "production",
 } as const;

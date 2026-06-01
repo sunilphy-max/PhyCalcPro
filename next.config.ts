@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["10.0.0.59"],
   env: {
     NEXT_PUBLIC_VALIDATION_MODE: process.env.NEXT_PUBLIC_VALIDATION_MODE ?? "",
+    NEXT_PUBLIC_FREE_LAUNCH: process.env.NEXT_PUBLIC_FREE_LAUNCH ?? "",
     NEXT_PUBLIC_DEV_ENTITLEMENT: process.env.NEXT_PUBLIC_DEV_ENTITLEMENT ?? "",
   },
 };

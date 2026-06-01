@@ -28,8 +28,10 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   const displacements = solveLinearSystem(stiffness, F, constraints);
 
   const post = recoverStresses(model, displacements);
+  const kt = Math.max(config.stressConcentrationFactor ?? 1, 1);
+  const adjustedVonMises = post.vonMisesStress.map((s) => s * kt);
 
-  const maxStress = Math.max(...post.vonMisesStress, 0);
+  const maxStress = Math.max(...adjustedVonMises, 0);
   const maxShear = Math.max(...post.shearStress, 0);
   const maxBending = Math.max(...post.bendingStress, 0);
   const maxDeflection = Math.max(...post.deflection, 0);
@@ -40,7 +42,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   const designStatus =
     safetyFactor >= 1.5 ? "safe" : safetyFactor >= 1.2 ? "warning" : "critical";
 
-  const criticalIndex = post.vonMisesStress.indexOf(maxStress);
+  const criticalIndex = adjustedVonMises.indexOf(maxStress);
   const criticalSection = model.nodes[criticalIndex]?.x ?? 0;
 
   const radius = geometry.diameter / 2;
@@ -53,6 +55,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
 
   return {
     ...post,
+    vonMisesStress: adjustedVonMises,
     maxStress,
     maxShearStress: maxShear,
     maxBendingStress: maxBending,

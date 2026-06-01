@@ -28,6 +28,21 @@ export function solveGearDesign(config: GearConfig): GearResult {
   );
   const contactSafetyFactor = allowableStress / Math.max(contactStress, 1e-9);
 
+  const pitchLineVelocity = (Math.PI * pitchDiameterPinion * config.speed) / 60000;
+  const scuffingIndex = tangentialForce * pitchLineVelocity / Math.max(config.faceWidth, 1e-9);
+  const scuffingLimit = 5000;
+  const scuffingSafetyFactor = scuffingLimit / Math.max(scuffingIndex, 1e-9);
+
+  const bendingFatigueLimit = allowableStress * 0.4;
+  const bendingFatigueSafetyFactor = bendingFatigueLimit / Math.max(bendingStress, 1e-9);
+  const contactFatigueLimit = allowableStress * 0.35;
+  const contactFatigueSafetyFactor = contactFatigueLimit / Math.max(contactStress, 1e-9);
+
+  const oilFilmParam = pitchLineVelocity * Math.sqrt(contactStress / 1e6);
+  const micropittingLimit = 8;
+  const micropittingIndex = oilFilmParam / Math.max(config.faceWidth * 1000, 1e-9);
+  const micropittingSafetyFactor = micropittingLimit / Math.max(micropittingIndex, 1e-9);
+
   return {
     pinionTeeth,
     gearTeeth,
@@ -44,5 +59,10 @@ export function solveGearDesign(config: GearConfig): GearResult {
     safetyFactor,
     contactStress,
     contactSafetyFactor,
+    scuffingSafetyFactor,
+    bendingFatigueSafetyFactor,
+    contactFatigueSafetyFactor,
+    micropittingSafetyFactor,
+    micropittingIndex,
   };
 }

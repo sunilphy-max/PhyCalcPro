@@ -53,14 +53,15 @@ export default function ResultExportControls({
   description,
   csvRows,
 }: Props) {
-  const { canExportPdf, unlockAllFeatures, featuresUnlocked } = useEntitlement();
+  const { canExportPdf, unlockAllFeatures, isMonetizationEnabled } = useEntitlement();
+  const pdfEnabled = canExportPdf();
   const [exporting, setExporting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"error" | "success">("success");
 
   const exportPdf = async () => {
-    if (!canExportPdf()) {
+    if (!pdfEnabled) {
       setStatusTone("error");
       setStatusMessage("PDF export requires a Pro license.");
       return;
@@ -151,10 +152,10 @@ export default function ResultExportControls({
           <button
             type="button"
             onClick={exportPdf}
-            disabled={exporting || !canExportPdf()}
+            disabled={exporting || !pdfEnabled}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {exporting ? "Exporting PDF…" : canExportPdf() ? "Export PDF" : "PDF (Pro)"}
+            {exporting ? "Exporting PDF…" : pdfEnabled ? "Export PDF" : "PDF (Pro)"}
           </button>
           {csvRows && csvRows.length > 0 ? (
             <button
@@ -168,7 +169,7 @@ export default function ResultExportControls({
           ) : null}
         </div>
       </div>
-      {!canExportPdf() ? (
+      {isMonetizationEnabled && !pdfEnabled ? (
         <div className="mt-3 space-y-2 text-xs text-slate-600">
           <p>
             PDF reports with engineering checks are included in{" "}

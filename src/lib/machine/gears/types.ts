@@ -31,4 +31,9 @@ export type GearResult = {
   safetyFactor: number;
   contactStress: number;
   contactSafetyFactor: number;
+  scuffingSafetyFactor: number;
+  bendingFatigueSafetyFactor: number;
+  contactFatigueSafetyFactor: number;
+  micropittingSafetyFactor: number;
+  micropittingIndex: number;
 };

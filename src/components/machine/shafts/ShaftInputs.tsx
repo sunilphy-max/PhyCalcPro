@@ -35,6 +35,8 @@ type Props = {
   setLoads: (loads: LoadCase[]) => void;
   meshSegments: number;
   setMeshSegments: (value: number) => void;
+  stressConcentrationFactor: number;
+  setStressConcentrationFactor: (value: number) => void;
   onCalculate: () => void;
   onSave: () => void;
   saving: boolean;
@@ -67,6 +69,8 @@ export default function ShaftInputs({
   setLoads,
   meshSegments,
   setMeshSegments,
+  stressConcentrationFactor,
+  setStressConcentrationFactor,
   onCalculate,
   onSave,
   saving,
@@ -313,6 +317,21 @@ export default function ShaftInputs({
         ) : (
           <p className="text-sm text-slate-500">No load cases yet.</p>
         )}
+      </section>
+
+      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 border-t-0">
+        <h3 className="text-sm font-semibold text-slate-900">Stress concentration</h3>
+        <p className="text-xs text-slate-500">
+          Kt multiplies peak von Mises stress for fillets, keyways, or shoulder steps (1.0 = none).
+        </p>
+        <CalculatorUnitField
+          label="Stress concentration factor (Kt)"
+          value={stressConcentrationFactor}
+          onChange={setStressConcentrationFactor}
+          min={1}
+          step="any"
+          unit={<span className="text-sm text-slate-500">—</span>}
+        />
       </section>
 
       <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 border-t-0">

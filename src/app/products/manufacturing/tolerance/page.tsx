@@ -8,43 +8,66 @@ import ToleranceResults from "@/components/manufacturing/ToleranceResults";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveToleranceEngine } from "@/lib/manufacturing/engine";
 import type { ToleranceResult } from "@/lib/manufacturing/types";
+import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
   const { wrapResult } = useStandardCalculation("tolerance");
   const [toleranceUnit, setToleranceUnit] = useState("mm");
   const [tolerances, setTolerances] = useState([0.05, 0.02, 0.01]);
-  const [result, setResult] = useState<ToleranceResult | null>(null);
+  const [tolerancesY, setTolerancesY] = useState<number[]>([]);
+  const [monteCarloSamples, setMonteCarloSamples] = useState(1000);
+  const [result, setResult] = useState<WithCalculationSpec<ToleranceResult> | null>(null);
 
   const calculate = () => {
     const config = {
       tolerances: tolerances.map((value) => toBase(value, "length", toleranceUnit)),
+      ...(tolerancesY.length
+        ? { tolerancesY: tolerancesY.map((value) => toBase(value, "length", toleranceUnit)) }
+        : {}),
+      ...(monteCarloSamples > 0 ? { monteCarloSamples } : {}),
     };
 
     const raw = solveToleranceEngine(config);
-    setResult(wrapResult({
-      ...raw,
-      tolerances: raw.tolerances.map((value) => fromBase(value, "length", toleranceUnit)),
-      worstCase: fromBase(raw.worstCase, "length", toleranceUnit),
-      rss: fromBase(raw.rss, "length", toleranceUnit),
-      totalTolerance: fromBase(raw.totalTolerance, "length", toleranceUnit),
-    }));
+    setResult(
+      wrapResult({
+        ...raw,
+        tolerances: raw.tolerances.map((value) => fromBase(value, "length", toleranceUnit)),
+        worstCase: fromBase(raw.worstCase, "length", toleranceUnit),
+        rss: fromBase(raw.rss, "length", toleranceUnit),
+        totalTolerance: fromBase(raw.totalTolerance, "length", toleranceUnit),
+        worstCaseY: raw.worstCaseY !== undefined ? fromBase(raw.worstCaseY, "length", toleranceUnit) : undefined,
+        rssY: raw.rssY !== undefined ? fromBase(raw.rssY, "length", toleranceUnit) : undefined,
+        monteCarloMean:
+          raw.monteCarloMean !== undefined ? fromBase(raw.monteCarloMean, "length", toleranceUnit) : undefined,
+        monteCarloStdDev:
+          raw.monteCarloStdDev !== undefined ? fromBase(raw.monteCarloStdDev, "length", toleranceUnit) : undefined,
+      })
+    );
   };
 
   return (
-          <CalculatorLayout
-        moduleId="tolerance"
-        title="Tolerance Stackup Calculator"
-        left={<ToleranceInputs
+    <CalculatorLayout
+      moduleId="tolerance"
+      title="Tolerance Stackup Calculator"
+      left={
+        <ToleranceInputs
           tolerances={tolerances}
           setTolerances={setTolerances}
+          tolerancesY={tolerancesY}
+          setTolerancesY={setTolerancesY}
           toleranceUnit={toleranceUnit}
           setToleranceUnit={setToleranceUnit}
+          monteCarloSamples={monteCarloSamples}
+          setMonteCarloSamples={setMonteCarloSamples}
           onCalculate={calculate}
-        />}
-        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
+        />
+      }
+      center={
+        <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Compute worst-case and RSS tolerance stackups for assemblies and dimensional chains.</p>
-        </div>}
-        right={<ToleranceResults result={result} displayUnit={toleranceUnit} />}
-      />
+        </div>
+      }
+      right={<ToleranceResults result={result} displayUnit={toleranceUnit} />}
+    />
   );
 }

@@ -1,0 +1,20 @@
+{
+  "id": "bevel-gears-indicative-01",
+  "moduleId": "bevel-gears",
+  "designCode": "INDICATIVE",
+  "description": "Bevel gear screening — 10 kW @ 1200 rpm",
+  "inputs": {
+    "power": 10000,
+    "speed": 1200,
+    "module": 0.003,
+    "pinionTeeth": 18,
+    "gearRatio": 2,
+    "faceWidth": 0.02,
+    "yieldStress": 250000000
+  },
+  "expected": {
+    "bendingSafety": 1.6517865854044413
+  },
+  "tolerancePercent": 5,
+  "source": "PhyCalcPro regression — bevel gears v1"
+}

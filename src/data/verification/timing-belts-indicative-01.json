@@ -1,0 +1,21 @@
+{
+  "id": "timing-belts-indicative-01",
+  "moduleId": "timing-belts",
+  "designCode": "INDICATIVE",
+  "description": "Timing belt drive — 5 kW, 24/48 teeth",
+  "inputs": {
+    "power": 5000,
+    "speedDriver": 1450,
+    "pitch": 0.008,
+    "teethDriver": 24,
+    "teethDriven": 48,
+    "beltWidth": 0.025,
+    "serviceFactor": 1.2
+  },
+  "expected": {
+    "ratio": 2,
+    "drivenSpeed": 725
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — timing belts v1"
+}

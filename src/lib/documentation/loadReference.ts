@@ -4,6 +4,7 @@ import { cache } from "react";
 import { categories, allModules } from "@/data/modules";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleMaturity } from "@/data/moduleMaturity";
+import { normalizeDocumentationMath } from "@/lib/documentation/normalizeMath";
 
 const REFERENCE_PATH = path.join(process.cwd(), "docs", "Modules-Technical-Reference.md");
 
@@ -23,9 +24,10 @@ export type DocSection = {
 /** Read and lightly normalize the technical reference for web rendering. */
 export const loadTechnicalReference = cache((): string => {
   const raw = readFileSync(REFERENCE_PATH, "utf8");
-  return raw
+  const linked = raw
     .replace(/^# PhyCalcPro — Modules Technical Reference\n\n/m, "# ")
     .replace(/\[([^\]]+)\]\(\.\/[^)]+\.md\)/g, "$1");
+  return normalizeDocumentationMath(linked);
 });
 
 const MODULE_HEADING_RE = /^### .+? \(`([^`]+)`\)/;

@@ -16,8 +16,19 @@ export default function MarkdownContent({ markdown, className = "" }: Props) {
       className={`documentation-prose max-w-none text-slate-700 dark:text-slate-200 ${className}`}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeSlug, rehypeKatex]}
+        remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
+        rehypePlugins={[
+          rehypeSlug,
+          [
+            rehypeKatex,
+            {
+              strict: "ignore",
+              throwOnError: false,
+              trust: true,
+              output: "html",
+            },
+          ],
+        ]}
         components={{
           h2: ({ children, id }) => (
             <h2
@@ -112,6 +123,23 @@ export default function MarkdownContent({ markdown, className = "" }: Props) {
               {children}
             </a>
           ),
+          sup: ({ children }) => (
+            <sup className="ml-0.5 text-[0.7em] font-medium text-blue-700 dark:text-blue-400">
+              {children}
+            </sup>
+          ),
+          section: ({ node, ...props }) => {
+            const dataFootnotes = (node as { dataFootnotes?: boolean }).dataFootnotes;
+            if (dataFootnotes) {
+              return (
+                <section
+                  {...props}
+                  className="mt-12 border-t border-slate-200 pt-6 dark:border-slate-700"
+                />
+              );
+            }
+            return <section {...props} />;
+          },
         }}
       >
         {markdown}

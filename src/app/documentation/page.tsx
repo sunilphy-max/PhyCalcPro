@@ -45,7 +45,8 @@ export default function DocumentationPage() {
             <em>Not available</em> means the check is catalogued but not yet verified for that code.
           </li>
           <li>
-            Export CSV on all tiers; PDF with checks and basis — Pro (or validation unlock in dev).
+            Export CSV and PDF reports with engineering checks — included during early access (no
+            signup required).
           </li>
         </ul>
         <p className="mt-4 text-sm text-slate-500">

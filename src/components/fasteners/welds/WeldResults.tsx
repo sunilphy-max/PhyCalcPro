@@ -68,7 +68,19 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
           <h3 className="text-sm font-semibold text-slate-700">Stress state</h3>
           <dl className="mt-3 space-y-3 text-sm text-slate-600">
             <div className="flex justify-between gap-4">
-              <dt>Shear stress</dt>
+              <dt>Direct shear</dt>
+              <dd>
+                {fromBase(result.directShearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>Moment shear</dt>
+              <dd>
+                {fromBase(result.momentShearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt>Combined shear</dt>
               <dd>
                 {fromBase(result.shearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
               </dd>

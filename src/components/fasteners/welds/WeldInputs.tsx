@@ -23,6 +23,10 @@ type Props = {
   setAxialForce: Dispatch<SetStateAction<number>>;
   axialForceUnit: string;
   setAxialForceUnit: Dispatch<SetStateAction<string>>;
+  eccentricity: number;
+  setEccentricity: Dispatch<SetStateAction<number>>;
+  eccentricityUnit: string;
+  setEccentricityUnit: Dispatch<SetStateAction<string>>;
   material: string;
   setMaterial: Dispatch<SetStateAction<string>>;
   onCalculate: () => void;
@@ -49,6 +53,10 @@ export default function WeldInputs({
   setAxialForce,
   axialForceUnit,
   setAxialForceUnit,
+  eccentricity,
+  setEccentricity,
+  eccentricityUnit,
+  setEccentricityUnit,
   material,
   setMaterial,
   onCalculate,
@@ -154,6 +162,25 @@ export default function WeldInputs({
               fieldKey="force"
               value={axialForceUnit}
               onChange={setAxialForceUnit}
+            />
+          </div>
+        </label>
+
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Eccentricity (shear line to group CG)</span>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={0}
+              value={eccentricity}
+              onChange={(event) => setEccentricity(Number(event.target.value))}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+            />
+            <ModuleUnitSelect
+              moduleId="welds"
+              fieldKey="length"
+              value={eccentricityUnit}
+              onChange={setEccentricityUnit}
             />
           </div>
         </label>

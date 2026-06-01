@@ -38,4 +38,10 @@ export type PressureVesselResult = {
   thickness: number;
   length: number;
   pressure: number;
+  /** Thick-wall Lame hoop stress at inner surface (Pa) */
+  lameHoopInner?: number;
+  /** Thick-wall Lame radial stress at inner surface (Pa) */
+  lameRadialInner?: number;
+  /** Indicative dished head membrane stress (Pa) */
+  dishedHeadStress?: number;
 };

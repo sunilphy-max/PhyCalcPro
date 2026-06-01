@@ -28,6 +28,8 @@ export type ShaftConfig = {
   material: ShaftMaterial;
   loads: LoadCase[];
   meshSegments?: number;
+  /** Stress concentration factor applied to peak von Mises stress (steps, fillets). */
+  stressConcentrationFactor?: number;
 };
 
 export type ShaftResult = {

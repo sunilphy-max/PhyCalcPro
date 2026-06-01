@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 
 export default function PlanBadge() {
-  const { tierLabel, entitlement } = useEntitlement();
+  const { tierLabel, entitlement, isMonetizationEnabled } = useEntitlement();
+
+  if (!isMonetizationEnabled) {
+    return null;
+  }
 
   if (entitlement.tier === "free") {
     return (

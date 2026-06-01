@@ -3,6 +3,7 @@ export type FatigueConfig = {
   meanStress: number;
   ultimateStrength: number;
   enduranceLimit: number;
+  meanStressMethod?: "goodman" | "gerber" | "morrow";
 };
 
 export type FatigueResult = {

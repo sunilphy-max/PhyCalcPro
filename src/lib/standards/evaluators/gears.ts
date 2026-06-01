@@ -22,6 +22,12 @@ export function attachGearCalculationSpec(
             result.contactSafetyFactor,
             designCode
           ),
+          makeSafetyFactorCheck(
+            "micropitting",
+            "Micropitting safety factor (ISO 6336-22 screening)",
+            result.micropittingSafetyFactor,
+            designCode
+          ),
         ]
       : buildGearCodeChecks(result, designCode);
 

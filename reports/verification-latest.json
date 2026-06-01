@@ -1,10 +1,36 @@
 {
-  "ranAt": "2026-05-30T21:04:14.528Z",
-  "total": 4,
-  "passed": 4,
+  "ranAt": "2026-06-01T05:18:33.488Z",
+  "total": 9,
+  "passed": 9,
   "failed": 0,
   "skipped": 0,
   "results": [
+    {
+      "caseId": "bevel-gears-indicative-01",
+      "moduleId": "bevel-gears",
+      "pass": true,
+      "fields": [
+        {
+          "field": "bendingSafety",
+          "expected": 1.6517865854044413,
+          "actual": 1.6517865854044413,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "circular-plates-indicative-01",
+      "moduleId": "circular-plates",
+      "pass": true,
+      "fields": [
+        {
+          "field": "roarkMaxDeflection",
+          "expected": 0.00277875,
+          "actual": 0.00277875,
+          "pass": true
+        }
+      ]
+    },
     {
       "caseId": "columns-indicative-01",
       "moduleId": "columns",
@@ -38,6 +64,25 @@
       ]
     },
     {
+      "caseId": "compression-springs-indicative-01",
+      "moduleId": "compression-springs",
+      "pass": true,
+      "fields": [
+        {
+          "field": "springRate",
+          "expected": 2021.5,
+          "actual": 2019.2307692307693,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 9.513048070267537,
+          "actual": 9.513048070267537,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "fatigue-indicative-01",
       "moduleId": "fatigue",
       "pass": true,
@@ -65,6 +110,44 @@
           "field": "safetyFactor",
           "expected": 1.6045684478209867,
           "actual": 1.6045684478209867,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "keys-splines-indicative-01",
+      "moduleId": "keys-splines",
+      "pass": true,
+      "fields": [
+        {
+          "field": "shearSafety",
+          "expected": 2.625,
+          "actual": 2.6250000000000004,
+          "pass": true
+        },
+        {
+          "field": "bearingSafety",
+          "expected": 2.109375,
+          "actual": 2.109375,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "timing-belts-indicative-01",
+      "moduleId": "timing-belts",
+      "pass": true,
+      "fields": [
+        {
+          "field": "ratio",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "field": "drivenSpeed",
+          "expected": 725,
+          "actual": 725,
           "pass": true
         }
       ]

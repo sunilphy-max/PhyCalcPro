@@ -4,6 +4,11 @@ export type FitConfig = {
   holeLower: number;
   shaftUpper: number;
   shaftLower: number;
+  /** ISO 286 tolerance grade e.g. 7 for H7/g6 auto lookup */
+  isoHoleGrade?: number;
+  isoShaftGrade?: number;
+  isoHoleLetter?: string;
+  isoShaftLetter?: string;
 };
 
 export type FitResult = {
@@ -18,6 +23,8 @@ export type FitResult = {
 
 export type ToleranceConfig = {
   tolerances: number[];
+  tolerancesY?: number[];
+  monteCarloSamples?: number;
 };
 
 export type ToleranceResult = {
@@ -26,4 +33,8 @@ export type ToleranceResult = {
   worstCase: number;
   rss: number;
   totalTolerance: number;
+  worstCaseY?: number;
+  rssY?: number;
+  monteCarloMean?: number;
+  monteCarloStdDev?: number;
 };

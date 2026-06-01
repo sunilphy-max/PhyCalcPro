@@ -1,10 +1,12 @@
 # PhyCalcPro — Modules Technical Reference
 
-Engineering software manual for the **35 product modules** shipped under `/products/*`. This document describes purpose, governing methods, design-code support, UI maturity, and known gaps. It complements the homogenization contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
+Engineering software manual for the **54 product modules** shipped under `/products/*`. This document describes purpose, governing methods, design-code support, UI maturity, and known gaps. It complements the homogenization contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
 
 **Audience:** engineers evaluating PhyCalcPro for design work, and developers extending modules.
 
 **Disclaimer:** All modules produce **indicative** results unless explicitly marked **beta** with implemented code checks. Nothing here replaces licensed professional review or official code compliance certification.
+
+**Equations (authoring):** Use LaTeX in `\( … \)` for inline math and `\[ … \]` for display blocks (or `$ … $` / `$$ … $$`). The site converts these to KaTeX. List items like `- Torque: \(T = …\)` render as labeled display equations.
 
 ---
 
@@ -66,7 +68,7 @@ Changing design code sets **default units** via `useDesignCodeUnits` / `modulePr
 
 ### 1.4 Units
 
-- Field definitions: `src/lib/units/moduleProfiles.ts` (30 of 35 modules profiled).
+- Field definitions: `src/lib/units/moduleProfiles.ts` (expansion modules profiled; legacy gaps remain for trusses, cost-estimator, cam-toolpaths).
 - Preferred input widget: `CalculatorUnitField` + `calculatorNumberInputClass`.
 - Metric display: `CalculatorMetricCard` / `formatEngineeringValue` for auto scientific notation when \(|v| \ge 1000\) or \(|v| < 0.01\).
 
@@ -91,25 +93,27 @@ Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUn
 
 | Category | Count | Module IDs |
 |----------|------:|------------|
-| Structural | 7 | beams, frames, trusses, columns, plates, combined-loading, load-case-manager |
-| Machine | 5 | shafts, gears, bearings, cams, flywheels |
-| Fasteners | 4 | bolts, welds, rivets, safety-factor |
-| Materials | 6 | material-db, sections, composites, temperature-properties, fatigue, corrosion |
+| Structural | 8 | beams, frames, trusses, columns, plates, combined-loading, load-case-manager, circular-plates |
+| Power transmission | 4 | v-belts, timing-belts, roller-chains, multi-pulley |
+| Machine | 11 | shafts, gears, bearings, cams, flywheels, bevel-gears, worm-gears, planetary-gears, gear-ratio-design, plain-bearings, brakes-clutches |
+| Springs | 3 | compression-springs, extension-springs, torsion-springs |
+| Fasteners | 7 | bolts, welds, rivets, safety-factor, keys-splines, shaft-hubs, pins |
+| Materials | 7 | database, sections, rolled-sections, composites, temperature-properties, fatigue, corrosion |
 | Pressure | 4 | pipes, vessels, hydraulics, heat-exchangers |
 | Dynamics | 4 | vibrations, rotation, impact, suspension |
 | Manufacturing | 4 | tolerance, fits, cost-estimator, cam-toolpaths |
-| Profiles | 1 | profiles |
-| **Total** | **35** | |
+| Tools | 2 | formula-reference, unit-converter |
+| **Total** | **54** | |
 
 ### Homogenization snapshot
 
 | Aspect | Status |
 |--------|--------|
-| `CalculatorLayout` + `moduleId` | All 35 pages |
-| `useStandardCalculation` / `useCalculatorModule` | 35 / 35 |
-| Unit profiles (`moduleProfiles.ts`) | 30 / 35 — missing: trusses, material-db, safety-factor, cost-estimator, cam-toolpaths |
-| Modern `inputs`/`results` layout | ~9 modules — beams, frames, trusses, plates, vessels, pipes, vibrations, shafts; remainder use legacy slots |
-| `CalculatorResultsShell` / metric cards | Widespread in results components; not universal in inputs |
+| `CalculatorLayout` + `moduleId` | All 54 pages |
+| `useStandardCalculation` / `useCalculatorModule` | 54 / 54 |
+| Unit profiles (`moduleProfiles.ts`) | All expansion modules + majority of legacy modules |
+| Modern `inputs`/`results` or full `*Inputs`/`*Results` | All 19 expansion modules + v-belts; legacy slots on some mature modules |
+| `CalculatorResultsShell` / metric cards | Universal on expansion modules; widespread elsewhere |
 | Specialized code evaluators | 5 modules |
 | Extracted from monolith (complete) | impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties |
 
@@ -793,13 +797,138 @@ From `src/data/moduleMaturity.ts`:
 
 | Priority | Gap |
 |----------|-----|
-| High | Beams: shear check, LTB (AISC/EN planned) |
-| High | Gears: scuffing, fatigue, micropitting (catalogued planned) |
-| Medium | Shafts: move from indicative to DIN 743 / AGMA fatigue checks |
-| Medium | Vessels/pipes: ASME/EN thickness equations vs. FEM-only post-processing |
-| Low | Generic modules: replace placeholder indicative checks with code-specific limit states |
+| Medium | Shafts: Kt UI wiring; DIN 743 / AGMA fatigue checks |
+| Medium | Tolerance/fits: expose 2D stack, Monte Carlo, ISO 286 auto UI |
+| Low | Welds: eccentric weld group combined stress refinement |
+| Low | Bolts: bolt pattern load sharing |
+
+**Recently addressed (2026 expansion):** Full UI for 19 expansion modules (springs, power transmission, gearing extensions, connections, circular-plates, rolled-sections, tools); fatigue Gerber/Morrow selector; tolerance 2D + Monte Carlo UI; fits ISO 286 lookup; shaft Kt input.
 
 Only **columns, combined-loading, welds**, and partial **beams/gears** have non-generic implemented evaluators.
+
+---
+
+## 13. Expansion modules (2026)
+
+### 13.1 Power transmission
+
+| Module | Key relations |
+|--------|----------------|
+| **v-belts** | \(L = 2C + \frac{\pi(D_1+D_2)}{2} + \frac{(D_2-D_1)^2}{4C}\); pretension from tight/slack ratio with friction wrap |
+| **timing-belts** | Pitch diameter \(d = p z / \pi\); belt length open-drive approximation |
+| **roller-chains** | Power capacity vs. strand count; life \(\propto 1/\text{load}^3\) screening |
+| **multi-pulley** | Wrap angles from center distance and diameters; segment length sum |
+
+### 13.2 Gearing extensions
+
+| Module | Key relations |
+|--------|----------------|
+| **bevel-gears** | Lewis bending + Hertzian contact (same family as spur) |
+| **worm-gears** | Efficiency \(\eta = \tan\lambda/(\tan\lambda+\mu)\) |
+| **planetary-gears** | \(z_r = z_s + 2 z_p\), ratio \(1 + z_r/z_s\) |
+| **gear-ratio-design** | Integer search minimizing \(\|z_2/z_1 - i\|\) |
+
+### 13.3 Springs
+
+Helical compression: \(k = G d^4 / (8 D^3 n)\), Wahl factor \(K_s\), solid height \(\approx n d + 2d\).
+
+Extension springs reuse compression core with initial tension estimate. Torsion springs: \(k = E d^4 / (116 D n)\), bending stress from torque.
+
+### 13.4 Shaft connections
+
+Keys/splines: shear \(\tau = T/(0.5 d A_s)\), bearing on key. Shaft hubs: Lamé-type contact pressure from interference. Pins: double shear + bearing on plate thickness.
+
+### 13.5 Other new modules
+
+- **brakes-clutches:** friction torque at mean radius, energy \(E = P \Delta t\)
+- **plain-bearings:** Sommerfeld \(S = \mu U / W\), film thickness screening
+- **circular-plates:** \(w \propto p a^4 / D\), \(D = E t^3 / (12(1-\nu^2))\)
+- **rolled-sections:** catalog lookup (W/S/C starter set)
+- **formula-reference / unit-converter:** shared formula hub and unit layer
+
+---
+
+## 14. Expansion module reference (`id`)
+
+Each entry summarizes governing relations for the 19 modules added in the 2026 expansion. All ship with dedicated `*Inputs.tsx` / `*Results.tsx`, `moduleProfiles` entries, and `CalculatorResultsShell` export.
+
+### Module (`compression-springs`)
+
+Helical compression: spring rate \(k = G d^4 / (8 D^3 n)\), Wahl shear factor \(K_s = (4C-1)/(4C-4) + 0.615/C\) with \(C = D/d\), shear stress \(\tau = 8 F D K_s / (\pi d^3)\), solid height \(\approx n d + 2d\).
+
+### Module (`extension-springs`)
+
+Same rate and stress core as compression; adds initial tension estimate \(F_i \approx k \cdot 0.1 L_0\).
+
+### Module (`torsion-springs`)
+
+Rate \(k = E d^4 / (116 D n)\); torque \(T = k \theta\); bending stress \(\sigma = 32 T / (\pi d^3)\).
+
+### Module (`timing-belts`)
+
+Pitch diameter \(d = p z / \pi\); open-drive belt length; tangential force from transmitted power and driver speed.
+
+### Module (`roller-chains`)
+
+Sprocket pitch diameters; chain speed \(v = \pi d n / 60\); indicative life vs. load index.
+
+### Module (`multi-pulley`)
+
+Wrap angle \(\theta = \pi \mp 2 \arcsin(|D_2-D_1|/(2C))\) (open/crossed); belt length \(L = 2C + \frac{\pi(D_1+D_2)}{2} + \frac{(D_2-D_1)^2}{4C}\).
+
+### Module (`bevel-gears`)
+
+Lewis bending with geometry factor \(Y\); Hertzian contact stress screening; safety vs. yield.
+
+### Module (`worm-gears`)
+
+Ratio \(i = z_g / z_w\); efficiency \(\eta = \tan\lambda / (\tan\lambda + \mu)\); worm torque with efficiency loss.
+
+### Module (`planetary-gears`)
+
+Ring teeth \(z_r = z_s + 2 z_p\); ratio \(1 + z_r/z_s\); planet count from spacing.
+
+### Module (`gear-ratio-design`)
+
+Integer search minimizing \(|z_2/z_1 - i_\text{target}|\) subject to tooth limits.
+
+### Module (`plain-bearings`)
+
+Sommerfeld \(S = \mu \omega r / (W c)\); eccentricity and minimum film thickness screening.
+
+### Module (`brakes-clutches`)
+
+Friction torque at mean radius \(\bar r = \frac{2}{3}\frac{r_o^3-r_i^3}{r_o^2-r_i^2}\); energy per stop \(E = P \Delta t\).
+
+### Module (`keys-splines`)
+
+Key shear \(\tau = T/(0.5 d A_s)\); bearing \(\sigma = 2T/(d A_b)\); capacity from allowable stresses.
+
+### Module (`shaft-hubs`)
+
+Lamé-type contact pressure from interference \(\delta\); friction torque \(T = p \pi d L \mu d/2\).
+
+### Module (`pins`)
+
+Double-shear stress \(\tau = F/(n A)\); bearing on plate \(\sigma = F/(n d t)\).
+
+### Module (`circular-plates`)
+
+Roark coefficients: \(w_\max = \alpha p a^4 / D\), \(\sigma \propto \beta p a^2 / t^2\), flexural rigidity \(D = E t^3 / (12(1-\nu^2))\) for simply supported or clamped edge.
+
+### Module (`rolled-sections`)
+
+Catalog lookup — area, \(I_x\), \(I_y\), section moduli, mass per meter for W/S/C starter sections.
+
+### Module (`formula-reference`)
+
+Evaluates catalog formulas: kinetic energy \(E = \frac{1}{2}mv^2\), pump power \(P = Q \Delta p\), thermal expansion \(\Delta L = \alpha L \Delta T\), friction \(F = \mu N\).
+
+### Module (`unit-converter`)
+
+Converts via SI base layer: `toBase` / `fromBase` for length, force, stress dimensions.
+
+---
 
 ### 12.3 Physics & solver scope
 

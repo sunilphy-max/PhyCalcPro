@@ -84,6 +84,7 @@ export default function Page() {
   // =========================
   const [result, setResult] = useState<ShaftResult | null>(null);
   const [meshSegments, setMeshSegments] = useState(100);
+  const [stressConcentrationFactor, setStressConcentrationFactor] = useState(1);
   const [projectName, setProjectName] = useState("Shaft Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<ShaftProject[]>(() =>
@@ -128,6 +129,7 @@ export default function Page() {
           : {}),
       })),
       meshSegments: Math.max(10, Math.round(meshSegments)),
+      stressConcentrationFactor,
     };
 
     const raw = solveShaftEngine(normalizedInputs);
@@ -217,6 +219,8 @@ export default function Page() {
           setLoads={setLoads}
           meshSegments={meshSegments}
           setMeshSegments={setMeshSegments}
+          stressConcentrationFactor={stressConcentrationFactor}
+          setStressConcentrationFactor={setStressConcentrationFactor}
           onCalculate={calculate}
           onSave={saveProject}
           saving={saving}

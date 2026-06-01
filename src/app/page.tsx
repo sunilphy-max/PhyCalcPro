@@ -11,6 +11,7 @@ import {
   BarChart3,
   CircleDot,
 } from "lucide-react";
+import { isFreeLaunch } from "@/lib/licensing/validationMode";
 
 const demoX = Array.from({ length: 21 }, (_, index) => index * 0.2);
 const demoY = demoX.map((value) => Math.sin(value * 1.3) * 0.15 - 0.1 * value + 0.12);
@@ -67,10 +68,28 @@ export default function HomePage() {
                   Explore tools
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="/pricing" className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400">
-                  Pricing
-                </Link>
+                {isFreeLaunch() ? (
+                  <Link
+                    href="/documentation"
+                    className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+                  >
+                    See docs
+                  </Link>
+                ) : (
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+                  >
+                    Pricing
+                  </Link>
+                )}
               </div>
+              {isFreeLaunch() ? (
+                <p className="text-sm text-slate-600">
+                  Early access — all 35 calculators, US / EU / ISO standards, and PDF export. No signup
+                  required.
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-6">

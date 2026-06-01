@@ -33,9 +33,16 @@ export function solveVibrationFEM(config: VibrationConfig): VibrationResult {
     return full.filter((_, index) => index % 2 === 0);
   });
 
+  const frequencies = modes.map((mode) => mode.frequency);
+  const zeta = Math.min(Math.max(config.dampingRatio ?? 0, 0), 0.5);
+  const dampFactor = Math.sqrt(Math.max(0, 1 - zeta * zeta));
+
   return {
     x: mesh.nodes.map((node) => node.x),
-    frequencies: modes.map((mode) => mode.frequency),
+    frequencies,
+    dampedNaturalFrequencies: frequencies.map((f) => f * dampFactor),
+    dampingRatio: zeta,
+    resonanceNote: "",
     modeShapes: fullModeShapes,
     support: config.support,
     segments: mesh.segments,

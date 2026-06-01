@@ -4,6 +4,11 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+## Launch / monetization
+
+- **Free launch:** `NEXT_PUBLIC_FREE_LAUNCH=true` unlocks all features and hides Pricing/Account/Pro UI. See `docs/Launch-Plan.md`.
+- **Gating helpers:** `src/lib/licensing/validationMode.ts` (`allFeaturesUnlocked`, `isMonetizationEnabled`, `isFreeLaunch`).
+
 ## Product routes (`/products/*`)
 
 - **One sidebar only:** `src/app/products/layout.tsx` renders `Sidebar`. Category layouts (`structural`, `machine`, etc.) must be passthrough wrappers — never import `Sidebar` there.

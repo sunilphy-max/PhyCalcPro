@@ -53,7 +53,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       EU: ref("DIN", "3990", "Scuffing"),
       ISO: ref("ISO", "6336-20", "Scuffing"),
     },
-    { US: "planned", EU: "planned", ISO: "planned" }
+    { US: "implemented", EU: "implemented", ISO: "implemented", INDICATIVE: "implemented" }
   ),
   checkDef(
     "bending_fatigue",
@@ -64,7 +64,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       EU: ref("DIN", "3990", "Fatigue"),
       ISO: ref("ISO", "6336-3", "Bending fatigue"),
     },
-    { US: "planned", EU: "planned", ISO: "planned" }
+    { US: "implemented", EU: "implemented", ISO: "implemented", INDICATIVE: "implemented" }
   ),
   checkDef(
     "contact_fatigue",
@@ -75,7 +75,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       EU: ref("DIN", "3990", "Pitting"),
       ISO: ref("ISO", "6336-2", "Pitting resistance"),
     },
-    { US: "planned", EU: "planned", ISO: "planned" }
+    { US: "implemented", EU: "implemented", ISO: "implemented", INDICATIVE: "implemented" }
   ),
   checkDef(
     "micropitting",
@@ -85,7 +85,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       ISO: ref("ISO", "6336-22", "Micropitting"),
       EU: ref("DIN", "3990", "Micropitting"),
     },
-    { ISO: "planned", EU: "planned" }
+    { ISO: "implemented", EU: "implemented", INDICATIVE: "implemented", US: "planned" }
   ),
 ];
 
@@ -110,7 +110,7 @@ export const beamChecks: ModuleCheckDefinition[] = [
       US: ref("AISC", "360-22", "Ch. G shear"),
       EU: ref("EN", "1993-1-1", "Cl. 6.2.6"),
     },
-    { INDICATIVE: "planned", US: "planned", EU: "planned" }
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented" }
   ),
   checkDef(
     "deflection_serviceability",
@@ -131,7 +131,92 @@ export const beamChecks: ModuleCheckDefinition[] = [
       US: ref("AISC", "360-22", "Ch. F LTB"),
       EU: ref("EN", "1993-1-1", "Cl. 6.3.3"),
     },
-    { US: "planned", EU: "planned" }
+    { US: "implemented", EU: "implemented", INDICATIVE: "implemented" }
+  ),
+];
+
+export const compressionSpringChecks: ModuleCheckDefinition[] = [
+  checkDef(
+    "shear_stress",
+    "Shear stress utilization",
+    "utilization",
+    {
+      INDICATIVE: ref("Mechanics", "Spring shear", "τ = 8·F·D·Ks/(π·d³)"),
+      US: ref("ASME", "B18.2.1", "Spring wire"),
+      EU: ref("EN", "13906-1", "Compression springs"),
+    },
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented" }
+  ),
+  checkDef(
+    "solid_height",
+    "Solid height margin",
+    "safety_factor",
+    { INDICATIVE: ref("Mechanics", "Solid height") },
+    { INDICATIVE: "implemented" }
+  ),
+];
+
+export const vBeltChecks: ModuleCheckDefinition[] = [
+  checkDef(
+    "power_capacity",
+    "Power capacity utilization",
+    "utilization",
+    {
+      INDICATIVE: ref("Mechanics", "Flat/V-belt power", "P = T·ω"),
+      US: ref("Gates", "Heavy-Duty V-Belt Drive Design Manual"),
+    },
+    { INDICATIVE: "implemented", US: "implemented" }
+  ),
+  checkDef(
+    "wrap_angle",
+    "Wrap angle on small pulley",
+    "other",
+    { INDICATIVE: ref("Mechanics", "Belt wrap", "≥ 120° recommended") },
+    { INDICATIVE: "implemented" }
+  ),
+];
+
+export const timingBeltChecks: ModuleCheckDefinition[] = [
+  checkDef(
+    "power_capacity",
+    "Power capacity utilization",
+    "utilization",
+    {
+      INDICATIVE: ref("Mechanics", "Timing belt power rating"),
+      ISO: ref("ISO", "5294", "Synchronous belt drives"),
+    },
+    { INDICATIVE: "implemented", ISO: "implemented" }
+  ),
+  checkDef(
+    "shaft_load",
+    "Shaft radial load estimate",
+    "other",
+    { INDICATIVE: ref("Mechanics", "Belt tension resultant") },
+    { INDICATIVE: "implemented" }
+  ),
+];
+
+export const keysSplinesChecks: ModuleCheckDefinition[] = [
+  checkDef(
+    "shear",
+    "Key shear safety factor",
+    "safety_factor",
+    {
+      INDICATIVE: ref("Mechanics", "Key shear", "τ = 2T/(d·b·L)"),
+      ISO: ref("ISO", "3912", "Keys"),
+      US: ref("Machinery's Handbook", "Keys and splines"),
+    },
+    { INDICATIVE: "implemented", ISO: "implemented", US: "implemented" }
+  ),
+  checkDef(
+    "bearing",
+    "Key bearing safety factor",
+    "safety_factor",
+    {
+      INDICATIVE: ref("Mechanics", "Key bearing"),
+      ISO: ref("ISO", "3912", "Keys"),
+    },
+    { INDICATIVE: "implemented", ISO: "implemented" }
   ),
 ];
 

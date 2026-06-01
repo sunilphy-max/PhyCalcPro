@@ -31,6 +31,12 @@ import {
   Ruler,
   Combine,
   ShieldCheck,
+  Link,
+  Link2,
+  Anchor,
+  CircleEllipsis,
+  BookOpen,
+  ArrowLeftRight,
 } from "lucide-react";
 
 /**
@@ -145,6 +151,62 @@ export const categories: EngineeringCategory[] = [
         category: "structural",
         icon: Workflow,
       },
+      {
+        id: "circular-plates",
+        title: "Circular Plates",
+        description: "Annular and solid plate deflection screening",
+        route: "/products/structural/circular-plates",
+        category: "structural",
+        icon: CircleEllipsis,
+      },
+    ],
+  },
+
+  // =========================================================
+  // POWER TRANSMISSION
+  // =========================================================
+  {
+    id: "power-transmission",
+    title: "Power Transmission",
+    description: "Belts, chains, and multi-pulley drives",
+
+    icon: Link2,
+    color: "from-emerald-500 to-emerald-600",
+
+    modules: [
+      {
+        id: "v-belts",
+        title: "V-Belt Drive",
+        description: "Pulley sizing, belt length, power and pretension",
+        route: "/products/power-transmission/v-belts",
+        category: "power-transmission",
+        icon: Link,
+        featured: true,
+      },
+      {
+        id: "timing-belts",
+        title: "Timing Belt Drive",
+        description: "Toothed belt pitch, teeth, power and axis loads",
+        route: "/products/power-transmission/timing-belts",
+        category: "power-transmission",
+        icon: Cog,
+      },
+      {
+        id: "roller-chains",
+        title: "Roller Chain Drive",
+        description: "Sprocket sizing, strand selection and life",
+        route: "/products/power-transmission/roller-chains",
+        category: "power-transmission",
+        icon: Link2,
+      },
+      {
+        id: "multi-pulley",
+        title: "Multi-Pulley Layout",
+        description: "Wrap angles and belt or chain length",
+        route: "/products/power-transmission/multi-pulley",
+        category: "power-transmission",
+        icon: GitBranch,
+      },
     ],
   },
 
@@ -206,6 +268,94 @@ export const categories: EngineeringCategory[] = [
         category: "machine",
         icon: Disc3,
       },
+      {
+        id: "bevel-gears",
+        title: "Bevel Gear Screening",
+        description: "Bevel geometry and strength screening",
+        route: "/products/machine/bevel-gears",
+        category: "machine",
+        icon: CircleDot,
+      },
+      {
+        id: "worm-gears",
+        title: "Worm Gear Drive",
+        description: "Worm efficiency and contact stress screening",
+        route: "/products/machine/worm-gears",
+        category: "machine",
+        icon: RotateCcw,
+      },
+      {
+        id: "planetary-gears",
+        title: "Planetary Gear Set",
+        description: "Sun, planet and ring sizing for target ratio",
+        route: "/products/machine/planetary-gears",
+        category: "machine",
+        icon: Orbit,
+      },
+      {
+        id: "gear-ratio-design",
+        title: "Gear Ratio Design",
+        description: "Tooth count optimization for target ratio",
+        route: "/products/machine/gear-ratio-design",
+        category: "machine",
+        icon: Scaling,
+      },
+      {
+        id: "plain-bearings",
+        title: "Plain Bearings",
+        description: "Hydrodynamic journal bearing screening",
+        route: "/products/machine/plain-bearings",
+        category: "machine",
+        icon: Circle,
+      },
+      {
+        id: "brakes-clutches",
+        title: "Brakes & Clutches",
+        description: "Friction torque, energy and safety factor",
+        route: "/products/machine/brakes-clutches",
+        category: "machine",
+        icon: Disc3,
+      },
+    ],
+  },
+
+  // =========================================================
+  // SPRINGS
+  // =========================================================
+  {
+    id: "springs",
+    title: "Springs",
+    description: "Helical compression, extension and torsion springs",
+
+    icon: Waves,
+    color: "from-lime-500 to-lime-600",
+
+    modules: [
+      {
+        id: "compression-springs",
+        title: "Compression Springs",
+        description: "Rate, stress, solid height and fatigue screening",
+        route: "/products/springs/compression-springs",
+        category: "springs",
+        icon: Activity,
+        featured: true,
+      },
+      {
+        id: "extension-springs",
+        title: "Extension Springs",
+        description: "Tension spring rate and stress screening",
+        route: "/products/springs/extension-springs",
+        category: "springs",
+        icon: Activity,
+      },
+      {
+        id: "torsion-springs",
+        title: "Torsion Springs",
+        description: "Leg geometry, rate and bending stress",
+        route: "/products/springs/torsion-springs",
+        category: "springs",
+        icon: RotateCcw,
+      },
     ],
   },
 
@@ -256,6 +406,30 @@ export const categories: EngineeringCategory[] = [
         category: "fasteners",
         icon: ShieldCheck,
       },
+      {
+        id: "keys-splines",
+        title: "Keys & Splines",
+        description: "Parallel key and spline torque capacity",
+        route: "/products/fasteners/keys-splines",
+        category: "fasteners",
+        icon: Anchor,
+      },
+      {
+        id: "shaft-hubs",
+        title: "Shaft Hub Fits",
+        description: "Interference fit pressure and torque capacity",
+        route: "/products/fasteners/shaft-hubs",
+        category: "fasteners",
+        icon: Combine,
+      },
+      {
+        id: "pins",
+        title: "Pins & Clevis",
+        description: "Pin shear and bearing capacity",
+        route: "/products/fasteners/pins",
+        category: "fasteners",
+        icon: Bolt,
+      },
     ],
   },
 
@@ -287,6 +461,14 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/sections",
         category: "materials",
         icon: Scaling,
+      },
+      {
+        id: "rolled-sections",
+        title: "Rolled Sections",
+        description: "W, S, C, I, U and L section property lookup",
+        route: "/products/materials/rolled-sections",
+        category: "materials",
+        icon: LayoutGrid,
       },
       {
         id: "composites",
@@ -463,6 +645,37 @@ export const categories: EngineeringCategory[] = [
         route: "/products/manufacturing/cam-toolpaths",
         category: "manufacturing",
         icon: RotateCcw,
+      },
+    ],
+  },
+
+  // =========================================================
+  // TECHNICAL TOOLS
+  // =========================================================
+  {
+    id: "tools",
+    title: "Technical Tools",
+    description: "Formula reference and unit conversion",
+
+    icon: BookOpen,
+    color: "from-indigo-500 to-indigo-600",
+
+    modules: [
+      {
+        id: "formula-reference",
+        title: "Engineering Formulas",
+        description: "Searchable hub of common physics formulas",
+        route: "/products/tools/formula-reference",
+        category: "tools",
+        icon: BookOpen,
+      },
+      {
+        id: "unit-converter",
+        title: "Unit Converter",
+        description: "Convert between engineering unit systems",
+        route: "/products/tools/unit-converter",
+        category: "tools",
+        icon: ArrowLeftRight,
       },
     ],
   },

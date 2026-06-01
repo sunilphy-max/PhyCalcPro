@@ -5,6 +5,7 @@ import { useDesignCode } from "@/contexts/DesignCodeContext";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import { designCodeOptions } from "@/lib/standards/designCodes";
 import type { DesignCodeId } from "@/lib/standards/types";
+
 type Props = {
   moduleId?: string;
   compact?: boolean;
@@ -12,20 +13,29 @@ type Props = {
 
 export default function DesignCodeSelector({ compact = false }: Props) {
   const { designCode, setDesignCode, option } = useDesignCode();
-  const { canUseDesignCode, setDevTier, canSwitchTier, isLoading, featuresUnlocked, unlockAllFeatures } =
-    useEntitlement();
+  const {
+    canUseDesignCode,
+    setDevTier,
+    canSwitchTier,
+    isLoading,
+    featuresUnlocked,
+    unlockAllFeatures,
+    isMonetizationEnabled,
+  } = useEntitlement();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || isMonetizationEnabled) return;
     if (!canUseDesignCode(designCode)) {
       setDesignCode("INDICATIVE");
     }
-  }, [designCode, canUseDesignCode, setDesignCode, isLoading]);
+  }, [designCode, canUseDesignCode, setDesignCode, isLoading, isMonetizationEnabled]);
 
   const onChange = (code: DesignCodeId) => {
     if (!canUseDesignCode(code)) return;
     setDesignCode(code);
   };
+
+  const showProUpsell = isMonetizationEnabled && !canUseDesignCode("US");
 
   return (
     <div className={compact ? "space-y-1" : "space-y-2"}>
@@ -38,18 +48,23 @@ export default function DesignCodeSelector({ compact = false }: Props) {
         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm"
       >
         {designCodeOptions.map((item) => (
-          <option key={item.id} value={item.id} disabled={!canUseDesignCode(item.id)}>
+          <option
+            key={item.id}
+            value={item.id}
+            disabled={isMonetizationEnabled && !canUseDesignCode(item.id)}
+          >
             {item.label}
-            {!canUseDesignCode(item.id) ? " (Pro)" : ""}
+            {isMonetizationEnabled && !canUseDesignCode(item.id) ? " (Pro)" : ""}
           </option>
         ))}
       </select>
       {!compact ? (
         <p className="text-xs text-slate-500">
-          {option.description} Applies recommended default units when you change standard; unit dropdowns stay fully editable.
+          {option.description} Applies recommended default units when you change standard; unit
+          dropdowns stay fully editable.
         </p>
       ) : null}
-      {!canUseDesignCode("US") ? (
+      {showProUpsell ? (
         <div className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
           <p className="font-medium">US / EU / ISO require Pro</p>
           <div className="mt-2 flex flex-wrap gap-2">
@@ -72,8 +87,8 @@ export default function DesignCodeSelector({ compact = false }: Props) {
           </div>
           {!featuresUnlocked && !canSwitchTier ? (
             <p className="mt-2">
-              Or add <code className="rounded bg-white/60 px-1">NEXT_PUBLIC_VALIDATION_MODE=true</code> to .env.local
-              and restart dev.
+              Or add <code className="rounded bg-white/60 px-1">NEXT_PUBLIC_VALIDATION_MODE=true</code> to{" "}
+              .env.local and restart dev.
             </p>
           ) : null}
         </div>

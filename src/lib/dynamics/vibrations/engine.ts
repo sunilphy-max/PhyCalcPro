@@ -25,6 +25,16 @@ export function solveVibrationEngine(config: VibrationConfig): VibrationResult {
   }
 
   const result = solveVibrationFEM(config);
+  const zeta = Math.min(Math.max(config.dampingRatio ?? 0, 0), 0.5);
+  const dampFactor = Math.sqrt(Math.max(0, 1 - zeta * zeta));
+  const dampedNaturalFrequencies = result.frequencies.map((f) => f * dampFactor);
+  const resonanceNote =
+    zeta < 0.02
+      ? "Very light damping: forced response can amplify sharply at natural frequencies (ζ < 2%)."
+      : zeta < 0.1
+        ? "Light damping: use damped natural frequencies for separation checks near resonance."
+        : "Moderate damping: peak response at resonance is reduced versus undamped estimate.";
+
   const warnings: string[] = [];
   if (config.segments < 8) {
     warnings.push("Low segment count may reduce modal accuracy.");
@@ -37,6 +47,9 @@ export function solveVibrationEngine(config: VibrationConfig): VibrationResult {
 
   return {
     ...result,
+    dampedNaturalFrequencies,
+    dampingRatio: zeta,
+    resonanceNote,
     physicsChecks: {
       positiveFrequencies,
       monotonicFrequencyOrder,

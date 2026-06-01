@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isFreeLaunch } from "@/lib/licensing/validationMode";
 
 export const metadata = {
   title: "Trust & engineering responsibility — PhyCalcPro",
@@ -48,8 +49,10 @@ export default function TrustPage() {
 
       <section className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
         <strong>Important:</strong> Always verify results for your project before issuing drawings,
-        specifications, or reports. Use Indicative mode unless you have Pro and understand the β
-        code-check limitations for that module.
+        specifications, or reports.
+        {isFreeLaunch()
+          ? " During early access all design standards are available; still review β code-check limitations for each module."
+          : " Use Indicative mode unless you have Pro and understand the β code-check limitations for that module."}
       </section>
 
       <p className="mt-10 text-sm text-slate-500">

@@ -24,6 +24,7 @@ export default function Page() {
   const [rhoUnit, setRhoUnit] = useState("kg/m3");
   const [segments, setSegments] = useState(12);
   const [support, setSupport] = useState<SupportType>("simply_supported");
+  const [dampingRatio, setDampingRatio] = useState(0.02);
   const [result, setResult] = useState<VibrationResult | null>(null);
   const vibrationPipeline = useCalculationPipeline({
     normalize: (input: {
@@ -34,6 +35,7 @@ export default function Page() {
       rho: number;
       segments: number;
       support: SupportType;
+      dampingRatio: number;
     }) => ({
       length: normalizeInput({ value: input.length, unit: lengthUnit, dimension: "length" }),
       E: normalizeInput({ value: input.E, unit: EUnit, dimension: "stress" }),
@@ -42,6 +44,7 @@ export default function Page() {
       rho: normalizeInput({ value: input.rho, unit: rhoUnit, dimension: "density" }),
       segments: Math.max(2, Math.round(input.segments)),
       support: input.support,
+      dampingRatio: Math.min(0.5, Math.max(0, input.dampingRatio)),
     }),
     solve: (normalized) => solveVibrationEngine(normalized),
     convertOutput: (raw) => raw,
@@ -56,6 +59,7 @@ export default function Page() {
       rho,
       segments,
       support,
+      dampingRatio,
     });
     setResult(wrapResult(solved));
   };
@@ -90,6 +94,8 @@ export default function Page() {
           setSegments={setSegments}
           support={support}
           setSupport={setSupport}
+          dampingRatio={dampingRatio}
+          setDampingRatio={setDampingRatio}
           onCalculate={calculate}
         />
       }

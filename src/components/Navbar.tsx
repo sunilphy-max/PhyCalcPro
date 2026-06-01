@@ -1,24 +1,33 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Menu, Moon, Search, Sun, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Menu, Moon, Sun, X } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import PlanBadge from "@/components/licensing/PlanBadge";
+import { useEntitlement } from "@/contexts/EntitlementContext";
 
-const navigationItems = [
+const allNavigationItems = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/account", label: "Account" },
+  { href: "/pricing", label: "Pricing", monetizationOnly: true },
+  { href: "/account", label: "Account", monetizationOnly: true },
   { href: "/status", label: "Quality" },
   { href: "/support", label: "Support" },
   { href: "/documentation", label: "Docs" },
-];
+] as const;
 
 export default function Navbar() {
+  const { isMonetizationEnabled } = useEntitlement();
+  const navigationItems = useMemo(
+    () =>
+      allNavigationItems.filter(
+        (item) => !("monetizationOnly" in item && item.monetizationOnly) || isMonetizationEnabled
+      ),
+    [isMonetizationEnabled]
+  );
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
@@ -40,7 +49,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur-sm shadow-sm dark:bg-slate-950/95 dark:border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white font-semibold">P</div>
@@ -49,10 +58,6 @@ export default function Navbar() {
               <div className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Engineering Platform</div>
             </div>
           </Link>
-        </div>
-
-        <div className="hidden md:flex flex-1 items-center justify-center">
-          <SearchBar />
         </div>
 
         <div className="hidden md:flex items-center gap-3">
@@ -79,14 +84,6 @@ export default function Navbar() {
         <div className="flex items-center gap-2 md:hidden">
           <button
             type="button"
-            onClick={() => setMobileSearchOpen((value) => !value)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
-            aria-label="Open search"
-          >
-            <Search className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
             onClick={() => setMobileMenuOpen((value) => !value)}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
             aria-label="Toggle menu"
@@ -96,11 +93,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      {mobileSearchOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white/95 px-4 py-4 dark:border-slate-800 dark:bg-slate-950/95">
-          <SearchBar />
+      <div className="border-t border-slate-200 bg-white/95 px-4 py-2 dark:border-slate-800 dark:bg-slate-950/95 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl justify-end">
+          <div className="w-full max-w-md sm:max-w-lg">
+            <SearchBar />
+          </div>
         </div>
-      )}
+      </div>
 
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 px-4 pb-4 dark:border-slate-800 dark:bg-slate-950/95">

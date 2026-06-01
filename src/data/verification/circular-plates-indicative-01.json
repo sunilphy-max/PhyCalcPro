@@ -1,0 +1,20 @@
+{
+  "id": "circular-plates-indicative-01",
+  "moduleId": "circular-plates",
+  "designCode": "INDICATIVE",
+  "description": "Simply supported disk — Roark closed-form reference",
+  "inputs": {
+    "radius": 0.5,
+    "thickness": 0.01,
+    "pressure": 5000,
+    "modulus": 210000000000,
+    "poisson": 0.3,
+    "boundary": "simply_supported",
+    "meshSegments": 24
+  },
+  "expected": {
+    "roarkMaxDeflection": 0.00277875
+  },
+  "tolerancePercent": 3,
+  "source": "PhyCalcPro regression — circular plates Roark v1"
+}

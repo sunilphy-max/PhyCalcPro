@@ -59,10 +59,36 @@
     margin: 0;
   }
 
-  /* Documentation — KaTeX display equations */
+  /* Documentation — KaTeX display & inline math */
+  .documentation-prose .katex {
+    font-size: 1.05em;
+  }
+
   .documentation-prose .katex-display {
-    margin: 1rem 0;
+    margin: 1.25rem 0;
+    padding: 0.75rem 0;
     overflow-x: auto;
     overflow-y: hidden;
+    text-align: center;
+  }
+
+  .documentation-prose .katex-display > .katex {
+    text-align: center;
+  }
+
+  .documentation-prose [data-footnotes] {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: rgb(71 85 105);
+  }
+
+  .documentation-prose [data-footnotes] ol {
+    margin-top: 0.5rem;
+    padding-left: 1.25rem;
+  }
+
+  .documentation-prose [data-footnotes] a[data-footnote-backref] {
+    margin-left: 0.25rem;
+    font-size: 0.75rem;
   }
 }

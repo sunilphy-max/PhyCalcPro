@@ -1,0 +1,20 @@
+{
+  "id": "keys-splines-indicative-01",
+  "moduleId": "keys-splines",
+  "designCode": "INDICATIVE",
+  "description": "Parallel key — 50 mm shaft, 800 N·m torque",
+  "inputs": {
+    "shaftDiameter": 0.05,
+    "keyWidth": 0.014,
+    "keyHeight": 0.009,
+    "keyLength": 0.04,
+    "torque": 800,
+    "yieldStress": 250000000
+  },
+  "expected": {
+    "shearSafety": 2.625,
+    "bearingSafety": 2.109375
+  },
+  "tolerancePercent": 5,
+  "source": "PhyCalcPro regression — keys & splines v1"
+}

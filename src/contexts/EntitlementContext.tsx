@@ -16,7 +16,12 @@ import {
   tierLabel,
 } from "@/lib/licensing/entitlements";
 import { setClientUnlockAll } from "@/lib/licensing/clientUnlock";
-import { allFeaturesUnlocked, isValidationMode } from "@/lib/licensing/validationMode";
+import {
+  allFeaturesUnlocked,
+  isFreeLaunch,
+  isMonetizationEnabled,
+  isValidationMode,
+} from "@/lib/licensing/validationMode";
 import type { Entitlement, PlanTier } from "@/lib/licensing/types";
 import type { DesignCodeId } from "@/lib/standards/types";
 
@@ -29,6 +34,8 @@ type EntitlementContextValue = {
   isLoading: boolean;
   isLocalDev: boolean;
   isValidationMode: boolean;
+  isFreeLaunch: boolean;
+  isMonetizationEnabled: boolean;
   canSwitchTier: boolean;
   setEntitlementToken: (token: string | null) => void;
   clearEntitlement: () => void;
@@ -83,7 +90,12 @@ function resolveDevEntitlement(): Entitlement | null {
   return devEntitlementFromEnv() ?? devEntitlementFromSession();
 }
 
+function launchEntitlement(): Entitlement {
+  return { tier: "free", expiresAt: null, source: "default" };
+}
+
 function initialEntitlementState(): Entitlement {
+  if (isFreeLaunch()) return launchEntitlement();
   return resolveDevEntitlement() ?? (allFeaturesUnlocked() ? proDevEntitlement() : defaultEntitlement());
 }
 
@@ -109,7 +121,9 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
 
     if (allFeaturesUnlocked()) {
       const dev = resolveDevEntitlement();
-      setEntitlement(dev ?? proDevEntitlement());
+      setEntitlement(
+        isFreeLaunch() ? launchEntitlement() : dev ?? proDevEntitlement()
+      );
       setIsLoading(false);
       return;
     }
@@ -217,11 +231,14 @@ export function EntitlementProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       entitlement,
-      tierLabel: tierLabel(entitlement.tier),
+      tierLabel: isFreeLaunch() ? "Early access" : tierLabel(entitlement.tier),
       isLoading,
       isLocalDev: isLocalDevRuntime(),
       isValidationMode: isValidationMode(),
-      canSwitchTier: canUseSessionTier() && !devEntitlementFromEnv(),
+      isFreeLaunch: isFreeLaunch(),
+      isMonetizationEnabled: isMonetizationEnabled(),
+      canSwitchTier:
+        isMonetizationEnabled() && canUseSessionTier() && !devEntitlementFromEnv(),
       setEntitlementToken,
       clearEntitlement,
       setDevTier,

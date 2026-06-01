@@ -25,6 +25,12 @@ export function buildWeldCodeChecks(
       designCode
     ),
     makeUtilizationCheck(
+      "throat_eccentric",
+      "Eccentric moment shear utilization",
+      throatUtilization(result.momentShearStress, result.allowableShear),
+      designCode
+    ),
+    makeUtilizationCheck(
       "throat_combined",
       "Combined throat utilization",
       throatUtilization(result.resultantStress, result.allowableResultant),

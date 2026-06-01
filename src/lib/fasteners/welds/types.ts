@@ -13,6 +13,10 @@ export type WeldConfig = {
   weldCount: number;
   shearForce: number;
   axialForce: number;
+  /** Perpendicular distance from weld group centroid to resultant shear (eccentricity). */
+  eccentricity?: number;
+  /** Optional direct bending moment on group (N·m); defaults to shearForce × eccentricity. */
+  bendingMoment?: number;
   material: WeldMaterial;
 };
 
@@ -25,6 +29,12 @@ export type WeldResult = {
   totalThroatArea: number;
   shearStress: number;
   axialStress: number;
+  /** Direct shear on throat (before eccentricity). */
+  directShearStress: number;
+  /** Shear from eccentric moment on group. */
+  momentShearStress: number;
+  bendingMoment: number;
+  polarMomentOfInertia: number;
   resultantStress: number;
   allowableShear: number;
   allowableAxial: number;

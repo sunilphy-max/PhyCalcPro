@@ -24,6 +24,18 @@ export type PressurePipeElement = {
   I: number;
 };
 
+export type PipeStressCategory = "sustained" | "occasional" | "peak";
+
+export type PipeStressSummary = {
+  category: PipeStressCategory;
+  label: string;
+  hoopStress: number;
+  longitudinalStress: number;
+  equivalentStress: number;
+  allowableStress: number;
+  utilization: number;
+};
+
 export type PressurePipeResult = {
   nodes: PressurePipeNode[];
   elements: PressurePipeElement[];
@@ -32,6 +44,8 @@ export type PressurePipeResult = {
   radialDisplacement: number[];
   maxRadialDisplacement: number;
   maxHoopStress: number;
+  /** ASME B31.3–style stress category screening (indicative). */
+  stressCategories: PipeStressSummary[];
   angles: number[];
   segments: number;
   radius: number;

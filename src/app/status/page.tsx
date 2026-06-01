@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isMonetizationEnabled } from "@/lib/licensing/validationMode";
 import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
 import { exportUnitAuditMatrix, defaultExportUnitMatrixNote } from "@/lib/qa/exportUnitMatrix";
 import {
@@ -145,11 +146,16 @@ export default function StatusPage() {
         <p className="mt-10 text-sm text-slate-500">
           <Link href="/documentation" className="underline">
             Documentation
-          </Link>{" "}
-          ·{" "}
-          <Link href="/pricing" className="underline">
-            Pricing
           </Link>
+          {isMonetizationEnabled() ? (
+            <>
+              {" "}
+              ·{" "}
+              <Link href="/pricing" className="underline">
+                Pricing
+              </Link>
+            </>
+          ) : null}
         </p>
       </div>
     </div>

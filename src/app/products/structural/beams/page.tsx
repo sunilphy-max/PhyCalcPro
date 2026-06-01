@@ -266,6 +266,9 @@ const handleLoadDrag = (
       attachBeamCalculationSpec(converted, designCode, {
         yieldStressPa: 250e6,
         deflectionLimit: length > 0 ? length / 360 : undefined,
+        c: normalizeInput({ value: c, unit: lengthUnit, dimension: "length" }),
+        I: normalizeInput({ value: I, unit: inertiaUnit, dimension: "inertia" }),
+        spanLength: normalizeInput({ value: length, unit: lengthUnit, dimension: "length" }),
       })
     );
   };

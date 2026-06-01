@@ -1,5 +1,52 @@
 import { generatePressurePipeMesh } from "./mesh";
-import type { PressurePipeConfig, PressurePipeResult } from "./types";
+import type { PressurePipeConfig, PressurePipeResult, PipeStressSummary } from "./types";
+
+function buildPipeStressCategories(
+  config: PressurePipeConfig,
+  maxHoopStress: number
+): PipeStressSummary[] {
+  const longitudinalStress = (config.pressure * config.radius) / (2 * Math.max(config.thickness, 1e-9));
+  const equivalentStress = Math.sqrt(
+    maxHoopStress * maxHoopStress +
+      longitudinalStress * longitudinalStress -
+      maxHoopStress * longitudinalStress
+  );
+  const allowableS = 138e6;
+
+  const base = {
+    hoopStress: maxHoopStress,
+    longitudinalStress,
+    equivalentStress,
+    allowableStress: allowableS,
+    utilization: equivalentStress / allowableS,
+  };
+
+  return [
+    {
+      category: "sustained",
+      label: "Sustained (pressure + dead load)",
+      ...base,
+    },
+    {
+      category: "occasional",
+      label: "Occasional (≤ 8 h at ≤ 33% over sustained)",
+      hoopStress: maxHoopStress * 1.15,
+      longitudinalStress: longitudinalStress * 1.15,
+      equivalentStress: equivalentStress * 1.15,
+      allowableStress: allowableS * 1.33,
+      utilization: (equivalentStress * 1.15) / (allowableS * 1.33),
+    },
+    {
+      category: "peak",
+      label: "Peak / upset (rare events)",
+      hoopStress: maxHoopStress * 1.25,
+      longitudinalStress: longitudinalStress * 1.25,
+      equivalentStress: equivalentStress * 1.25,
+      allowableStress: allowableS * 1.5,
+      utilization: (equivalentStress * 1.25) / (allowableS * 1.5),
+    },
+  ];
+}
 
 export function solvePressurePipeFEM(config: PressurePipeConfig): PressurePipeResult {
   const mesh = generatePressurePipeMesh(config);
@@ -64,6 +111,9 @@ export function solvePressurePipeFEM(config: PressurePipeConfig): PressurePipeRe
     return (node.x * disp.dx + node.y * disp.dy) / r;
   });
 
+  const maxHoopStress = Math.max(...hoopStress.map((v) => Math.abs(v)));
+  const stressCategories = buildPipeStressCategories(config, maxHoopStress);
+
   return {
     nodes: mesh.nodes,
     elements: mesh.elements,
@@ -71,7 +121,8 @@ export function solvePressurePipeFEM(config: PressurePipeConfig): PressurePipeRe
     hoopStress,
     radialDisplacement,
     maxRadialDisplacement: Math.max(...radialDisplacement.map((v) => Math.abs(v))),
-    maxHoopStress: Math.max(...hoopStress.map((v) => Math.abs(v))),
+    maxHoopStress,
+    stressCategories,
     angles,
     segments: mesh.segments,
     radius: mesh.radius,

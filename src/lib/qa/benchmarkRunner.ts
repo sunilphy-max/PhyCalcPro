@@ -1,5 +1,15 @@
 import { solveGearEngine } from "@/lib/machine/gears/engine";
 import type { GearConfig } from "@/lib/machine/gears/types";
+import { solveCompressionSpringEngine } from "@/lib/springs/compression-springs/engine";
+import type { CompressionSpringConfig } from "@/lib/springs/compression-springs/types";
+import { solveTimingBeltDrive } from "@/lib/powerTransmission/timing-belts/engine";
+import type { TimingBeltConfig } from "@/lib/powerTransmission/timing-belts/types";
+import { solveBevelGearEngine } from "@/lib/machine/bevel-gears/engine";
+import type { BevelGearConfig } from "@/lib/machine/bevel-gears/types";
+import { solveKeysSplinesEngine } from "@/lib/fasteners/keys-splines/engine";
+import type { KeysSplinesConfig } from "@/lib/fasteners/keys-splines/types";
+import { solveCircularPlateEngine } from "@/lib/structural/circular-plates/engine";
+import type { CircularPlateConfig } from "@/lib/structural/circular-plates/types";
 import { solveBucklingEngine } from "@/lib/structural/columns/engine";
 import type { BucklingConfig } from "@/lib/structural/columns/types";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
@@ -37,6 +47,16 @@ const SOLVERS: Record<string, SolverFn> = {
       string,
       unknown
     >,
+  "compression-springs": (inputs) =>
+    solveCompressionSpringEngine(inputs as unknown as CompressionSpringConfig) as Record<string, unknown>,
+  "timing-belts": (inputs) =>
+    solveTimingBeltDrive(inputs as unknown as TimingBeltConfig) as Record<string, unknown>,
+  "bevel-gears": (inputs) =>
+    solveBevelGearEngine(inputs as unknown as BevelGearConfig) as Record<string, unknown>,
+  "keys-splines": (inputs) =>
+    solveKeysSplinesEngine(inputs as unknown as KeysSplinesConfig) as Record<string, unknown>,
+  "circular-plates": (inputs) =>
+    solveCircularPlateEngine(inputs as unknown as CircularPlateConfig) as Record<string, unknown>,
 };
 
 function withinTolerance(actual: number, expected: number, tolerancePercent: number): boolean {

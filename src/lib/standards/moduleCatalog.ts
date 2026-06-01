@@ -1,5 +1,14 @@
 import type { DesignCodeId, ModuleStandardProfile } from "./types";
-import { beamChecks, gearChecks, genericIndicativeCheck, checkDef } from "./checkTemplates";
+import {
+  beamChecks,
+  compressionSpringChecks,
+  gearChecks,
+  genericIndicativeCheck,
+  keysSplinesChecks,
+  timingBeltChecks,
+  vBeltChecks,
+  checkDef,
+} from "./checkTemplates";
 
 function profile(
   moduleId: string,
@@ -36,8 +45,8 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   beams: withCodeChecks("beams", "Beam Analysis", beamChecks, {
     validationStatus: "beta",
     limitations: [
-      "2D beam model; no lateral-torsional buckling in Phase 1.",
-      "Phase 1 β: ASD/EN flexure & deflection; shear check not yet coded.",
+      "2D beam model; LTB uses simplified unbraced length = span unless overridden.",
+      "Shear check uses rectangular-web estimate from I and c.",
     ],
   }),
   frames: withCodeChecks("frames", "Frame Analysis", [
@@ -123,7 +132,7 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     validationStatus: "beta",
     indicativeMethod: "Lewis bending and simplified Hertzian contact (indicative)",
     limitations: [
-      "Phase 1 β: bending/contact vs simplified allowables; scuffing & fatigue checks still pending.",
+      "Indicative scuffing and bending fatigue screening added; full AGMA/ISO factors not included.",
     ],
   }),
   bearings: withCodeChecks("bearings", "Bearing Selection", [
@@ -179,6 +188,17 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
         },
         { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
       ),
+      checkDef(
+        "throat_eccentric",
+        "Eccentric weld group moment",
+        "utilization",
+        {
+          INDICATIVE: { body: "Mechanics", document: "Polar moment weld group" },
+          US: { body: "AWS", document: "D1.1", clause: "Eccentric loading" },
+          EU: { body: "EN", document: "1993-1-8", clause: "Eccentric welds" },
+        },
+        { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
+      ),
     ],
     {
       validationStatus: "beta",
@@ -224,8 +244,34 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("thickness", "Required thickness margin", "utilization"),
   ]),
   pipes: withCodeChecks("pipes", "Pipe Stress Analysis", [
-    genericIndicativeCheck("hoop", "Hoop stress utilization", "utilization"),
-    genericIndicativeCheck("longitudinal", "Longitudinal stress utilization", "utilization"),
+    checkDef(
+      "sustained_stress",
+      "Sustained stress utilization",
+      "utilization",
+      {
+        INDICATIVE: { body: "Mechanics", document: "Thin-wall pipe" },
+        US: { body: "ASME", document: "B31.3", clause: "302.3 sustained" },
+      },
+      { INDICATIVE: "implemented", US: "implemented" }
+    ),
+    checkDef(
+      "occasional_stress",
+      "Occasional stress utilization",
+      "utilization",
+      {
+        US: { body: "ASME", document: "B31.3", clause: "302.3.6 occasional" },
+      },
+      { US: "implemented", INDICATIVE: "implemented" }
+    ),
+    checkDef(
+      "peak_stress",
+      "Peak stress utilization",
+      "utilization",
+      {
+        US: { body: "ASME", document: "B31.3", clause: "Peak / upset" },
+      },
+      { US: "implemented", INDICATIVE: "implemented" }
+    ),
   ], {
     standardsByCode: { US: [{ body: "ASME", document: "B31.3" }] },
   }),
@@ -282,6 +328,67 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   "cam-toolpaths": withCodeChecks("cam-toolpaths", "CAM Toolpaths", [
     genericIndicativeCheck("path_length", "Toolpath length", "other"),
   ], { validationStatus: "draft" }),
+  "v-belts": withCodeChecks("v-belts", "V-Belt Drive", vBeltChecks),
+  "timing-belts": withCodeChecks("timing-belts", "Timing Belt Drive", timingBeltChecks),
+  "roller-chains": withCodeChecks("roller-chains", "Roller Chain Drive", [
+    genericIndicativeCheck("power_capacity", "Power capacity utilization", "utilization"),
+    genericIndicativeCheck("chain_life", "Estimated chain life", "life"),
+  ]),
+  "multi-pulley": withCodeChecks("multi-pulley", "Multi-Pulley Layout", [
+    genericIndicativeCheck("belt_length", "Total belt length", "other"),
+    genericIndicativeCheck("wrap_angle", "Minimum wrap angle", "other"),
+  ]),
+  "bevel-gears": withCodeChecks("bevel-gears", "Bevel Gear Screening", gearChecks),
+  "worm-gears": withCodeChecks("worm-gears", "Worm Gear Drive", [
+    genericIndicativeCheck("efficiency", "Drive efficiency", "other"),
+    genericIndicativeCheck("contact_stress", "Contact stress utilization", "utilization"),
+  ]),
+  "planetary-gears": withCodeChecks("planetary-gears", "Planetary Gear Set", [
+    genericIndicativeCheck("ratio", "Actual ratio vs target", "other"),
+  ]),
+  "gear-ratio-design": withCodeChecks("gear-ratio-design", "Gear Ratio Design", [
+    genericIndicativeCheck("ratio_error", "Ratio error", "other"),
+  ]),
+  "compression-springs": withCodeChecks("compression-springs", "Compression Springs", compressionSpringChecks),
+  "extension-springs": withCodeChecks("extension-springs", "Extension Springs", [
+    genericIndicativeCheck("shear_stress", "Shear stress utilization", "utilization"),
+  ]),
+  "torsion-springs": withCodeChecks("torsion-springs", "Torsion Springs", [
+    genericIndicativeCheck("bending_stress", "Bending stress utilization", "utilization"),
+  ]),
+  "keys-splines": withCodeChecks("keys-splines", "Keys & Splines", keysSplinesChecks, {
+    standardsByCode: { ISO: [{ body: "ISO", document: "3912" }] },
+  }),
+  "shaft-hubs": withCodeChecks("shaft-hubs", "Shaft Hub Fits", [
+    genericIndicativeCheck("contact_pressure", "Contact pressure", "stress"),
+    genericIndicativeCheck("torque_capacity", "Friction torque capacity", "utilization"),
+  ]),
+  "pins": withCodeChecks("pins", "Pin & Clevis", [
+    genericIndicativeCheck("shear", "Pin shear safety", "safety_factor"),
+    genericIndicativeCheck("bearing", "Pin bearing safety", "safety_factor"),
+  ]),
+  "brakes-clutches": withCodeChecks("brakes-clutches", "Brakes & Clutches", [
+    genericIndicativeCheck("friction_torque", "Friction torque capacity", "utilization"),
+    genericIndicativeCheck("energy", "Energy per stop", "other"),
+  ]),
+  "plain-bearings": withCodeChecks("plain-bearings", "Plain Bearings", [
+    genericIndicativeCheck("sommerfeld", "Sommerfeld number screening", "other"),
+    genericIndicativeCheck("film_thickness", "Minimum film thickness", "other"),
+  ]),
+  "circular-plates": withCodeChecks("circular-plates", "Circular Plates", [
+    genericIndicativeCheck("deflection", "Plate deflection", "deflection"),
+    genericIndicativeCheck("stress", "Plate bending stress", "stress"),
+  ]),
+  "rolled-sections": withCodeChecks("rolled-sections", "Rolled Sections", [
+    genericIndicativeCheck("area", "Section area lookup", "other"),
+    genericIndicativeCheck("inertia", "Section inertia lookup", "other"),
+  ]),
+  "formula-reference": withCodeChecks("formula-reference", "Engineering Formulas", [
+    genericIndicativeCheck("formula_eval", "Formula evaluation", "other"),
+  ]),
+  "unit-converter": withCodeChecks("unit-converter", "Unit Converter", [
+    genericIndicativeCheck("conversion", "Unit conversion", "other"),
+  ]),
   profiles: withCodeChecks("profiles", "Area Properties", [
     genericIndicativeCheck("area", "Section area", "other"),
     genericIndicativeCheck("inertia", "Principal inertia", "other"),
