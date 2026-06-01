@@ -4,6 +4,10 @@ import { Load, UDL } from "@/lib/structural/beams/types";
 import { materials } from "@/data/materials";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
+import {
+  beamApplicationPresets,
+  type BeamApplicationId,
+} from "@/lib/structural/beams/applicationPresets";
 
 type Props = {
   projectName: string;
@@ -41,6 +45,8 @@ type Props = {
 
   material: string;
   setMaterial: (v: string) => void;
+  applicationId: BeamApplicationId;
+  setApplicationId: (v: BeamApplicationId) => void;
 
   onCalculate: () => void;
   saveProject: () => void;
@@ -58,6 +64,11 @@ type Props = {
 };
 
 export default function BeamInputs(props: Props) {
+  const beamMaterials = materials.filter((material) => material.name !== "Concrete");
+  const selectedApplication =
+    beamApplicationPresets.find((preset) => preset.id === props.applicationId) ??
+    beamApplicationPresets[0]!;
+
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
 
@@ -79,13 +90,39 @@ export default function BeamInputs(props: Props) {
         <option value="fixed_fixed">Fixed-Fixed</option>
       </select>
 
+      {/* ================= APPLICATION ================= */}
+      <div className="rounded-xl border border-cyan-100 bg-cyan-50/70 p-3">
+        <label className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
+          What are you working on?
+        </label>
+        <select
+          className="mt-2 w-full rounded border border-cyan-200 bg-white p-2 text-sm"
+          value={props.applicationId}
+          onChange={(e) => props.setApplicationId(e.target.value as BeamApplicationId)}
+        >
+          {beamApplicationPresets.map((preset) => (
+            <option key={preset.id} value={preset.id}>
+              {preset.label}
+            </option>
+          ))}
+        </select>
+        <p className="mt-2 text-xs leading-relaxed text-cyan-900">
+          {selectedApplication.description}
+        </p>
+        <p className="mt-2 text-xs text-cyan-800">
+          Load factor {selectedApplication.loadFactor.toFixed(2)} · allowable stress{" "}
+          {(selectedApplication.allowableStressRatio * 100).toFixed(0)}% of yield · deflection
+          target L/{selectedApplication.deflectionLimitRatio}
+        </p>
+      </div>
+
       {/* ================= MATERIAL ================= */}
       <select
         className="w-full border p-2 rounded"
         value={props.material}
         onChange={(e) => props.setMaterial(e.target.value)}
       >
-        {materials.map((m) => (
+        {beamMaterials.map((m) => (
           <option key={m.name} value={m.name}>
             {m.name}
           </option>

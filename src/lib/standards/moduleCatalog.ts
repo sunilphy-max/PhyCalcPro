@@ -44,8 +44,27 @@ const withCodeChecks = (
 export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   beams: withCodeChecks("beams", "Beam Analysis", beamChecks, {
     validationStatus: "beta",
+    standardsByCode: {
+      INDICATIVE: [
+        { body: "Mechanics", document: "Roark / Euler-Bernoulli beam theory" },
+      ],
+      US: [
+        { body: "ASME", document: "BTH-1", note: "Below-hook and lifting beam context" },
+        { body: "ASME", document: "B30.20", note: "Below-hook device safety context" },
+      ],
+      EU: [
+        { body: "EN", document: "13001", note: "Crane and industrial equipment structures" },
+        { body: "FKM", document: "Analytical Strength Assessment", note: "Machine component strength context" },
+      ],
+      ISO: [
+        { body: "ISO", document: "8686", note: "Cranes - design principles for loads" },
+        { body: "ISO", document: "12100", note: "Machinery safety context" },
+      ],
+    },
     limitations: [
-      "2D beam model; LTB uses simplified unbraced length = span unless overridden.",
+      "1D beam model for mechanical and industrial structures; not a building-code design check.",
+      "Application presets adjust load factor, allowable stress target, and deflection target but do not implement full standard clauses.",
+      "LTB uses simplified unbraced length = span unless overridden.",
       "Shear check uses rectangular-web estimate from I and c.",
     ],
   }),

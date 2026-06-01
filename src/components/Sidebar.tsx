@@ -78,19 +78,32 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
 
               {isOpen && (
                 <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-3">
-                  {cat.modules.map((mod) => (
-                    <Link
-                      key={mod.id}
-                      href={mod.route}
-                      className={`block rounded-2xl px-3 py-2 text-sm transition hover:bg-slate-100 ${
-                        activeModuleRoute === mod.route
-                          ? "bg-slate-900 font-medium text-white hover:bg-slate-800 hover:text-white"
-                          : "text-slate-700 hover:text-slate-900"
-                      }`}
-                    >
-                      {mod.title}
-                    </Link>
-                  ))}
+                  {cat.modules.map((mod) =>
+                    mod.comingSoon ? (
+                      <div
+                        key={mod.id}
+                        className="flex items-center justify-between gap-2 rounded-2xl px-3 py-2 text-sm text-slate-400"
+                        aria-disabled="true"
+                      >
+                        <span>{mod.title}</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                          Soon
+                        </span>
+                      </div>
+                    ) : (
+                      <Link
+                        key={mod.id}
+                        href={mod.route}
+                        className={`block rounded-2xl px-3 py-2 text-sm transition hover:bg-slate-100 ${
+                          activeModuleRoute === mod.route
+                            ? "bg-slate-900 font-medium text-white hover:bg-slate-800 hover:text-white"
+                            : "text-slate-700 hover:text-slate-900"
+                        }`}
+                      >
+                        {mod.title}
+                      </Link>
+                    )
+                  )}
                 </div>
               )}
 

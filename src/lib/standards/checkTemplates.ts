@@ -96,8 +96,9 @@ export const beamChecks: ModuleCheckDefinition[] = [
     "utilization",
     {
       INDICATIVE: ref("Mechanics", "Euler-Bernoulli beam theory"),
-      US: ref("AISC", "360-22", "Ch. F flexure"),
-      EU: ref("EN", "1993-1-1", "Cl. 6.2.5"),
+      US: ref("ASME", "BTH-1", "Lifting beam stress screening"),
+      EU: ref("EN", "13001", "Crane and industrial equipment structures"),
+      ISO: ref("ISO", "8686", "Crane design principles and loads"),
     },
     { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
@@ -107,10 +108,11 @@ export const beamChecks: ModuleCheckDefinition[] = [
     "utilization",
     {
       INDICATIVE: ref("Mechanics", "Beam shear"),
-      US: ref("AISC", "360-22", "Ch. G shear"),
-      EU: ref("EN", "1993-1-1", "Cl. 6.2.6"),
+      US: ref("ASME", "BTH-1", "Lifting beam shear screening"),
+      EU: ref("EN", "13001", "Shear screening for crane structures"),
+      ISO: ref("ISO", "8686", "Industrial lifting load effects"),
     },
-    { INDICATIVE: "implemented", US: "implemented", EU: "implemented" }
+    { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
   checkDef(
     "deflection_serviceability",
@@ -118,8 +120,9 @@ export const beamChecks: ModuleCheckDefinition[] = [
     "deflection",
     {
       INDICATIVE: ref("Mechanics", "Elastic deflection"),
-      US: ref("AISC", "360-22", "Serviceability Appendix"),
-      EU: ref("EN", "1993-1-1", "Serviceability limits"),
+      US: ref("ASME", "BTH-1", "Serviceability by application"),
+      EU: ref("EN", "13001", "Serviceability by crane class"),
+      ISO: ref("ISO", "8686", "Serviceability by application"),
     },
     { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
   ),
@@ -128,10 +131,12 @@ export const beamChecks: ModuleCheckDefinition[] = [
     "Lateral-torsional buckling",
     "utilization",
     {
-      US: ref("AISC", "360-22", "Ch. F LTB"),
-      EU: ref("EN", "1993-1-1", "Cl. 6.3.3"),
+      INDICATIVE: ref("Mechanics", "Elastic instability screening"),
+      US: ref("ASME", "BTH-1", "Member stability by application"),
+      EU: ref("EN", "13001", "Member stability by crane class"),
+      ISO: ref("ISO", "8686", "Stability by application"),
     },
-    { US: "implemented", EU: "implemented", INDICATIVE: "implemented" }
+    { US: "implemented", EU: "implemented", ISO: "implemented", INDICATIVE: "implemented" }
   ),
 ];
 

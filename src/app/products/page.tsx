@@ -195,6 +195,7 @@ export default function ProductsPage() {
               <div className="grid gap-6 xl:grid-cols-3">
                 {filteredCategories.map((category) => {
                   const CategoryIcon = category.icon;
+                  const firstAvailableModule = category.modules.find((module) => !module.comingSoon);
                   return (
                     <div key={category.id} className="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                       <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-500 to-slate-900 text-white shadow-lg shadow-cyan-200/50">
@@ -205,12 +206,15 @@ export default function ProductsPage() {
                       <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500">
                         <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">{category.modules.length} tools</span>
                         <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1">{category.title.split(" ")[0]}</span>
+                        {category.modules.every((module) => module.comingSoon) ? (
+                          <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">Coming soon</span>
+                        ) : null}
                       </div>
                       <Link
-                        href={category.modules[0]?.route ?? "/products"}
+                        href={firstAvailableModule?.route ?? "/products"}
                         className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-500 transition group-hover:text-cyan-600"
                       >
-                        Explore category
+                        {firstAvailableModule ? "Explore category" : "Preview category"}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>

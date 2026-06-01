@@ -1,6 +1,11 @@
 "use client";
 
-import type { BeamResult, Load, SupportType } from "@/lib/structural/beams/types";
+import type {
+  BeamApplicationContext,
+  BeamResult,
+  Load,
+  SupportType,
+} from "@/lib/structural/beams/types";
 import BeamDashboard from "./BeamDashboard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { CalculationSpec } from "@/lib/standards/types";
@@ -18,6 +23,7 @@ type Props = {
   support: SupportType;
   loads: Load[];
   units?: DisplayUnits;
+  applicationContext?: BeamApplicationContext;
   onLoadDrag?: (
     id: string,
     updates: Partial<Extract<Load, { type: "point" }>>
@@ -30,6 +36,7 @@ export default function BeamResults({
   support,
   loads,
   units,
+  applicationContext,
   onLoadDrag,
 }: Props) {
   return (
@@ -67,6 +74,7 @@ export default function BeamResults({
           length={length}
           support={support}
           units={units}
+          applicationContext={applicationContext ?? result.applicationContext}
           onLoadDrag={onLoadDrag}
         />
       ) : null}

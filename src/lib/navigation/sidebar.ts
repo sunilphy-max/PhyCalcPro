@@ -14,6 +14,7 @@ export function getSidebarNavigation() {
       id: module.id,
       title: module.title,
       route: module.route,
+      comingSoon: module.comingSoon,
     })),
   }));
 }
