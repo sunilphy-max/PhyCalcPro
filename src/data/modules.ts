@@ -668,7 +668,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/vacuum-engineering",
         category: "advanced-systems",
         icon: Circle,
-        comingSoon: true,
       },
       {
         id: "cryogenic-engineering",
@@ -677,7 +676,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/cryogenic-engineering",
         category: "advanced-systems",
         icon: Waves,
-        comingSoon: true,
       },
       {
         id: "magnetic-fields",
@@ -686,7 +684,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/magnetic-fields",
         category: "advanced-systems",
         icon: Orbit,
-        comingSoon: true,
       },
       {
         id: "superconducting-systems",
@@ -695,7 +692,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/superconducting-systems",
         category: "advanced-systems",
         icon: Zap,
-        comingSoon: true,
       },
       {
         id: "thermal-management",
@@ -704,7 +700,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/thermal-management",
         category: "advanced-systems",
         icon: Flame,
-        comingSoon: true,
       },
       {
         id: "battery-ev-systems",
@@ -713,7 +708,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/battery-ev-systems",
         category: "advanced-systems",
         icon: Gauge,
-        comingSoon: true,
       },
       {
         id: "hydrogen-systems",
@@ -722,7 +716,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/hydrogen-systems",
         category: "advanced-systems",
         icon: Waves,
-        comingSoon: true,
       },
       {
         id: "precision-motion",
@@ -731,7 +724,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/advanced-systems/precision-motion",
         category: "advanced-systems",
         icon: Activity,
-        comingSoon: true,
       },
     ],
   },
