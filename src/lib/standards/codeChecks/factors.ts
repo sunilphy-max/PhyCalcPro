@@ -1,13 +1,13 @@
 import type { DesignCodeId } from "../types";
 
-/** AISC 360-22 ASD resistance factors (simplified Phase 1). */
+/** US mechanical allowable-stress factors (simplified Phase 1). */
 export const AISC_ASD = {
   omegaFlexure: 1.67,
   omegaShear: 1.67,
   omegaCompression: 1.67,
 } as const;
 
-/** EN 1993-1-1 partial factors (defaults for Phase 1). */
+/** EU/ISO industrial screening partial factors (defaults for Phase 1). */
 export const EN_PARTIAL = {
   gammaM0: 1.0,
   gammaM1: 1.0,

@@ -44,8 +44,27 @@ const withCodeChecks = (
 export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   beams: withCodeChecks("beams", "Beam Analysis", beamChecks, {
     validationStatus: "beta",
+    standardsByCode: {
+      INDICATIVE: [
+        { body: "Mechanics", document: "Roark / Euler-Bernoulli beam theory" },
+      ],
+      US: [
+        { body: "ASME", document: "BTH-1", note: "Below-hook and lifting beam context" },
+        { body: "ASME", document: "B30.20", note: "Below-hook device safety context" },
+      ],
+      EU: [
+        { body: "EN", document: "13001", note: "Crane and industrial equipment structures" },
+        { body: "FKM", document: "Analytical Strength Assessment", note: "Machine component strength context" },
+      ],
+      ISO: [
+        { body: "ISO", document: "8686", note: "Cranes - design principles for loads" },
+        { body: "ISO", document: "12100", note: "Machinery safety context" },
+      ],
+    },
     limitations: [
-      "2D beam model; LTB uses simplified unbraced length = span unless overridden.",
+      "1D beam model for mechanical and industrial structures; not a building-code design check.",
+      "Application presets adjust load factor, allowable stress target, and deflection target but do not implement full standard clauses.",
+      "LTB uses simplified unbraced length = span unless overridden.",
       "Shear check uses rectangular-web estimate from I and c.",
     ],
   }),
@@ -292,6 +311,141 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("duty", "Thermal duty balance", "other"),
     genericIndicativeCheck("effectiveness", "Effectiveness", "other"),
   ]),
+  "vacuum-engineering": withCodeChecks("vacuum-engineering", "Vacuum Engineering", [
+    genericIndicativeCheck("pump_down", "Ideal pump-down time", "other"),
+    genericIndicativeCheck("conductance", "Vacuum line conductance", "other"),
+    genericIndicativeCheck("vacuum_force", "Vacuum force screening", "other"),
+  ], {
+    indicativeMethod: "Ideal gas pump-down and molecular-flow conductance screening",
+    standardsByCode: {
+      ISO: [{ body: "ISO", document: "21360", note: "Vacuum pump performance context" }],
+      INDICATIVE: [
+        { body: "AVS", document: "Vacuum practice", note: "Pump-down and conductance screening" },
+        { body: "ASTM", document: "E595", note: "Outgassing context" },
+      ],
+    },
+    limitations: [
+      "Uses constant effective pumping speed and ideal gas behavior.",
+      "Does not model viscous-to-molecular transition, outgassing history, conductance networks, or leak testing procedures.",
+    ],
+  }),
+  "cryogenic-engineering": withCodeChecks("cryogenic-engineering", "Cryogenic Engineering", [
+    genericIndicativeCheck("heat_leak", "Conductive/radiative heat leak", "other"),
+    genericIndicativeCheck("boiloff", "Equivalent boil-off rate", "other"),
+    genericIndicativeCheck("cooldown", "Cooldown energy and time", "other"),
+  ], {
+    indicativeMethod: "Lumped conduction, radiation and cooldown energy screening",
+    standardsByCode: {
+      INDICATIVE: [
+        { body: "CGA", document: "Cryogenic guidance", note: "Cryogenic handling context" },
+        { body: "NASA", document: "Cryogenic practice", note: "Thermal screening context" },
+      ],
+    },
+    limitations: [
+      "Uses effective material properties and lumped heat paths.",
+      "Does not include detailed MLI layer models, transient thermal gradients, embrittlement, or pressure-relief sizing.",
+    ],
+  }),
+  "magnetic-fields": withCodeChecks("magnetic-fields", "Magnetic Fields & Coils", [
+    genericIndicativeCheck("magnetic_field", "Solenoid magnetic field", "other"),
+    genericIndicativeCheck("stored_energy", "Stored magnetic energy", "other"),
+    genericIndicativeCheck("coil_heating", "Coil resistive heating", "other"),
+  ], {
+    indicativeMethod: "Long-solenoid field, inductance and Lorentz-force screening",
+    standardsByCode: {
+      INDICATIVE: [
+        { body: "IEC", document: "Electrical equipment practice", note: "Coil equipment context" },
+        { body: "MMPDS", document: "Material allowables", note: "Support structure context" },
+      ],
+    },
+    limitations: [
+      "Long-solenoid approximation; fringe fields and magnetic saturation are not modeled.",
+      "Does not solve coupled thermal-electromagnetic or structural support behavior.",
+    ],
+  }),
+  "superconducting-systems": withCodeChecks("superconducting-systems", "Superconducting Systems", [
+    genericIndicativeCheck("current_margin", "Current margin", "safety_factor"),
+    genericIndicativeCheck("temperature_margin", "Temperature margin", "safety_factor"),
+    genericIndicativeCheck("stored_energy", "Stored energy and discharge", "other"),
+  ], {
+    indicativeMethod: "Superconducting magnet operating margin and L/R dump screening",
+    standardsByCode: {
+      INDICATIVE: [
+        { body: "IEC", document: "Superconductivity terminology", note: "Operating margin context" },
+        { body: "Cryogenic magnet practice", document: "Quench protection screening" },
+      ],
+    },
+    limitations: [
+      "Does not model conductor critical surfaces, quench propagation, insulation voltage stress, or cryogenic transients.",
+    ],
+  }),
+  "thermal-management": withCodeChecks("thermal-management", "Thermal Management", [
+    genericIndicativeCheck("heat_transfer", "Heat-transfer capacity", "other"),
+    genericIndicativeCheck("thermal_resistance", "Thermal resistance", "other"),
+    genericIndicativeCheck("coolant_rise", "Coolant temperature rise", "other"),
+  ], {
+    indicativeMethod: "Parallel conduction, convection and radiation heat-transfer screening",
+    standardsByCode: {
+      INDICATIVE: [
+        { body: "JEDEC", document: "Thermal practice", note: "Electronics thermal context" },
+        { body: "ASHRAE", document: "Heat transfer data" },
+      ],
+    },
+    limitations: [
+      "Lumped steady-state model; CFD, spreading resistance, two-phase flow and contact resistance are not included.",
+    ],
+  }),
+  "battery-ev-systems": withCodeChecks("battery-ev-systems", "Battery & EV Systems", [
+    genericIndicativeCheck("pack_energy", "Nominal pack energy", "other"),
+    genericIndicativeCheck("heat_generation", "Ohmic heat generation", "other"),
+    genericIndicativeCheck("vent_area", "Simple vent area", "other"),
+  ], {
+    indicativeMethod: "Battery pack electrical, thermal and vent screening",
+    standardsByCode: {
+      ISO: [{ body: "ISO", document: "6469", note: "Electric road vehicle safety context" }],
+      INDICATIVE: [
+        { body: "UL", document: "2580", note: "Battery safety context" },
+        { body: "SAE", document: "J2464", note: "Abuse testing context" },
+      ],
+    },
+    limitations: [
+      "Does not model BMS behavior, cell maps, propagation, enclosure rupture, or regulatory abuse-test compliance.",
+    ],
+  }),
+  "hydrogen-systems": withCodeChecks("hydrogen-systems", "Hydrogen Systems", [
+    genericIndicativeCheck("stored_mass", "Stored hydrogen mass", "other"),
+    genericIndicativeCheck("hoop_stress", "Thin-wall hoop stress", "stress"),
+    genericIndicativeCheck("leak_flow", "Leak/vent flow screening", "other"),
+  ], {
+    indicativeMethod: "Ideal gas storage, thin-wall stress and incompressible orifice screening",
+    standardsByCode: {
+      ISO: [{ body: "ISO", document: "19880", note: "Hydrogen fueling context" }],
+      US: [
+        { body: "ASME", document: "B31.12", note: "Hydrogen piping context" },
+        { body: "NFPA", document: "2", note: "Hydrogen technologies code context" },
+      ],
+    },
+    limitations: [
+      "High-pressure hydrogen may require real-gas compressibility, material compatibility and code vessel checks.",
+      "Leak flow is a first-pass screen and not a relief-device sizing calculation.",
+    ],
+  }),
+  "precision-motion": withCodeChecks("precision-motion", "Precision Motion & Vibration", [
+    genericIndicativeCheck("stiffness", "Flexure stiffness", "other"),
+    genericIndicativeCheck("natural_frequency", "Natural frequency", "other"),
+    genericIndicativeCheck("transmissibility", "Isolation transmissibility", "other"),
+  ], {
+    indicativeMethod: "Cantilever flexure and single-degree-of-freedom vibration screening",
+    standardsByCode: {
+      ISO: [
+        { body: "ISO", document: "230", note: "Machine tool accuracy context" },
+        { body: "ISO", document: "20816", note: "Vibration context" },
+      ],
+    },
+    limitations: [
+      "Uses simple beam/flexure approximations; multi-axis flexures, controls, bearings and nonlinear motion errors are not included.",
+    ],
+  }),
   vibrations: withCodeChecks("vibrations", "Vibration Analysis", [
     genericIndicativeCheck("natural_frequency", "Natural frequency", "other"),
     genericIndicativeCheck("separation_margin", "Excitation separation margin", "safety_factor"),

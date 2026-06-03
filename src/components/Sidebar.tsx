@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { categories } from "@/data/modules";
 
@@ -11,7 +11,10 @@ type SidebarProps = {
 
 export default function Sidebar({ activeCategoryId }: SidebarProps) {
   const pathname = usePathname();
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [manualOpenCategory, setManualOpenCategory] = useState<{
+    pathname: string | null;
+    categoryId: string | null;
+  } | null>(null);
 
   // -----------------------------
   // Scope categories based on page
@@ -32,18 +35,15 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
     [pathname, visibleCategories]
   );
 
-  // Sync open section when the route changes — do not depend on openCategory or manual toggles are undone.
-  useEffect(() => {
-    if (activeCategoryFromPath) {
-      setOpenCategory(activeCategoryFromPath);
-    }
-  }, [activeCategoryFromPath]);
+  const defaultOpenCategory = useMemo(
+    () => activeCategoryFromPath ?? visibleCategories[0]?.id ?? null,
+    [activeCategoryFromPath, visibleCategories]
+  );
 
-  useEffect(() => {
-    if (!activeCategoryFromPath && visibleCategories.length > 0) {
-      setOpenCategory((prev) => prev ?? visibleCategories[0]!.id);
-    }
-  }, [activeCategoryFromPath, visibleCategories]);
+  const openCategory =
+    manualOpenCategory?.pathname === pathname
+      ? manualOpenCategory.categoryId
+      : defaultOpenCategory;
 
   const activeModuleRoute = useMemo(
     () =>
@@ -69,7 +69,12 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
           return (
             <div key={cat.id} className="rounded-3xl border border-slate-200 bg-slate-50 shadow-sm overflow-hidden">
               <button
-                onClick={() => setOpenCategory(isOpen ? null : cat.id)}
+                onClick={() =>
+                  setManualOpenCategory({
+                    pathname,
+                    categoryId: isOpen ? null : cat.id,
+                  })
+                }
                 className="w-full text-left px-4 py-3 transition hover:bg-slate-100"
               >
                 <div className="font-semibold text-sm text-slate-950">{cat.title}</div>
@@ -78,19 +83,32 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
 
               {isOpen && (
                 <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-3">
-                  {cat.modules.map((mod) => (
-                    <Link
-                      key={mod.id}
-                      href={mod.route}
-                      className={`block rounded-2xl px-3 py-2 text-sm transition hover:bg-slate-100 ${
-                        activeModuleRoute === mod.route
-                          ? "bg-slate-900 font-medium text-white hover:bg-slate-800 hover:text-white"
-                          : "text-slate-700 hover:text-slate-900"
-                      }`}
-                    >
-                      {mod.title}
-                    </Link>
-                  ))}
+                  {cat.modules.map((mod) =>
+                    mod.comingSoon ? (
+                      <div
+                        key={mod.id}
+                        className="flex items-center justify-between gap-2 rounded-2xl px-3 py-2 text-sm text-slate-400"
+                        aria-disabled="true"
+                      >
+                        <span>{mod.title}</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                          Soon
+                        </span>
+                      </div>
+                    ) : (
+                      <Link
+                        key={mod.id}
+                        href={mod.route}
+                        className={`block rounded-2xl px-3 py-2 text-sm transition hover:bg-slate-100 ${
+                          activeModuleRoute === mod.route
+                            ? "bg-slate-900 font-medium text-white hover:bg-slate-800 hover:text-white"
+                            : "text-slate-700 hover:text-slate-900"
+                        }`}
+                      >
+                        {mod.title}
+                      </Link>
+                    )
+                  )}
                 </div>
               )}
 

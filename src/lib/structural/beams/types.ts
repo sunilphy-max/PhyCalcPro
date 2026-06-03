@@ -23,6 +23,23 @@ export type MomentLoad = BaseLoad & {
 
 export type Load = PointLoad | UDL | MomentLoad;
 
+export type BeamApplicationContext = {
+  id: string;
+  label: string;
+  description: string;
+  standards: string[];
+  loadFactor: number;
+  allowableStressRatio: number;
+  deflectionLimitRatio: number;
+  fatigueSensitive: boolean;
+  allowableStress: number;
+  deflectionLimit: number;
+  stressUtilization: number;
+  deflectionUtilization: number;
+  calculationNotes: string[];
+  limitations: string[];
+};
+
 export type SupportType =
   | "simply_supported"
   | "cantilever"
@@ -60,4 +77,5 @@ export type BeamResult = {
     solver: "beam-fem";
     warnings: string[];
   };
+  applicationContext?: BeamApplicationContext;
 };

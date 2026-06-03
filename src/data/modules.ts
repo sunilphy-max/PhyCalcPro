@@ -653,6 +653,82 @@ export const categories: EngineeringCategory[] = [
   // TECHNICAL TOOLS
   // =========================================================
   {
+    id: "advanced-systems",
+    title: "Advanced Systems",
+    description: "Cryogenic, vacuum, electromagnetic and emerging engineering systems",
+
+    icon: Orbit,
+    color: "from-fuchsia-500 to-fuchsia-600",
+
+    modules: [
+      {
+        id: "vacuum-engineering",
+        title: "Vacuum Engineering",
+        description: "Pump-down, conductance, leak rate and chamber-force tools",
+        route: "/products/advanced-systems/vacuum-engineering",
+        category: "advanced-systems",
+        icon: Circle,
+      },
+      {
+        id: "cryogenic-engineering",
+        title: "Cryogenic Engineering",
+        description: "Heat leak, boil-off, cooldown and thermal contraction screening",
+        route: "/products/advanced-systems/cryogenic-engineering",
+        category: "advanced-systems",
+        icon: Waves,
+      },
+      {
+        id: "magnetic-fields",
+        title: "Magnetic Fields & Coils",
+        description: "Solenoid fields, Lorentz forces, inductance and coil heating",
+        route: "/products/advanced-systems/magnetic-fields",
+        category: "advanced-systems",
+        icon: Orbit,
+      },
+      {
+        id: "superconducting-systems",
+        title: "Superconducting Systems",
+        description: "Stored energy, quench margin and cryogenic coil screening",
+        route: "/products/advanced-systems/superconducting-systems",
+        category: "advanced-systems",
+        icon: Zap,
+      },
+      {
+        id: "thermal-management",
+        title: "Thermal Management",
+        description: "Heat sinks, cold plates, radiation and thermal-resistance networks",
+        route: "/products/advanced-systems/thermal-management",
+        category: "advanced-systems",
+        icon: Flame,
+      },
+      {
+        id: "battery-ev-systems",
+        title: "Battery & EV Systems",
+        description: "Pack heat generation, busbars, cooling and vent screening",
+        route: "/products/advanced-systems/battery-ev-systems",
+        category: "advanced-systems",
+        icon: Gauge,
+      },
+      {
+        id: "hydrogen-systems",
+        title: "Hydrogen Systems",
+        description: "Hydrogen storage, pipe flow, leak and vent screening",
+        route: "/products/advanced-systems/hydrogen-systems",
+        category: "advanced-systems",
+        icon: Waves,
+      },
+      {
+        id: "precision-motion",
+        title: "Precision Motion & Vibration",
+        description: "Flexures, isolation, thermal drift and optomechanical stiffness",
+        route: "/products/advanced-systems/precision-motion",
+        category: "advanced-systems",
+        icon: Activity,
+      },
+    ],
+  },
+
+  {
     id: "tools",
     title: "Technical Tools",
     description: "Formula reference and unit conversion",

@@ -12,6 +12,10 @@ import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { materials } from "@/data/materials";
+import {
+  getBeamApplicationPreset,
+  type BeamApplicationId,
+} from "@/lib/structural/beams/applicationPresets";
 
 type BeamProjectData = {
   length: number;
@@ -19,8 +23,10 @@ type BeamProjectData = {
   udl: number;
   inertia: number;
   c: number;
+  material?: string;
   support?: string;
   loads: Load[];
+  applicationId?: BeamApplicationId;
 };
 type BeamProject = LocalProject<BeamProjectData>;
 import { solveBeamEngine } from "@/lib/structural/beams/engine";
@@ -43,6 +49,8 @@ const BEAM_UNIT_FIELD_KEYS = [
   "stress",
 ] as const;
 
+const DEFAULT_BEAM_MATERIAL = materials[0]!;
+
 export default function Page() {
   // =========================
   // INPUTS
@@ -57,6 +65,8 @@ export default function Page() {
     "simply_supported" | "cantilever" | "fixed_fixed"
   >("simply_supported");
   const [material, setMaterial] = useState("Steel");
+  const [applicationId, setApplicationId] =
+    useState<BeamApplicationId>("general_mechanics");
   // =========================
   // UNITS
   // =========================
@@ -159,8 +169,11 @@ const handleLoadDrag = (
   // =========================
   // SOLVER
   // =========================
+  const beamMaterials = materials.filter((m) => m.name !== "Concrete");
   const selectedMaterial =
-  materials.find((m) => m.name === material) || materials[0];
+    beamMaterials.find((m) => m.name === material) ?? beamMaterials[0] ?? DEFAULT_BEAM_MATERIAL;
+  const applicationPreset = getBeamApplicationPreset(applicationId);
+
   const beamPipeline = useCalculationPipeline({
     normalize: (input: {
       length: number;
@@ -189,6 +202,7 @@ const handleLoadDrag = (
       support: input.support,
       meshSegments: Math.max(10, Math.round(input.meshSegments)),
       loads: input.loads.map((l) => {
+        const loadFactor = applicationPreset.loadFactor;
         if (l.type === "point") {
           return {
             ...l,
@@ -196,7 +210,7 @@ const handleLoadDrag = (
               value: l.value,
               unit: forceUnit,
               dimension: "force",
-            }),
+            }) * loadFactor,
             position: normalizeInput({
               value: l.position,
               unit: lengthUnit,
@@ -211,7 +225,7 @@ const handleLoadDrag = (
               value: l.value,
               unit: udlUnit,
               dimension: "forcePerLength",
-            }),
+            }) * loadFactor,
             start: normalizeInput({
               value: l.start,
               unit: lengthUnit,
@@ -230,7 +244,7 @@ const handleLoadDrag = (
             value: l.value,
             unit: momentUnit,
             dimension: "moment",
-          }),
+          }) * loadFactor,
           position: normalizeInput({
             value: l.position,
             unit: lengthUnit,
@@ -253,7 +267,7 @@ const handleLoadDrag = (
     }),
   });
   const calculate = () => {
-    const { output: converted } = beamPipeline.run({
+    const { normalized, raw, output: converted } = beamPipeline.run({
       length,
       I,
       c,
@@ -262,15 +276,43 @@ const handleLoadDrag = (
       loads,
     });
 
-    setResult(
-      attachBeamCalculationSpec(converted, designCode, {
-        yieldStressPa: 250e6,
-        deflectionLimit: length > 0 ? length / 360 : undefined,
-        c: normalizeInput({ value: c, unit: lengthUnit, dimension: "length" }),
-        I: normalizeInput({ value: I, unit: inertiaUnit, dimension: "inertia" }),
-        spanLength: normalizeInput({ value: length, unit: lengthUnit, dimension: "length" }),
-      })
-    );
+    const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
+    const allowableStressPa = yieldStressPa * applicationPreset.allowableStressRatio;
+    const deflectionLimitBase =
+      normalized.length / applicationPreset.deflectionLimitRatio;
+    const stressUtilization =
+      allowableStressPa > 0 ? raw.maxStress / allowableStressPa : 0;
+    const deflectionUtilization =
+      deflectionLimitBase > 0 ? raw.maxDeflection / deflectionLimitBase : 0;
+    const calculationSpec = attachBeamCalculationSpec(raw, designCode, {
+      yieldStressPa,
+      allowableStressPa,
+      deflectionLimit: deflectionLimitBase,
+      c: normalized.c,
+      I: normalized.I,
+      spanLength: normalized.length,
+    }).calculationSpec;
+
+    setResult({
+      ...converted,
+      calculationSpec,
+      applicationContext: {
+        id: applicationPreset.id,
+        label: applicationPreset.label,
+        description: applicationPreset.description,
+        standards: applicationPreset.standards,
+        loadFactor: applicationPreset.loadFactor,
+        allowableStressRatio: applicationPreset.allowableStressRatio,
+        deflectionLimitRatio: applicationPreset.deflectionLimitRatio,
+        fatigueSensitive: applicationPreset.fatigueSensitive,
+        allowableStress: fromBase(allowableStressPa, "stress", stressUnit),
+        deflectionLimit: fromBase(deflectionLimitBase, "length", lengthUnit),
+        stressUtilization,
+        deflectionUtilization,
+        calculationNotes: applicationPreset.calculationNotes,
+        limitations: applicationPreset.limitations,
+      },
+    });
   };
 
   // =========================
@@ -285,8 +327,10 @@ const handleLoadDrag = (
       udl,
       inertia: I,
       c,
+      material,
       support,
       loads,
+      applicationId,
     });
 
     setSavedProjects(projects);
@@ -303,7 +347,9 @@ const handleLoadDrag = (
     setUdl(p.udl);
     setI(p.inertia);
     setC(p.c);
+    setMaterial(p.material === "Concrete" ? "Steel" : p.material ?? "Steel");
     setLoads(p.loads ?? []);
+    setApplicationId(p.applicationId ?? "general_mechanics");
     if (p.support === "simply_supported" || p.support === "cantilever" || p.support === "fixed_fixed") {
       setSupport(p.support);
     }
@@ -353,6 +399,8 @@ const handleLoadDrag = (
             loads={loads}
             material={material}
             setMaterial={setMaterial}
+            applicationId={applicationId}
+            setApplicationId={setApplicationId}
             updateLoad={updateLoad}
             removeLoad={removeLoad}
             addPointLoad={addPointLoad}
@@ -372,6 +420,7 @@ const handleLoadDrag = (
           support={support}
           loads={loads}
           onLoadDrag={handleLoadDrag}
+          applicationContext={result?.applicationContext}
           units={{
             length: lengthUnit,
             force: forceUnit,

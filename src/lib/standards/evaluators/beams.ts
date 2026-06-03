@@ -8,6 +8,7 @@ export function attachBeamCalculationSpec(
   designCode: DesignCodeId,
   options?: {
     yieldStressPa?: number;
+    allowableStressPa?: number;
     deflectionLimit?: number;
     c?: number;
     I?: number;
@@ -16,12 +17,13 @@ export function attachBeamCalculationSpec(
   }
 ): BeamResult & { calculationSpec: CalculationSpec } {
   const yieldStress = options?.yieldStressPa ?? 250e6;
+  const stressLimit = options?.allowableStressPa ?? yieldStress;
   const deflectionLimit = options?.deflectionLimit;
   const c = options?.c ?? 0.05;
   const I = options?.I ?? 1e-6;
   const areaEstimate = Math.max((3 * I) / (c * c), 1e-9);
   const tauMax = (1.5 * result.maxShear) / areaEstimate;
-  const tauAllow = 0.6 * yieldStress;
+  const tauAllow = 0.6 * stressLimit;
   const shearUtil = tauAllow > 0 ? tauMax / tauAllow : 0;
 
   const Lb = options?.unbracedLength ?? options?.spanLength ?? 1;
@@ -29,12 +31,12 @@ export function attachBeamCalculationSpec(
   const r = Math.sqrt(I / areaEstimate);
   const Fe = (Math.PI ** 2 * 210e9) / Math.pow(Lb / Math.max(r, 1e-9), 2);
   const Mn =
-    Fe >= 0.7 * yieldStress
-      ? 0.9 * yieldStress * Sx
-      : 0.9 * yieldStress * Sx * Math.sqrt(Fe / Math.max(yieldStress, 1e-9));
+    Fe >= 0.7 * stressLimit
+      ? 0.9 * stressLimit * Sx
+      : 0.9 * stressLimit * Sx * Math.sqrt(Fe / Math.max(stressLimit, 1e-9));
   const ltbUtil = Mn > 0 ? result.maxMoment / Mn : 0;
 
-  const stressUtilization = result.maxStress > 0 ? result.maxStress / yieldStress : 0;
+  const stressUtilization = result.maxStress > 0 ? result.maxStress / stressLimit : 0;
   const deflectionUtilization =
     deflectionLimit && deflectionLimit > 0
       ? result.maxDeflection / deflectionLimit
@@ -45,13 +47,13 @@ export function attachBeamCalculationSpec(
       ? [
           makeUtilizationCheck(
             "bending_stress",
-            "Bending stress utilization (σ / σy, indicative)",
+            "Bending stress utilization (σ / application limit, indicative)",
             stressUtilization,
             designCode
           ),
           makeUtilizationCheck(
             "shear_stress",
-            "Shear utilization (τ / 0.6·σy, indicative)",
+            "Shear utilization (τ / 0.6·application limit, indicative)",
             shearUtil,
             designCode
           ),
@@ -74,6 +76,7 @@ export function attachBeamCalculationSpec(
         ]
       : buildBeamCodeChecks(result, designCode, {
           yieldStressPa: yieldStress,
+          allowableStressPa: options?.allowableStressPa,
           deflectionLimit,
           c: options?.c,
           I: options?.I,
