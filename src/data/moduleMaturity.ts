@@ -271,6 +271,14 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
   "rolled-sections": { numericalDepth: 2, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Catalog section lookup." },
   "formula-reference": { numericalDepth: 1, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Formula hub and mini calculators." },
   "unit-converter": { numericalDepth: 1, validationQuality: 3, refactorRisk: "low", maturityBand: "formula", notes: "Shared unit conversion layer." },
+  "vacuum-engineering": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Ideal gas pump-down and molecular conductance screening." },
+  "cryogenic-engineering": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Lumped heat leak, boil-off and cooldown estimates." },
+  "magnetic-fields": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Long-solenoid and coil energy screening." },
+  "superconducting-systems": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Scalar superconducting margin and dump screening." },
+  "thermal-management": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Lumped conduction, convection, radiation and coolant estimates." },
+  "battery-ev-systems": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Battery pack electrical and thermal screening." },
+  "hydrogen-systems": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Ideal gas hydrogen storage and vent screening." },
+  "precision-motion": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Flexure stiffness and SDOF vibration screening." },
 };
 
 export const moduleMaturityMatrix: ModuleMaturity[] = allModules.map((module) => {

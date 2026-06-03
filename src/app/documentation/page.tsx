@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { categories } from "@/data/modules";
+import { allModules, categories } from "@/data/modules";
 
 export default function DocumentationPage() {
+  const moduleCount = allModules.filter((module) => !module.comingSoon).length;
+
   return (
     <div>
       <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">
@@ -19,7 +21,8 @@ export default function DocumentationPage() {
         >
           <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Full technical reference</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Complete manual — platform architecture, all 35 modules, maturity matrix, and roadmap.
+            Complete manual — platform architecture, all {moduleCount} active modules, maturity
+            matrix, and roadmap.
           </p>
         </Link>
         <Link

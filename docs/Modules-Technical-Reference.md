@@ -1,6 +1,6 @@
 # PhyCalcPro — Modules Technical Reference
 
-Engineering software manual for the **54 product modules** shipped under `/products/*`. This document describes purpose, governing methods, design-code support, UI maturity, and known gaps. It complements the homogenization contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
+Engineering software manual for the **62 active product modules** shipped under `/products/*`. This document describes purpose, governing methods, design-code support, UI maturity, and known gaps. It complements the homogenization contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
 
 **Audience:** engineers evaluating PhyCalcPro for design work, and developers extending modules.
 
@@ -21,9 +21,10 @@ Engineering software manual for the **54 product modules** shipped under `/produ
 7. [Pressure systems](#7-pressure-systems)
 8. [Dynamics & vibrations](#8-dynamics--vibrations)
 9. [Manufacturing](#9-manufacturing)
-10. [Area properties (profiles)](#10-area-properties-profiles)
-11. [Maturity & numerical methods](#11-maturity--numerical-methods)
-12. [Gaps & roadmap](#12-gaps--roadmap)
+10. [Advanced systems](#10-advanced-systems)
+11. [Area properties (profiles)](#11-area-properties-profiles)
+12. [Maturity & numerical methods](#12-maturity--numerical-methods)
+13. [Gaps & roadmap](#13-gaps--roadmap)
 
 ---
 
@@ -102,15 +103,16 @@ Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUn
 | Pressure | 4 | pipes, vessels, hydraulics, heat-exchangers |
 | Dynamics | 4 | vibrations, rotation, impact, suspension |
 | Manufacturing | 4 | tolerance, fits, cost-estimator, cam-toolpaths |
+| Advanced systems | 8 | vacuum-engineering, cryogenic-engineering, magnetic-fields, superconducting-systems, thermal-management, battery-ev-systems, hydrogen-systems, precision-motion |
 | Tools | 2 | formula-reference, unit-converter |
-| **Total** | **54** | |
+| **Total** | **62** | |
 
 ### Homogenization snapshot
 
 | Aspect | Status |
 |--------|--------|
-| `CalculatorLayout` + `moduleId` | All 54 pages |
-| `useStandardCalculation` / `useCalculatorModule` | 54 / 54 |
+| `CalculatorLayout` + `moduleId` | All 62 active pages |
+| `useStandardCalculation` / `useCalculatorModule` | 62 / 62 |
 | Unit profiles (`moduleProfiles.ts`) | All expansion modules + majority of legacy modules |
 | Modern `inputs`/`results` or full `*Inputs`/`*Results` | All 19 expansion modules + v-belts; legacy slots on some mature modules |
 | `CalculatorResultsShell` / metric cards | Universal on expansion modules; widespread elsewhere |
@@ -740,7 +742,249 @@ C_{min} = D_{min}^{hole} - D_{max}^{shaft}, \quad C_{max} = D_{max}^{hole} - D_{
 
 ---
 
-## 10. Area properties (profiles)
+## 10. Advanced Systems
+
+### 10.1 Vacuum Engineering (`vacuum-engineering`)
+
+**Purpose:** First-pass vacuum chamber screening — ideal pump-down time, molecular-flow line conductance, vacuum force, and target gas throughput.
+
+**Method:** **Closed-form / empirical** vacuum approximations.
+
+**Key relations:**
+
+\[
+t = \frac{V}{S}\ln\left(\frac{P_0}{P_t}\right)
+\]
+
+\[
+C_{air} \approx \frac{12.1 d^3}{L}\quad [\mathrm{L/s}], \quad d,L \text{ in cm}
+\]
+
+\[
+F = \Delta P A, \quad Q = P_t S
+\]
+
+**Inputs:** chamber volume \(V\), effective pump speed \(S\), initial pressure \(P_0\), target pressure \(P_t\), line diameter/length, pressure differential, projected area.
+
+**Outputs:** ideal pump-down time, molecular conductance, vacuum force, gas throughput; assumptions and high-pressure warnings.
+
+**Design references:** ISO 21360 pump performance context, ASTM E595 outgassing context, AVS vacuum practice.
+
+**Gaps:** No conductance network solver, no viscous-to-molecular transition, no outgassing history or leak-test model.
+
+---
+
+### 10.2 Cryogenic Engineering (`cryogenic-engineering`)
+
+**Purpose:** Cryogenic heat-load screening — conductive/radiative heat leak, equivalent boil-off, cooldown energy, and ideal cooldown time.
+
+**Method:** **Closed-form** lumped heat-transfer model.
+
+**Key relations:**
+
+\[
+\dot Q_{cond} = \frac{k A \Delta T}{L}
+\]
+
+\[
+\dot Q_{rad} = \epsilon \sigma A \left(T_h^4 - T_c^4\right)
+\]
+
+\[
+\dot m_{boiloff} = \frac{\dot Q_{total}}{h_{fg}}, \quad E_{cool} = m c_p \Delta T
+\]
+
+**Inputs:** warm/cold temperatures, area, conduction length, effective conductivity, emissivity, cold mass, average heat capacity, cryogen latent heat, available cooling power.
+
+**Outputs:** total heat leak, equivalent boil-off rate, cooldown energy, ideal cooldown time.
+
+**Design references:** CGA cryogenic guidance, NASA cryogenic practice, ASTM material data.
+
+**Gaps:** No MLI layer-by-layer model, transient gradients, material embrittlement, relief sizing, or detailed cooldown trajectory.
+
+---
+
+### 10.3 Magnetic Fields & Coils (`magnetic-fields`)
+
+**Purpose:** Electromagnetic coil screening — solenoid field, inductance, stored energy, Lorentz force, and resistive heating.
+
+**Method:** **Closed-form** long-solenoid and conductor approximations.
+
+**Key relations:**
+
+\[
+B = \mu_0 \frac{N I}{L}
+\]
+
+\[
+\mathcal{L} = \mu_0 \frac{N^2 A}{L}, \quad E = \frac{1}{2}\mathcal{L} I^2
+\]
+
+\[
+F = B I \ell, \quad P_{heat}=I^2 R
+\]
+
+**Inputs:** turns, current, coil length/area, active conductor length, coil resistance.
+
+**Outputs:** magnetic field, inductance, stored energy, Lorentz force, resistive heating.
+
+**Design references:** IEC electrical equipment practice, magnet design handbooks, MMPDS where structural support applies.
+
+**Gaps:** No fringe fields, saturation, finite-solenoid correction, cooling, insulation, or coupled electromagnetic-structural analysis.
+
+---
+
+### 10.4 Superconducting Systems (`superconducting-systems`)
+
+**Purpose:** Superconducting magnet operating margin screening — current margin, temperature margin, stored energy, dump voltage, discharge time constant, and cooling margin.
+
+**Method:** **Closed-form** scalar margin and \(L/R\) dump approximation.
+
+**Key relations:**
+
+\[
+E = \frac{1}{2}\mathcal{L}I^2
+\]
+
+\[
+\text{current margin} = \frac{I_c-I}{I_c}, \quad \Delta T = T_c - T_{op}
+\]
+
+\[
+V_{dump}=IR_d, \quad \tau=\frac{\mathcal{L}}{R_d}
+\]
+
+**Inputs:** magnet inductance, operating/critical current, operating/critical temperature, dump resistance, heat load, cryocooler capacity.
+
+**Outputs:** stored magnetic energy, current margin, temperature margin, dump voltage, discharge time constant, cooling margin.
+
+**Design references:** IEC superconductivity terminology, cryogenic magnet practice.
+
+**Gaps:** No conductor critical-surface model, quench propagation, insulation voltage stress, or cryogenic transient simulation.
+
+---
+
+### 10.5 Thermal Management (`thermal-management`)
+
+**Purpose:** Electronics and hardware thermal screening — conduction, convection, radiation, thermal resistance, and coolant rise.
+
+**Method:** **Closed-form** parallel heat-transfer capacity model.
+
+**Key relations:**
+
+\[
+\dot Q_{cond} = \frac{k A \Delta T}{t}, \quad \dot Q_{conv}=hA\Delta T
+\]
+
+\[
+\dot Q_{rad} = \epsilon\sigma A(T_h^4-T_\infty^4)
+\]
+
+\[
+R_\theta = \frac{\Delta T}{\dot Q_{total}}, \quad \Delta T_{coolant}=\frac{\dot Q_{total}}{\dot m c_p}
+\]
+
+**Inputs:** temperature difference, area, conduction thickness, conductivity, convection coefficient, emissivity, hot/ambient temperatures, coolant mass flow, coolant heat capacity.
+
+**Outputs:** total heat-transfer capacity, conduction/convection/radiation contribution, effective thermal resistance, coolant temperature rise.
+
+**Design references:** JEDEC thermal practice, ASHRAE heat-transfer data, standard heat-transfer methods.
+
+**Gaps:** No CFD, spreading resistance, contact resistance, two-phase flow, or detailed cold-plate pressure drop.
+
+---
+
+### 10.6 Battery & EV Systems (`battery-ev-systems`)
+
+**Purpose:** Battery pack preliminary screening — nominal voltage/energy, ohmic heat, cooling mass flow, busbar area, and simple vent area.
+
+**Method:** **Closed-form** electrical/thermal pack estimates.
+
+**Key relations:**
+
+\[
+V_{pack} = N_s V_{cell}, \quad E_{pack}=V_{pack}N_p C_{cell}
+\]
+
+\[
+\dot Q = N_s N_p R_{cell}\left(\frac{I}{N_p}\right)^2
+\]
+
+\[
+\dot m_{coolant} = \frac{\dot Q}{c_p\Delta T}, \quad A_{busbar}=\frac{I}{J_{allow}}
+\]
+
+**Inputs:** series/parallel cells, cell voltage/capacity/resistance, pack current, busbar current density, coolant heat capacity and allowed rise, gas generation and target vent velocity.
+
+**Outputs:** pack voltage, pack energy, ohmic heat generation, cooling mass flow, minimum busbar area, simple vent area.
+
+**Design references:** UL 2580, SAE J2464, ISO 6469, IEC 62619.
+
+**Gaps:** No BMS behavior, electrochemical cell maps, thermal runaway propagation, enclosure rupture model, or regulatory abuse-test compliance.
+
+---
+
+### 10.7 Hydrogen Systems (`hydrogen-systems`)
+
+**Purpose:** Hydrogen storage and vent screening — ideal stored mass, energy content, thin-wall hoop stress, gas density, and leak/vent flow estimate.
+
+**Method:** **Closed-form** ideal gas, thin-wall, and orifice-flow screening.
+
+**Key relations:**
+
+\[
+m = \frac{P V M_{H_2}}{R T}
+\]
+
+\[
+\sigma_\theta = \frac{P r}{t}
+\]
+
+\[
+\dot m \approx C_d A \sqrt{2\rho\Delta P}
+\]
+
+**Inputs:** storage pressure/volume/temperature, vessel radius/thickness, discharge coefficient, orifice area, vent pressure differential.
+
+**Outputs:** stored hydrogen mass, lower heating energy, hoop stress, ideal gas density, estimated leak mass flow, equivalent vent area.
+
+**Design references:** ISO 19880, ASME B31.12, NFPA 2, SAE J2579.
+
+**Gaps:** High-pressure hydrogen needs real-gas compressibility, material compatibility, embrittlement review, relief-device sizing, and code vessel checks.
+
+---
+
+### 10.8 Precision Motion & Vibration (`precision-motion`)
+
+**Purpose:** Precision mechanism screening — flexure stiffness, natural frequency, thermal drift, frequency ratio, and isolation transmissibility.
+
+**Method:** **Closed-form** cantilever flexure and single-degree-of-freedom vibration model.
+
+**Key relations:**
+
+\[
+k = \frac{3EI}{L^3}, \quad f_n = \frac{1}{2\pi}\sqrt{\frac{k}{m}}
+\]
+
+\[
+\Delta L = \alpha L \Delta T
+\]
+
+\[
+T_r = \sqrt{\frac{1+(2\zeta r)^2}{(1-r^2)^2+(2\zeta r)^2}}, \quad r=\frac{f}{f_n}
+\]
+
+**Inputs:** elastic modulus, flexure second moment, flexure length, moving mass, thermal expansion coefficient, reference length, temperature change, excitation frequency, damping ratio.
+
+**Outputs:** flexure stiffness, natural frequency, thermal drift, frequency ratio, transmissibility.
+
+**Design references:** ISO 230 machine tool accuracy context, ISO 20816 vibration context, precision machine design references.
+
+**Gaps:** No multi-axis flexure model, bearing/control-loop model, nonlinear travel limits, or full error budget.
+
+---
+
+## 11. Area properties (profiles)
 
 ### Profiles (`profiles`)
 
@@ -758,13 +1002,13 @@ C_{min} = D_{min}^{hole} - D_{max}^{shaft}, \quad C_{max} = D_{max}^{hole} - D_{
 
 ---
 
-## 11. Maturity & numerical methods
+## 12. Maturity & numerical methods
 
 From `src/data/moduleMaturity.ts`:
 
 | Band | Count | Representative modules |
 |------|------:|------------------------|
-| **formula** | 20 | combined-loading, gears, bearings, welds, fits, tolerance, hydraulics, rotation, impact, … |
+| **formula** | 48 | combined-loading, gears, bearings, welds, advanced systems, fits, tolerance, hydraulics, rotation, impact, … |
 | **fem** | 9 | beams, frames, trusses, columns, plates, shafts, bolts, pipes, vessels |
 | **advanced-numerics** | 5 | composites, fatigue, heat-exchangers, vibrations, suspension |
 
@@ -783,9 +1027,9 @@ From `src/data/moduleMaturity.ts`:
 
 ---
 
-## 12. Gaps & roadmap
+## 13. Gaps & roadmap
 
-### 12.1 Homogenization (UI / contract)
+### 13.1 Homogenization (UI / contract)
 
 1. **Layout migration** — ~26 modules still use deprecated `left`/`center`/`right`. Target: `inputs` + `results` only, with `CalculatorInputPanel` and `CalculatorGuidancePanel` inside inputs where guidance is needed.
 2. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
@@ -793,7 +1037,7 @@ From `src/data/moduleMaturity.ts`:
 4. **Hook consolidation** — Prefer `useStandardCalculation` over ad hoc `useDesignCodeUnits` + manual `attach*CalculationSpec` (beams is the outlier).
 5. **Export** — Ensure all plots use `EngineeringPlot` with export attributes; wrap SVG diagrams with `data-export-diagram`.
 
-### 12.2 Design code depth
+### 13.2 Design code depth
 
 | Priority | Gap |
 |----------|-----|
@@ -808,9 +1052,9 @@ Only **columns, combined-loading, welds**, and partial **beams/gears** have non-
 
 ---
 
-## 13. Expansion modules (2026)
+## 14. Expansion modules (2026)
 
-### 13.1 Power transmission
+### 14.1 Power transmission
 
 | Module | Key relations |
 |--------|----------------|
@@ -819,7 +1063,7 @@ Only **columns, combined-loading, welds**, and partial **beams/gears** have non-
 | **roller-chains** | Power capacity vs. strand count; life \(\propto 1/\text{load}^3\) screening |
 | **multi-pulley** | Wrap angles from center distance and diameters; segment length sum |
 
-### 13.2 Gearing extensions
+### 14.2 Gearing extensions
 
 | Module | Key relations |
 |--------|----------------|
@@ -828,17 +1072,17 @@ Only **columns, combined-loading, welds**, and partial **beams/gears** have non-
 | **planetary-gears** | \(z_r = z_s + 2 z_p\), ratio \(1 + z_r/z_s\) |
 | **gear-ratio-design** | Integer search minimizing \(\|z_2/z_1 - i\|\) |
 
-### 13.3 Springs
+### 14.3 Springs
 
 Helical compression: \(k = G d^4 / (8 D^3 n)\), Wahl factor \(K_s\), solid height \(\approx n d + 2d\).
 
 Extension springs reuse compression core with initial tension estimate. Torsion springs: \(k = E d^4 / (116 D n)\), bending stress from torque.
 
-### 13.4 Shaft connections
+### 14.4 Shaft connections
 
 Keys/splines: shear \(\tau = T/(0.5 d A_s)\), bearing on key. Shaft hubs: Lamé-type contact pressure from interference. Pins: double shear + bearing on plate thickness.
 
-### 13.5 Other new modules
+### 14.5 Other new modules
 
 - **brakes-clutches:** friction torque at mean radius, energy \(E = P \Delta t\)
 - **plain-bearings:** Sommerfeld \(S = \mu U / W\), film thickness screening
@@ -846,11 +1090,24 @@ Keys/splines: shear \(\tau = T/(0.5 d A_s)\), bearing on key. Shaft hubs: Lamé-
 - **rolled-sections:** catalog lookup (W/S/C starter set)
 - **formula-reference / unit-converter:** shared formula hub and unit layer
 
+### 14.6 Advanced systems
+
+| Module | Key relations |
+|--------|----------------|
+| **vacuum-engineering** | \(t = (V/S)\ln(P_0/P_t)\); \(C \approx 12.1d^3/L\); \(F=\Delta P A\) |
+| **cryogenic-engineering** | \(\dot Q = kA\Delta T/L + \epsilon\sigma A(T_h^4-T_c^4)\); boil-off \(\dot m=\dot Q/h_{fg}\) |
+| **magnetic-fields** | \(B=\mu_0NI/L\); \(\mathcal{L}=\mu_0N^2A/L\); \(E=\frac{1}{2}\mathcal{L}I^2\) |
+| **superconducting-systems** | current/temperature margins; \(V=IR_d\); \(\tau=\mathcal{L}/R_d\) |
+| **thermal-management** | conduction, convection, radiation and coolant rise \( \Delta T = \dot Q/(\dot m c_p)\) |
+| **battery-ev-systems** | \(V_{pack}=N_sV_{cell}\); \(\dot Q=N_sN_pR(I/N_p)^2\); busbar area \(I/J\) |
+| **hydrogen-systems** | \(m=PVM/(RT)\); \(\sigma_\theta=Pr/t\); \(\dot m\approx C_dA\sqrt{2\rho\Delta P}\) |
+| **precision-motion** | \(k=3EI/L^3\); \(f_n=(2\pi)^{-1}\sqrt{k/m}\); SDOF transmissibility |
+
 ---
 
-## 14. Expansion module reference (`id`)
+## 15. Expansion module reference (`id`)
 
-Each entry summarizes governing relations for the 19 modules added in the 2026 expansion. All ship with dedicated `*Inputs.tsx` / `*Results.tsx`, `moduleProfiles` entries, and `CalculatorResultsShell` export.
+Each entry summarizes governing relations for the expansion modules added in 2026. Advanced Systems modules use the shared `AdvancedSystemCalculator` shell with inputs, assumptions, warnings, metrics, standards metadata, and `CalculatorResultsShell` export.
 
 ### Module (`compression-springs`)
 
@@ -928,22 +1185,54 @@ Evaluates catalog formulas: kinetic energy \(E = \frac{1}{2}mv^2\), pump power \
 
 Converts via SI base layer: `toBase` / `fromBase` for length, force, stress dimensions.
 
+### Module (`vacuum-engineering`)
+
+Pump-down \(t=(V/S)\ln(P_0/P_t)\), molecular-flow conductance \(C \approx 12.1d^3/L\), vacuum force \(F=\Delta P A\), throughput \(Q=P_tS\).
+
+### Module (`cryogenic-engineering`)
+
+Conductive heat leak \(\dot Q_{cond}=kA\Delta T/L\), radiative heat leak \(\dot Q_{rad}=\epsilon\sigma A(T_h^4-T_c^4)\), boil-off and cooldown energy.
+
+### Module (`magnetic-fields`)
+
+Long-solenoid field \(B=\mu_0NI/L\), inductance \(\mathcal{L}=\mu_0N^2A/L\), stored energy \(E=\frac{1}{2}\mathcal{L}I^2\), Lorentz force \(F=BI\ell\).
+
+### Module (`superconducting-systems`)
+
+Stored energy, current margin \((I_c-I)/I_c\), temperature margin \(T_c-T_{op}\), dump voltage \(IR_d\), discharge time constant \(\mathcal{L}/R_d\).
+
+### Module (`thermal-management`)
+
+Parallel heat-transfer screening with conduction, convection, radiation, effective thermal resistance \(R_\theta=\Delta T/\dot Q\), and coolant rise \(\Delta T=\dot Q/(\dot m c_p)\).
+
+### Module (`battery-ev-systems`)
+
+Pack voltage/energy, ohmic heat generation \(\dot Q=N_sN_pR_{cell}(I/N_p)^2\), cooling flow, busbar area \(I/J_{allow}\), simple vent area.
+
+### Module (`hydrogen-systems`)
+
+Ideal stored hydrogen mass \(m=PVM_{H_2}/(RT)\), lower-heating energy, thin-wall hoop stress \(\sigma_\theta=Pr/t\), and orifice-flow leak screening.
+
+### Module (`precision-motion`)
+
+Cantilever flexure stiffness \(k=3EI/L^3\), natural frequency \(f_n=(2\pi)^{-1}\sqrt{k/m}\), thermal drift \(\Delta L=\alpha L\Delta T\), and SDOF transmissibility.
+
 ---
 
-### 12.3 Physics & solver scope
+### 13.3 Physics & solver scope
 
 - **No module** provides full 3D solid FEA, nonlinear material, or contact — all "FEM" labels are reduced-order (beam, shell, truss, 1D shaft).
 - **Load combinations / partial factors** are user responsibility (stated in catalog assumptions).
 - **Fatigue, composites, suspension** need deeper physics before raising validation tier.
 - **Draft modules** (cost-estimator, cam-toolpaths) should not be used for production decisions without explicit review.
 
-### 12.4 Testing & release
+### 13.4 Testing & release
 
 - Expand `benchmarkRunner` coverage beyond the current eight solvers.
 - Wire release tier gates to CI so **beta** modules require passing benchmarks before promotion.
 - `npm run validate:layout` enforces no duplicate sidebars / DashboardLayout on product pages — keep in pre-build.
 
-### 12.5 Documentation maintenance
+### 13.5 Documentation maintenance
 
 When adding a module:
 
