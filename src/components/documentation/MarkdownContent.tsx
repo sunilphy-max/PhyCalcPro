@@ -16,7 +16,7 @@ export default function MarkdownContent({ markdown, className = "" }: Props) {
       className={`documentation-prose max-w-none text-slate-700 dark:text-slate-200 ${className}`}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]}
+        remarkPlugins={[[remarkMath, { singleDollarTextMath: true }], remarkGfm]}
         rehypePlugins={[
           rehypeSlug,
           [
