@@ -366,11 +366,11 @@ export function getModuleDesignWorkflow(moduleId: string): ModuleDesignWorkflow 
 
 export function getModuleDesignWorkflowCoverage() {
   const workflows = allModules
-    .map((module) => getModuleDesignWorkflow(module.id))
+    .map((catalogModule) => getModuleDesignWorkflow(catalogModule.id))
     .filter((workflow): workflow is ModuleDesignWorkflow => Boolean(workflow));
 
   return {
-    totalModules: allModules.filter((module) => !module.comingSoon).length,
+    totalModules: allModules.filter((catalogModule) => !catalogModule.comingSoon).length,
     workflowModules: workflows.length,
     solverBacked: workflows.filter((workflow) => workflow.maturity === "solver-backed").length,
     catalogBacked: workflows.filter((workflow) => workflow.maturity === "catalog-backed").length,

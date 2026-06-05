@@ -95,19 +95,25 @@ The workflow registry (`src/lib/design-workflows/moduleDesignWorkflows.ts`) prov
 
 - required design inputs to define before solving,
 - automatic sizing targets,
-- candidate comparison rows,
+- computed reference-design candidate comparisons,
 - standard/catalog tables to consult,
 - linked downstream modules,
 - expert notes and explicit gaps.
 
+The computed candidate engine (`src/lib/design-workflows/computedCandidates.ts`) supplies numerical
+candidate rows for every active module family. These rows use best-available first-principles or
+standard screening equations (for example beam stress/deflection, shaft von Mises stress,
+Lewis gear bending, ISO 281 bearing life, spring shear stress, pressure hoop stress, pump-down
+time, thermal conductance, coil field and battery cooling flow).
+
 This is the platform layer needed for MITCalc-style worksheets. It does **not** mean every
-module has complete solver-integrated automatic sizing yet. Current coverage is:
+module has complete user-input-driven automatic sizing yet. Current coverage is:
 
 | Coverage type | Meaning |
 |---------------|---------|
 | **Solver-backed** | Existing solver computes key worksheet quantities; automatic sizing can be layered next. |
 | **Catalog-backed** | Module already behaves like a reference/selection table. |
-| **Workflow scaffold** | Design contract, candidate table, links and notes exist; deeper candidate generation remains planned. |
+| **Workflow scaffold** | Design contract, computed reference candidates, links and notes exist; user-input-specific candidate generation remains planned. |
 
 ---
 

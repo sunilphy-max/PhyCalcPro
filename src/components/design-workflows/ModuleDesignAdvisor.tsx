@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, CheckCircle2, GitBranch, Lightbulb, Table2 } from "lucide-react";
+import { ArrowRight, BookOpen, Calculator, CheckCircle2, GitBranch, Lightbulb, Table2 } from "lucide-react";
 import { allModules } from "@/data/modules";
+import { getComputedDesignSet } from "@/lib/design-workflows/computedCandidates";
 import type { DesignWorkflowMode, ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 
 type Props = {
@@ -19,9 +20,10 @@ const maturityLabel: Record<ModuleDesignWorkflow["maturity"], string> = {
 export default function ModuleDesignAdvisor({ workflow }: Props) {
   const [mode, setMode] = useState<DesignWorkflowMode>("design");
   const activeMode = workflow.modes.find((item) => item.id === mode) ?? workflow.modes[0];
+  const computedDesign = getComputedDesignSet(workflow.moduleId);
   const linkedModules = workflow.linkedWorkflowModuleIds
-    .map((id) => allModules.find((module) => module.id === id || module.route.endsWith(`/${id}`)))
-    .filter((module): module is NonNullable<typeof module> => Boolean(module));
+    .map((id) => allModules.find((catalogModule) => catalogModule.id === id || catalogModule.route.endsWith(`/${id}`)))
+    .filter((catalogModule): catalogModule is NonNullable<typeof catalogModule> => Boolean(catalogModule));
 
   return (
     <section className="overflow-hidden rounded-2xl border border-cyan-200 bg-white shadow-sm">
@@ -97,10 +99,87 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
         </div>
 
         <div className="space-y-5 p-5">
+          {computedDesign ? (
+            <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+                <Calculator className="h-4 w-4 text-cyan-700" />
+                Computed design candidates
+              </div>
+              <p className="mt-2 text-sm leading-6 text-slate-600">{computedDesign.method}</p>
+              <div className="mt-3 overflow-x-auto rounded-xl border border-cyan-200 bg-white">
+                <table className="min-w-full text-left text-xs">
+                  <thead className="bg-cyan-50 text-cyan-900">
+                    <tr>
+                      <th className="px-3 py-2 font-semibold">Option</th>
+                      <th className="px-3 py-2 font-semibold">Size</th>
+                      <th className="px-3 py-2 font-semibold">Util.</th>
+                      <th className="px-3 py-2 font-semibold">Margin</th>
+                      <th className="px-3 py-2 font-semibold">Status</th>
+                      <th className="px-3 py-2 font-semibold">Governing</th>
+                      <th className="px-3 py-2 font-semibold">Detail</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-cyan-100">
+                    {computedDesign.candidates.map((item) => (
+                      <tr key={item.option}>
+                        <td className="px-3 py-2 font-medium text-slate-900">{item.option}</td>
+                        <td className="px-3 py-2 text-slate-600">{item.size}</td>
+                        <td className="px-3 py-2 text-slate-600">{item.utilization.toFixed(2)}</td>
+                        <td className="px-3 py-2 text-slate-600">
+                          {Number.isFinite(item.margin) ? item.margin.toFixed(2) : "—"}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 font-semibold ${
+                              item.status === "pass"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : item.status === "review"
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-slate-600">{item.governing}</td>
+                        <td className="px-3 py-2 text-slate-600">{item.detail}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-sm font-medium text-cyan-950">
+                Recommendation: {computedDesign.recommendation}
+              </p>
+              <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-cyan-800">
+                    Assumptions
+                  </div>
+                  <ul className="mt-1 list-disc space-y-1 pl-4 text-xs leading-5 text-slate-600">
+                    {computedDesign.assumptions.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-cyan-800">
+                    Equations
+                  </div>
+                  <ul className="mt-1 list-disc space-y-1 pl-4 text-xs leading-5 text-slate-600">
+                    {computedDesign.equations.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
               <Table2 className="h-4 w-4 text-cyan-600" />
-              Candidate comparison
+              Workflow candidate strategy
             </div>
             <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
               <table className="min-w-full text-left text-xs">
@@ -148,13 +227,13 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
                 Continue workflow
               </div>
               <div className="mt-2 flex flex-wrap gap-2">
-                {linkedModules.map((module) => (
+                {linkedModules.map((catalogModule) => (
                   <Link
-                    key={module.id}
-                    href={module.route}
+                    key={catalogModule.id}
+                    href={catalogModule.route}
                     className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:text-cyan-700"
                   >
-                    {module.title}
+                    {catalogModule.title}
                     <ArrowRight className="h-3 w-3" />
                   </Link>
                 ))}
