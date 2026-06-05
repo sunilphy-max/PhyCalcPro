@@ -3,9 +3,11 @@
 import { ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
 import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
+import ModuleDesignAdvisor from "@/components/design-workflows/ModuleDesignAdvisor";
 import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
 import { computeReleaseTier } from "@/lib/qa/maturityGates";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
+import { getModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 
 /**
  * Two-column module layout (used beside products sidebar):
@@ -43,6 +45,7 @@ export default function CalculatorLayout({
   const releaseTier = moduleId
     ? computeReleaseTier(moduleId, benchmarkStats)
     : undefined;
+  const designWorkflow = moduleId ? getModuleDesignWorkflow(moduleId) : undefined;
 
   const inputColumn =
     inputs ??
@@ -79,6 +82,8 @@ export default function CalculatorLayout({
             ) : null}
           </div>
         </div>
+
+        {designWorkflow ? <ModuleDesignAdvisor workflow={designWorkflow} /> : null}
 
         <div
           className={`grid grid-cols-1 gap-6 ${
