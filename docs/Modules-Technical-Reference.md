@@ -88,6 +88,27 @@ Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUn
 
 `CalculatorLayout` shows catalog `validationStatus` and a computed release tier from benchmark stats (`ReleaseTierBadge`). Benchmark solvers exist for a subset (gears, columns, combined-loading, impact, fatigue, corrosion, suspension, rotation).
 
+### 1.7 Design workflow layer
+
+Every calculator page now receives a shared **Design / Check / Select** advisor through `CalculatorLayout`.
+The workflow registry (`src/lib/design-workflows/moduleDesignWorkflows.ts`) provides:
+
+- required design inputs to define before solving,
+- automatic sizing targets,
+- candidate comparison rows,
+- standard/catalog tables to consult,
+- linked downstream modules,
+- expert notes and explicit gaps.
+
+This is the platform layer needed for MITCalc-style worksheets. It does **not** mean every
+module has complete solver-integrated automatic sizing yet. Current coverage is:
+
+| Coverage type | Meaning |
+|---------------|---------|
+| **Solver-backed** | Existing solver computes key worksheet quantities; automatic sizing can be layered next. |
+| **Catalog-backed** | Module already behaves like a reference/selection table. |
+| **Workflow scaffold** | Design contract, candidate table, links and notes exist; deeper candidate generation remains planned. |
+
 ---
 
 ## 2. Module inventory
@@ -1031,13 +1052,25 @@ From `src/data/moduleMaturity.ts`:
 
 ### 13.1 Homogenization (UI / contract)
 
-1. **Layout migration** — ~26 modules still use deprecated `left`/`center`/`right`. Target: `inputs` + `results` only, with `CalculatorInputPanel` and `CalculatorGuidancePanel` inside inputs where guidance is needed.
-2. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
-3. **Results shell** — Standardize on `CalculatorResultsShell`, `CalculatorMetricGrid`, and `CalculatorMetricCard` with `formatEngineeringValue` (column buckling style per AGENTS.md).
-4. **Hook consolidation** — Prefer `useStandardCalculation` over ad hoc `useDesignCodeUnits` + manual `attach*CalculationSpec` (beams is the outlier).
-5. **Export** — Ensure all plots use `EngineeringPlot` with export attributes; wrap SVG diagrams with `data-export-diagram`.
+1. **Solver-backed design mode** — Convert workflow scaffold rows into real candidate generation for each module.
+2. **Layout migration** — ~26 modules still use deprecated `left`/`center`/`right`. Target: `inputs` + `results` only, with `CalculatorInputPanel` and `CalculatorGuidancePanel` inside inputs where guidance is needed.
+3. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
+4. **Results shell** — Standardize on `CalculatorResultsShell`, `CalculatorMetricGrid`, and `CalculatorMetricCard` with `formatEngineeringValue` (column buckling style per AGENTS.md).
+5. **Hook consolidation** — Prefer `useStandardCalculation` over ad hoc `useDesignCodeUnits` + manual `attach*CalculationSpec` (beams is the outlier).
+6. **Export** — Ensure all plots use `EngineeringPlot` with export attributes; wrap SVG diagrams with `data-export-diagram`.
 
-### 13.2 Design code depth
+### 13.2 MITCalc-style design depth
+
+| Priority | Gap |
+|----------|-----|
+| High | Add solver-backed automatic sizing for shafts, beams, springs, bolts, gears, bearings, belts/chains, pressure vessels and welds. |
+| High | Add standard/catalog tables: shaft diameters, bearing series, bolt sizes/grades, keyways, spring wires, belt/chain families, pipe schedules, material grades. |
+| High | Persist design alternatives and compare candidate rows with actual computed safety, weight, cost and availability. |
+| Medium | Link assemblies: gear ratio → gear strength → shaft → keys/splines → bearings → fatigue → report. |
+| Medium | Add expert coefficient recommendations and invalid-geometry warnings per standard. |
+| Medium | Add CAD/SVG/DXF export for geometry-producing modules. |
+
+### 13.3 Design code depth
 
 | Priority | Gap |
 |----------|-----|
@@ -1219,20 +1252,20 @@ Cantilever flexure stiffness \(k=3EI/L^3\), natural frequency \(f_n=(2\pi)^{-1}\
 
 ---
 
-### 13.3 Physics & solver scope
+### 13.4 Physics & solver scope
 
 - **No module** provides full 3D solid FEA, nonlinear material, or contact — all "FEM" labels are reduced-order (beam, shell, truss, 1D shaft).
 - **Load combinations / partial factors** are user responsibility (stated in catalog assumptions).
 - **Fatigue, composites, suspension** need deeper physics before raising validation tier.
 - **Draft modules** (cost-estimator, cam-toolpaths) should not be used for production decisions without explicit review.
 
-### 13.4 Testing & release
+### 13.5 Testing & release
 
 - Expand `benchmarkRunner` coverage beyond the current eight solvers.
 - Wire release tier gates to CI so **beta** modules require passing benchmarks before promotion.
 - `npm run validate:layout` enforces no duplicate sidebars / DashboardLayout on product pages — keep in pre-build.
 
-### 13.5 Documentation maintenance
+### 13.6 Documentation maintenance
 
 When adding a module:
 

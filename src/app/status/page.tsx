@@ -8,6 +8,7 @@ import {
 } from "@/lib/qa/maturityGates";
 import { getBenchmarkStatsFromLastRun, getLastVerificationReport } from "@/lib/qa/lastRun";
 import { supportedBenchmarkModules } from "@/lib/qa/benchmarkRunner";
+import { getModuleDesignWorkflowCoverage } from "@/lib/design-workflows/moduleDesignWorkflows";
 import type { ReleaseTier } from "@/lib/qa/types";
 
 export const metadata = {
@@ -19,6 +20,7 @@ export default function StatusPage() {
   const stats = getBenchmarkStatsFromLastRun();
   const summaries = buildModuleGateSummaries(stats);
   const lastRun = getLastVerificationReport();
+  const designCoverage = getModuleDesignWorkflowCoverage();
 
   const tierCounts = summaries.reduce(
     (acc, row) => {
@@ -69,6 +71,43 @@ export default function StatusPage() {
               </div>
             )
           )}
+        </div>
+
+        <h2 className="mt-12 text-xl font-semibold text-slate-950 dark:text-white">
+          Design-tool workflow coverage
+        </h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+          Every active calculator now has a Design / Check / Select workflow scaffold: design inputs,
+          automatic sizing targets, candidate comparison, catalog tables, linked downstream checks,
+          expert notes, and remaining gaps. Solver-backed means the current calculator already
+          computes at least part of the worksheet; workflow scaffold means the MITCalc-style
+          design contract is visible while deeper automatic sizing is still being integrated.
+        </p>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-sm text-slate-500">Active modules</div>
+            <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+              {designCoverage.totalModules}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-sm text-slate-500">Workflow-enabled</div>
+            <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+              {designCoverage.workflowModules}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-sm text-slate-500">Solver-backed</div>
+            <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+              {designCoverage.solverBacked}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="text-sm text-slate-500">Catalog-backed</div>
+            <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+              {designCoverage.catalogBacked}
+            </div>
+          </div>
         </div>
 
         <h2 className="mt-12 text-xl font-semibold text-slate-950 dark:text-white">
