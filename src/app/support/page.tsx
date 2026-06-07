@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Mail } from "lucide-react";
+import FeedbackForm from "@/components/feedback/FeedbackForm";
 import { isMonetizationEnabled } from "@/lib/licensing/validationMode";
 
 export const metadata = {
@@ -19,15 +20,20 @@ export default function SupportPage() {
         read every message.
       </p>
 
-      <div className="mt-8">
+      <div className="mt-10">
+        <FeedbackForm />
+      </div>
+
+      <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
+        Prefer email?{" "}
         <a
           href={`mailto:${SUPPORT_EMAIL}`}
-          className="inline-flex items-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          className="inline-flex items-center gap-1 font-medium text-slate-700 underline dark:text-slate-200"
         >
-          <Mail className="h-4 w-4" aria-hidden />
+          <Mail className="h-3.5 w-3.5" aria-hidden />
           {SUPPORT_EMAIL}
         </a>
-      </div>
+      </p>
 
       <div className="mt-12 space-y-8">
         <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">

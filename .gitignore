@@ -20,6 +20,9 @@
 # production
 /build
 
+# local feedback submissions (dev fallback)
+/data/feedback/
+
 # misc
 .DS_Store
 *.pem
