@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
-import { notifyFeedbackByEmail } from "@/lib/feedback/notify";
+import { isFeedbackEmailConfigured, notifyFeedbackByEmail } from "@/lib/feedback/notify";
 import { isRateLimited } from "@/lib/feedback/rateLimit";
 import { storeFeedback } from "@/lib/feedback/store";
 import { validateFeedbackPayload } from "@/lib/feedback/validate";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
+
+export const runtime = "nodejs";
+
+function userFacingError(emailConfigured: boolean, emailError?: string): string {
+  if (!emailConfigured) {
+    return "Feedback email is not configured on this site yet. Please email support@phycalcpro.com directly.";
+  }
+
+  const lower = (emailError ?? "").toLowerCase();
+  if (lower.includes("domain") || lower.includes("verify") || lower.includes("from")) {
+    return "Feedback email could not be sent (sender domain not verified in Resend). Please email support@phycalcpro.com directly.";
+  }
+
+  return "We could not deliver your message right now. Please email support@phycalcpro.com directly.";
+}
 
 export async function POST(request: Request) {
   const ip =
@@ -42,42 +57,34 @@ export async function POST(request: Request) {
     userAgent,
   };
 
-  let stored = false;
-  let emailed = false;
-  const errors: string[] = [];
-  let submissionId = `msg_${Date.now()}`;
-  let createdAt = new Date().toISOString();
+  const submission = await storeFeedback(meta);
+  const stored = Boolean(submission);
 
-  try {
-    const submission = await storeFeedback(meta);
-    stored = true;
-    submissionId = submission.id;
-    createdAt = submission.createdAt;
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : "Store failed");
-  }
+  const emailResult = await notifyFeedbackByEmail({
+    email: meta.email,
+    message: meta.message,
+    pageUrl: meta.pageUrl,
+    id: submission?.id ?? `msg_${Date.now()}`,
+    createdAt: submission?.createdAt ?? new Date().toISOString(),
+  });
 
-  try {
-    emailed = await notifyFeedbackByEmail({
-      email: meta.email,
-      message: meta.message,
-      pageUrl: meta.pageUrl,
-      id: submissionId,
-      createdAt,
-    });
-  } catch (error) {
-    errors.push(error instanceof Error ? error.message : "Email failed");
-  }
-
+  const emailed = emailResult.sent;
   const hasSupabase = Boolean(getSupabaseServerClient());
   const devStore = process.env.NODE_ENV === "development";
 
   if (!stored && !emailed) {
+    const emailConfigured = isFeedbackEmailConfigured();
     return NextResponse.json(
       {
-        error:
-          "Feedback is not configured on this deployment. Email support@phycalcpro.com directly.",
-        details: process.env.NODE_ENV === "development" ? errors : undefined,
+        error: userFacingError(emailConfigured, emailResult.error),
+        details:
+          process.env.NODE_ENV === "development"
+            ? {
+                emailConfigured,
+                emailError: emailResult.error,
+                supabase: hasSupabase,
+              }
+            : undefined,
       },
       { status: 503 }
     );

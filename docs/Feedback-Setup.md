@@ -39,3 +39,16 @@ Without Supabase or Resend, submissions are saved as JSON under `data/feedback/`
 `POST /api/feedback` — body: `{ "email", "message", "pageUrl?" }`
 
 Rate limit: one submission per IP per minute.
+
+## Troubleshooting “Feedback is not configured”
+
+This means **both** email and database storage failed. Email-only is enough — you do **not** need Supabase.
+
+1. **Redeploy after adding env vars** — Vercel only picks up new variables on a new deployment.
+2. **Exact variable names** (case-sensitive):
+   - `RESEND_API_KEY` — your `re_...` key
+   - `FEEDBACK_NOTIFY_EMAIL` — your inbox (not `FEEDBACK_NOTIFY`)
+   - `RESEND_FROM_EMAIL` — verified sender, e.g. `PhyCalcPro <onboarding@resend.dev>` for testing
+3. **Resend test sender** — `onboarding@resend.dev` can only send to the email address on your Resend account until you verify your own domain.
+4. **Production sender** — verify `phycalcpro.com` (or your domain) in Resend, then use e.g. `PhyCalcPro <feedback@phycalcpro.com>`.
+5. Check **Vercel → Deployments → Functions** logs for `[feedback] Resend error:` lines after a test submit.

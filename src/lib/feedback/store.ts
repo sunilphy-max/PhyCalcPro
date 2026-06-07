@@ -10,9 +10,10 @@ function createId() {
   return `fb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+/** Persists feedback when Supabase or local dev storage is available. Returns null if optional storage is skipped. */
 export async function storeFeedback(
   input: Omit<FeedbackSubmission, "id" | "createdAt">
-): Promise<FeedbackSubmission> {
+): Promise<FeedbackSubmission | null> {
   const submission: FeedbackSubmission = {
     id: createId(),
     createdAt: new Date().toISOString(),
@@ -31,7 +32,8 @@ export async function storeFeedback(
     });
 
     if (error) {
-      throw new Error(`Supabase store failed: ${error.message}`);
+      console.error("[feedback] Supabase insert failed:", error.message);
+      return null;
     }
 
     return submission;
@@ -47,5 +49,5 @@ export async function storeFeedback(
     return submission;
   }
 
-  throw new Error("Feedback storage is not configured.");
+  return null;
 }
