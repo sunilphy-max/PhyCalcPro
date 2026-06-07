@@ -1,3 +1,8 @@
+"use client";
+
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+
 import type { Dispatch, SetStateAction } from "react";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
@@ -53,15 +58,12 @@ export default function CompositeInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Composite material inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define fiber and matrix properties to estimate composite stiffness, strength, and density.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Composite laminate"
+      description="Design laminate layups and composite section behavior."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Compute composite" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700 col-span-full">
           <span>Fiber volume fraction</span>
           <div className="flex items-center gap-3">
@@ -212,14 +214,7 @@ export default function CompositeInputs({
           />
         </label>
       </div>
-
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800"
-      >
-        Compute Composite Properties
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

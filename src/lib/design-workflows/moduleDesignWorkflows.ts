@@ -334,6 +334,14 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     catalogTables: ["Conductor gauges", "Insulation classes", "Magnetic constants", "Cooling assumptions"],
     linkedWorkflowModuleIds: ["thermal-management", "superconducting-systems", "combined-loading"],
   },
+  "material-db": {
+    maturity: "catalog-backed",
+    designInputs: ["Required allowable stress", "Application temperature", "Environment"],
+    autoSizingTargets: ["Nearest passing material", "Yield margin", "Elastic modulus"],
+    linkedWorkflowModuleIds: ["fatigue", "corrosion", "temperature-properties", "beams", "shafts"],
+    expertNotes: ["Design mode ranks catalog materials by required allowable stress; Select applies material and E to the browse view."],
+    gaps: ["Full temperature derating and corrosion screening in one workflow are planned."],
+  },
   "battery-ev-systems": {
     maturity: "solver-backed",
     designInputs: ["Cell count", "Capacity", "Pack current", "Cell resistance", "Cooling target", "Vent assumptions"],

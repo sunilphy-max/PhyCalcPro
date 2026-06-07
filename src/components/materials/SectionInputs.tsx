@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { SectionShape } from "@/lib/materials/types";
 
@@ -59,14 +61,13 @@ export default function SectionInputs({
   }, [shape]);
 
   return (
-    <div className="space-y-4 bg-white rounded-xl p-6 shadow-sm">
-      <div>
-        <h3 className="text-lg font-semibold">Section Properties</h3>
-        <p className="text-sm text-slate-500 mt-1">
-          Select a standard shape and enter its dimensions.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="Section properties"
+      description="Calculate area, centroid position, and second moments of area for standard section shapes."
+      footer={
+        <CalculatorCalculateButton onClick={onCalculate} label={`Calculate ${shapeLabel.toLowerCase()}`} designAware />
+      }
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-1 text-sm text-slate-600">
           Section type
@@ -163,13 +164,6 @@ export default function SectionInputs({
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="rounded bg-slate-900 px-4 py-3 text-white hover:bg-slate-800"
-      >
-        Calculate {shapeLabel}
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

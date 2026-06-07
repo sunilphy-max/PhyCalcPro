@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
 
 type Props = {
@@ -46,15 +48,12 @@ export default function HydraulicsInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Hydraulic actuator inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Specify cylinder bore, rod size, stroke, system pressure, and your target actuator force.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Hydraulic cylinder"
+      description="Analyze actuator forces and pressure loads."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate hydraulics" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2 text-sm text-slate-700">
           <label>Bore diameter</label>
           <div className="flex gap-2">
@@ -155,14 +154,7 @@ export default function HydraulicsInputs({
           </div>
         </div>
       </div>
-
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800"
-      >
-        Evaluate Hydraulic Cylinder
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

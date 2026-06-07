@@ -1,3 +1,8 @@
+"use client";
+
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+
 type Props = {
   toolDiameter: number;
   setToolDiameter: (value: number) => void;
@@ -42,14 +47,11 @@ export default function CamToolpathsInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">CAM toolpath inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define cutter geometry, feed conditions, and stock dimensions for a simple roughing toolpath estimate.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="CAM toolpaths"
+      description="Estimate a basic roughing toolpath with feed, material removal rate, and cut time guidance."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate toolpath" designAware />}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">
           <span>Tool diameter</span>
@@ -185,13 +187,6 @@ export default function CamToolpathsInputs({
         </label>
       </div>
 
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800"
-      >
-        Calculate Toolpath Parameters
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

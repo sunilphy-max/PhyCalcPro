@@ -36,7 +36,7 @@ Engineering software manual for the **62 active product modules** shipped under 
 - **Module chrome:** Each calculator page uses `CalculatorLayout` with a **two-column** workspace beside the sidebar:
   - **Inputs column** — parameters, mesh controls, calculate/save (`CalculatorInputPanel` where adopted).
   - **Results column** — plots, metric cards, engineering checks, export (`CalculatorResultsShell` / `ExportableReport`).
-- **Legacy three-slot API:** Some pages still pass `left` / `center` / `right`; `CalculatorLayout` merges `left`+`center` into the inputs column and maps `right` → results. Migration to explicit `inputs` / `results` props is in progress.
+- **Layout contract:** All product pages pass explicit `inputs` / `results` props to `CalculatorLayout`. The legacy `left` / `center` / `right` API is removed; `npm run validate:layout` enforces the contract in CI.
 
 ### 1.2 Calculation pipeline
 
@@ -147,7 +147,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 | `CalculatorLayout` + `moduleId` | All 62 active pages |
 | `useStandardCalculation` / `useCalculatorModule` | 62 / 62 |
 | Unit profiles (`moduleProfiles.ts`) | All expansion modules + majority of legacy modules |
-| Modern `inputs`/`results` or full `*Inputs`/`*Results` | All 19 expansion modules + v-belts; legacy slots on some mature modules |
+| Modern `inputs`/`results` or full `*Inputs`/`*Results` | **All 62 modules** (Tier 2 homogenization complete, 2026-06) |
 | `CalculatorResultsShell` / metric cards | Universal on expansion modules; widespread elsewhere |
 | Specialized code evaluators | 5 modules |
 | Extracted from monolith (complete) | impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties |
@@ -1029,9 +1029,9 @@ T_r = \sqrt{\frac{1+(2\zeta r)^2}{(1-r^2)^2+(2\zeta r)^2}}, \quad r=\frac{f}{f_n
 
 **Outputs:** \(A\), centroid, \(I_{xx}\), \(I_{yy}\), principal axes, torsion constant (where implemented).
 
-**UI:** Legacy `center`/`right` only (no dedicated inputs column label); `useStandardCalculation`; unit profile.
+**UI:** Modern `inputs`/`results`; `useStandardCalculation`; unit profile.
 
-**Gaps:** Overlaps `sections` closed-form module; maturity metadata unclassified in `moduleMaturity.ts`; layout not migrated to `inputs`/`results`.
+**Gaps:** Overlaps `sections` closed-form module; maturity metadata unclassified in `moduleMaturity.ts`.
 
 ---
 
@@ -1062,12 +1062,12 @@ From `src/data/moduleMaturity.ts`:
 
 ## 13. Gaps & roadmap
 
-### 13.1 Homogenization (UI / contract)
+### 13.1 Homogenization (UI / contract) — **Tier 2 complete (2026-06)**
 
-1. **Solver-backed design mode** — Convert workflow scaffold rows into real candidate generation for each module.
-2. **Layout migration** — ~26 modules still use deprecated `left`/`center`/`right`. Target: `inputs` + `results` only, with `CalculatorInputPanel` and `CalculatorGuidancePanel` inside inputs where guidance is needed.
-3. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
-4. **Results shell** — Standardize on `CalculatorResultsShell`, `CalculatorMetricGrid`, and `CalculatorMetricCard` with `formatEngineeringValue` (column buckling style per AGENTS.md).
+1. **Layout migration** — **Done.** All 62 product pages use `inputs` + `results` with `CalculatorInputPanel` and `CalculatorCalculateButton`; `validate:layout` blocks regressions.
+2. **Results shell** — **Done** on expansion modules and majority of legacy modules (`CalculatorResultsShell`, `CalculatorMetricGrid`, `CalculatorMetricCard`, `formatEngineeringValue`).
+3. **Solver-backed design mode** — Registry covers all modules; continue deepening reverse-sizing quality per module family.
+4. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
 5. **Hook consolidation** — Prefer `useStandardCalculation` over ad hoc `useDesignCodeUnits` + manual `attach*CalculationSpec` (beams is the outlier).
 6. **Export** — Ensure all plots use `EngineeringPlot` with export attributes; wrap SVG diagrams with `data-export-diagram`.
 
@@ -1119,19 +1119,48 @@ Only **columns, combined-loading, welds**, and partial **beams/gears** have non-
 
 ### 14.3 Springs
 
-Helical compression: \(k = G d^4 / (8 D^3 n)\), Wahl factor \(K_s\), solid height \(\approx n d + 2d\).
+\[
+k = \frac{G d^4}{8 D^3 n}, \quad K_s = \frac{4C-1}{4C-4} + \frac{0.615}{C}, \quad C = \frac{D}{d}
+\]
 
-Extension springs reuse compression core with initial tension estimate. Torsion springs: \(k = E d^4 / (116 D n)\), bending stress from torque.
+\[
+h_s \approx n d + 2d, \quad \tau = \frac{8 F D K_s}{\pi d^3}
+\]
+
+Extension springs reuse the compression core; initial tension \(F_i \approx k \cdot 0.1 L_0\). Torsion springs:
+
+\[
+k = \frac{E d^4}{116 D n}, \quad T = k\theta, \quad \sigma = \frac{32 T}{\pi d^3}
+\]
 
 ### 14.4 Shaft connections
 
-Keys/splines: shear \(\tau = T/(0.5 d A_s)\), bearing on key. Shaft hubs: Lamé-type contact pressure from interference. Pins: double shear + bearing on plate thickness.
+\[
+\tau = \frac{T}{0.5\, d\, A_s}, \quad \sigma_b = \frac{2T}{d\, A_b}
+\]
+
+\[
+p = \frac{E\,\delta}{2 d_i C}, \quad C = \frac{d_o^2 + d_i^2}{d_o^2 - d_i^2}
+\]
+
+\[
+\tau = \frac{F}{n A}, \quad \sigma_b = \frac{F}{n d t}
+\]
 
 ### 14.5 Other new modules
 
-- **brakes-clutches:** friction torque at mean radius, energy \(E = P \Delta t\)
-- **plain-bearings:** Sommerfeld \(S = \mu U / W\), film thickness screening
-- **circular-plates:** \(w \propto p a^4 / D\), \(D = E t^3 / (12(1-\nu^2))\)
+\[
+T_f = \mu F_a \bar r, \quad \bar r = \frac{2}{3}\frac{r_o^3 - r_i^3}{r_o^2 - r_i^2}, \quad E = P\,\Delta t
+\]
+
+\[
+S = \frac{\mu\,\omega r}{W c}, \quad h_{min} = c(1 - \varepsilon)
+\]
+
+\[
+w_{\max} = \frac{\alpha p a^4}{D}, \quad D = \frac{E t^3}{12(1-\nu^2)}
+\]
+
 - **rolled-sections:** catalog lookup (W/S/C starter set)
 - **formula-reference / unit-converter:** shared formula hub and unit layer
 
@@ -1152,115 +1181,417 @@ Keys/splines: shear \(\tau = T/(0.5 d A_s)\), bearing on key. Shaft hubs: Lamé-
 
 ## 15. Expansion module reference (`id`)
 
-Each entry summarizes governing relations for the expansion modules added in 2026. Advanced Systems modules use the shared `AdvancedSystemCalculator` shell with inputs, assumptions, warnings, metrics, standards metadata, and `CalculatorResultsShell` export.
+Each entry summarizes governing relations for the expansion modules added in 2026. **Advanced systems** (Section 10) are canonical there — no duplicate stubs here. All entries use `\[ … \]` display equations (rendered as KaTeX on the site).
 
-### Module (`compression-springs`)
+### V-Belt Drives (`v-belts`)
 
-Helical compression: spring rate \(k = G d^4 / (8 D^3 n)\), Wahl shear factor \(K_s = (4C-1)/(4C-4) + 0.615/C\) with \(C = D/d\), shear stress \(\tau = 8 F D K_s / (\pi d^3)\), solid height \(\approx n d + 2d\).
+**Purpose:** Open-belt V-drive screening — belt length, wrap angles, power capacity, and pretension estimate.
 
-### Module (`extension-springs`)
+**Method:** **Closed-form** friction-belt mechanics (`solveVBeltDrive`).
 
-Same rate and stress core as compression; adds initial tension estimate \(F_i \approx k \cdot 0.1 L_0\).
+**Key relations:**
 
-### Module (`torsion-springs`)
+\[
+L = 2C + \frac{\pi(D_1 + D_2)}{2} + \frac{(D_2 - D_1)^2}{4C}
+\]
 
-Rate \(k = E d^4 / (116 D n)\); torque \(T = k \theta\); bending stress \(\sigma = 32 T / (\pi d^3)\).
+\[
+\theta_d = \pi - 2\arcsin\frac{|D_2 - D_1|}{2C}, \quad \theta_D = \pi + 2\arcsin\frac{|D_2 - D_1|}{2C}
+\]
 
-### Module (`timing-belts`)
+\[
+v = \frac{\pi D_1 n}{60}, \quad P_{cap} = k_b\, v\, \mu_s \left(1 - e^{-\mu \theta_d}\right)
+\]
 
-Pitch diameter \(d = p z / \pi\); open-drive belt length; tangential force from transmitted power and driver speed.
+\[
+F_1 = \frac{P \times 1000}{v}, \quad F_2 = F_1 e^{-\mu \theta_d}, \quad F_{pre} = \frac{F_1 + F_2}{2}
+\]
 
-### Module (`roller-chains`)
+**Inputs:** driver/driven pulley diameters \(D_1, D_2\), center distance \(C\), driver speed \(n\), transmitted power \(P\), belt factor \(k_b\), service factor \(\mu_s\), friction coefficient \(\mu\).
 
-Sprocket pitch diameters; chain speed \(v = \pi d n / 60\); indicative life vs. load index.
+**Outputs:** belt length, wrap angles (deg), belt speed, power capacity/utilization, pretension estimate, speed ratio.
 
-### Module (`multi-pulley`)
+**Design codes:** Indicative (textbook belt-drive screening).
 
-Wrap angle \(\theta = \pi \mp 2 \arcsin(|D_2-D_1|/(2C))\) (open/crossed); belt length \(L = 2C + \frac{\pi(D_1+D_2)}{2} + \frac{(D_2-D_1)^2}{4C}\).
+---
 
-### Module (`bevel-gears`)
+### Compression Springs (`compression-springs`)
 
-Lewis bending with geometry factor \(Y\); Hertzian contact stress screening; safety vs. yield.
+**Purpose:** Helical compression spring rate, solid height, shear stress, and safety factor.
 
-### Module (`worm-gears`)
+**Method:** **Closed-form** (`solveCompressionSpringEngine`); \(G = E/2.6\).
 
-Ratio \(i = z_g / z_w\); efficiency \(\eta = \tan\lambda / (\tan\lambda + \mu)\); worm torque with efficiency loss.
+**Key relations:**
 
-### Module (`planetary-gears`)
+\[
+k = \frac{G d^4}{8 D^3 n}, \quad K_s = \frac{4C-1}{4C-4} + \frac{0.615}{C}, \quad C = \frac{D}{d}
+\]
 
-Ring teeth \(z_r = z_s + 2 z_p\); ratio \(1 + z_r/z_s\); planet count from spacing.
+\[
+h_s = n d + 2d, \quad \tau = \frac{8 F D K_s}{\pi d^3}
+\]
 
-### Module (`gear-ratio-design`)
+**Inputs:** wire diameter \(d\), mean diameter \(D\), active coils \(n\), modulus \(E\), deflection, ultimate strength.
 
-Integer search minimizing \(|z_2/z_1 - i_\text{target}|\) subject to tooth limits.
+**Outputs:** spring rate, solid height, max load, shear stress, safety factor, natural frequency estimate.
 
-### Module (`plain-bearings`)
+**Design codes:** Indicative.
 
-Sommerfeld \(S = \mu \omega r / (W c)\); eccentricity and minimum film thickness screening.
+---
 
-### Module (`brakes-clutches`)
+### Extension Springs (`extension-springs`)
 
-Friction torque at mean radius \(\bar r = \frac{2}{3}\frac{r_o^3-r_i^3}{r_o^2-r_i^2}\); energy per stop \(E = P \Delta t\).
+**Purpose:** Extension spring with initial tension on top of compression core.
 
-### Module (`keys-splines`)
+**Method:** **Closed-form** — reuses compression engine; adds \(F_i \approx k \cdot 0.1 L_0\).
 
-Key shear \(\tau = T/(0.5 d A_s)\); bearing \(\sigma = 2T/(d A_b)\); capacity from allowable stresses.
+**Key relations:** Same as compression-springs plus \(F_i = k \cdot 0.1 L_0\).
 
-### Module (`shaft-hubs`)
+**Inputs:** Same as compression plus free length \(L_0\).
 
-Lamé-type contact pressure from interference \(\delta\); friction torque \(T = p \pi d L \mu d/2\).
+**Outputs:** compression outputs + initial tension.
 
-### Module (`pins`)
+**Design codes:** Indicative.
 
-Double-shear stress \(\tau = F/(n A)\); bearing on plate \(\sigma = F/(n d t)\).
+---
 
-### Module (`circular-plates`)
+### Torsion Springs (`torsion-springs`)
 
-Roark coefficients: \(w_\max = \alpha p a^4 / D\), \(\sigma \propto \beta p a^2 / t^2\), flexural rigidity \(D = E t^3 / (12(1-\nu^2))\) for simply supported or clamped edge.
+**Purpose:** Helical torsion spring rate, torque, and bending stress.
 
-### Module (`rolled-sections`)
+**Method:** **Closed-form** (`solveTorsionSpringEngine`).
 
-Catalog lookup — area, \(I_x\), \(I_y\), section moduli, mass per meter for W/S/C starter sections.
+**Key relations:**
 
-### Module (`formula-reference`)
+\[
+k = \frac{E d^4}{116 D n}, \quad T = k\theta, \quad \sigma = \frac{32 T}{\pi d^3}
+\]
 
-Evaluates catalog formulas: kinetic energy \(E = \frac{1}{2}mv^2\), pump power \(P = Q \Delta p\), thermal expansion \(\Delta L = \alpha L \Delta T\), friction \(F = \mu N\).
+**Inputs:** wire/mean diameter, active coils, modulus, deflection angle, ultimate strength.
 
-### Module (`unit-converter`)
+**Outputs:** spring rate, torque, bending stress, safety factor.
 
-Converts via SI base layer: `toBase` / `fromBase` for length, force, stress dimensions.
+**Design codes:** Indicative.
 
-### Module (`vacuum-engineering`)
+---
 
-Pump-down \(t=(V/S)\ln(P_0/P_t)\), molecular-flow conductance \(C \approx 12.1d^3/L\), vacuum force \(F=\Delta P A\), throughput \(Q=P_tS\).
+### Timing Belt Drives (`timing-belts`)
 
-### Module (`cryogenic-engineering`)
+**Purpose:** Synchronous belt drive geometry and load screening.
 
-Conductive heat leak \(\dot Q_{cond}=kA\Delta T/L\), radiative heat leak \(\dot Q_{rad}=\epsilon\sigma A(T_h^4-T_c^4)\), boil-off and cooldown energy.
+**Method:** **Closed-form** (`solveTimingBeltDrive`).
 
-### Module (`magnetic-fields`)
+**Key relations:**
 
-Long-solenoid field \(B=\mu_0NI/L\), inductance \(\mathcal{L}=\mu_0N^2A/L\), stored energy \(E=\frac{1}{2}\mathcal{L}I^2\), Lorentz force \(F=BI\ell\).
+\[
+d = \frac{p z}{\pi}, \quad L = 2C + \frac{\pi(d_1 + d_2)}{2} + \frac{(d_2 - d_1)^2}{4C}
+\]
 
-### Module (`superconducting-systems`)
+\[
+T = \frac{60 P}{2\pi n}, \quad F_t = \frac{2T}{d_1}
+\]
 
-Stored energy, current margin \((I_c-I)/I_c\), temperature margin \(T_c-T_{op}\), dump voltage \(IR_d\), discharge time constant \(\mathcal{L}/R_d\).
+**Inputs:** tooth counts, pitch \(p\), driver speed, power, belt width, service factor.
 
-### Module (`thermal-management`)
+**Outputs:** pitch diameters, center distance, belt length (mm and teeth), tangential force, shaft load estimate, power utilization.
 
-Parallel heat-transfer screening with conduction, convection, radiation, effective thermal resistance \(R_\theta=\Delta T/\dot Q\), and coolant rise \(\Delta T=\dot Q/(\dot m c_p)\).
+**Design codes:** Indicative.
 
-### Module (`battery-ev-systems`)
+---
 
-Pack voltage/energy, ohmic heat generation \(\dot Q=N_sN_pR_{cell}(I/N_p)^2\), cooling flow, busbar area \(I/J_{allow}\), simple vent area.
+### Roller Chain Drives (`roller-chains`)
 
-### Module (`hydrogen-systems`)
+**Purpose:** Roller chain drive speed, tension, and indicative life screening.
 
-Ideal stored hydrogen mass \(m=PVM_{H_2}/(RT)\), lower-heating energy, thin-wall hoop stress \(\sigma_\theta=Pr/t\), and orifice-flow leak screening.
+**Method:** **Closed-form / empirical** (`solveRollerChainDrive`).
 
-### Module (`precision-motion`)
+**Key relations:**
 
-Cantilever flexure stiffness \(k=3EI/L^3\), natural frequency \(f_n=(2\pi)^{-1}\sqrt{k/m}\), thermal drift \(\Delta L=\alpha L\Delta T\), and SDOF transmissibility.
+\[
+d = \frac{p z}{\pi}, \quad v = \frac{\pi d n}{60}
+\]
+
+\[
+P_{cap} = n_s \cdot 0.025 \cdot v \cdot \mu_s \cdot (p \times 1000)^{0.4}
+\]
+
+\[
+F = \frac{P \times 1000}{v}, \quad t_{life} \approx \frac{15000}{\text{loadIndex}^3}
+\]
+
+**Inputs:** sprocket teeth, chain pitch, strands, driver speed, power, service factor.
+
+**Outputs:** ratio, chain speed/tension, power capacity/utilization, estimated life hours, center distance.
+
+**Design codes:** Indicative.
+
+---
+
+### Multi-Pulley Drives (`multi-pulley`)
+
+**Purpose:** Open or crossed belt path through \(N\) pulleys — segment lengths and wrap angles.
+
+**Method:** **Closed-form** segment sum (`solveMultiPulley`).
+
+**Key relations:**
+
+\[
+\theta_1 = \pi \mp 2\arcsin\frac{|D_2 - D_1|}{2C}, \quad L_{seg} = 2C + \frac{\pi(D_1 + D_2)}{2} + \frac{(D_2 - D_1)^2}{4C}
+\]
+
+**Inputs:** pulley diameter list, center distances, drive type (open/crossed).
+
+**Outputs:** total belt length, per-pulley wrap angles, segment lengths, radial load estimates.
+
+**Design codes:** Indicative.
+
+---
+
+### Bevel Gears (`bevel-gears`)
+
+**Purpose:** Bevel gear pair Lewis bending and Hertzian contact screening.
+
+**Method:** **Closed-form** (`solveBevelGearEngine`).
+
+**Key relations:**
+
+\[
+F_t = \frac{2T}{d}, \quad \sigma_b = \frac{F_t}{b m Y}, \quad \sigma_c = \sqrt{\frac{F_t}{b\pi} E' \frac{2}{d}}
+\]
+
+**Inputs:** module, pinion teeth, gear ratio, face width, power, speed, yield stress.
+
+**Outputs:** gear teeth, pitch diameter, tangential force, bending/contact stress, safety factors.
+
+**Design codes:** Indicative (AGMA/DIN referenced in catalog).
+
+---
+
+### Worm Gears (`worm-gears`)
+
+**Purpose:** Worm–wheel ratio, efficiency, and contact stress.
+
+**Method:** **Closed-form** (`solveWormGearEngine`).
+
+**Key relations:**
+
+\[
+i = \frac{z_g}{z_w}, \quad \eta = \frac{\tan\lambda}{\tan\lambda + \mu}
+\]
+
+\[
+T_w = \frac{60 P}{2\pi n \eta}
+\]
+
+**Inputs:** worm starts, gear teeth, lead angle, friction coefficient, module, face width, power, speed.
+
+**Outputs:** ratio, efficiency, worm torque, contact stress, axial force, safety factor.
+
+**Design codes:** Indicative.
+
+---
+
+### Planetary Gears (`planetary-gears`)
+
+**Purpose:** Sun–planet–ring tooth counts and overall ratio.
+
+**Method:** **Closed-form** (`solvePlanetaryGearEngine`).
+
+**Key relations:**
+
+\[
+z_r = z_s + 2 z_p, \quad i = 1 + \frac{z_r}{z_s}
+\]
+
+**Inputs:** sun/planet teeth, module.
+
+**Outputs:** ring teeth, actual ratio, pitch diameters, planet count estimate.
+
+**Design codes:** Indicative.
+
+---
+
+### Gear Ratio Design (`gear-ratio-design`)
+
+**Purpose:** Integer tooth-pair search nearest target ratio.
+
+**Method:** **Closed-form** search (`solveGearRatioDesignEngine`).
+
+**Key relations:**
+
+\[
+\min |z_2/z_1 - i_{target}| \quad \text{s.t. } z_1 \le z_2 \le z_{max}
+\]
+
+**Inputs:** target ratio, min pinion teeth, max teeth.
+
+**Outputs:** best pinion/gear teeth, actual ratio, error.
+
+**Design codes:** Indicative.
+
+---
+
+### Plain Bearings (`plain-bearings`)
+
+**Purpose:** Hydrodynamic journal bearing Sommerfeld screening.
+
+**Method:** **Empirical** (`solvePlainBearingEngine`).
+
+**Key relations:**
+
+\[
+S = \frac{\mu \omega r}{W c}, \quad \varepsilon = \frac{1}{1+S}, \quad h_{min} = c(1-\varepsilon)
+\]
+
+**Inputs:** diameter, length, clearance, speed, load, viscosity.
+
+**Outputs:** Sommerfeld number, eccentricity ratio, min film thickness, power loss, lubrication status.
+
+**Design codes:** Indicative.
+
+---
+
+### Brakes & Clutches (`brakes-clutches`)
+
+**Purpose:** Friction brake/clutch torque and energy per engagement.
+
+**Method:** **Closed-form** (`solveBrakesClutchesEngine`).
+
+**Key relations:**
+
+\[
+\bar r = \frac{2}{3}\frac{r_o^3 - r_i^3}{r_o^2 - r_i^2}, \quad T_f = \mu F_a \bar r, \quad E = P \Delta t
+\]
+
+**Inputs:** inner/outer radius, friction coefficient, actuation force, speed, engagement time.
+
+**Outputs:** friction torque, power dissipated, energy per stop, safety factor.
+
+**Design codes:** Indicative.
+
+---
+
+### Keys & Splines (`keys-splines`)
+
+**Purpose:** Key shear and bearing stress under torque.
+
+**Method:** **Closed-form** (`solveKeysSplinesEngine`).
+
+**Key relations:**
+
+\[
+\tau = \frac{T}{0.5\, d\, A_s}, \quad \sigma_b = \frac{2T}{d\, A_b}
+\]
+
+**Inputs:** shaft diameter, key width/height/length, torque, yield stress.
+
+**Outputs:** shear/bearing stress, safety factors, capacity torque.
+
+**Design codes:** Indicative.
+
+---
+
+### Shaft Hubs (`shaft-hubs`)
+
+**Purpose:** Interference-fit hub contact pressure and friction torque.
+
+**Method:** **Closed-form** Lamé approximation (`solveShaftHubEngine`).
+
+**Key relations:**
+
+\[
+p = \frac{E\,\delta}{2 d_i C}, \quad T_f = p \pi d_i L \mu \frac{d_i}{2}
+\]
+
+**Inputs:** shaft/hub diameters, interference, hub length, modulus, friction coefficient.
+
+**Outputs:** contact pressure, friction torque, required assembly force.
+
+**Design codes:** Indicative.
+
+---
+
+### Pins (`pins`)
+
+**Purpose:** Double-shear pin and bearing stress screening.
+
+**Method:** **Closed-form** (`solvePinEngine`).
+
+**Key relations:**
+
+\[
+\tau = \frac{F}{n A}, \quad \sigma_b = \frac{F}{n d t}
+\]
+
+**Inputs:** pin diameter/count, plate thickness, force, pin material yield.
+
+**Outputs:** shear/bearing stress, safety factors.
+
+**Design codes:** Indicative.
+
+---
+
+### Circular Plates (`circular-plates`)
+
+**Purpose:** Axisymmetric circular plate deflection and stress (Roark + optional FDM).
+
+**Method:** **Closed-form** Roark coefficients + **FEM** axisymmetric FDM (`solveCircularPlateEngine`).
+
+**Key relations:**
+
+\[
+D = \frac{E t^3}{12(1-\nu^2)}, \quad w_{\max} = \frac{\alpha p a^4}{D}, \quad \sigma_{\max} = \frac{\beta p a^2}{t^2}
+\]
+
+**Inputs:** radius, thickness, pressure, modulus, Poisson ratio, boundary (simply supported/clamped), mesh segments.
+
+**Outputs:** max deflection/stress, rigidity, Roark reference values, FEM error percent.
+
+**Design codes:** Indicative (Roark plate coefficients).
+
+---
+
+### Rolled Sections (`rolled-sections`)
+
+**Purpose:** Lookup area properties for standard W/S/C sections.
+
+**Method:** **Reference** catalog (`solveRolledSectionsEngine`).
+
+**Inputs:** section designation.
+
+**Outputs:** area, \(I_x\), \(I_y\), section moduli, mass per meter.
+
+**Design codes:** Indicative catalog starter set.
+
+---
+
+### Formula Reference (`formula-reference`)
+
+**Purpose:** Evaluate common engineering formulas from a shared catalog.
+
+**Method:** **Closed-form** expression evaluator.
+
+**Key relations:** Kinetic energy \(E = \frac{1}{2}mv^2\); pump power \(P = Q\Delta p\); thermal expansion \(\Delta L = \alpha L \Delta T\); friction \(F = \mu N\).
+
+**Inputs:** formula selector and parameters.
+
+**Outputs:** evaluated result with units.
+
+**Design codes:** N/A (reference tool).
+
+---
+
+### Unit Converter (`unit-converter`)
+
+**Purpose:** Convert engineering quantities via SI base layer.
+
+**Method:** **Reference** `toBase` / `fromBase` for length, force, stress, and related dimensions.
+
+**Inputs:** value, from-unit, to-unit.
+
+**Outputs:** converted value.
+
+**Design codes:** N/A (utility tool).
 
 ---
 

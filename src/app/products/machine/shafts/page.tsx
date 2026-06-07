@@ -192,9 +192,21 @@ export default function Page() {
   const designUserInputs = useMemo((): ModuleUserInputs => ({
       torque: loads[0]?.torque != null ? toBase(loads[0].torque, "torque", torqueUnit) : undefined,
       bendingMoment: loads[0]?.bendingMoment != null ? toBase(loads[0].bendingMoment, "moment", momentUnit) : undefined,
+      shaftLoads: loads.map((load) => ({
+        position: toBase(load.position, "length", lengthUnit),
+        ...(load.torque !== undefined
+          ? { torque: toBase(load.torque, "torque", torqueUnit) }
+          : {}),
+        ...(load.bendingMoment !== undefined
+          ? { bendingMoment: toBase(load.bendingMoment, "moment", momentUnit) }
+          : {}),
+        ...(load.axialForce !== undefined
+          ? { axialForce: toBase(load.axialForce, "force", forceUnit) }
+          : {}),
+      })),
       length: toBase(length, "length", lengthUnit),
       targetSafetyFactor: 2,
-    }), [loads, torqueUnit, momentUnit, length, lengthUnit]);
+    }), [loads, torqueUnit, momentUnit, forceUnit, length, lengthUnit]);
 
   useSyncDesignInputs("shafts", designUserInputs);
 

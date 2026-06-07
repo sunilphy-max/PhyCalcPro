@@ -65,6 +65,13 @@ export type ModuleUserInputs = {
   // Machine
   torque?: number;
   bendingMoment?: number;
+  /** Shaft FEM load cases (position in m; torque/bending in N·m). */
+  shaftLoads?: Array<{
+    position: number;
+    torque?: number;
+    bendingMoment?: number;
+    axialForce?: number;
+  }>;
   shearForce?: number;
   pinionTeeth?: number;
   module?: number;
@@ -126,4 +133,7 @@ export type ModuleUserInputs = {
   targetField?: number;
   inductance?: number;
   leakRate?: number;
+
+  /** Live calculator form snapshot (advanced-systems modules). */
+  formValues?: Record<string, number>;
 };

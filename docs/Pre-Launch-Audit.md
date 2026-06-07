@@ -1,18 +1,19 @@
 # PhyCalcPro — Pre-Launch Audit
 
-**Date:** 2026-06-06  
+**Date:** 2026-06-07  
 **Scope:** UI/theme consistency, formatting, physics/solvers, Design/Check/Select, clutter, launch readiness  
-**Environment tested:** `NEXT_PUBLIC_FREE_LAUNCH=true` (`.env.local`), Windows, Node build pipeline
+**Environment tested:** `NEXT_PUBLIC_FREE_LAUNCH=true` (`.env.local`), Windows, Node build pipeline  
+**Full module audit:** [`docs/Website-Module-Audit.md`](Website-Module-Audit.md) — 62 modules, homogenization complete (2026-06-07)
 
 ---
 
 ## Verdict: **Launch ready**
 
-Post-improvement pass (2026-06-06): legacy layout migration, design Apply wiring, and results formatting upgrades completed. Remaining homogenization is polish only.
+Post-improvement pass (2026-06-07): complete website module audit and homogenization — all 62 modules use `CalculatorInputPanel` + `CalculatorCalculateButton` inputs and `CalculatorResultsShell` results; 4 remaining legacy `center={}` layouts removed; layout validator extended. See `docs/Website-Module-Audit.md`.
 
 ## Previous verdict: **Launch with caveats**
 
-PhyCalcPro is **deployable today** for a free early-access launch: production build passes, layout validation passes, and automated verification benchmarks are green (9/9). Monetization UI is correctly gated under free launch. Remaining work is **homogenization and depth** (legacy page layout API, metric-card formatting on older results panels, workflow-scaffold modules where Design mode is advisory-only)—not launch blockers for an indicative engineering workspace.
+PhyCalcPro is **deployable today** for a free early-access launch: production build passes, layout validation passes, and automated verification benchmarks are green (13/13). Monetization UI is correctly gated under free launch. Design/Check/Select is wired on all calculator pages; machine solvers (gear tooth sweep, expanded bearing catalog, live shaft loads) and cross-module advisor links are complete. Remaining work is **homogenization polish** on workflow-scaffold modules—not launch blockers for an indicative engineering workspace.
 
 ---
 
@@ -22,12 +23,13 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 |------|--------|
 | `npm run validate:layout` | Pass — no duplicate sidebars, no `DashboardLayout` on product pages, no legacy inline metric blocks in `*Results.tsx` |
 | `npm run build` | Pass — 153 static routes, TypeScript clean |
-| `npm run test:verification` | **9/9 pass** — gears, columns, combined-loading, compression-springs, timing-belts, bevel-gears, keys-splines, circular-plates, fatigue |
+| `npm run test:verification` | **13/13 pass** — gears, columns, combined-loading, compression-springs, timing-belts, bevel-gears, keys-splines, circular-plates, fatigue, shafts, v-belts, bearings, pipes |
 | Module count | **62 active modules** — matches `docs/Modules-Technical-Reference.md` |
 | Single sidebar | `src/app/products/layout.tsx` only |
 | Free launch gating | Navbar hides Pricing/Account; `PlanBadge` hidden; `/pricing` redirects; `allFeaturesUnlocked()` true |
-| Design workflow scaffold | All 62 modules registered in `moduleDesignWorkflows`; `DesignModeToggle` + `DesignTargetFields` wired via `CalculatorLayout` |
-| Solver-backed design (spot-check) | **Beams** — `searchBeamSections` + inline targets; **Columns** — `searchColumnSections`; **Gears** — `designGearModule` module sweep; **V-belts** — `designVBeltDrive` with merged `userInputs`; **Bearings** — `designBearingSelection` via registry |
+| Design workflow | **Complete** — all 62 modules registered; `useSyncDesignInputs` + `useRegisterApplyDesignCandidate` on every calculator page (including advanced-systems via `AdvancedSystemCalculator`, compression-springs via `runModuleDesignMode`) |
+| Solver-backed design (spot-check) | **Gears** — pinion tooth-count sweep then module sweep; **Shafts** — live `shaftLoads` diameter sweep; **Bearings** — 6205–6210 / 6307–6312 catalog; **V-belts** — section sweep; **material-db** — catalog ranking |
+| Cross-module handoff | `ModuleDesignAdvisor` **Continue workflow** links from `linkedWorkflowModuleIds` (gear → shaft → bearing chain clickable) |
 | Export shell | All catalog `*Results.tsx` use `CalculatorResultsShell` (validator enforced) |
 | Advanced systems (8) | Shared `AdvancedSystemCalculator` — `CalculatorUnitField`, `formatEngineeringValue`, unified inputs/results |
 | Documentation | KaTeX via remark/rehype on module docs; 63 SSG module doc routes |
@@ -76,12 +78,12 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 
 | Issue | Status | Notes |
 |-------|--------|-------|
-| Legacy `left` / `center` / `right` API | **Done** | All product pages use `inputs`/`results` |
+| Legacy `left` / `center` / `right` API | **Done** | All product pages use `inputs`/`results` (4 stragglers fixed 2026-06-07; validator enforces) |
 | Custom results summaries | **Done** | All `*Results.tsx` use `CalculatorMetricCard` + `formatEngineeringValue` (table coordinate cells may use fixed decimals) |
 | Results dashboards | **Done** | Shaft, buckling, profiles, screws dashboards migrated |
 | Truss / frame inputs | **Done** | `CalculatorInputPanel` + `CalculatorUnitField` + `CalculatorCalculateButton` |
 | Profiles layout | **Done** | `inputs` prop wired; legacy three-column layout removed |
-| Remaining raw inputs | Partial | `ProfilesInputs` shape-specific fields still use plain inputs (many conditional fields) |
+| Remaining raw inputs | **Done** | `ProfilesInputs` shape dimension fields use `CalculatorUnitField` |
 
 ### P2 — Design mode depth
 
@@ -95,7 +97,7 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 
 | Issue | Notes |
 |-------|-------|
-| Benchmark coverage | Only **13 module IDs** in automated CI (`supportedBenchmarkModules`) | Expand benchmarks for shafts, v-belts, bearings, pipes |
+| Benchmark coverage | **17 module IDs** in automated CI (`supportedBenchmarkModules`) | Includes shafts, v-belts, bearings, pipes (2026-06-07) |
 | Generic code evaluator | Most modules use `evaluators/generic.ts` — indicative checks only | Beams, columns, gears, combined-loading, welds have specialized evaluators |
 | Hardcoded material tables | Gears/bearings pages embed Steel/Aluminum/Bronze constants | Acceptable for launch; catalog materials integration is roadmap |
 
@@ -103,7 +105,7 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 
 - `status/page.tsx` still says “calculator” in prose (internal QA page — low priority)
 - `material-db` module ID vs route `materials/database` — registry aliases work; naming inconsistent
-- Profiles module uses legacy three-slot layout with diagram in center
+- Profiles/beams/columns still use dense legacy field styling inside `CalculatorInputPanel` (functional; CalculatorUnitField migration partial)
 - Frames/trusses now have `RolledSectionPicker`; truss span/height inputs still use legacy `UnitSelector` pattern
 
 ---
@@ -177,7 +179,7 @@ Before announcing launch, spot-check in browser with `NEXT_PUBLIC_FREE_LAUNCH=tr
 - [ ] Design standard selector — US/EU/ISO all selectable; units reset on change
 - [ ] Export PDF + CSV on beams and gears results
 - [ ] `/documentation/modules/gears` — equations render (KaTeX)
-- [ ] `/status` — verification 9/9 reflected after `npm run test:verification`
+- [ ] `/status` — verification 13/13 reflected after `npm run test:verification`
 - [ ] `/pricing` redirects to `/products`
 - [ ] Advanced system: `/products/advanced-systems/vacuum-engineering` — calculate + export
 - [ ] Mobile: navbar menu, inputs column scroll, results readable

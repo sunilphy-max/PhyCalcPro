@@ -1,3 +1,8 @@
+"use client";
+
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+
 import type { Dispatch, SetStateAction } from "react";
 import UnitSelector from "@/components/shared/UnitSelector";
 
@@ -53,15 +58,12 @@ export default function FlywheelInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Flywheel design inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define geometry, material density, rotational speed, and yield strength.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Flywheel design"
+      description="Energy storage and inertia design for rotating systems."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate flywheel" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">
           <span>Outer diameter</span>
           <div className="flex gap-2">
@@ -163,14 +165,7 @@ export default function FlywheelInputs({
           </div>
         </label>
       </div>
-
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 text-white px-4 py-3 font-medium hover:bg-slate-800"
-      >
-        Calculate Flywheel Performance
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

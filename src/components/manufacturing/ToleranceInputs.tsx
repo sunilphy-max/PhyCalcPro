@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
 import { calculatorNumberInputClass } from "@/components/calculator/styles";
 
@@ -39,14 +41,11 @@ export default function ToleranceInputs({
   };
 
   return (
-    <div className="space-y-4 bg-white rounded-xl p-6 shadow-sm">
-      <div>
-        <h3 className="text-lg font-semibold">Tolerance Stackup</h3>
-        <p className="text-sm text-slate-500 mt-1">
-          Enter tolerance blocks for X and optional Y chains; worst-case, RSS, and Monte Carlo.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="Tolerance stackup"
+      description="Enter tolerance blocks for X and optional Y chains; worst-case, RSS, and Monte Carlo."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Compute stackup" designAware />}
+    >
       <section className="space-y-3">
         <h4 className="text-sm font-semibold text-slate-800">X-axis tolerances</h4>
         {tolerances.map((value, index) => (
@@ -102,12 +101,7 @@ export default function ToleranceInputs({
         />
       </label>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <UnitSelector dimension="length" value={toleranceUnit} onChange={setToleranceUnit} label="Tolerance units" />
-        <button type="button" onClick={onCalculate} className="rounded bg-slate-900 px-4 py-3 text-white hover:bg-slate-800">
-          Compute Stackup
-        </button>
-      </div>
-    </div>
+      <UnitSelector dimension="length" value={toleranceUnit} onChange={setToleranceUnit} label="Tolerance units" />
+    </CalculatorInputPanel>
   );
 }

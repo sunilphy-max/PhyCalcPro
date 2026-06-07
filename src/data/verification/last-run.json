@@ -1,10 +1,29 @@
 {
-  "ranAt": "2026-06-07T04:00:48.517Z",
-  "total": 9,
-  "passed": 9,
+  "ranAt": "2026-06-07T19:23:49.698Z",
+  "total": 13,
+  "passed": 13,
   "failed": 0,
   "skipped": 0,
   "results": [
+    {
+      "caseId": "bearings-indicative-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "requiredDynamicRating",
+          "expected": 113128.95711766521,
+          "actual": 113128.95711766521,
+          "pass": true
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 6200,
+          "actual": 6200,
+          "pass": true
+        }
+      ]
+    },
     {
       "caseId": "bevel-gears-indicative-01",
       "moduleId": "bevel-gears",
@@ -134,8 +153,59 @@
       ]
     },
     {
+      "caseId": "pipes-indicative-01",
+      "moduleId": "pipes",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxHoopStress",
+          "expected": 38687655.638989076,
+          "actual": 38687655.638989076,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "shafts-indicative-01",
+      "moduleId": "shafts",
+      "pass": true,
+      "fields": [
+        {
+          "field": "safetyFactor",
+          "expected": 14.076773127612789,
+          "actual": 14.076773127612789,
+          "pass": true
+        },
+        {
+          "field": "maxStress",
+          "expected": 17759752.020838052,
+          "actual": 17759752.020838052,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "timing-belts-indicative-01",
       "moduleId": "timing-belts",
+      "pass": true,
+      "fields": [
+        {
+          "field": "ratio",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        },
+        {
+          "field": "drivenSpeed",
+          "expected": 725,
+          "actual": 725,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "v-belts-indicative-01",
+      "moduleId": "v-belts",
       "pass": true,
       "fields": [
         {

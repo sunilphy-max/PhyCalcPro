@@ -33,6 +33,11 @@ for (const file of walk(productsRoot)) {
     if (/\bDashboardLayout\b/.test(content)) {
       errors.push(`${rel}: product pages must not wrap with DashboardLayout (duplicate chrome under /products).`);
     }
+    if (/\b(center|left|right)=\{/.test(content)) {
+      errors.push(
+        `${rel}: use CalculatorLayout inputs/results only — remove legacy center/left/right props.`
+      );
+    }
   }
 }
 
@@ -63,6 +68,24 @@ for (const file of walk(resultsRoot)) {
     const rel = path.relative(process.cwd(), file).replace(/\\/g, "/");
     errors.push(
       `${rel}: wrap results in CalculatorResultsShell instead of ExportableReport directly.`
+    );
+  }
+}
+
+// Calculator inputs must use CalculatorCalculateButton, not legacy slate/black buttons.
+for (const file of walk(resultsRoot)) {
+  if (!file.endsWith("Inputs.tsx")) continue;
+  const content = fs.readFileSync(file, "utf8");
+  if (/bg-slate-900|bg-black text-white/.test(content)) {
+    const rel = path.relative(process.cwd(), file).replace(/\\/g, "/");
+    errors.push(
+      `${rel}: replace legacy calculate button with CalculatorCalculateButton (see PinInputs.tsx).`
+    );
+  }
+  if (!content.includes("CalculatorCalculateButton") && !content.includes("calculatorPrimaryButtonClass")) {
+    const rel = path.relative(process.cwd(), file).replace(/\\/g, "/");
+    errors.push(
+      `${rel}: missing CalculatorCalculateButton in inputs panel footer.`
     );
   }
 }

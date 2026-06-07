@@ -1,6 +1,9 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
+import { calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   mass: number;
@@ -34,14 +37,11 @@ export default function RotationInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="space-y-4 bg-white rounded-xl p-6 shadow-sm">
-      <div>
-        <h3 className="text-lg font-semibold">Rotational System</h3>
-        <p className="text-sm text-slate-500 mt-1">
-          Compute inertia, kinetic energy, centripetal force, and torque from rotation.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="Rotational system"
+      description="Calculate kinetic energy and dynamic forces for a rotating mass and its power requirement."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate rotation" designAware />}
+    >
       <div className="grid gap-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-1 text-sm text-slate-600">
@@ -50,7 +50,7 @@ export default function RotationInputs({
               type="number"
               value={mass}
               onChange={(e) => setMass(Number(e.target.value))}
-              className="w-full rounded border border-slate-200 px-3 py-2"
+              className={calculatorNumberInputClass}
             />
           </label>
           <div className="space-y-1 text-sm text-slate-600">
@@ -71,7 +71,7 @@ export default function RotationInputs({
               type="number"
               value={radius}
               onChange={(e) => setRadius(Number(e.target.value))}
-              className="w-full rounded border border-slate-200 px-3 py-2"
+              className={calculatorNumberInputClass}
             />
           </label>
           <UnitSelector
@@ -89,7 +89,7 @@ export default function RotationInputs({
               type="number"
               value={speedRPM}
               onChange={(e) => setSpeedRPM(Number(e.target.value))}
-              className="w-full rounded border border-slate-200 px-3 py-2"
+              className={calculatorNumberInputClass}
             />
           </label>
           <div className="space-y-1 text-sm text-slate-600">
@@ -99,25 +99,13 @@ export default function RotationInputs({
                 type="number"
                 value={power}
                 onChange={(e) => setPower(Number(e.target.value))}
-                className="w-full rounded border border-slate-200 px-3 py-2"
+                className={calculatorNumberInputClass}
               />
-              <UnitSelector
-                dimension="power"
-                value={powerUnit}
-                onChange={setPowerUnit}
-              />
+              <UnitSelector dimension="power" value={powerUnit} onChange={setPowerUnit} />
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={onCalculate}
-          className="rounded bg-slate-900 px-4 py-3 text-white hover:bg-slate-800"
-        >
-          Calculate Rotation
-        </button>
       </div>
-    </div>
+    </CalculatorInputPanel>
   );
 }

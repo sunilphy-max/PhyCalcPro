@@ -3,8 +3,13 @@
 import { useMemo, useState } from "react";
 import { materials } from "@/data/materials";
 
-export default function MaterialDatabase() {
-  const [query, setQuery] = useState("");
+type Props = {
+  highlightMaterial?: string | null;
+  querySeed?: string;
+};
+
+export default function MaterialDatabase({ highlightMaterial, querySeed }: Props) {
+  const [query, setQuery] = useState(querySeed ?? "");
 
   const results = useMemo(
     () =>
@@ -40,7 +45,14 @@ export default function MaterialDatabase() {
           </div>
         ) : (
           results.map((material) => (
-            <div key={material.name} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div
+              key={material.name}
+              className={`rounded-xl border p-4 ${
+                highlightMaterial === material.name
+                  ? "border-emerald-300 bg-emerald-50"
+                  : "border-slate-200 bg-slate-50"
+              }`}
+            >
               <div className="font-semibold text-slate-900">{material.name}</div>
               <div className="text-sm text-slate-500">E = {material.E.toExponential(2)} Pa</div>
             </div>

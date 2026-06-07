@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import type { ShapeType, ShapeProperties } from "@/lib/profiles/types";
 
 type Props = {
@@ -10,11 +13,14 @@ type Props = {
   shape: ShapeProperties;
   setShape: (shape: ShapeProperties) => void;
 
-  // Actions
   onCalculate: () => void;
   onSave: () => void;
   saving: boolean;
 };
+
+const meterUnit = <span className="px-2 text-sm text-slate-600">m</span>;
+const areaUnit = <span className="px-2 text-sm text-slate-600">m²</span>;
+const inertiaUnit = <span className="px-2 text-sm text-slate-600">m⁴</span>;
 
 export default function ProfilesInputs({
   projectName,
@@ -31,7 +37,6 @@ export default function ProfilesInputs({
     setShapeType(newType);
     const newShape: ShapeProperties = { shape: newType };
 
-    // Initialize with default values
     switch (newType) {
       case "rectangle":
         newShape.rectangle = { width: 0.1, height: 0.2 };
@@ -62,9 +67,42 @@ export default function ProfilesInputs({
     setShape(newShape);
   };
 
+  const updateSectionDimension = (field: "height" | "width" | "webThickness" | "flangeThickness", value: number) => {
+    if (shapeType === "i_beam" && shape.iBeam) {
+      setShape({ ...shape, iBeam: { ...shape.iBeam, [field]: value } });
+    } else if (shapeType === "t_beam" && shape.tBeam) {
+      setShape({ ...shape, tBeam: { ...shape.tBeam, [field]: value } });
+    } else if (shapeType === "c_channel" && shape.cChannel) {
+      setShape({ ...shape, cChannel: { ...shape.cChannel, [field]: value } });
+    }
+  };
+
+  const sectionHeight =
+    shape.iBeam?.height || shape.tBeam?.height || shape.cChannel?.height || 0;
+  const sectionWidth = shape.iBeam?.width || shape.tBeam?.width || shape.cChannel?.width || 0;
+  const sectionWeb =
+    shape.iBeam?.webThickness || shape.tBeam?.webThickness || shape.cChannel?.webThickness || 0;
+  const sectionFlange =
+    shape.iBeam?.flangeThickness || shape.tBeam?.flangeThickness || shape.cChannel?.flangeThickness || 0;
+
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-      {/* Project Name */}
+    <CalculatorInputPanel
+      title="Area properties"
+      description="Compute area, centroid, and second moments for standard and custom cross-sections."
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton onClick={onCalculate} label="Calculate properties" designAware />
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {saving ? "Saving..." : "Save project"}
+          </button>
+        </div>
+      }
+    >
       <input
         className="w-full p-2 border rounded"
         value={projectName}
@@ -72,10 +110,8 @@ export default function ProfilesInputs({
         placeholder="Project Name"
       />
 
-      {/* Shape Selection */}
       <div className="border-t pt-3 mt-3">
         <h4 className="font-semibold mb-2">Cross-Section Shape</h4>
-
         <div className="mb-3">
           <label className="block text-sm text-gray-600 mb-1">Shape Type</label>
           <select
@@ -95,326 +131,201 @@ export default function ProfilesInputs({
         </div>
       </div>
 
-      {/* Shape Parameters */}
       <div className="border-t pt-3 mt-3">
         <h4 className="font-semibold mb-2">Shape Parameters</h4>
 
         {shapeType === "rectangle" && shape.rectangle && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Width (m)</label>
-              <input
-                type="number"
-                value={shape.rectangle.width}
-                onChange={(e) => setShape({
-                  ...shape,
-                  rectangle: { ...shape.rectangle!, width: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Height (m)</label>
-              <input
-                type="number"
-                value={shape.rectangle.height}
-                onChange={(e) => setShape({
-                  ...shape,
-                  rectangle: { ...shape.rectangle!, height: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
-          </div>
-        )}
-
-        {shapeType === "circle" && shape.circle && (
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Diameter (m)</label>
-            <input
-              type="number"
-              value={shape.circle.diameter}
-              onChange={(e) => setShape({
-                ...shape,
-                circle: { diameter: parseFloat(e.target.value) || 0 }
-              })}
-              className="w-full border p-2 rounded"
-              step="0.01"
+          <div className="grid gap-3 sm:grid-cols-2">
+            <CalculatorUnitField
+              label="Width"
+              value={shape.rectangle.width}
+              onChange={(width) =>
+                setShape({ ...shape, rectangle: { ...shape.rectangle!, width } })
+              }
+              unit={meterUnit}
+              step={0.01}
+            />
+            <CalculatorUnitField
+              label="Height"
+              value={shape.rectangle.height}
+              onChange={(height) =>
+                setShape({ ...shape, rectangle: { ...shape.rectangle!, height } })
+              }
+              unit={meterUnit}
+              step={0.01}
             />
           </div>
         )}
 
+        {shapeType === "circle" && shape.circle && (
+          <CalculatorUnitField
+            label="Diameter"
+            value={shape.circle.diameter}
+            onChange={(diameter) => setShape({ ...shape, circle: { diameter } })}
+            unit={meterUnit}
+            step={0.01}
+          />
+        )}
+
         {shapeType === "hollow_circle" && shape.hollowCircle && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Outer Diameter (m)</label>
-              <input
-                type="number"
-                value={shape.hollowCircle.outerDiameter}
-                onChange={(e) => setShape({
+          <div className="grid gap-3 sm:grid-cols-2">
+            <CalculatorUnitField
+              label="Outer diameter"
+              value={shape.hollowCircle.outerDiameter}
+              onChange={(outerDiameter) =>
+                setShape({
                   ...shape,
-                  hollowCircle: { ...shape.hollowCircle!, outerDiameter: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Inner Diameter (m)</label>
-              <input
-                type="number"
-                value={shape.hollowCircle.innerDiameter}
-                onChange={(e) => setShape({
+                  hollowCircle: { ...shape.hollowCircle!, outerDiameter },
+                })
+              }
+              unit={meterUnit}
+              step={0.01}
+            />
+            <CalculatorUnitField
+              label="Inner diameter"
+              value={shape.hollowCircle.innerDiameter}
+              onChange={(innerDiameter) =>
+                setShape({
                   ...shape,
-                  hollowCircle: { ...shape.hollowCircle!, innerDiameter: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
+                  hollowCircle: { ...shape.hollowCircle!, innerDiameter },
+                })
+              }
+              unit={meterUnit}
+              step={0.01}
+            />
           </div>
         )}
 
-        {(shapeType === "i_beam" || shapeType === "t_beam" || shapeType === "c_channel") && (
-          shape.iBeam || shape.tBeam || shape.cChannel
-        ) && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Height (m)</label>
-              <input
-                type="number"
-                value={
-                  shape.iBeam?.height || shape.tBeam?.height || shape.cChannel?.height || 0
-                }
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  if (shapeType === "i_beam" && shape.iBeam) {
-                    setShape({ ...shape, iBeam: { ...shape.iBeam, height: value } });
-                  } else if (shapeType === "t_beam" && shape.tBeam) {
-                    setShape({ ...shape, tBeam: { ...shape.tBeam, height: value } });
-                  } else if (shapeType === "c_channel" && shape.cChannel) {
-                    setShape({ ...shape, cChannel: { ...shape.cChannel, height: value } });
-                  }
-                }}
-                className="w-full border p-2 rounded"
-                step="0.01"
+        {(shapeType === "i_beam" || shapeType === "t_beam" || shapeType === "c_channel") &&
+          (shape.iBeam || shape.tBeam || shape.cChannel) && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <CalculatorUnitField
+                label="Height"
+                value={sectionHeight}
+                onChange={(value) => updateSectionDimension("height", value)}
+                unit={meterUnit}
+                step={0.01}
+              />
+              <CalculatorUnitField
+                label="Width"
+                value={sectionWidth}
+                onChange={(value) => updateSectionDimension("width", value)}
+                unit={meterUnit}
+                step={0.01}
+              />
+              <CalculatorUnitField
+                label="Web thickness"
+                value={sectionWeb}
+                onChange={(value) => updateSectionDimension("webThickness", value)}
+                unit={meterUnit}
+                step={0.001}
+              />
+              <CalculatorUnitField
+                label="Flange thickness"
+                value={sectionFlange}
+                onChange={(value) => updateSectionDimension("flangeThickness", value)}
+                unit={meterUnit}
+                step={0.001}
               />
             </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Width (m)</label>
-              <input
-                type="number"
-                value={
-                  shape.iBeam?.width || shape.tBeam?.width || shape.cChannel?.width || 0
-                }
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  if (shapeType === "i_beam" && shape.iBeam) {
-                    setShape({ ...shape, iBeam: { ...shape.iBeam, width: value } });
-                  } else if (shapeType === "t_beam" && shape.tBeam) {
-                    setShape({ ...shape, tBeam: { ...shape.tBeam, width: value } });
-                  } else if (shapeType === "c_channel" && shape.cChannel) {
-                    setShape({ ...shape, cChannel: { ...shape.cChannel, width: value } });
-                  }
-                }}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Web Thickness (m)</label>
-              <input
-                type="number"
-                value={
-                  shape.iBeam?.webThickness || shape.tBeam?.webThickness || shape.cChannel?.webThickness || 0
-                }
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  if (shapeType === "i_beam" && shape.iBeam) {
-                    setShape({ ...shape, iBeam: { ...shape.iBeam, webThickness: value } });
-                  } else if (shapeType === "t_beam" && shape.tBeam) {
-                    setShape({ ...shape, tBeam: { ...shape.tBeam, webThickness: value } });
-                  } else if (shapeType === "c_channel" && shape.cChannel) {
-                    setShape({ ...shape, cChannel: { ...shape.cChannel, webThickness: value } });
-                  }
-                }}
-                className="w-full border p-2 rounded"
-                step="0.001"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Flange Thickness (m)</label>
-              <input
-                type="number"
-                value={
-                  shape.iBeam?.flangeThickness || shape.tBeam?.flangeThickness || shape.cChannel?.flangeThickness || 0
-                }
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  if (shapeType === "i_beam" && shape.iBeam) {
-                    setShape({ ...shape, iBeam: { ...shape.iBeam, flangeThickness: value } });
-                  } else if (shapeType === "t_beam" && shape.tBeam) {
-                    setShape({ ...shape, tBeam: { ...shape.tBeam, flangeThickness: value } });
-                  } else if (shapeType === "c_channel" && shape.cChannel) {
-                    setShape({ ...shape, cChannel: { ...shape.cChannel, flangeThickness: value } });
-                  }
-                }}
-                className="w-full border p-2 rounded"
-                step="0.001"
-              />
-            </div>
-          </div>
-        )}
+          )}
 
         {shapeType === "angle" && shape.angle && (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Leg 1 Length (m)</label>
-              <input
-                type="number"
-                value={shape.angle.leg1}
-                onChange={(e) => setShape({
-                  ...shape,
-                  angle: { ...shape.angle!, leg1: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Leg 2 Length (m)</label>
-              <input
-                type="number"
-                value={shape.angle.leg2}
-                onChange={(e) => setShape({
-                  ...shape,
-                  angle: { ...shape.angle!, leg2: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.01"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Thickness (m)</label>
-              <input
-                type="number"
-                value={shape.angle.thickness}
-                onChange={(e) => setShape({
-                  ...shape,
-                  angle: { ...shape.angle!, thickness: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="0.001"
-              />
-            </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <CalculatorUnitField
+              label="Leg 1 length"
+              value={shape.angle.leg1}
+              onChange={(leg1) =>
+                setShape({ ...shape, angle: { ...shape.angle!, leg1 } })
+              }
+              unit={meterUnit}
+              step={0.01}
+            />
+            <CalculatorUnitField
+              label="Leg 2 length"
+              value={shape.angle.leg2}
+              onChange={(leg2) =>
+                setShape({ ...shape, angle: { ...shape.angle!, leg2 } })
+              }
+              unit={meterUnit}
+              step={0.01}
+            />
+            <CalculatorUnitField
+              label="Thickness"
+              value={shape.angle.thickness}
+              onChange={(thickness) =>
+                setShape({ ...shape, angle: { ...shape.angle!, thickness } })
+              }
+              unit={meterUnit}
+              step={0.001}
+            />
           </div>
         )}
 
         {shapeType === "custom" && shape.custom && (
           <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-600 mb-1">Area (m²)</label>
-              <input
-                type="number"
-                value={shape.custom.area}
-                onChange={(e) => setShape({
-                  ...shape,
-                  custom: { ...shape.custom!, area: parseFloat(e.target.value) || 0 }
-                })}
-                className="w-full border p-2 rounded"
-                step="1e-6"
+            <CalculatorUnitField
+              label="Area"
+              value={shape.custom.area}
+              onChange={(area) =>
+                setShape({ ...shape, custom: { ...shape.custom!, area } })
+              }
+              unit={areaUnit}
+              step={1e-6}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <CalculatorUnitField
+                label="Centroid X"
+                value={shape.custom.centroidX}
+                onChange={(centroidX) =>
+                  setShape({ ...shape, custom: { ...shape.custom!, centroidX } })
+                }
+                unit={meterUnit}
+                step={0.001}
+              />
+              <CalculatorUnitField
+                label="Centroid Y"
+                value={shape.custom.centroidY}
+                onChange={(centroidY) =>
+                  setShape({ ...shape, custom: { ...shape.custom!, centroidY } })
+                }
+                unit={meterUnit}
+                step={0.001}
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Centroid X (m)</label>
-                <input
-                  type="number"
-                  value={shape.custom.centroidX}
-                  onChange={(e) => setShape({
-                    ...shape,
-                    custom: { ...shape.custom!, centroidX: parseFloat(e.target.value) || 0 }
-                  })}
-                  className="w-full border p-2 rounded"
-                  step="0.001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Centroid Y (m)</label>
-                <input
-                  type="number"
-                  value={shape.custom.centroidY}
-                  onChange={(e) => setShape({
-                    ...shape,
-                    custom: { ...shape.custom!, centroidY: parseFloat(e.target.value) || 0 }
-                  })}
-                  className="w-full border p-2 rounded"
-                  step="0.001"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Ixx (m⁴)</label>
-                <input
-                  type="number"
-                  value={shape.custom.ixx}
-                  onChange={(e) => setShape({
-                    ...shape,
-                    custom: { ...shape.custom!, ixx: parseFloat(e.target.value) || 0 }
-                  })}
-                  className="w-full border p-2 rounded"
-                  step="1e-8"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Iyy (m⁴)</label>
-                <input
-                  type="number"
-                  value={shape.custom.iyy}
-                  onChange={(e) => setShape({
-                    ...shape,
-                    custom: { ...shape.custom!, iyy: parseFloat(e.target.value) || 0 }
-                  })}
-                  className="w-full border p-2 rounded"
-                  step="1e-8"
-                />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">Ixy (m⁴)</label>
-                <input
-                  type="number"
-                  value={shape.custom.ixy}
-                  onChange={(e) => setShape({
-                    ...shape,
-                    custom: { ...shape.custom!, ixy: parseFloat(e.target.value) || 0 }
-                  })}
-                  className="w-full border p-2 rounded"
-                  step="1e-8"
-                />
-              </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <CalculatorUnitField
+                label="Ixx"
+                value={shape.custom.ixx}
+                onChange={(ixx) =>
+                  setShape({ ...shape, custom: { ...shape.custom!, ixx } })
+                }
+                unit={inertiaUnit}
+                step={1e-8}
+              />
+              <CalculatorUnitField
+                label="Iyy"
+                value={shape.custom.iyy}
+                onChange={(iyy) =>
+                  setShape({ ...shape, custom: { ...shape.custom!, iyy } })
+                }
+                unit={inertiaUnit}
+                step={1e-8}
+              />
+              <CalculatorUnitField
+                label="Ixy"
+                value={shape.custom.ixy}
+                onChange={(ixy) =>
+                  setShape({ ...shape, custom: { ...shape.custom!, ixy } })
+                }
+                unit={inertiaUnit}
+                step={1e-8}
+              />
             </div>
           </div>
         )}
       </div>
 
-      {/* Actions */}
-      <button
-        onClick={onCalculate}
-        className="w-full bg-black text-white py-2 rounded"
-      >
-        Calculate
-      </button>
-
-      <button
-        onClick={onSave}
-        disabled={saving}
-        className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition disabled:opacity-50"
-      >
-        {saving ? "Saving..." : "Save"}
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

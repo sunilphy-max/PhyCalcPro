@@ -3,7 +3,7 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import type { CircularPlateResult } from "@/lib/structural/circular-plates/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: (CircularPlateResult & { calculationSpec?: CalculationSpec }) | null;
@@ -66,7 +66,7 @@ export default function CircularPlatesResults({ result, lengthUnit, stressUnit }
             />
             <CalculatorMetricCard
               label="FDM vs Roark error"
-              value={`${result.femDeflectionErrorPercent.toFixed(1)}%`}
+              value={`${formatDisplayNumber(result.femDeflectionErrorPercent)}%`}
               tone={result.femDeflectionErrorPercent < 15 ? "green" : "orange"}
             />
           </CalculatorMetricGrid>

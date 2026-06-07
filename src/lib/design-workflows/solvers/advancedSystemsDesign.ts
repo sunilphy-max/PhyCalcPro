@@ -1,3 +1,4 @@
+import { getAdvancedSystemCalculator } from "@/lib/advanced-systems/calculators";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
@@ -9,67 +10,101 @@ function fromSweep(
   return { method, best: sweep.best, ranked: sweep.ranked };
 }
 
+function baseValues(userInputs: ModuleUserInputs): Record<string, number> {
+  return userInputs.formValues ?? {};
+}
+
+function metricValue(result: ReturnType<ReturnType<typeof getAdvancedSystemCalculator>["solve"]>, key: string) {
+  const m = result.metrics.find((item) => item.key === key);
+  return m?.value ?? 0;
+}
+
 export function designThermalManagement(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const heat = userInputs.power ?? 850;
-  const deltaT = userInputs.deltaT ?? 18;
-  const options = [
-    { name: "Natural finned sink", conductance: 22 },
-    { name: "Forced-air heat sink", conductance: 58 },
-    { name: "Liquid cold plate", conductance: 115 },
-  ];
-  const required = heat / deltaT;
-  const items = options.map((o) => ({
-    label: o.name,
-    utilization: required / o.conductance,
-    fields: { coolingType: o.name },
-    detail: `need ${required.toFixed(0)} W/K`,
-  }));
-  return fromSweep(sweepCatalogForUtilization(items), "Thermal solution selection from conductance requirement.");
+  const calc = getAdvancedSystemCalculator("thermal-management");
+  const base = baseValues(userInputs);
+  const heatTarget = userInputs.power ?? metricValue(calc.solve(base), "totalCapacity") * 1.1;
+  const hOptions = [40, 60, 80, 100, 120, 150];
+
+  const items = hOptions.map((h) => {
+    const res = calc.solve({ ...base, convectionCoefficient: h });
+    const capacity = metricValue(res, "totalCapacity");
+    const util = heatTarget / Math.max(capacity, 1);
+    return {
+      label: `h = ${h} W/m²·K`,
+      utilization: util,
+      fields: { convectionCoefficient: h },
+      detail: `${capacity.toFixed(0)} W capacity`,
+    };
+  });
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Convection coefficient sweep using live thermal paths and heat-rejection target."
+  );
 }
 
 export function designVacuumPump(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const volume = userInputs.length ?? 0.25;
-  const ratio = 101325 / 0.1;
-  const targetTime = 900;
+  const calc = getAdvancedSystemCalculator("vacuum-engineering");
+  const base = baseValues(userInputs);
+  const targetTime = userInputs.designLife ?? 900;
+
   const pumps = [
-    { name: "Dry scroll 20 m³/h", speed: 20 / 3600 },
-    { name: "Turbopump 80 L/s", speed: 0.08 },
-    { name: "Turbopump 250 L/s", speed: 0.25 },
+    { label: "Scroll 20 m³/h", pumpSpeed: 20 / 3600 },
+    { label: "Turbopump 80 L/s", pumpSpeed: 0.08 },
+    { label: "Turbopump 250 L/s", pumpSpeed: 0.25 },
+    { label: "Turbopump 500 L/s", pumpSpeed: 0.5 },
   ];
+
   const items = pumps.map((p) => {
-    const time = (volume / p.speed) * Math.log(ratio);
+    const res = calc.solve({ ...base, pumpSpeed: p.pumpSpeed });
+    const time = metricValue(res, "pumpDownTime");
     return {
-      label: p.name,
+      label: p.label,
       utilization: time / targetTime,
-      fields: { pumpType: p.name },
-      detail: `~${(time / 60).toFixed(1)} min`,
+      fields: { pumpSpeed: p.pumpSpeed },
+      detail: `${(time / 60).toFixed(1)} min pump-down`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Vacuum pump selection from pump-down time target.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Pump speed sweep against chamber volume and pressure ratio using vacuum solver."
+  );
 }
 
 export function designCryogenicInsulation(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const layers = [10, 20, 30, 40, 60];
-  const baseLeak = userInputs.heatLeak ?? 50;
-  const items = layers.map((n) => {
-    const leak = baseLeak / Math.sqrt(n);
-    const util = leak / (userInputs.maxHeatLeak ?? 15);
+  const calc = getAdvancedSystemCalculator("cryogenic-engineering");
+  const base = baseValues(userInputs);
+  const maxLeak = userInputs.maxHeatLeak ?? 15;
+  const emissivities = [0.12, 0.08, 0.05, 0.03, 0.02, 0.01];
+
+  const items = emissivities.map((e, i) => {
+    const res = calc.solve({ ...base, emissivity: e });
+    const leak = metricValue(res, "totalHeatLeak");
     return {
-      label: `${n} MLI layers`,
-      utilization: util,
-      fields: { mliLayers: n },
+      label: `MLI ~${10 + i * 10} layers (ε=${e})`,
+      utilization: leak / maxLeak,
+      fields: { emissivity: e },
       detail: `Q ${leak.toFixed(1)} W`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "MLI layer count sweep for heat leak target.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Effective emissivity sweep for cryogenic heat-leak target using conduction + radiation paths."
+  );
 }
 
 export function designMagneticCoil(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const turnsOptions = [100, 200, 300, 500, 800];
-  const current = userInputs.current ?? 5;
+  const calc = getAdvancedSystemCalculator("magnetic-fields");
+  const base = baseValues(userInputs);
+  const targetField = userInputs.targetField ?? 0.05;
+  const turnsOptions = [100, 200, 300, 500, 800, 1000];
+
   const items = turnsOptions.map((n) => {
-    const field = 1.256e-6 * n * current / Math.max(userInputs.coilLength ?? 0.1, 1e-9);
-    const util = (userInputs.targetField ?? 0.05) / Math.max(field, 1e-12);
+    const res = calc.solve({ ...base, turns: n });
+    const field = metricValue(res, "magneticField");
+    const util = targetField / Math.max(field, 1e-12);
     return {
       label: `${n} turns`,
       utilization: util,
@@ -77,70 +112,111 @@ export function designMagneticCoil(userInputs: ModuleUserInputs): ModuleDesignMo
       detail: `B ${field.toFixed(3)} T`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Coil turn-count sweep for magnetic field target.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Turn-count sweep for solenoid field target using electromagnetics solver."
+  );
 }
 
 export function designBatteryCooling(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const flows = [0.05, 0.1, 0.15, 0.2, 0.3];
-  const heat = userInputs.power ?? 2000;
-  const items = flows.map((m) => {
-    const capacity = m * 4200 * 15;
-    const util = heat / Math.max(capacity, 1);
+  const calc = getAdvancedSystemCalculator("battery-ev-systems");
+  const base = baseValues(userInputs);
+  const res0 = calc.solve(base);
+  const heat = metricValue(res0, "heatGeneration");
+  const deltaTs = [4, 6, 8, 10, 12, 15];
+
+  const items = deltaTs.map((dt) => {
+    const res = calc.solve({ ...base, coolantDeltaT: dt });
+    const flow = metricValue(res, "coolingMassFlow");
+    const util = heat / Math.max(flow * (base.coolantCp ?? 3600) * Math.max(dt, 1e-9), 1);
     return {
-      label: `${(m * 1000).toFixed(0)} L/min`,
+      label: `ΔT = ${dt} K`,
       utilization: util,
-      fields: { coolantFlow: m * 1000 },
-      detail: `Q ${capacity.toFixed(0)} W`,
+      fields: { coolantDeltaT: dt },
+      detail: `flow ${flow.toFixed(3)} kg/s`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Coolant flow sweep for pack heat rejection.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Coolant temperature-rise sweep for pack ohmic heat rejection."
+  );
 }
 
 export function designHydrogenVent(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const vents = [0.001, 0.002, 0.005, 0.01, 0.02];
-  const leak = userInputs.leakRate ?? 0.5;
-  const items = vents.map((a) => {
-    const ventCap = a * 50;
-    const util = leak / Math.max(ventCap, 1e-9);
+  const calc = getAdvancedSystemCalculator("hydrogen-systems");
+  const base = baseValues(userInputs);
+  const leak = userInputs.leakRate ?? metricValue(calc.solve(base), "leakMassFlow");
+  const orifices = [5e-7, 1e-6, 2e-6, 5e-6, 1e-5, 2e-5];
+
+  const items = orifices.map((a) => {
+    const res = calc.solve({ ...base, orificeArea: a });
+    const flow = metricValue(res, "leakMassFlow");
+    const util = leak / Math.max(flow, 1e-12);
     return {
-      label: `${(a * 1e4).toFixed(1)} cm² vent`,
+      label: `Orifice ${(a * 1e6).toFixed(2)} mm²`,
       utilization: util,
-      fields: { ventArea: a * 1e4 },
-      detail: `cap ${ventCap.toFixed(2)} g/s`,
+      fields: { orificeArea: a },
+      detail: `flow ${flow.toExponential(2)} kg/s`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Vent area sweep for hydrogen leak relief.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Leak orifice area sweep for hydrogen relief capacity."
+  );
 }
 
 export function designPrecisionMotion(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const stiffnesses = [1e5, 2e5, 5e5, 1e6, 2e6];
-  const load = userInputs.maxForce ?? 20;
-  const items = stiffnesses.map((k) => {
-    const defl = load / k;
-    const util = defl / (userInputs.deflectionLimit ?? 1e-6);
+  const calc = getAdvancedSystemCalculator("precision-motion");
+  const base = baseValues(userInputs);
+  const limit = userInputs.deflectionLimit ?? 1e-6;
+  const lengthsMm = [25, 30, 35, 40, 50, 60];
+
+  const items = lengthsMm.map((lMm) => {
+    const l = lMm / 1000;
+    const res = calc.solve({ ...base, flexureLength: l });
+    const k = metricValue(res, "stiffness");
+    const load = base.movingMass ? base.movingMass * 9.81 : 20;
+    const defl = load / Math.max(k, 1e-9);
     return {
-      label: `k ${(k / 1e6).toFixed(1)} MN/m`,
-      utilization: util,
-      fields: { stiffness: k },
-      detail: `δ ${(defl * 1e6).toFixed(2)} µm`,
+      label: `L = ${lMm} mm flexure`,
+      utilization: defl / limit,
+      fields: { flexureLength: l },
+      detail: `k ${(k / 1e6).toFixed(2)} MN/m`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Stiffness sweep for precision deflection limit.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Flexure length sweep for stiffness and deflection limit."
+  );
 }
 
 export function designSuperconductingCoil(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const currents = [100, 200, 300, 400, 500];
+  const calc = getAdvancedSystemCalculator("superconducting-systems");
+  const base = baseValues(userInputs);
+  const energyTarget = userInputs.energy ?? 500;
+  const currents = [200, 300, 400, 500, 600, 700];
+
   const items = currents.map((I) => {
-    const energy = 0.5 * (userInputs.inductance ?? 0.01) * I * I;
-    const util = (userInputs.energy ?? 500) / Math.max(energy, 1);
+    const res = calc.solve({ ...base, operatingCurrent: I });
+    const energy = metricValue(res, "storedEnergy");
+    const margin = metricValue(res, "currentMargin");
+    const util = Math.max(energyTarget / Math.max(energy, 1), margin < 0 ? 2 : 0.5);
     return {
-      label: `${I} A`,
+      label: `${I} A operating`,
       utilization: util,
-      fields: { current: I },
-      detail: `E ${energy.toFixed(0)} J`,
+      fields: { operatingCurrent: I },
+      detail: `E ${energy.toFixed(0)} J, I margin ${(margin * 100).toFixed(0)}%`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Coil current sweep for stored energy target.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Operating current sweep for stored energy and critical-current margin."
+  );
 }
 
 export function designAdvancedModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {

@@ -94,9 +94,6 @@ export default function Page() {
           setScrapPercent={setScrapPercent}
           onCalculate={calculate}
         />}
-        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Estimate material, machining and labor costs for a simple manufacturing operation, accounting for finish and overhead.</p>
-        </div>}
         results={<CostEstimatorResults result={result} />}
       />
   );

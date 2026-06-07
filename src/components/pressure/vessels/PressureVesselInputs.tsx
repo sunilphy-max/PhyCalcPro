@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
 import MeshControls from "@/components/shared/MeshControls";
 
@@ -55,15 +57,12 @@ export default function PressureVesselInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold">Pressure vessel geometry</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define a thin-walled cylinder, internal pressure, and mesh refinement for FEM analysis.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Pressure vessel"
+      description="Thin and thick wall vessel design screening."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vessel FEM" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700">Radius</label>
           <div className="flex gap-2">
@@ -169,13 +168,7 @@ export default function PressureVesselInputs({
           <MeshControls elements={segments} onChangeElements={setSegments} refine />
         </div>
       </div>
-
-      <button
-        onClick={onCalculate}
-        className="w-full rounded bg-slate-900 px-4 py-3 text-white font-semibold hover:bg-slate-800 transition"
-      >
-        Run pressure vessel FEM
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

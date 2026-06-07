@@ -6,7 +6,8 @@ import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
-import { calculatorPrimaryButtonClass } from "@/components/calculator/styles";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
 type Props = {
   projectName: string;
@@ -118,7 +119,23 @@ export default function ShaftInputs({
   };
 
   return (
-    <div className="space-y-6 rounded-xl bg-white p-4 shadow-sm">
+    <CalculatorInputPanel
+      title="Shaft design"
+      description="Torsion, bending, and fatigue analysis with live load cases and FEA mesh."
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton onClick={onCalculate} label="Solve shaft" designAware />
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+          >
+            {saving ? "Saving…" : "Save project"}
+          </button>
+        </div>
+      }
+    >
       <input
         className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
         value={projectName}
@@ -348,18 +365,6 @@ export default function ShaftInputs({
         />
       </section>
 
-      <button type="button" onClick={onCalculate} className={calculatorPrimaryButtonClass}>
-        Solve
-      </button>
-
-      <button
-        type="button"
-        onClick={onSave}
-        disabled={saving}
-        className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-      >
-        {saving ? "Saving…" : "Save project"}
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

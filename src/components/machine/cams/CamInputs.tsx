@@ -1,3 +1,8 @@
+"use client";
+
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+
 import type { Dispatch, SetStateAction } from "react";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import type { CamProfileType, MotionLaw } from "@/lib/machine/cams/types";
@@ -50,15 +55,12 @@ export default function CamInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Cam profile inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define cam lift, base circle, follower radius, speed, and motion law.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Cam design"
+      description="Cam profile and motion analysis inputs."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate cam" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">
           <span>Lift</span>
           <div className="flex gap-2">
@@ -162,14 +164,7 @@ export default function CamInputs({
           </select>
         </label>
       </div>
-
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 text-white px-4 py-3 font-medium hover:bg-slate-800"
-      >
-        Analyze Cam Profile
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

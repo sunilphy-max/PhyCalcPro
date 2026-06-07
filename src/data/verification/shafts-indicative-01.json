@@ -1,0 +1,33 @@
+{
+  "id": "shafts-indicative-01",
+  "moduleId": "shafts",
+  "designCode": "INDICATIVE",
+  "description": "Shaft FEM — Ø50 mm, 1 m, T=100 N·m, M=200 N·m at mid-span",
+  "inputs": {
+    "geometry": {
+      "diameter": 0.05,
+      "length": 1
+    },
+    "material": {
+      "name": "Steel",
+      "E": 210000000000,
+      "G": 80000000000,
+      "density": 7850,
+      "yieldStress": 250000000
+    },
+    "loads": [
+      {
+        "position": 0.5,
+        "torque": 100,
+        "bendingMoment": 200
+      }
+    ],
+    "meshSegments": 20
+  },
+  "expected": {
+    "safetyFactor": 14.076773127612789,
+    "maxStress": 17759752.020838052
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — shaft FEM solver v1"
+}

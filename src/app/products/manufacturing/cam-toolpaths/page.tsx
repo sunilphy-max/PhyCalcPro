@@ -90,9 +90,6 @@ export default function Page() {
           setStepOverPercent={setStepOverPercent}
           onCalculate={calculate}
         />}
-        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Estimate a basic roughing toolpath with feed, material removal rate, and cut time guidance.</p>
-        </div>}
         results={<CamToolpathsResults result={result} />}
       />
   );

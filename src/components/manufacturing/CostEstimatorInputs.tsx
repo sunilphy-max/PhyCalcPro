@@ -1,3 +1,8 @@
+"use client";
+
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+
 type Props = {
   materialVolume: number;
   setMaterialVolume: (value: number) => void;
@@ -46,14 +51,11 @@ export default function CostEstimatorInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Cost estimation inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Enter material, machining, labor, and overhead assumptions for a quick manufacturing cost estimate.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="Cost estimation"
+      description="Estimate material, machining and labor costs for a simple manufacturing operation, accounting for finish and overhead."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Estimate cost" designAware />}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">
           <span>Material volume</span>
@@ -209,13 +211,6 @@ export default function CostEstimatorInputs({
         </label>
       </div>
 
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800"
-      >
-        Estimate Manufacturing Cost
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

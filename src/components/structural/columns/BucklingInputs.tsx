@@ -5,6 +5,8 @@ import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
 type Props = {
   projectName: string;
@@ -90,7 +92,27 @@ export default function BucklingInputs({
   const showManualSection = !isDesignMode;
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
+    <CalculatorInputPanel
+      title="Column buckling"
+      description="Euler buckling and stability analysis for slender columns."
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton
+            onClick={onCalculate}
+            label={isDesignMode ? "Size section" : "Calculate buckling"}
+            designAware
+          />
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {saving ? "Saving..." : "Save project"}
+          </button>
+        </div>
+      }
+    >
       {/* Project Name */}
       <input
         className="w-full p-2 border rounded"
@@ -253,21 +275,6 @@ export default function BucklingInputs({
         </div>
       </div>
 
-      {/* Actions */}
-      <button
-        onClick={onCalculate}
-        className="w-full bg-black text-white py-2 rounded"
-      >
-        {isDesignMode ? "Size section" : "Calculate"}
-      </button>
-
-      <button
-        onClick={onSave}
-        disabled={saving}
-        className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition disabled:opacity-50"
-      >
-        {saving ? "Saving..." : "Save"}
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

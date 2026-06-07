@@ -10,6 +10,14 @@ import { solveKeysSplinesEngine } from "@/lib/fasteners/keys-splines/engine";
 import type { KeysSplinesConfig } from "@/lib/fasteners/keys-splines/types";
 import { solveCircularPlateEngine } from "@/lib/structural/circular-plates/engine";
 import type { CircularPlateConfig } from "@/lib/structural/circular-plates/types";
+import { solveShaftEngine } from "@/lib/machine/shafts/engine";
+import type { ShaftConfig } from "@/lib/machine/shafts/types";
+import { solveBearingEngine } from "@/lib/machine/bearings/engine";
+import type { BearingConfig } from "@/lib/machine/bearings/types";
+import { solveVBeltDrive } from "@/lib/powerTransmission/v-belts/engine";
+import type { VBeltConfig } from "@/lib/powerTransmission/v-belts/types";
+import { solvePressurePipeEngine } from "@/lib/pressure/pipes/engine";
+import type { PressurePipeConfig } from "@/lib/pressure/pipes/types";
 import { solveBucklingEngine } from "@/lib/structural/columns/engine";
 import type { BucklingConfig } from "@/lib/structural/columns/types";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
@@ -57,6 +65,13 @@ const SOLVERS: Record<string, SolverFn> = {
     solveKeysSplinesEngine(inputs as unknown as KeysSplinesConfig) as Record<string, unknown>,
   "circular-plates": (inputs) =>
     solveCircularPlateEngine(inputs as unknown as CircularPlateConfig) as Record<string, unknown>,
+  shafts: (inputs) => solveShaftEngine(inputs as unknown as ShaftConfig) as Record<string, unknown>,
+  bearings: (inputs) =>
+    solveBearingEngine(inputs as unknown as BearingConfig) as Record<string, unknown>,
+  "v-belts": (inputs) =>
+    solveVBeltDrive(inputs as unknown as VBeltConfig) as Record<string, unknown>,
+  pipes: (inputs) =>
+    solvePressurePipeEngine(inputs as unknown as PressurePipeConfig) as Record<string, unknown>,
 };
 
 function withinTolerance(actual: number, expected: number, tolerancePercent: number): boolean {

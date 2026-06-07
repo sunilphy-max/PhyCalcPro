@@ -1,32 +1,99 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MaterialDatabase from "@/components/materials/MaterialDatabase";
-import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import { calculatorPanelClass, calculatorPrimaryButtonClass } from "@/components/calculator/styles";
+import { useModuleDesignCalculate } from "@/hooks/useModuleDesignCalculate";
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
+import { toBase } from "@/lib/units/conversions";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 
 export default function Page() {
   const { wrapResult } = useStandardCalculation("material-db");
-  const { setUserInputs } = useDesignWorkflow();
+  const [requiredStress, setRequiredStress] = useState(200);
+  const [stressUnit, setStressUnit] = useState("MPa");
+  const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
+  const [selectedE, setSelectedE] = useState<number | null>(null);
 
-  useEffect(() => {
-    setUserInputs({ allowableStressPa: 200e6 });
-  }, [setUserInputs]);
+  const designUserInputs = useMemo(
+    (): ModuleUserInputs => ({
+      allowableStressPa: toBase(requiredStress, "stress", stressUnit),
+    }),
+    [requiredStress, stressUnit]
+  );
+
+  const runCheck = useCallback(() => {
+    wrapResult({
+      metrics: [],
+      warnings: [],
+      assumptions: ["Material database browse mode — use Design to screen by allowable stress."],
+    });
+  }, [wrapResult]);
+
+  const applyDesignFields = useApplyDesignFields({
+    material: (v) => setSelectedMaterial(typeof v === "string" ? v : String(v)),
+    E: (v) => setSelectedE(typeof v === "number" ? v : Number(v)),
+  });
+
+  const { calculate } = useModuleDesignCalculate({
+    moduleId: "material-db",
+    userInputs: designUserInputs,
+    runCheck,
+    applyDesign: applyDesignFields,
+  });
 
   return (
     <CalculatorLayout
       moduleId="material-db"
       title="Material Database"
       inputs={
-        <div className="rounded-xl bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold">Materials Reference</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            Lookup elastic modulus and basic material properties for common engineering materials.
-          </p>
+        <div className={calculatorPanelClass}>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-950">Materials Reference</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Lookup elastic modulus and screen materials against a required allowable stress in Design or Select
+              mode.
+            </p>
+          </div>
+
+          <CalculatorUnitField
+            label="Required allowable stress"
+            value={requiredStress}
+            onChange={setRequiredStress}
+            min={0}
+            step="any"
+            unit={
+              <select
+                value={stressUnit}
+                onChange={(e) => setStressUnit(e.target.value)}
+                className="rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
+              >
+                <option value="MPa">MPa</option>
+                <option value="GPa">GPa</option>
+                <option value="psi">psi</option>
+                <option value="ksi">ksi</option>
+              </select>
+            }
+          />
+
+          <button type="button" onClick={calculate} className={calculatorPrimaryButtonClass}>
+            Screen materials
+          </button>
+
+          {selectedMaterial ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              <span className="font-semibold">Applied selection:</span> {selectedMaterial}
+              {selectedE ? ` (E = ${selectedE.toExponential(2)} Pa)` : null}
+            </div>
+          ) : null}
         </div>
       }
-      results={<MaterialDatabase />}
+      results={
+        <MaterialDatabase highlightMaterial={selectedMaterial} querySeed={selectedMaterial ?? undefined} />
+      }
     />
   );
 }

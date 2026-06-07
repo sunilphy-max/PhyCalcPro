@@ -1,4 +1,7 @@
+"use client";
+
 import type { Dispatch, SetStateAction } from "react";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
@@ -58,7 +61,25 @@ export default function GearInputs({
   saving = false,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
+    <CalculatorInputPanel
+      title="Gear design"
+      description="Enter operating power, geometry, and material properties for spur gear design."
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton onClick={onCalculate} label="Calculate gear design" designAware />
+          {onSave ? (
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save project"}
+            </button>
+          ) : null}
+        </div>
+      }
+    >
       {setProjectName ? (
         <input
           className="w-full rounded border p-2 text-sm"
@@ -67,13 +88,6 @@ export default function GearInputs({
           placeholder="Project name"
         />
       ) : null}
-      <div>
-        <h2 className="text-lg font-semibold">Gear design inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Enter operating power, geometry, and material properties for spur gear design.
-        </p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">
           <span>Power</span>
@@ -175,21 +189,6 @@ export default function GearInputs({
         </select>
       </div>
 
-      <CalculatorCalculateButton
-        onClick={onCalculate}
-        label="Calculate gear design"
-        designAware
-      />
-      {onSave ? (
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={saving}
-          className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Save project"}
-        </button>
-      ) : null}
-    </div>
+    </CalculatorInputPanel>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import type { Dispatch, SetStateAction } from "react";
 import type { HeatExchangerFlowType } from "@/lib/pressure/heat-exchangers/types";
 
@@ -51,15 +53,12 @@ export default function HeatExchangerInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Heat exchanger inputs</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define hot and cold streams plus exchanger performance assumptions for a simple shell-and-tube evaluation.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Heat exchanger"
+      description="Estimate heat transfer and pressure drops."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate heat exchanger" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">
           <span>Hot flow rate</span>
           <div className="flex items-center gap-3">
@@ -195,14 +194,7 @@ export default function HeatExchangerInputs({
           </select>
         </label>
       </div>
-
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 px-4 py-3 text-white font-medium hover:bg-slate-800"
-      >
-        Compute Heat Transfer
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

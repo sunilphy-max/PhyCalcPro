@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import type { SupportType } from "@/lib/dynamics/vibrations/types";
@@ -64,15 +66,12 @@ export default function VibrationInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold">Vibration analysis</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define beam properties, support conditions, and mesh density for natural frequency analysis.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Vibration analysis"
+      description="Natural frequency and resonance screening."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vibration analysis" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700">Beam length</label>
           <div className="flex gap-2">
@@ -205,13 +204,7 @@ export default function VibrationInputs({
           <MeshControls elements={segments} onChangeElements={setSegments} refine />
         </div>
       </div>
-
-      <button
-        onClick={onCalculate}
-        className="w-full rounded bg-slate-900 px-4 py-3 text-white font-semibold hover:bg-slate-800 transition"
-      >
-        Run vibration analysis
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

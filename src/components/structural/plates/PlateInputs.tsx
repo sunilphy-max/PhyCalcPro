@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import type { BoundaryType } from "@/lib/structural/plates/types";
@@ -60,15 +62,12 @@ export default function PlateInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Plate parameters</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Set geometry, material, and loading before running the plate bending analysis.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
+    <CalculatorInputPanel
+      title="Plate bending"
+      description="Thin plate bending and stress analysis."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Run plate FEM" designAware />}
+    >
+<div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-3">
           <label className="block text-sm font-medium text-slate-700">Length</label>
           <div className="flex gap-2">
@@ -189,13 +188,7 @@ export default function PlateInputs({
           <option value="simply_supported">Simply supported edges</option>
         </select>
       </div>
-
-      <button
-        onClick={onCalculate}
-        className="w-full rounded bg-slate-900 px-4 py-3 text-white font-semibold hover:bg-slate-800 transition"
-      >
-        Run plate analysis
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
@@ -19,6 +19,14 @@ import {
   type AdvancedResult,
 } from "@/lib/advanced-systems/calculators";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import {
+  applyAdvancedDesignFields,
+  buildAdvancedUserInputs,
+} from "@/lib/design-workflows/advancedDesignBridge";
 
 type ResultWithSpec = AdvancedResult & { calculationSpec?: CalculationSpec };
 
@@ -63,9 +71,36 @@ export default function AdvancedSystemCalculator({ calculatorId }: Props) {
     setValues((previous) => ({ ...previous, [key]: value }));
   };
 
-  const calculate = () => {
-    setResult(wrapResult(calculator.solve(values)));
-  };
+  const designUserInputs = useMemo(
+    () => buildAdvancedUserInputs(calculatorId, values),
+    [calculatorId, values]
+  );
+
+  const { mode: workflowMode } = useDesignWorkflow();
+
+  const applyDesign = useCallback((fields: Record<string, unknown>) => {
+    applyAdvancedDesignFields(fields, setValues);
+  }, []);
+
+  useSyncDesignInputs(calculator.id, designUserInputs);
+  useRegisterApplyDesignCandidate(applyDesign);
+
+  const calculate = useCallback(() => {
+    let solveValues = values;
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode(calculator.id, designUserInputs);
+      if (design?.best?.fields) {
+        solveValues = { ...values };
+        for (const [key, value] of Object.entries(design.best.fields)) {
+          if (typeof value === "number" && Number.isFinite(value)) {
+            solveValues[key] = value;
+          }
+        }
+        setValues(solveValues);
+      }
+    }
+    setResult(wrapResult(calculator.solve(solveValues)));
+  }, [workflowMode, calculator, designUserInputs, values, wrapResult]);
 
   const resetDefaults = () => {
     setValues(buildInitialValues(calculator.fields));

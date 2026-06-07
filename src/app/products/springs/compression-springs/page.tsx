@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CompressionSpringInputs from "@/components/springs/compression-springs/CompressionSpringInputs";
@@ -13,7 +13,11 @@ import { solveCompressionSpringEngine } from "@/lib/springs/compression-springs/
 import type { CompressionSpringResult } from "@/lib/springs/compression-springs/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
-import { designCompressionSpring } from "@/lib/design-workflows/solvers/compressionSpringDesign";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 
 type CompressionSpringProjectData = {
@@ -42,7 +46,7 @@ export default function Page() {
       stress: setStressUnit,
     })
   );
-  const { mode, setUserInputs } = useDesignWorkflow();
+  const { mode } = useDesignWorkflow();
 
   const [wireDiameter, setWireDiameter] = useState(2);
   const [meanDiameter, setMeanDiameter] = useState(20);
@@ -63,8 +67,16 @@ export default function Page() {
     loadLocalProjects<CompressionSpringProjectData>("compression-springs")
   );
 
-  useEffect(() => {
-    setUserInputs({
+  const applyDesignFields = useApplyDesignFields({
+    wireDiameter: (v) => setWireDiameter(typeof v === "number" ? v : Number(v)),
+    meanDiameter: (v) => setMeanDiameter(typeof v === "number" ? v : Number(v)),
+    activeCoils: (v) => setActiveCoils(typeof v === "number" ? v : Number(v)),
+  });
+
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
+  const designUserInputs = useMemo(
+    (): ModuleUserInputs => ({
       wireDiameter: toBase(wireDiameter, "length", lengthUnit),
       meanDiameter: toBase(meanDiameter, "length", lengthUnit),
       activeCoils,
@@ -75,22 +87,24 @@ export default function Page() {
       targetRate,
       maxForce,
       maxOD: toBase(maxOD, "length", lengthUnit),
-    });
-  }, [
-    wireDiameter,
-    meanDiameter,
-    activeCoils,
-    freeLength,
-    deflection,
-    modulus,
-    ultimateStrength,
-    targetRate,
-    maxForce,
-    maxOD,
-    lengthUnit,
-    stressUnit,
-    setUserInputs,
-  ]);
+    }),
+    [
+      wireDiameter,
+      meanDiameter,
+      activeCoils,
+      freeLength,
+      deflection,
+      modulus,
+      ultimateStrength,
+      targetRate,
+      maxForce,
+      maxOD,
+      lengthUnit,
+      stressUnit,
+    ]
+  );
+
+  useSyncDesignInputs("compression-springs", designUserInputs);
 
   const runCheck = () => {
     setResult(
@@ -110,38 +124,11 @@ export default function Page() {
 
   const calculate = () => {
     if (mode === "design") {
-      const design = designCompressionSpring({
-        targetRate,
-        maxForce,
-        maxOD: toBase(maxOD, "length", lengthUnit),
-        modulus: toBase(modulus, "stress", stressUnit),
-        ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
-        freeLength: toBase(freeLength, "length", lengthUnit),
-      });
-      if (design.best) {
-        setWireDiameter(design.best.wireDiameter * 1000);
-        setMeanDiameter(design.best.meanDiameter * 1000);
-        setActiveCoils(design.best.activeCoils);
-        setDeflection(maxForce / Math.max(design.best.springRate, 1e-9) * 1000);
-        setResult(
-          wrapResult(
-            solveCompressionSpringEngine({
-              wireDiameter: design.best.wireDiameter,
-              meanDiameter: design.best.meanDiameter,
-              activeCoils: design.best.activeCoils,
-              freeLength: toBase(freeLength, "length", lengthUnit),
-              deflection: maxForce / Math.max(design.best.springRate, 1e-9),
-              modulus: toBase(modulus, "stress", stressUnit),
-              ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
-            })
-          )
-        );
-      } else {
-        runCheck();
+      const design = runModuleDesignMode("compression-springs", designUserInputs);
+      if (design?.best?.fields) {
+        applyDesignFields(design.best.fields);
       }
-      return;
     }
-
     runCheck();
   };
 

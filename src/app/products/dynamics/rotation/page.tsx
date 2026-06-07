@@ -87,9 +87,6 @@ export default function Page() {
           setPowerUnit={setPowerUnit}
           onCalculate={calculate}
         />}
-        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Calculate kinetic energy and dynamic forces for a rotating mass and its power requirement.</p>
-        </div>}
         results={<RotationResults result={result} />}
       />
   );

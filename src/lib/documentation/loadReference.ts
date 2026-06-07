@@ -42,11 +42,15 @@ export function parseModuleSections(markdown: string): Map<string, ModuleDocSect
     if (!idMatch) continue;
     const moduleId = idMatch[1];
     const titleLine = chunk.split("\n")[0]?.replace(/^### /, "") ?? moduleId;
-    map.set(moduleId, {
+    const section: ModuleDocSection = {
       moduleId,
       title: titleLine.replace(/\s*—\s*\*\*[^*]+\*\*\s*$/, "").trim(),
       markdown: chunk.trim(),
-    });
+    };
+    const existing = map.get(moduleId);
+    if (!existing || section.markdown.length > existing.markdown.length) {
+      map.set(moduleId, section);
+    }
   }
 
   return map;

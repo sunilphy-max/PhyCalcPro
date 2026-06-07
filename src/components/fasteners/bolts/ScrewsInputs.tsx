@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { ScrewConfig, ScrewType, ThreadType } from "@/lib/fasteners/bolts/types";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
 type Props = {
   projectName: string;
@@ -59,7 +61,23 @@ export default function ScrewsInputs({
   };
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
+    <CalculatorInputPanel
+      title="Bolt & screw analysis"
+      description="Preload, shear, tension and power-screw screening."
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton onClick={onCalculate} label="Calculate bolt" designAware />
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {saving ? "Saving..." : "Save project"}
+          </button>
+        </div>
+      }
+    >
       {/* Project Name */}
       <input
         className="w-full p-2 border rounded"
@@ -295,21 +313,6 @@ export default function ScrewsInputs({
         </div>
       )}
 
-      {/* Action Buttons */}
-      <button
-        onClick={onCalculate}
-        className="w-full bg-black text-white py-2 rounded"
-      >
-        Calculate
-      </button>
-
-      <button
-        onClick={onSave}
-        disabled={saving}
-        className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded font-semibold transition disabled:opacity-50"
-      >
-        {saving ? "Saving..." : "Save Project"}
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

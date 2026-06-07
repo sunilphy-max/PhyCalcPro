@@ -1,5 +1,7 @@
 "use client";
 
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
 import { calculatorNumberInputClass } from "@/components/calculator/styles";
 
@@ -59,14 +61,11 @@ export default function FitInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="space-y-4 bg-white rounded-xl p-6 shadow-sm">
-      <div>
-        <h3 className="text-lg font-semibold">Fits & Clearances</h3>
-        <p className="text-sm text-slate-500 mt-1">
-          Enter nominal size and tolerances manually or use ISO 286 grade lookup.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="Fits & clearances"
+      description="Enter nominal size and tolerances manually or use ISO 286 grade lookup."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate fit" designAware />}
+    >
       <div className="grid gap-4">
         <div className="grid grid-cols-2 gap-3">
           <label className="space-y-1 text-sm text-slate-600">
@@ -168,13 +167,8 @@ export default function FitInputs({
           </div>
         )}
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <UnitSelector dimension="length" value={toleranceUnit} onChange={setToleranceUnit} label="Tolerance units" />
-          <button type="button" onClick={onCalculate} className="rounded bg-slate-900 px-4 py-3 text-white hover:bg-slate-800">
-            Calculate Fit
-          </button>
-        </div>
+        <UnitSelector dimension="length" value={toleranceUnit} onChange={setToleranceUnit} label="Tolerance units" />
       </div>
-    </div>
+    </CalculatorInputPanel>
   );
 }

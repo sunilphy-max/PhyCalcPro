@@ -1,0 +1,26 @@
+{
+  "id": "bearings-indicative-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Deep-groove bearing — 6.2 kN radial @ 1500 rpm, 20 kh life",
+  "inputs": {
+    "radialLoad": 6200,
+    "axialLoad": 0,
+    "speed": 1500,
+    "lifeHours": 20000,
+    "safetyFactor": 1.5,
+    "bearingType": "deep_groove",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 1,
+      "staticRatingFactor": 1,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "requiredDynamicRating": 113128.95711766521,
+    "equivalentLoad": 6200
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bearing ISO 281 solver v1"
+}

@@ -35,6 +35,37 @@ const BEARING_MATERIAL = {
   allowableLife: 1e6,
 };
 
+/** ISO deep-groove dynamic load ratings C (N) — indicative catalog values. */
+const DEEP_GROOVE_BEARING_CATALOG = [
+  { name: "6205", C: 14000 },
+  { name: "6206", C: 19500 },
+  { name: "6207", C: 25500 },
+  { name: "6208", C: 29600 },
+  { name: "6209", C: 31500 },
+  { name: "6210", C: 35100 },
+  { name: "6307", C: 33500 },
+  { name: "6308", C: 42300 },
+  { name: "6309", C: 47500 },
+  { name: "6310", C: 61800 },
+  { name: "6312", C: 81900 },
+];
+
+type ShaftLoadCase = {
+  position: number;
+  torque?: number;
+  bendingMoment?: number;
+  axialForce?: number;
+};
+
+function resolveShaftLoads(userInputs: ModuleUserInputs, length: number): ShaftLoadCase[] {
+  if (userInputs.shaftLoads?.length) {
+    return userInputs.shaftLoads;
+  }
+  const torque = userInputs.torque ?? 420;
+  const moment = userInputs.bendingMoment ?? 650;
+  return [{ position: length / 2, torque, bendingMoment: moment }];
+}
+
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
   method: string
@@ -47,9 +78,40 @@ export function designGearModule(userInputs: ModuleUserInputs): ModuleDesignMode
   const speed = userInputs.speedDriver ?? userInputs.rpm ?? 1200;
   const ratio = userInputs.ratio ?? userInputs.gearRatio ?? 4;
   const targetSf = userInputs.targetSafetyFactor ?? 1.5;
-  const modules = [2, 2.5, 3, 4, 5, 6];
+  const referenceModuleMm = userInputs.module ?? 3;
+  const referenceModule = referenceModuleMm / 1000;
+  const referenceFaceWidth = (10 * referenceModuleMm) / 1000;
+  const pinionTeethOptions = [15, 17, 20, 22, 25, 28, 30, 35];
 
-  const items = modules.map((m) => {
+  const toothItems = pinionTeethOptions.map((z) => {
+    try {
+      const res = solveGearEngine({
+        power,
+        speed,
+        module: referenceModule,
+        faceWidth: referenceFaceWidth,
+        pinionTeeth: z,
+        gearRatio: ratio,
+        material: STEEL_MATERIAL,
+      });
+      const util = targetSf / Math.max(res.safetyFactor, 1e-9);
+      return {
+        label: `Pinion z=${z}`,
+        utilization: util,
+        fields: { pinionTeeth: z },
+        detail: `bending SF ${res.safetyFactor.toFixed(2)} @ m=${referenceModuleMm}`,
+      };
+    } catch {
+      return { label: `z=${z}`, utilization: 99, fields: { pinionTeeth: z }, detail: "invalid" };
+    }
+  });
+
+  const toothSweep = sweepCatalogForUtilization(toothItems);
+  const bestPinionTeeth =
+    (toothSweep.best?.fields?.pinionTeeth as number | undefined) ?? userInputs.pinionTeeth ?? 20;
+
+  const modules = [2, 2.5, 3, 4, 5, 6];
+  const moduleItems = modules.map((m) => {
     const moduleM = m / 1000;
     const faceWidth = (10 * m) / 1000;
     try {
@@ -58,7 +120,7 @@ export function designGearModule(userInputs: ModuleUserInputs): ModuleDesignMode
         speed,
         module: moduleM,
         faceWidth,
-        pinionTeeth: userInputs.pinionTeeth ?? 20,
+        pinionTeeth: bestPinionTeeth,
         gearRatio: ratio,
         material: STEEL_MATERIAL,
       });
@@ -66,22 +128,30 @@ export function designGearModule(userInputs: ModuleUserInputs): ModuleDesignMode
       return {
         label: `Module ${m}`,
         utilization: util,
-        fields: { module: m, faceWidth: 10 * m, moduleUnit: "mm", faceWidthUnit: "mm" },
+        fields: { module: m, faceWidth: 10 * m, pinionTeeth: bestPinionTeeth, moduleUnit: "mm", faceWidthUnit: "mm" },
         detail: `bending SF ${res.safetyFactor.toFixed(2)}`,
       };
     } catch {
-      return { label: `m=${m}`, utilization: 99, fields: { module: m }, detail: "invalid" };
+      return { label: `m=${m}`, utilization: 99, fields: { module: m, pinionTeeth: bestPinionTeeth }, detail: "invalid" };
     }
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Gear module and face-width sweep for Lewis bending safety.");
+  const moduleSweep = sweepCatalogForUtilization(moduleItems);
+  const ranked = [...toothSweep.ranked.slice(0, 4), ...moduleSweep.ranked].sort(
+    (a, b) => a.utilization - b.utilization
+  );
+
+  return {
+    method: `Pinion tooth-count sweep at m=${referenceModuleMm}, then module/face-width sweep (z=${bestPinionTeeth}) for Lewis bending safety.`,
+    best: moduleSweep.best,
+    ranked: ranked.slice(0, 10),
+  };
 }
 
 export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const torque = userInputs.torque ?? 420;
-  const moment = userInputs.bendingMoment ?? 650;
   const targetSf = userInputs.targetSafetyFactor ?? 2;
   const length = userInputs.length ?? 0.6;
+  const loads = resolveShaftLoads(userInputs, length);
   const diametersMm = [20, 25, 30, 35, 40, 45, 50, 60, 70];
 
   const items = diametersMm.map((dMm) => {
@@ -90,7 +160,7 @@ export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignM
       const res = solveShaftEngine({
         geometry: { diameter: d, length },
         material: SHAFT_MATERIAL,
-        loads: [{ position: length / 2, torque, bendingMoment: moment }],
+        loads,
         meshSegments: 20,
       });
       const util = targetSf / Math.max(res.safetyFactor, 1e-9);
@@ -105,7 +175,14 @@ export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignM
     }
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Shaft diameter sweep for combined FEA stress and target SF.");
+  const loadSummary =
+    loads.length > 1
+      ? `${loads.length} load cases`
+      : `T=${loads[0]?.torque ?? 0} N·m, M=${loads[0]?.bendingMoment ?? 0} N·m`;
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    `Shaft diameter sweep for combined FEA stress (${loadSummary}) and target SF.`
+  );
 }
 
 export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
@@ -122,12 +199,7 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
       bearingType: "deep_groove",
       material: BEARING_MATERIAL,
     });
-    const bearings = [
-      { name: "6205", C: 14000 },
-      { name: "6206", C: 19500 },
-      { name: "6207", C: 25500 },
-      { name: "6307", C: 33500 },
-    ];
+    const bearings = DEEP_GROOVE_BEARING_CATALOG;
     const items = bearings.map((b) => ({
       label: b.name,
       utilization: req.requiredDynamicRating / b.C,

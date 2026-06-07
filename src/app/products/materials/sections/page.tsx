@@ -104,9 +104,6 @@ export default function Page() {
           setLengthUnit={setLengthUnit}
           onCalculate={calculate}
         />}
-        center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Calculate area, centroid position, and second moments of area for standard section shapes.</p>
-        </div>}
         results={<SectionResults
           result={result}
           linearUnit={lengthUnit}

@@ -11,6 +11,8 @@ import {
   beamApplicationPresets,
   type BeamApplicationId,
 } from "@/lib/structural/beams/applicationPresets";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
 type Props = {
   projectName: string;
@@ -84,8 +86,27 @@ export default function BeamInputs(props: Props) {
   const showManualSection = !isDesignMode;
 
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
-
+    <CalculatorInputPanel
+      title="Beam analysis"
+      description="Deflection, bending moment, and shear force for point loads and UDLs."
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton
+            onClick={props.onCalculate}
+            label={isDesignMode ? "Size section" : "Solve beam"}
+            designAware
+          />
+          <button
+            type="button"
+            onClick={props.saveProject}
+            disabled={props.saving}
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+          >
+            {props.saving ? "Saving..." : "Save project"}
+          </button>
+        </div>
+      }
+    >
       {/* ================= PROJECT NAME ================= */}
       <input
         className="w-full p-2 border rounded"
@@ -399,20 +420,6 @@ export default function BeamInputs(props: Props) {
         />
       </div>
 
-      {/* ================= ACTIONS ================= */}
-      <button
-        onClick={props.onCalculate}
-        className="w-full bg-black text-white py-2 rounded"
-      >
-        {isDesignMode ? "Size section" : "Solve"}
-      </button>
-
-      <button
-        onClick={props.saveProject}
-        className="w-full bg-blue-600 text-white py-2 rounded"
-      >
-        {props.saving ? "Saving..." : "Save"}
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }
