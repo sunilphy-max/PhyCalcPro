@@ -79,6 +79,8 @@ export default function Page() {
     if (fields.bearingSeries != null) setBearingType(fields.bearingSeries as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("bearings", designUserInputs);

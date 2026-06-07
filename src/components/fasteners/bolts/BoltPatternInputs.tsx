@@ -49,7 +49,7 @@ export default function BoltPatternInputs({
     <CalculatorInputPanel
       title="Bolt pattern load sharing"
       description="Elastic distribution of shear and eccentric moment across N bolts on a bolt circle."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate pattern" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate pattern" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">

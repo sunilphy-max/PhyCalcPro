@@ -61,7 +61,7 @@ export default function CircularPlatesInputs({
     <CalculatorInputPanel
       title="Circular plate"
       description="Uniform pressure on a solid disk — axisymmetric FDM with Roark closed-form validation."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate plate" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate plate" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

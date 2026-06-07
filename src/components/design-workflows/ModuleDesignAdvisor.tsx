@@ -18,7 +18,7 @@ const maturityLabel: Record<ModuleDesignWorkflow["maturity"], string> = {
 };
 
 export default function ModuleDesignAdvisor({ workflow }: Props) {
-  const { mode, setMode, userInputs, applyDesignCandidate } = useDesignWorkflow();
+  const { mode, userInputs, applyDesignCandidate } = useDesignWorkflow();
   const activeMode = workflow.modes.find((item) => item.id === mode) ?? workflow.modes[0];
   const computedDesign = getComputedDesignSet(workflow.moduleId, userInputs);
   const linkedModules = workflow.linkedWorkflowModuleIds
@@ -40,29 +40,39 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
               This layer turns the module into a design worksheet: define targets, compare
               candidate sizes, use standard/catalog tables, and continue into linked checks.
             </p>
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+              <div className="rounded-xl border border-cyan-100 bg-white/80 px-3 py-2.5">
+                <dt className="font-semibold text-slate-950">Check</dt>
+                <dd className="mt-1 leading-5 text-slate-600">
+                  Verify the geometry and loads you have already entered. Calculate reports stress,
+                  deflection, life, or utilization for your current inputs.
+                </dd>
+              </div>
+              <div className="rounded-xl border border-cyan-100 bg-white/80 px-3 py-2.5">
+                <dt className="font-semibold text-slate-950">Design</dt>
+                <dd className="mt-1 leading-5 text-slate-600">
+                  Start from targets in the inputs column (load, deflection limit, safety factor, rate,
+                  power, and so on). Run design sizes the member or searches catalogs for a match.
+                </dd>
+              </div>
+              <div className="rounded-xl border border-cyan-100 bg-white/80 px-3 py-2.5">
+                <dt className="font-semibold text-slate-950">Select</dt>
+                <dd className="mt-1 leading-5 text-slate-600">
+                  Compare ranked alternatives side by side. Apply loads one candidate into Check mode
+                  so you can review details before committing.
+                </dd>
+              </div>
+            </dl>
           </div>
           <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800 shadow-sm">
             {maturityLabel[workflow.maturity]}
           </span>
         </div>
 
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          {workflow.modes.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setMode(item.id)}
-              className={`rounded-2xl border px-4 py-3 text-left transition ${
-                mode === item.id
-                  ? "border-cyan-500 bg-white text-slate-950 shadow-sm"
-                  : "border-cyan-100 bg-cyan-50 text-slate-600 hover:bg-white"
-              }`}
-            >
-              <div className="text-sm font-semibold">{item.label}</div>
-              <div className="mt-1 text-xs leading-5">{item.description}</div>
-            </button>
-          ))}
-        </div>
+        <p className="mt-4 text-sm text-cyan-900">
+          Use the <span className="font-semibold">Workflow mode</span> control in the inputs column (left) to
+          switch between Check, Design, and Select.
+        </p>
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">

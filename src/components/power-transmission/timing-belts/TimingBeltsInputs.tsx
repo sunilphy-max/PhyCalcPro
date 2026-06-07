@@ -34,7 +34,7 @@ export default function TimingBeltsInputs(props: Props) {
     <CalculatorInputPanel
       title="Timing belt drive"
       description="Size pitch diameters, belt length and power capacity."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate drive" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate drive" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

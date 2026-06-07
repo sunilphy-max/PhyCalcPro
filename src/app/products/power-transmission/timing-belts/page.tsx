@@ -19,7 +19,7 @@ import type { TimingBeltResult } from "@/lib/powerTransmission/timing-belts/type
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
-  const { mode: workflowMode } = useDesignWorkflow();
+  const { mode: workflowMode, userInputs: workflowUserInputs } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("timing-belts", (units) =>
     applyUnitMap(units, { power: setPowerUnit, pitch: setLengthUnit })
   );
@@ -64,9 +64,11 @@ export default function Page() {
 
   const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
-      const design = runModuleDesignMode("timing-belts", designUserInputs);
+      const design = runModuleDesignMode("timing-belts", workflowUserInputs);
       if (design?.best?.fields) applyDesignFields(design.best.fields);
     }
     runCheck();
@@ -77,7 +79,8 @@ export default function Page() {
       moduleId="timing-belts"
       title="Timing Belt Drive"
       left={
-        <TimingBeltsInputs
+        <div className="space-y-4">
+          <TimingBeltsInputs
           power={power}
           setPower={setPower}
           powerUnit={powerUnit}
@@ -98,6 +101,7 @@ export default function Page() {
           setLengthUnit={setLengthUnit}
           onCalculate={calculate}
         />
+        </div>
       }
       center={
         <CalculatorGuidancePanel title="Timing belt drives">

@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
@@ -174,13 +175,11 @@ export default function GearInputs({
         </select>
       </div>
 
-      <button
-        type="button"
+      <CalculatorCalculateButton
         onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 text-white px-4 py-3 font-medium hover:bg-slate-800"
-      >
-        Calculate Gear Design
-      </button>
+        label="Calculate gear design"
+        designAware
+      />
       {onSave ? (
         <button
           type="button"

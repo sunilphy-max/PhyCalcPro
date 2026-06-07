@@ -46,7 +46,7 @@ export default function MultiPulleyInputs({
     <CalculatorInputPanel
       title="Multi-pulley layout"
       description="Editable pulley list (2–8) with diameters and center distances to the next pulley."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate layout" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate layout" designAware />}
     >
       <div className="space-y-4">
         {pulleys.map((p, index) => (

@@ -94,6 +94,8 @@ export default function Page() {
     if (fields.height != null) setShape(fields.height as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("profiles", designUserInputs);

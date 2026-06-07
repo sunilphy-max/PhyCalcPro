@@ -66,7 +66,7 @@ export default function WormGearsInputs({
     <CalculatorInputPanel
       title="Worm gear drive"
       description="Estimate ratio, efficiency, contact stress and axial load for a worm-and-wheel set."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate worm drive" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate worm drive" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

@@ -22,6 +22,13 @@ type DesignWorkflowContextValue = {
   setMode: Dispatch<SetStateAction<DesignWorkflowMode>>;
   userInputs: ModuleUserInputs;
   setUserInputs: Dispatch<SetStateAction<ModuleUserInputs>>;
+  /** Editable design targets from the inputs column (merged into userInputs for solvers). */
+  designTargets: ModuleUserInputs;
+  setDesignTargets: Dispatch<SetStateAction<ModuleUserInputs>>;
+  patchDesignTarget: <K extends keyof ModuleUserInputs>(
+    key: K,
+    value: ModuleUserInputs[K]
+  ) => void;
   applyDesignCandidate: (fields: Record<string, unknown>) => void;
   registerApplyDesignCandidate: (handler: ApplyDesignCandidateHandler | null) => void;
 };
@@ -39,7 +46,15 @@ export function DesignWorkflowProvider({
 }) {
   const [mode, setMode] = useState<DesignWorkflowMode>("check");
   const [userInputs, setUserInputs] = useState<ModuleUserInputs>({});
+  const [designTargets, setDesignTargets] = useState<ModuleUserInputs>({});
   const applyHandlerRef = useRef<ApplyDesignCandidateHandler | null>(null);
+
+  const patchDesignTarget = useCallback(
+    <K extends keyof ModuleUserInputs>(key: K, value: ModuleUserInputs[K]) => {
+      setDesignTargets((prev) => ({ ...prev, [key]: value }));
+    },
+    []
+  );
 
   const registerApplyDesignCandidate = useCallback((handler: ApplyDesignCandidateHandler | null) => {
     applyHandlerRef.current = handler;
@@ -56,10 +71,21 @@ export function DesignWorkflowProvider({
       setMode,
       userInputs,
       setUserInputs,
+      designTargets,
+      setDesignTargets,
+      patchDesignTarget,
       applyDesignCandidate,
       registerApplyDesignCandidate,
     }),
-    [moduleId, mode, userInputs, applyDesignCandidate, registerApplyDesignCandidate]
+    [
+      moduleId,
+      mode,
+      userInputs,
+      designTargets,
+      patchDesignTarget,
+      applyDesignCandidate,
+      registerApplyDesignCandidate,
+    ]
   );
 
   return (
@@ -76,6 +102,9 @@ export function useDesignWorkflow(): DesignWorkflowContextValue {
       setMode: noop,
       userInputs: {},
       setUserInputs: noop,
+      designTargets: {},
+      setDesignTargets: noop,
+      patchDesignTarget: noop,
       applyDesignCandidate: noop,
       registerApplyDesignCandidate: noop,
     };

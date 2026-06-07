@@ -52,7 +52,7 @@ export default function FormulaReferenceInputs({
     <CalculatorInputPanel
       title="Engineering formulas"
       description="Quick reference calculations with explicit expressions."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Evaluate formula" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Evaluate formula" designAware />}
     >
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">

@@ -33,7 +33,7 @@ export default function ImpactInputs(props: Props) {
     <CalculatorInputPanel
       title="Impact parameters"
       description="Estimate average impact force and dynamic stress for a sudden loading event."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate impact results" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate impact results" designAware />}
     >
       <ModuleUnitField
         moduleId="impact"

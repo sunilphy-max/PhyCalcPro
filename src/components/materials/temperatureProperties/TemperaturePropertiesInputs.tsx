@@ -29,7 +29,7 @@ export default function TemperaturePropertiesInputs(props: Props) {
     <CalculatorInputPanel
       title="Material inputs"
       description="Estimate property reductions with temperature exposure."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate properties" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate properties" designAware />}
     >
       <ModuleUnitField moduleId="temperature-properties" fieldKey="baseYield" value={props.baseYield} unit={props.yieldUnit} onValueChange={props.setBaseYield} onUnitChange={props.setYieldUnit} />
       <ModuleUnitField moduleId="temperature-properties" fieldKey="baseModulus" value={props.baseModulus} unit={props.modulusUnit} onValueChange={props.setBaseModulus} onUnitChange={props.setModulusUnit} />

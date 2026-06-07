@@ -3,6 +3,8 @@
 import { ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
 import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
+import DesignModeToggle from "@/components/design-workflows/DesignModeToggle";
+import DesignTargetFields from "@/components/design-workflows/DesignTargetFields";
 import ModuleDesignAdvisor from "@/components/design-workflows/ModuleDesignAdvisor";
 import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
 import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
@@ -92,7 +94,13 @@ export default function CalculatorLayout({
             inputColumn ? "lg:grid-cols-[minmax(300px,420px)_1fr]" : "lg:grid-cols-1"
           }`}
         >
-          {inputColumn ? <div className="space-y-4">{inputColumn}</div> : null}
+          {inputColumn ? (
+            <div className="space-y-4">
+              {designWorkflow ? <DesignModeToggle workflow={designWorkflow} /> : null}
+              {moduleId ? <DesignTargetFields moduleId={moduleId} /> : null}
+              {inputColumn}
+            </div>
+          ) : null}
           {resultColumn ? <div className="space-y-4 min-w-0">{resultColumn}</div> : null}
         </div>
         {footer ? <div>{footer}</div> : null}

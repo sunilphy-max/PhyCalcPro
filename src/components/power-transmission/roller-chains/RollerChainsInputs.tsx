@@ -34,7 +34,7 @@ export default function RollerChainsInputs(props: Props) {
     <CalculatorInputPanel
       title="Roller chain drive"
       description="Size sprockets, estimate chain tension and life."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate drive" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate drive" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField label="Power" value={props.power} onChange={props.setPower} unit={<ModuleUnitSelect moduleId="roller-chains" fieldKey="power" value={props.powerUnit} onChange={props.setPowerUnit} />} />

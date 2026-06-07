@@ -62,7 +62,7 @@ export default function BevelGearsInputs({
     <CalculatorInputPanel
       title="Bevel gear screening"
       description="Size pinion geometry and screen bending and contact stress for indicative strength."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bevel gear" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bevel gear" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

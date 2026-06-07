@@ -46,7 +46,7 @@ export default function UnitConverterInputs({
     <CalculatorInputPanel
       title="Unit converter"
       description="Convert a numeric value between units on the same physical dimension."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Convert" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Convert" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">

@@ -79,6 +79,8 @@ export default function Page() {
     if (fields.width != null) setWidth(fields.width as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("load-case-manager", designUserInputs);

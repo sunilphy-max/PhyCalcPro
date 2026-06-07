@@ -63,6 +63,8 @@ export default function Page() {
 
   const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("pins", designUserInputs);

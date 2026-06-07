@@ -28,7 +28,7 @@ export default function LoadCaseManagerInputs(props: Props) {
     <CalculatorInputPanel
       title="Load cases"
       description="Review multiple scenarios and compute peak envelope results."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Compute load envelope" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Compute load envelope" designAware />}
     >
       {props.cases.map((loadCase, index) => (
         <div key={loadCase.name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">

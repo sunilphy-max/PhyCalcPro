@@ -60,6 +60,8 @@ export default function Page() {
     if (fields.area != null) setArea(fields.area as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("trusses", designUserInputs);

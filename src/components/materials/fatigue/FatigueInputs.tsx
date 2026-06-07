@@ -31,7 +31,7 @@ export default function FatigueInputs(props: Props) {
     <CalculatorInputPanel
       title="Fatigue loading"
       description="Estimate safe alternating stress and life potential."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate fatigue" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate fatigue" designAware />}
     >
       <ModuleUnitField moduleId="fatigue" fieldKey="alternatingStress" value={props.alternatingStress} unit={props.alternatingUnit} onValueChange={props.setAlternatingStress} onUnitChange={props.setAlternatingUnit} />
       <ModuleUnitField moduleId="fatigue" fieldKey="meanStress" value={props.meanStress} unit={props.meanUnit} onValueChange={props.setMeanStress} onUnitChange={props.setMeanUnit} />

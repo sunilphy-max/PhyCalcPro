@@ -202,6 +202,8 @@ export default function Page() {
     if (fields.diameter != null) setDiameter(fields.diameter as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("shafts", designUserInputs);
@@ -221,7 +223,8 @@ export default function Page() {
         />
       }
       inputs={
-        <ShaftInputs
+        <div className="space-y-4">
+          <ShaftInputs
             projectName={projectName}
             setProjectName={setProjectName}
             diameter={diameter}
@@ -254,6 +257,7 @@ export default function Page() {
           onSave={saveProject}
           saving={saving}
         />
+        </div>
       }
       results={
         <ShaftResults

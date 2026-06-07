@@ -50,7 +50,7 @@ export default function PinInputs({
     <CalculatorInputPanel
       title="Pin & clevis"
       description="Check pin shear and bearing stress for clevis or hinge joints."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate pin" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate pin" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

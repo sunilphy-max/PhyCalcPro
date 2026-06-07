@@ -34,7 +34,7 @@ export default function ExtensionSpringInputs(props: Props) {
     <CalculatorInputPanel
       title="Extension spring"
       description="Helical extension spring with initial tension estimate."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate spring" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate spring" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

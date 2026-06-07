@@ -54,7 +54,7 @@ export default function ShaftHubInputs({
     <CalculatorInputPanel
       title="Shaft hub fit"
       description="Estimate contact pressure, friction torque and assembly force for an interference fit."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate fit" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate fit" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

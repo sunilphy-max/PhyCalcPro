@@ -3,7 +3,10 @@
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BucklingInputs from "@/components/structural/columns/BucklingInputs";
@@ -48,7 +51,7 @@ export default function Page() {
   const [endCondition, setEndCondition] = useState<EndCondition>("pinned");
   const [sectionDesignation, setSectionDesignation] = useState("");
   const [targetSafetyFactor, setTargetSafetyFactor] = useState(2);
-  const { mode, setUserInputs } = useDesignWorkflow();
+  const { mode } = useDesignWorkflow();
 
   // =========================
   // UNITS
@@ -79,32 +82,43 @@ export default function Page() {
     []
   );
 
-  useEffect(() => {
-    setUserInputs({
-      columnLength: toBase(length, "length", lengthUnit),
-      axialLoad: toBase(load, "force", loadUnit),
-      inertia: toBase(inertia, "inertia", inertiaUnit),
-      area,
-      elasticModulus: toBase(elasticModulus, "stress", elasticModulusUnit),
-      endCondition,
-      targetSafetyFactor,
-      sectionDesignation,
-    });
-  }, [
-    length,
-    lengthUnit,
-    load,
-    loadUnit,
-    inertia,
-    inertiaUnit,
-    area,
-    elasticModulus,
-    elasticModulusUnit,
-    endCondition,
-    targetSafetyFactor,
-    sectionDesignation,
-    setUserInputs,
-  ]);
+  useSyncDesignInputs(
+    "columns",
+    useMemo(
+      (): ModuleUserInputs => ({
+        columnLength: toBase(length, "length", lengthUnit),
+        axialLoad: toBase(load, "force", loadUnit),
+        inertia: toBase(inertia, "inertia", inertiaUnit),
+        area,
+        elasticModulus: toBase(elasticModulus, "stress", elasticModulusUnit),
+        endCondition,
+        targetSafetyFactor,
+        sectionDesignation,
+      }),
+      [
+        length,
+        lengthUnit,
+        load,
+        loadUnit,
+        inertia,
+        inertiaUnit,
+        area,
+        elasticModulus,
+        elasticModulusUnit,
+        endCondition,
+        targetSafetyFactor,
+        sectionDesignation,
+      ]
+    )
+  );
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.sectionDesignation != null) setSectionDesignation(String(fields.sectionDesignation));
+    if (fields.I != null) setInertia(fields.I as number);
+    if (fields.area != null) setArea(fields.area as number);
+  }, []);
+
+  useRegisterApplyDesignCandidate(applyDesignFields);
 
   const runCheck = (sectionI = inertia, sectionA = area) => {
     const normalizedInputs: BucklingConfig = {

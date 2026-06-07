@@ -41,7 +41,7 @@ export default function CombinedLoadingInputs(props: Props) {
     <CalculatorInputPanel
       title="Loading inputs"
       description="Combine axial, bending, torsion, and shear for a von Mises-style check."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate combined stress" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate combined stress" designAware />}
     >
       <ModuleUnitField moduleId="combined-loading" fieldKey="axialForce" value={props.axialForce} unit={props.axialUnit} onValueChange={props.setAxialForce} onUnitChange={props.setAxialUnit} />
       <ModuleUnitField moduleId="combined-loading" fieldKey="bendingMoment" value={props.bendingMoment} unit={props.momentUnit} onValueChange={props.setBendingMoment} onUnitChange={props.setMomentUnit} />

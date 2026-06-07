@@ -67,6 +67,8 @@ export default function Page() {
     if (fields.thickness != null) setThickness(fields.thickness as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("pipes", designUserInputs);
@@ -80,7 +82,8 @@ export default function Page() {
       moduleId="pipes"
       title="Pressure Pipe Analysis"
       inputs={
-        <PressurePipeInputs
+        <div className="space-y-4">
+          <PressurePipeInputs
             radius={radius}
             setRadius={setRadius}
             radiusUnit={radiusUnit}
@@ -105,6 +108,7 @@ export default function Page() {
             setSegments={setSegments}
           onCalculate={calculate}
         />
+        </div>
       }
       results={<PressurePipeResults result={result} />}
     />

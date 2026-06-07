@@ -42,7 +42,7 @@ export default function RolledSectionsInputs({
     <CalculatorInputPanel
       title="Rolled section"
       description="AISC W/S/C/L and DIN IPE/UPN/L starter catalog (SI base units)."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Look up section" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Look up section" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">

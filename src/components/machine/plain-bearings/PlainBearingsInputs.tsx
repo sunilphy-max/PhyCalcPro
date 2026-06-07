@@ -50,7 +50,7 @@ export default function PlainBearingsInputs({
     <CalculatorInputPanel
       title="Plain journal bearing"
       description="Screen Sommerfeld number, eccentricity and minimum film thickness for hydrodynamic lubrication."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

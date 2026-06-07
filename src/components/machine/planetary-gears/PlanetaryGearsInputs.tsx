@@ -50,7 +50,7 @@ export default function PlanetaryGearsInputs({
     <CalculatorInputPanel
       title="Planetary gear set"
       description="Size sun, planet and ring teeth for a target ratio; review pitch diameters and planet count."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate planetary set" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate planetary set" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">

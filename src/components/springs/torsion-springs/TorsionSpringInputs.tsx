@@ -54,7 +54,7 @@ export default function TorsionSpringInputs({
     <CalculatorInputPanel
       title="Torsion spring"
       description="Helical torsion spring — rate from bending, stress in wire."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate spring" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate spring" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

@@ -35,7 +35,7 @@ export default function SuspensionInputs(props: Props) {
     <CalculatorInputPanel
       title="Suspension inputs"
       description="Evaluate roll response and lateral load transfer."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Run suspension check" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Run suspension check" designAware />}
     >
       <ModuleUnitField moduleId="suspension" fieldKey="sprungMass" value={props.sprungMass} unit={props.massUnit} onValueChange={props.setSprungMass} onUnitChange={props.setMassUnit} />
       <ModuleUnitField moduleId="suspension" fieldKey="trackWidth" value={props.trackWidth} unit={props.trackUnit} onValueChange={props.setTrackWidth} onUnitChange={props.setTrackUnit} step="0.01" />

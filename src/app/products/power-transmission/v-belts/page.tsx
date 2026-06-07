@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -42,7 +45,7 @@ export default function Page() {
       centerDistance: setLengthUnit,
     })
   );
-  const { mode, setUserInputs } = useDesignWorkflow();
+  const { mode } = useDesignWorkflow();
 
   const [power, setPower] = useState(15);
   const [powerUnit, setPowerUnit] = useState("kW");
@@ -61,31 +64,46 @@ export default function Page() {
     loadLocalProjects<VBeltProjectData>("v-belts")
   );
 
-  useEffect(() => {
-    setUserInputs({
-      power,
-      powerUnit,
-      speedDriver,
-      diameterDriver: toBase(diameterDriver, "length", lengthUnit),
-      diameterDriven: toBase(diameterDriven, "length", lengthUnit),
-      centerDistance: toBase(centerDistance, "length", lengthUnit),
-      serviceFactor,
-      ratio,
-      beltSection,
-    });
-  }, [
-    power,
-    powerUnit,
-    speedDriver,
-    diameterDriver,
-    diameterDriven,
-    centerDistance,
-    lengthUnit,
-    serviceFactor,
-    ratio,
-    beltSection,
-    setUserInputs,
-  ]);
+  useSyncDesignInputs(
+    "v-belts",
+    useMemo(
+      (): ModuleUserInputs => ({
+        power,
+        powerUnit,
+        speedDriver,
+        diameterDriver: toBase(diameterDriver, "length", lengthUnit),
+        diameterDriven: toBase(diameterDriven, "length", lengthUnit),
+        centerDistance: toBase(centerDistance, "length", lengthUnit),
+        serviceFactor,
+        ratio,
+        beltSection,
+      }),
+      [
+        power,
+        powerUnit,
+        speedDriver,
+        diameterDriver,
+        diameterDriven,
+        centerDistance,
+        lengthUnit,
+        serviceFactor,
+        ratio,
+        beltSection,
+      ]
+    )
+  );
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.beltSection != null) setBeltSection(String(fields.beltSection));
+    if (fields.diameterDriver != null) {
+      setDiameterDriver(fromBase(fields.diameterDriver as number, "length", lengthUnit));
+    }
+    if (fields.diameterDriven != null) {
+      setDiameterDriven(fromBase(fields.diameterDriven as number, "length", lengthUnit));
+    }
+  }, [lengthUnit]);
+
+  useRegisterApplyDesignCandidate(applyDesignFields);
 
   const runCheck = () => {
     const normalizedPower = powerUnit === "kW" ? power : power / 1000;
@@ -183,7 +201,8 @@ export default function Page() {
         />
       }
       inputs={
-        <VBeltsInputs
+        <div className="space-y-4">
+          <VBeltsInputs
           power={power}
           setPower={setPower}
           powerUnit={powerUnit}
@@ -211,6 +230,7 @@ export default function Page() {
           projectName={projectName}
           setProjectName={setProjectName}
         />
+        </div>
       }
       results={
         <>

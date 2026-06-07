@@ -72,6 +72,8 @@ export default function Page() {
 
   const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("keys-splines", designUserInputs);
@@ -85,7 +87,8 @@ export default function Page() {
       moduleId="keys-splines"
       title="Keys & Splines"
       left={
-        <KeysSplinesInputs
+        <div className="space-y-4">
+          <KeysSplinesInputs
           torque={torque}
           setTorque={setTorque}
           torqueUnit={torqueUnit}
@@ -110,6 +113,7 @@ export default function Page() {
           setSplineTeeth={setSplineTeeth}
           onCalculate={calculate}
         />
+        </div>
       }
       center={
         <CalculatorGuidancePanel title="Keys & splines">

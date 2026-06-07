@@ -87,6 +87,8 @@ export default function Page() {
     if (fields.I != null) setI(fields.I as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("vibrations", designUserInputs);

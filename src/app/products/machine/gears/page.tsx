@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import GearInputs from "@/components/machine/gears/GearInputs";
 import GearResults from "@/components/machine/gears/GearResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -16,7 +17,8 @@ import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
-
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 const MATERIALS: Record<string, GearMaterial> = {
   Steel: {
     name: "Steel",
@@ -54,7 +56,7 @@ type GearProjectData = {
 type GearProject = LocalProject<GearProjectData>;
 
 export default function Page() {
-  const { mode: workflowMode, setUserInputs } = useDesignWorkflow();
+  const { mode: workflowMode, userInputs: workflowUserInputs } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("gears", (units) =>
     applyUnitMap(units, {
       power: setPowerUnit,
@@ -132,17 +134,20 @@ export default function Page() {
   };
 
 
-  useEffect(() => {
-    const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
-    setUserInputs({
-      power: normalizedPower,
-      speedDriver: rpm,
-      ratio: gearRatio,
-      pinionTeeth,
-      module,
-      faceWidth,
-    });
-  }, [power, powerUnit, rpm, gearRatio, pinionTeeth, module, faceWidth, setUserInputs]);
+  useSyncDesignInputs(
+    "gears",
+    useMemo((): ModuleUserInputs => {
+      const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
+      return {
+        power: normalizedPower,
+        speedDriver: rpm,
+        ratio: gearRatio,
+        pinionTeeth,
+        module,
+        faceWidth,
+      };
+    }, [power, powerUnit, rpm, gearRatio, pinionTeeth, module, faceWidth])
+  );
 
   const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
     if (fields.module != null) setModule(fields.module as number);
@@ -150,15 +155,11 @@ export default function Page() {
     if (fields.pinionTeeth != null) setPinionTeeth(fields.pinionTeeth as number);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
-      const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
-      const design = runModuleDesignMode("gears", {
-        power: normalizedPower,
-        speedDriver: rpm,
-        ratio: gearRatio,
-        pinionTeeth,
-      });
+      const design = runModuleDesignMode("gears", workflowUserInputs);
       if (design?.best?.fields) applyDesignFields(design.best.fields);
     }
     runCheck();
@@ -175,7 +176,8 @@ export default function Page() {
         />
       }
       left={
-        <GearInputs
+        <div className="space-y-4">
+          <GearInputs
           power={power}
           setPower={setPower}
           powerUnit={powerUnit}
@@ -202,6 +204,7 @@ export default function Page() {
           onSave={saveProject}
           saving={saving}
         />
+        </div>
       }
       center={
         <CalculatorGuidancePanel title="Gear design">

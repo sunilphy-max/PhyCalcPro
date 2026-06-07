@@ -59,6 +59,8 @@ export default function Page() {
     if (fields.thickness != null) setThickness(fields.thickness as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("vessels", designUserInputs);
@@ -72,7 +74,8 @@ export default function Page() {
       moduleId="vessels"
       title="Pressure Vessel Analysis"
       inputs={
-        <PressureVesselInputs
+        <div className="space-y-4">
+          <PressureVesselInputs
           radius={radius}
           setRadius={setRadius}
           radiusUnit={radiusUnit}
@@ -97,6 +100,7 @@ export default function Page() {
           setSegments={setSegments}
           onCalculate={calculate}
         />
+        </div>
       }
       results={<PressureVesselResults result={result} />}
     />

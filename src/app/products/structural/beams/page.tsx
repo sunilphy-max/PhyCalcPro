@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import { fromBase, toBase } from "@/lib/units/conversions";
 import { normalizeInput } from "@/lib/physics";
@@ -8,6 +10,7 @@ import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/t
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { searchBeamSections } from "@/lib/design-workflows/solvers/beamDesign";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
@@ -73,7 +76,7 @@ export default function Page() {
   const [sectionDesignation, setSectionDesignation] = useState("");
   const [designMaxDeflection, setDesignMaxDeflection] = useState<number | undefined>(undefined);
   const [designMaxStress, setDesignMaxStress] = useState<number | undefined>(undefined);
-  const { mode, setUserInputs } = useDesignWorkflow();
+  const { mode } = useDesignWorkflow();
   // =========================
   // UNITS
   // =========================
@@ -189,7 +192,7 @@ const handleLoadDrag = (
     []
   );
 
-  useEffect(() => {
+  const designUserInputs = useMemo((): ModuleUserInputs => {
     const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
     const allowableStressPa = designMaxStress
       ? toBase(designMaxStress, "stress", stressUnit)
@@ -199,7 +202,7 @@ const handleLoadDrag = (
       ? toBase(designMaxDeflection, "length", lengthUnit)
       : spanBase / applicationPreset.deflectionLimitRatio;
 
-    setUserInputs({
+    return {
       length,
       lengthUnit,
       loads,
@@ -214,7 +217,7 @@ const handleLoadDrag = (
       sectionDesignation,
       designMaxDeflection,
       designMaxStressPa: designMaxStress ? toBase(designMaxStress, "stress", stressUnit) : undefined,
-    });
+    };
   }, [
     length,
     lengthUnit,
@@ -230,8 +233,17 @@ const handleLoadDrag = (
     sectionDesignation,
     selectedMaterial,
     applicationPreset,
-    setUserInputs,
   ]);
+
+  useSyncDesignInputs("beams", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.sectionDesignation != null) setSectionDesignation(String(fields.sectionDesignation));
+    if (fields.I != null) setI(fields.I as number);
+    if (fields.c != null) setC(fields.c as number);
+  }, []);
+
+  useRegisterApplyDesignCandidate(applyDesignFields);
 
   const beamPipeline = useCalculationPipeline({
     normalize: (input: {

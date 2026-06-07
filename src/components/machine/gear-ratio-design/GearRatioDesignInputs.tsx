@@ -28,7 +28,7 @@ export default function GearRatioDesignInputs({
     <CalculatorInputPanel
       title="Gear ratio design"
       description="Search integer tooth pairs for the closest match to a target speed ratio."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Find tooth counts" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Find tooth counts" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">

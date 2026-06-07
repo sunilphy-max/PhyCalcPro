@@ -62,7 +62,7 @@ export default function KeysSplinesInputs({
     <CalculatorInputPanel
       title="Keys & splines"
       description="Check parallel key or spline torque transfer via shear and bearing stress."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate key" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate key" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField

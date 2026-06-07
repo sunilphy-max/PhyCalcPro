@@ -54,7 +54,7 @@ export default function BrakesClutchesInputs({
     <CalculatorInputPanel
       title="Brake / clutch"
       description="Estimate friction torque, power dissipation, stop energy and indicative safety factor."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate brake" />}
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate brake" designAware />}
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="space-y-2 text-sm text-slate-700">

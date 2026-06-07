@@ -109,6 +109,8 @@ export default function Page() {
     if (fields.boltSize != null) setConfig(fields.boltSize as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("bolts", designUserInputs);

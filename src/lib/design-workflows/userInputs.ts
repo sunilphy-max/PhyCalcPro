@@ -7,6 +7,7 @@ export type ModuleUserInputs = {
   // Beams / structural geometry
   length?: number;
   lengthUnit?: string;
+  stressUnit?: string;
   width?: number;
   height?: number;
   loads?: Load[];

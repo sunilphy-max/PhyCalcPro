@@ -1,5 +1,6 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState, useEffect, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -60,6 +61,8 @@ export default function Page() {
     if (fields.I != null) setI(fields.I as number);
     if (fields.area != null) setArea(fields.area as number);
   }, []);
+
+  useRegisterApplyDesignCandidate(applyDesignFields);
 
   const calculate = () => {
     if (workflowMode === "design") {

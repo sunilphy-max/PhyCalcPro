@@ -9,10 +9,14 @@ import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
  * and computed candidates reflect current form values.
  */
 export function useSyncDesignInputs(_moduleId: string | undefined, userInputs: ModuleUserInputs) {
-  const { setUserInputs } = useDesignWorkflow();
-  const inputsKey = useMemo(() => JSON.stringify(userInputs), [userInputs]);
+  const { setUserInputs, designTargets } = useDesignWorkflow();
+  const mergedInputs = useMemo(
+    () => ({ ...userInputs, ...designTargets }),
+    [userInputs, designTargets]
+  );
+  const inputsKey = useMemo(() => JSON.stringify(mergedInputs), [mergedInputs]);
 
   useEffect(() => {
-    setUserInputs(userInputs);
-  }, [setUserInputs, inputsKey, userInputs]);
+    setUserInputs(mergedInputs);
+  }, [setUserInputs, inputsKey, mergedInputs]);
 }

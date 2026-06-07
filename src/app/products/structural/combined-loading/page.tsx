@@ -81,6 +81,8 @@ export default function Page() {
     if (fields.height != null) setHeight(fields.height as number);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("combined-loading", designUserInputs);

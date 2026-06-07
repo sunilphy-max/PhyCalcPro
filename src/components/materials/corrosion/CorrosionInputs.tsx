@@ -32,7 +32,7 @@ export default function CorrosionInputs(props: Props) {
     <CalculatorInputPanel
       title="Design inputs"
       description="Estimate required material thickness for corrosion exposure."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate corrosion allowance" />}
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate corrosion allowance" designAware />}
     >
       <ModuleUnitField moduleId="corrosion" fieldKey="initialThickness" value={props.initialThickness} unit={props.thicknessUnit} onValueChange={props.setInitialThickness} onUnitChange={props.setThicknessUnit} />
       <ModuleUnitField moduleId="corrosion" fieldKey="corrosionRate" value={props.corrosionRate} unit={props.rateUnit} onValueChange={props.setCorrosionRate} onUnitChange={props.setRateUnit} step="0.01" />

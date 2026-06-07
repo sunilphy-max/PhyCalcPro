@@ -63,6 +63,8 @@ export default function Page() {
     if (fields.thickness != null) setThickness(fields.thickness as never);
   }, []);
 
+  useRegisterApplyDesignCandidate(applyDesignFields);
+
   const calculate = () => {
     if (workflowMode === "design") {
       const design = runModuleDesignMode("plates", designUserInputs);
