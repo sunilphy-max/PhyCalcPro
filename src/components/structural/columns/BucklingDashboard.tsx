@@ -7,6 +7,7 @@ import {
   CalculatorMetricGrid,
   CalculatorPlotSection,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { BucklingResult } from "@/lib/structural/columns/types";
 
 type Props = {
@@ -34,7 +35,7 @@ export default function BucklingDashboard({ result }: Props) {
         />
         <CalculatorMetricCard
           label="Slenderness Ratio"
-          value={result.slenderness.toFixed(1)}
+          numericValue={result.slenderness}
           tone="purple"
         />
         <CalculatorMetricCard
@@ -50,19 +51,19 @@ export default function BucklingDashboard({ result }: Props) {
       <CalculatorMetricGrid cols={3}>
         <CalculatorMetricCard
           label="Critical Load (Pcr)"
-          value={`${(result.Pcr / 1000).toFixed(1)} kN`}
+          value={formatEngineeringValue(result.Pcr, "N")}
           tone="blue"
           size="lg"
         />
         <CalculatorMetricCard
           label="Critical Stress"
-          value={`${(result.criticalStress / 1e6).toFixed(2)} MPa`}
+          value={formatEngineeringValue(result.criticalStress, "Pa")}
           tone="blue"
           size="lg"
         />
         <CalculatorMetricCard
           label="Applied Stress"
-          value={`${(result.stress / 1e6).toFixed(2)} MPa`}
+          value={formatEngineeringValue(result.stress, "Pa")}
           tone="orange"
           size="lg"
         />
@@ -84,15 +85,15 @@ export default function BucklingDashboard({ result }: Props) {
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Effective Length"
-          value={`${result.Le.toFixed(3)} m`}
+          value={formatEngineeringValue(result.Le, "m")}
         />
         <CalculatorMetricCard
           label="Radius of Gyration"
-          value={`${result.radius.toExponential(3)} m`}
+          value={formatEngineeringValue(result.radius, "m")}
         />
         <CalculatorMetricCard
           label="Effective Length Factor (k)"
-          value={result.k.toFixed(2)}
+          numericValue={result.k}
         />
         <CalculatorMetricCard label="Buckling Formula" value="Euler" />
       </CalculatorMetricGrid>

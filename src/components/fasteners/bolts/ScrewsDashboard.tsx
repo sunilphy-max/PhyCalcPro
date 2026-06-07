@@ -1,235 +1,175 @@
 "use client";
 
 import type { ScrewResult } from "@/lib/fasteners/bolts/types";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: ScrewResult;
 };
 
+function statusTone(status: string): "green" | "orange" | "red" {
+  if (status === "safe") return "green";
+  if (status === "warning") return "orange";
+  return "red";
+}
+
 export default function ScrewsDashboard({ result }: Props) {
-  const formatStress = (stress: number) => {
-    if (stress < 1e6) return `${(stress / 1000).toFixed(1)} kPa`;
-    return `${(stress / 1e6).toFixed(2)} MPa`;
-  };
-
-  const formatTorque = (torque: number) => {
-    return `${torque.toFixed(2)} N·m`;
-  };
-
-  const formatPower = (power: number) => {
-    if (power < 1000) return `${power.toFixed(1)} W`;
-    return `${(power / 1000).toFixed(2)} kW`;
-  };
-
-  const formatForce = (force: number) => {
-    if (force < 1000) return `${force.toFixed(0)} N`;
-    return `${(force / 1000).toFixed(2)} kN`;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "safe": return "text-green-600";
-      case "warning": return "text-yellow-600";
-      case "critical": return "text-red-600";
-      default: return "text-gray-600";
-    }
-  };
-
   return (
     <div className="space-y-4">
-      {/* Design Status */}
-      <div className={`bg-gray-50 rounded-lg p-4 border-2 ${
-        result.designStatus === "safe" ? "border-green-200" :
-        result.designStatus === "warning" ? "border-yellow-200" : "border-red-200"
-      }`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-sm text-gray-600 mb-1">Design Status</div>
-            <div className={`text-lg font-bold capitalize ${getStatusColor(result.designStatus)}`}>
-              {result.designStatus}
-            </div>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-600">Safety Factor</div>
-            <div className="text-lg font-bold text-blue-600">
-              {result.safetyFactor.toFixed(2)}
-            </div>
-          </div>
-        </div>
-      </div>
+      <CalculatorMetricGrid cols={2}>
+        <CalculatorMetricCard
+          label="Design status"
+          value={result.designStatus.charAt(0).toUpperCase() + result.designStatus.slice(1)}
+          tone={statusTone(result.designStatus)}
+          size="lg"
+        />
+        <CalculatorMetricCard
+          label="Safety factor"
+          numericValue={result.safetyFactor}
+          tone="blue"
+          size="lg"
+        />
+      </CalculatorMetricGrid>
 
-      {/* Basic Parameters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-          <div className="text-xs text-gray-600 mb-1">Screw Type</div>
-          <div className="text-lg font-bold text-blue-600 capitalize">
-            {result.screwType.replace("_", " ")}
-          </div>
-        </div>
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label="Screw type"
+          value={result.screwType.replace("_", " ")}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Major diameter"
+          value={formatEngineeringValue(result.majorDiameter, "m")}
+          tone="green"
+        />
+        <CalculatorMetricCard
+          label="Pitch"
+          value={formatEngineeringValue(result.pitch, "m")}
+          tone="purple"
+        />
+        <CalculatorMetricCard
+          label="Helix angle"
+          value={formatEngineeringValue(result.helixAngle, "°")}
+          tone="orange"
+        />
+      </CalculatorMetricGrid>
 
-        <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-          <div className="text-xs text-gray-600 mb-1">Major Diameter</div>
-          <div className="text-lg font-bold text-green-600">
-            {(result.majorDiameter * 1000).toFixed(1)} mm
-          </div>
-        </div>
+      <CalculatorMetricGrid cols={2}>
+        <CalculatorMetricCard
+          label="Axial force"
+          value={formatEngineeringValue(result.axialForce, "N")}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Torque"
+          value={formatEngineeringValue(result.torque, "N·m")}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Efficiency"
+          value={formatEngineeringValue(result.efficiency, "%")}
+          tone="purple"
+        />
+        {result.power > 0 ? (
+          <CalculatorMetricCard
+            label="Power"
+            value={formatEngineeringValue(result.power, "W")}
+            tone="purple"
+          />
+        ) : null}
+        <CalculatorMetricCard
+          label="Shear stress"
+          value={formatEngineeringValue(result.shearStress, "Pa")}
+          tone="orange"
+        />
+        <CalculatorMetricCard
+          label="Compressive stress"
+          value={formatEngineeringValue(result.compressiveStress, "Pa")}
+          tone="orange"
+        />
+        <CalculatorMetricCard
+          label="Von Mises stress"
+          value={formatEngineeringValue(result.vonMisesStress, "Pa")}
+          tone="red"
+        />
+        <CalculatorMetricCard
+          label="Fatigue safety factor"
+          numericValue={result.fatigueSafetyFactor}
+          tone="green"
+        />
+      </CalculatorMetricGrid>
 
-        <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-          <div className="text-xs text-gray-600 mb-1">Pitch</div>
-          <div className="text-lg font-bold text-purple-600">
-            {(result.pitch * 1000).toFixed(2)} mm
-          </div>
-        </div>
+      {result.screwType === "ball_screw" && result.ballCirculation ? (
+        <CalculatorMetricGrid cols={2}>
+          <CalculatorMetricCard label="Balls per circuit" numericValue={result.ballCirculation} tone="blue" />
+          <CalculatorMetricCard label="Recirculation" value={result.recirculationPath} tone="blue" />
+          {result.dynamicLoadRating ? (
+            <CalculatorMetricCard
+              label="Dynamic load rating"
+              value={formatEngineeringValue(result.dynamicLoadRating, "N")}
+              tone="purple"
+            />
+          ) : null}
+          {result.speed ? (
+            <CalculatorMetricCard
+              label="Operating speed"
+              value={formatEngineeringValue(result.speed, "rpm")}
+              tone="green"
+            />
+          ) : null}
+          {result.criticalSpeed ? (
+            <CalculatorMetricCard
+              label="Critical speed"
+              value={formatEngineeringValue(result.criticalSpeed, "rpm")}
+              tone="orange"
+            />
+          ) : null}
+          {result.bucklingLoad ? (
+            <CalculatorMetricCard
+              label="Buckling load"
+              value={formatEngineeringValue(result.bucklingLoad, "N")}
+              tone="red"
+            />
+          ) : null}
+        </CalculatorMetricGrid>
+      ) : null}
 
-        <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-          <div className="text-xs text-gray-600 mb-1">Helix Angle</div>
-          <div className="text-lg font-bold text-orange-600">
-            {result.helixAngle.toFixed(1)}°
-          </div>
-        </div>
-      </div>
+      {result.screwType === "power_screw" && result.threadType ? (
+        <CalculatorMetricGrid cols={2}>
+          <CalculatorMetricCard label="Thread type" value={result.threadType} tone="blue" />
+          <CalculatorMetricCard
+            label="Lead"
+            value={formatEngineeringValue(result.lead ?? 0, "m")}
+            tone="purple"
+          />
+          {result.criticalSpeed ? (
+            <CalculatorMetricCard
+              label="Critical speed"
+              value={formatEngineeringValue(result.criticalSpeed, "rpm")}
+              tone="orange"
+            />
+          ) : null}
+          {result.bucklingLoad ? (
+            <CalculatorMetricCard
+              label="Buckling load"
+              value={formatEngineeringValue(result.bucklingLoad, "N")}
+              tone="red"
+            />
+          ) : null}
+        </CalculatorMetricGrid>
+      ) : null}
 
-      {/* Force Analysis */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-3">Force Analysis</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Axial Force:</span>
-              <span className="font-mono">{formatForce(result.axialForce)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Torque:</span>
-              <span className="font-mono">{formatTorque(result.torque)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Efficiency:</span>
-              <span className="font-mono">{result.efficiency.toFixed(1)}%</span>
-            </div>
-            {result.power > 0 && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Power:</span>
-                <span className="font-mono">{formatPower(result.power)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-3">Stress Analysis</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Shear Stress:</span>
-              <span className="font-mono">{formatStress(result.shearStress)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Compressive Stress:</span>
-              <span className="font-mono">{formatStress(result.compressiveStress)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Von Mises Stress:</span>
-              <span className="font-mono">{formatStress(result.vonMisesStress)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Fatigue Safety:</span>
-              <span className="font-mono">{result.fatigueSafetyFactor.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Ball Screw Specific */}
-      {result.screwType === "ball_screw" && result.ballCirculation && (
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-            <h3 className="font-semibold mb-3">Ball Screw Details</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Balls per Circuit:</span>
-                <span className="font-mono">{result.ballCirculation}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Recirculation:</span>
-                <span className="font-mono">{result.recirculationPath}</span>
-              </div>
-              {result.dynamicLoadRating && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Dynamic Load Rating:</span>
-                  <span className="font-mono">{formatForce(result.dynamicLoadRating)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-            <h3 className="font-semibold mb-3">Operating Limits</h3>
-            <div className="space-y-2 text-sm">
-              {result.speed && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Operating Speed:</span>
-                  <span className="font-mono">{result.speed.toFixed(0)} rpm</span>
-                </div>
-              )}
-              {result.criticalSpeed && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Critical Speed:</span>
-                  <span className="font-mono">{result.criticalSpeed.toFixed(0)} rpm</span>
-                </div>
-              )}
-              {result.bucklingLoad && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Buckling Load:</span>
-                  <span className="font-mono">{formatForce(result.bucklingLoad)}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Power Screw Specific */}
-      {result.screwType === "power_screw" && result.threadType && (
-        <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
-          <h3 className="font-semibold mb-3">Power Screw Details</h3>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Thread Type:</span>
-              <span className="capitalize">{result.threadType}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Lead:</span>
-              <span className="font-mono">{(result.lead * 1000).toFixed(2)} mm</span>
-            </div>
-            {result.criticalSpeed && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Critical Speed:</span>
-                <span className="font-mono">{result.criticalSpeed.toFixed(0)} rpm</span>
-              </div>
-            )}
-            {result.bucklingLoad && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Buckling Load:</span>
-                <span className="font-mono">{formatForce(result.bucklingLoad)}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Recommendations */}
-      {result.recommendations.length > 0 && (
-        <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-          <h3 className="font-semibold text-yellow-800 mb-3">Recommendations</h3>
-          <ul className="space-y-1 text-sm text-yellow-700">
+      {result.recommendations.length > 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <h3 className="text-sm font-semibold text-amber-900">Recommendations</h3>
+          <ul className="mt-2 space-y-1 text-sm text-amber-800">
             {result.recommendations.map((rec, index) => (
-              <li key={index} className="flex items-start">
-                <span className="text-yellow-600 mr-2">•</span>
-                <span>{rec}</span>
-              </li>
+              <li key={index}>{rec}</li>
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

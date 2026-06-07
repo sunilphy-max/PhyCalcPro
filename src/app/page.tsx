@@ -194,7 +194,7 @@ export default function HomePage() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
                     <div className="text-3xl font-semibold text-slate-950">{moduleCount}</div>
-                    <p className="mt-1 text-sm text-slate-600">active calculators</p>
+                    <p className="mt-1 text-sm text-slate-600">engineering modules</p>
                   </div>
                   <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
                     <div className="text-3xl font-semibold text-slate-950">{categories.length}</div>

@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-06-01T05:18:33.488Z",
+  "ranAt": "2026-06-07T04:00:48.517Z",
   "total": 9,
   "passed": 9,
   "failed": 0,
@@ -52,13 +52,13 @@
         {
           "field": "vonMisesStress",
           "expected": 41488516.00274373,
-          "actual": 41488516.00274373,
+          "actual": 41488516.002743736,
           "pass": true
         },
         {
           "field": "safetyFactor",
           "expected": 6.025763851940786,
-          "actual": 6.025763851940786,
+          "actual": 6.025763851940785,
           "pass": true
         }
       ]

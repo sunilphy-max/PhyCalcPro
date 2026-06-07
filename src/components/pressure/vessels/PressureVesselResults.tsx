@@ -9,6 +9,7 @@ import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<PressureVesselResult> | null;
@@ -45,19 +46,19 @@ export default function PressureVesselResults({ result }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Max radial displacement"
-              value={`${result.maxRadialDisplacement.toExponential(3)} m`}
+              value={formatEngineeringValue(result.maxRadialDisplacement, "m")}
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max hoop stress"
-              value={`${result.maxHoopStress.toExponential(3)} Pa`}
+              value={formatEngineeringValue(result.maxHoopStress, "Pa")}
               tone="orange"
               size="lg"
             />
             <CalculatorMetricCard
               label="Internal pressure"
-              value={`${result.pressure.toFixed(0)} Pa`}
+              value={formatEngineeringValue(result.pressure, "Pa")}
               tone="purple"
               size="lg"
             />

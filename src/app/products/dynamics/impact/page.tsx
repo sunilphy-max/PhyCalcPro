@@ -1,6 +1,7 @@
 "use client";
 
 import { toBase } from "@/lib/units/conversions";
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -8,7 +9,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import ImpactInputs from "@/components/dynamics/impact/ImpactInputs";
 import ImpactResults from "@/components/dynamics/impact/ImpactResults";
 import { useCalculatorModule } from "@/hooks/useCalculatorModule";
@@ -70,7 +71,9 @@ export default function Page() {
 
   useSyncDesignInputs("impact", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    area: (v) => setCrossSectionArea(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -86,7 +89,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="impact"
         title="Impact Force Calculator"
-        left={
+        inputs={
           <ImpactInputs
             mass={mass}
             setMass={setMass}
@@ -111,15 +114,7 @@ export default function Page() {
             onCalculate={calculate}
           />
         }
-        center={
-          <CalculatorGuidancePanel title="Shock overview">
-            <p>
-              Convert a sudden change in momentum into an average impact force and translate loading into
-              stress for a given section. Compare results across design standards using the selector above.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<ImpactResults result={result} />}
+        results={<ImpactResults result={result} />}
       />
   );
 }

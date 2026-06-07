@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -52,7 +53,9 @@ export default function Page() {
 
   useSyncDesignInputs("flywheels", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    outerDiameter: (v) => setOuterDiameter(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -68,7 +71,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="flywheels"
         title="Flywheel Energy & Stress"
-        left={
+        inputs={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">Flywheel design guidance</h3>
@@ -78,34 +81,7 @@ export default function Page() {
             </div>
           </div>
         }
-        center={
-          <FlywheelInputs
-            outerDiameter={outerDiameter}
-            setOuterDiameter={setOuterDiameter}
-            outerDiameterUnit={outerDiameterUnit}
-            setOuterDiameterUnit={setOuterDiameterUnit}
-            thickness={thickness}
-            setThickness={setThickness}
-            thicknessUnit={thicknessUnit}
-            setThicknessUnit={setThicknessUnit}
-            faceWidth={faceWidth}
-            setFaceWidth={setFaceWidth}
-            faceWidthUnit={faceWidthUnit}
-            setFaceWidthUnit={setFaceWidthUnit}
-            density={density}
-            setDensity={setDensity}
-            densityUnit={densityUnit}
-            setDensityUnit={setDensityUnit}
-            rpm={rpm}
-            setRpm={setRpm}
-            yieldStress={yieldStress}
-            setYieldStress={setYieldStress}
-            yieldStressUnit={yieldStressUnit}
-            setYieldStressUnit={setYieldStressUnit}
-            onCalculate={calculate}
-          />
-        }
-        right={
+        results={
           <FlywheelResults
             result={result}
             lengthUnit={outerDiameterUnit}

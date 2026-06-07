@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -52,7 +53,9 @@ export default function Page() {
 
   useSyncDesignInputs("cost-estimator", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    machiningTime: (v) => setMachiningTime(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -68,7 +71,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="cost-estimator"
         title="Manufacturing Cost Estimator"
-        left={<CostEstimatorInputs
+        inputs={<CostEstimatorInputs
           materialVolume={materialVolume}
           setMaterialVolume={setMaterialVolume}
           materialDensity={materialDensity}
@@ -94,7 +97,7 @@ export default function Page() {
         center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Estimate material, machining and labor costs for a simple manufacturing operation, accounting for finish and overhead.</p>
         </div>}
-        right={<CostEstimatorResults result={result} />}
+        results={<CostEstimatorResults result={result} />}
       />
   );
 }

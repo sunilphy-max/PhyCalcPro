@@ -4,6 +4,7 @@ import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<{
@@ -19,7 +20,7 @@ type Props = {
 };
 
 export default function FitResults({ result, displayUnit }: Props) {
-  const format = (value: number) => `${value.toFixed(4)} ${displayUnit}`;
+  const format = (value: number) => formatEngineeringValue(value, displayUnit);
 
   const fitTone =
     result?.fitType === "clearance"

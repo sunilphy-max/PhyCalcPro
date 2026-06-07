@@ -8,7 +8,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import CombinedLoadingInputs from "@/components/structural/combinedLoading/CombinedLoadingInputs";
 import CombinedLoadingResults from "@/components/structural/combinedLoading/CombinedLoadingResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -95,7 +95,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="combined-loading"
         title="Combined Loading Calculator"
-        left={
+        inputs={
           <CombinedLoadingInputs
             axialForce={axialForce}
             setAxialForce={setAxialForce}
@@ -127,16 +127,8 @@ export default function Page() {
             setStressUnit={setStressUnit}
             onCalculate={calculate}
           />
-        }
-        center={
-          <CalculatorGuidancePanel title="Combined loading overview">
-            <p>
-              Combines axial, bending, torsion, and shear loads into a von Mises-style stress check for a rectangular
-              cross-section.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<CombinedLoadingResults result={result} />}
+        }
+        results={<CombinedLoadingResults result={result} />}
       />
   );
 }

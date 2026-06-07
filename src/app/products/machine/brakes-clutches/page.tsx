@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import BrakesClutchesInputs from "@/components/machine/brakes-clutches/BrakesClutchesInputs";
 import BrakesClutchesResults from "@/components/machine/brakes-clutches/BrakesClutchesResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -63,7 +63,9 @@ export default function Page() {
 
   useSyncDesignInputs("brakes-clutches", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    discDiameter: (v) => setOuterRadius(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -79,7 +81,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="brakes-clutches"
       title="Brakes & Clutches"
-      left={
+      inputs={
         <BrakesClutchesInputs
           frictionCoeff={frictionCoeff}
           setFrictionCoeff={setFrictionCoeff}
@@ -102,15 +104,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Brakes and clutches">
-          <p>
-            Uniform-pressure annular friction model with mean effective radius. Check thermal capacity for repeated
-            stops and verify lining manufacturer limits.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<BrakesClutchesResults result={result} safetyFactorTarget={safetyFactorTarget} />}
+      results={<BrakesClutchesResults result={result} safetyFactorTarget={safetyFactorTarget} />}
     />
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import WormGearsInputs from "@/components/machine/worm-gears/WormGearsInputs";
 import WormGearsResults from "@/components/machine/worm-gears/WormGearsResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -72,7 +72,10 @@ export default function Page() {
 
   useSyncDesignInputs("worm-gears", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    module: (v) => setModule(typeof v === "number" ? v : Number(v)),
+    wheelTeeth: (v) => setGearTeeth(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -88,7 +91,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="worm-gears"
       title="Worm Gear Drive"
-      left={
+      inputs={
         <WormGearsInputs
           power={power}
           setPower={setPower}
@@ -117,15 +120,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Worm gear drives">
-          <p>
-            Worm sets offer high reduction but lower efficiency at small lead angles. Check heat dissipation and
-            manufacturer contact ratings for continuous duty.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<WormGearsResults result={result} stressUnit={stressUnit} />}
+      results={<WormGearsResults result={result} stressUnit={stressUnit} />}
     />
   );
 }

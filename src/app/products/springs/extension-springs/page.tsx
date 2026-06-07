@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ExtensionSpringInputs from "@/components/springs/extension-springs/ExtensionSpringInputs";
 import ExtensionSpringResults from "@/components/springs/extension-springs/ExtensionSpringResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -69,7 +69,11 @@ export default function Page() {
 
   useSyncDesignInputs("extension-springs", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    wireDiameter: (v) => setWireDiameter(typeof v === "number" ? v : Number(v)),
+    meanDiameter: (v) => setMeanDiameter(typeof v === "number" ? v : Number(v)),
+    activeCoils: (v) => setActiveCoils(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -85,7 +89,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="extension-springs"
       title="Extension Spring"
-      left={
+      inputs={
         <ExtensionSpringInputs
           wireDiameter={wireDiameter}
           setWireDiameter={setWireDiameter}
@@ -108,15 +112,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Extension springs">
-          <p>
-            Includes indicative initial tension estimate. Confirm hook stress and loop geometry separately.
-            Rate uses the same helical spring formula as compression springs.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<ExtensionSpringResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
+      results={<ExtensionSpringResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
     />
   );
 }

@@ -7,6 +7,7 @@ import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<ImpactResult> | null;
@@ -37,25 +38,25 @@ export default function ImpactResults({ result }: Props) {
         <CalculatorMetricGrid cols={2}>
           <CalculatorMetricCard
             label="Impulse"
-            value={`${result.impulse.toFixed(2)} N·s`}
+            value={formatEngineeringValue(result.impulse, "N·s")}
             tone="blue"
             size="lg"
           />
           <CalculatorMetricCard
             label="Average force"
-            value={`${result.averageForce.toFixed(2)} N`}
+            value={formatEngineeringValue(result.averageForce, "N")}
             tone="purple"
             size="lg"
           />
           <CalculatorMetricCard
             label="Dynamic stress"
-            value={`${result.dynamicStress.toFixed(2)} MPa`}
+            value={formatEngineeringValue(result.dynamicStress, "MPa")}
             tone="orange"
             size="lg"
           />
           <CalculatorMetricCard
             label="Safety factor"
-            value={result.safetyFactor.toFixed(2)}
+            numericValue={result.safetyFactor}
             tone="green"
             size="lg"
           />

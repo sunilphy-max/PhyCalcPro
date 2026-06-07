@@ -11,6 +11,7 @@ import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<VibrationResult> | null;
@@ -48,25 +49,25 @@ export default function VibrationResults({ result }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="1st natural frequency"
-              value={`${result.frequencies[0].toFixed(2)} Hz`}
+              value={formatEngineeringValue(result.frequencies[0], "Hz")}
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label={`1st damped natural (ζ=${result.dampingRatio})`}
-              value={`${(result.dampedNaturalFrequencies[0] ?? 0).toFixed(2)} Hz`}
+              value={formatEngineeringValue(result.dampedNaturalFrequencies[0] ?? 0, "Hz")}
               tone="green"
               size="lg"
             />
             <CalculatorMetricCard
               label="Mesh segments"
-              value={result.segments}
+              numericValue={result.segments}
               tone="purple"
               size="lg"
             />
             <CalculatorMetricCard
               label="Beam length"
-              value={`${result.length.toFixed(2)} m`}
+              value={formatEngineeringValue(result.length, "m")}
               tone="orange"
               size="lg"
             />
@@ -76,7 +77,7 @@ export default function VibrationResults({ result }: Props) {
               <CalculatorMetricCard
                 key={index}
                 label={`Mode ${index + 1}`}
-                value={`${freq.toFixed(2)} Hz`}
+                value={formatEngineeringValue(freq, "Hz")}
                 tone={index === 0 ? "blue" : index === 1 ? "purple" : "green"}
               />
             ))}

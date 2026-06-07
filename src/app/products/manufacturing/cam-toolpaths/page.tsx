@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -50,7 +51,9 @@ export default function Page() {
 
   useSyncDesignInputs("cam-toolpaths", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    feedRate: (v) => setFeedPerTooth(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -66,7 +69,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="cam-toolpaths"
         title="CAM Toolpath Calculator"
-        left={<CamToolpathsInputs
+        inputs={<CamToolpathsInputs
           toolDiameter={toolDiameter}
           setToolDiameter={setToolDiameter}
           numFlutes={numFlutes}
@@ -90,7 +93,7 @@ export default function Page() {
         center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Estimate a basic roughing toolpath with feed, material removal rate, and cut time guidance.</p>
         </div>}
-        right={<CamToolpathsResults result={result} />}
+        results={<CamToolpathsResults result={result} />}
       />
   );
 }

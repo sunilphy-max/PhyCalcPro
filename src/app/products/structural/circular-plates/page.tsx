@@ -8,7 +8,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CircularPlatesInputs from "@/components/structural/circular-plates/CircularPlatesInputs";
 import CircularPlatesResults from "@/components/structural/circular-plates/CircularPlatesResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -85,7 +84,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="circular-plates"
       title="Circular Plate"
-      left={
+      inputs={
         <CircularPlatesInputs
           radius={radius}
           setRadius={setRadius}
@@ -110,16 +109,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Circular plates">
-          <p>
-            Classical plate theory for a solid disk under uniform lateral pressure. Clamped edges reduce
-            deflection versus simply supported. Verify with FEA for annular plates, variable thickness, or
-            combined loading.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={
+      results={
         <CircularPlatesResults result={result} lengthUnit={lengthUnit} stressUnit={modulusUnit} />
       }
     />

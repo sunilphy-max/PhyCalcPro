@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -55,7 +56,9 @@ export default function Page() {
 
   useSyncDesignInputs("safety-factor", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    diameter: (v) => setDiameter(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -71,7 +74,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="safety-factor"
         title="Combined Safety Factor Analysis"
-        left={
+        inputs={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">Module guidance</h3>
@@ -80,39 +83,8 @@ export default function Page() {
               </p>
             </div>
           </div>
-        }
-        center={
-          <SafetyFactorInputs
-            diameter={diameter}
-            setDiameter={setDiameter}
-            diameterUnit={diameterUnit}
-            setDiameterUnit={setDiameterUnit}
-            axialForce={axialForce}
-            setAxialForce={setAxialForce}
-            axialForceUnit={axialForceUnit}
-            setAxialForceUnit={setAxialForceUnit}
-            shearForce={shearForce}
-            setShearForce={setShearForce}
-            shearForceUnit={shearForceUnit}
-            setShearForceUnit={setShearForceUnit}
-            bendingMoment={bendingMoment}
-            setBendingMoment={setBendingMoment}
-            bendingMomentUnit={bendingMomentUnit}
-            setBendingMomentUnit={setBendingMomentUnit}
-            torque={torque}
-            setTorque={setTorque}
-            torqueUnit={torqueUnit}
-            setTorqueUnit={setTorqueUnit}
-            yieldStrength={yieldStrength}
-            setYieldStrength={setYieldStrength}
-            ultimateStrength={ultimateStrength}
-            setUltimateStrength={setUltimateStrength}
-            stressUnit={stressUnit}
-            setStressUnit={setStressUnit}
-            onCalculate={calculate}
-          />
-        }
-        right={
+        }
+        results={
           <SafetyFactorResults
             result={result}
             lengthUnit={diameterUnit}

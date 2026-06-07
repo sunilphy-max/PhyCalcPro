@@ -8,7 +8,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import UnitConverterInputs, {
   type UnitConverterDimensionKey,
 } from "@/components/tools/unit-converter/UnitConverterInputs";
@@ -77,7 +76,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="unit-converter"
       title="Unit Converter"
-      left={
+      inputs={
         <UnitConverterInputs
           value={value}
           setValue={setValue}
@@ -90,15 +89,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Unit converter">
-          <p>
-            Uses the shared unit conversion layer (SI base values). Select the physical dimension first, then
-            pick compatible from and to units.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<UnitConverterResults result={result} inputValue={value} fromUnit={fromUnit} />}
+      results={<UnitConverterResults result={result} inputValue={value} fromUnit={fromUnit} />}
     />
   );
 }

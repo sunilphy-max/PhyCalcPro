@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import RollerChainsInputs from "@/components/power-transmission/roller-chains/RollerChainsInputs";
 import RollerChainsResults from "@/components/power-transmission/roller-chains/RollerChainsResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -62,7 +62,9 @@ export default function Page() {
 
   useSyncDesignInputs("roller-chains", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    chainPitch: (v) => setPitch(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -78,7 +80,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="roller-chains"
       title="Roller Chain Drive"
-      left={
+      inputs={
         <RollerChainsInputs
           power={power}
           setPower={setPower}
@@ -101,15 +103,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Roller chain drives">
-          <p>
-            Use manufacturer power ratings for final selection. Keep driver sprocket teeth ≥ 17 when possible
-            and maintain adequate lubrication.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<RollerChainsResults result={result} lengthUnit={lengthUnit} powerUnit={powerUnit} />}
+      results={<RollerChainsResults result={result} lengthUnit={lengthUnit} powerUnit={powerUnit} />}
     />
   );
 }

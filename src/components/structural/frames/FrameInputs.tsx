@@ -2,7 +2,11 @@
 
 import UnitSelector from "@/components/shared/UnitSelector";
 import MeshControls from "@/components/shared/MeshControls";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
+import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
   span: number;
@@ -31,6 +35,9 @@ type Props = {
   setLoadUnit: (value: string) => void;
   EUnit: string;
   setEUnit: (value: string) => void;
+  sectionDesignation: string;
+  setSectionDesignation: (value: string) => void;
+  onSectionApplied: (designation: string, section: RolledSectionProps) => void;
   onCalculate: () => void;
 };
 
@@ -61,16 +68,22 @@ export default function FrameInputs({
   setLoadUnit,
   EUnit,
   setEUnit,
+  sectionDesignation,
+  setSectionDesignation,
+  onSectionApplied,
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Frame geometry</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define the portal frame geometry, beam properties, and the point load for analysis.
-        </p>
-      </div>
+    <CalculatorInputPanel
+      title="Frame geometry"
+      description="Define the portal frame geometry, beam properties, and the point load for analysis."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Run frame analysis" designAware />}
+    >
+      <RolledSectionPicker
+        designation={sectionDesignation}
+        onDesignationChange={setSectionDesignation}
+        onSectionApplied={onSectionApplied}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField
@@ -177,12 +190,6 @@ export default function FrameInputs({
         <MeshControls elements={segments} onChangeElements={setSegments} refine />
       </div>
 
-      <button
-        onClick={onCalculate}
-        className="w-full rounded bg-slate-900 px-4 py-3 text-white font-semibold hover:bg-slate-800 transition"
-      >
-        Run frame analysis
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

@@ -2,6 +2,8 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { FlywheelResult } from "@/lib/machine/flywheels/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<FlywheelResult> | null;
@@ -10,26 +12,13 @@ type Props = {
   stressUnit: string;
 };
 
+function safetyTone(sf: number): "green" | "orange" | "red" {
+  if (sf >= 2) return "green";
+  if (sf >= 1.2) return "orange";
+  return "red";
+}
+
 export default function FlywheelResults({ result, lengthUnit, densityUnit, stressUnit }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-      moduleId="flywheels"
-        fileName="flywheel"
-        title="Export Flywheel results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Flywheel results</h2>
-          <p className="text-slate-500 mt-2">Run the calculation to review stored energy, inertia, and rim stress.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
-  const outerDiameter = fromBase(result.outerDiameter, "length", lengthUnit);
-  const thickness = fromBase(result.thickness, "length", lengthUnit);
-
   return (
     <CalculatorResultsShell
       moduleId="flywheels"
@@ -37,65 +26,70 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
       calculationSpec={result?.calculationSpec}
       title="Export Flywheel results"
       description="Export the current summary and charts for review."
-      csvRows={[
-        { metric: "storedEnergy", value: result.storedEnergy },
-        { metric: "inertia", value: result.inertia },
-        { metric: "hoopStress", value: result.hoopStress },
-        { metric: "safetyFactor", value: result.safetyFactor },
-      ]}
+      empty={!result}
+      emptyMessage="Run the calculation to review stored energy, inertia, and rim stress."
+      heading="Flywheel results"
+      csvRows={
+        result
+          ? [
+              { metric: "storedEnergy", value: result.storedEnergy },
+              { metric: "inertia", value: result.inertia },
+              { metric: "hoopStress", value: result.hoopStress },
+              { metric: "safetyFactor", value: result.safetyFactor },
+            ]
+          : undefined
+      }
     >
-      <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Flywheel performance summary</h2>
-          <p className="text-sm text-slate-500 mt-1">Review the kinetic energy and stress capacity of the current design.</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Geometry</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Outer diameter</dt>
-                <dd>{outerDiameter.toFixed(3)} {lengthUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Thickness</dt>
-                <dd>{thickness.toFixed(3)} {lengthUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Mass</dt>
-                <dd>{result.mass.toFixed(1)} kg</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Inertia</dt>
-                <dd>{result.inertia.toFixed(3)} kg·m²</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Performance</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Stored energy</dt>
-                <dd>{result.storedEnergy.toFixed(0)} J</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Angular speed</dt>
-                <dd>{result.angularSpeed.toFixed(1)} rad/s</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Hoop stress</dt>
-                <dd>{fromBase(result.hoopStress, "stress", stressUnit).toFixed(0)} {stressUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Safety factor</dt>
-                <dd>{result.safetyFactor.toFixed(2)}×</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </div>
+      {result ? (
+        <>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Outer diameter"
+              value={formatEngineeringValue(fromBase(result.outerDiameter, "length", lengthUnit), lengthUnit)}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="Thickness"
+              value={formatEngineeringValue(fromBase(result.thickness, "length", lengthUnit), lengthUnit)}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="Mass"
+              value={formatEngineeringValue(result.mass, "kg")}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Inertia"
+              value={formatEngineeringValue(result.inertia, "kg·m²")}
+              tone="blue"
+            />
+          </CalculatorMetricGrid>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Stored energy"
+              value={formatEngineeringValue(result.storedEnergy, "J")}
+              tone="green"
+              size="lg"
+            />
+            <CalculatorMetricCard
+              label="Angular speed"
+              value={formatEngineeringValue(result.angularSpeed, "rad/s")}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Hoop stress"
+              value={formatEngineeringValue(fromBase(result.hoopStress, "stress", stressUnit), stressUnit)}
+              tone="red"
+            />
+            <CalculatorMetricCard
+              label="Safety factor"
+              numericValue={result.safetyFactor}
+              tone={safetyTone(result.safetyFactor)}
+              size="lg"
+            />
+          </CalculatorMetricGrid>
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

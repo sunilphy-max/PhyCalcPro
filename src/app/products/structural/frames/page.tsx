@@ -3,6 +3,7 @@
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState, useEffect, useCallback } from "react";
+import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -29,7 +30,16 @@ export default function Page() {
   const [inertiaUnit, setInertiaUnit] = useState("m4");
   const [loadUnit, setLoadUnit] = useState("N");
   const [EUnit, setEUnit] = useState("Pa");
+  const [sectionDesignation, setSectionDesignation] = useState("");
   const [result, setResult] = useState<FrameResult | null>(null);
+
+  const applySectionProperties = useCallback(
+    (_designation: string, section: RolledSectionProps) => {
+      setArea(section.area);
+      setI(section.ix);
+    },
+    []
+  );
 
   const runCheck = () => {
     const config = {
@@ -58,6 +68,7 @@ export default function Page() {
   }, [span, spanUnit, height, heightUnit, load, loadUnit, E, EUnit, I, inertiaUnit, area, areaUnit, setUserInputs]);
 
   const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.sectionDesignation != null) setSectionDesignation(String(fields.sectionDesignation));
     if (fields.I != null) setI(fields.I as number);
     if (fields.area != null) setArea(fields.area as number);
   }, []);
@@ -109,6 +120,9 @@ export default function Page() {
           setLoadUnit={setLoadUnit}
           EUnit={EUnit}
           setEUnit={setEUnit}
+          sectionDesignation={sectionDesignation}
+          setSectionDesignation={setSectionDesignation}
+          onSectionApplied={applySectionProperties}
           onCalculate={calculate}
         />
       }

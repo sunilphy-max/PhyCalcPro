@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -55,7 +56,9 @@ export default function Page() {
 
   useSyncDesignInputs("heat-exchangers", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    hxType: (v) => setFlowType(String(v).includes("parallel") ? "parallel" : "counterflow"),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -71,7 +74,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="heat-exchangers"
         title="Heat Exchanger Sizing"
-        left={
+        inputs={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">Heat exchanger guidance</h3>
@@ -81,32 +84,7 @@ export default function Page() {
             </div>
           </div>
         }
-        center={
-          <HeatExchangerInputs
-            hotFlowRate={hotFlowRate}
-            setHotFlowRate={setHotFlowRate}
-            coldFlowRate={coldFlowRate}
-            setColdFlowRate={setColdFlowRate}
-            hotCp={hotCp}
-            setHotCp={setHotCp}
-            coldCp={coldCp}
-            setColdCp={setColdCp}
-            hotInletTemp={hotInletTemp}
-            setHotInletTemp={setHotInletTemp}
-            coldInletTemp={coldInletTemp}
-            setColdInletTemp={setColdInletTemp}
-            hotOutletTemp={hotOutletTemp}
-            setHotOutletTemp={setHotOutletTemp}
-            U={U}
-            setU={setU}
-            area={area}
-            setArea={setArea}
-            flowType={flowType}
-            setFlowType={setFlowType}
-            onCalculate={calculate}
-          />
-        }
-        right={<HeatExchangerResults result={result} />}
+        results={<HeatExchangerResults result={result} />}
       />
   );
 }

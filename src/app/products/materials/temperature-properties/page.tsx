@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -7,7 +8,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import TemperaturePropertiesInputs from "@/components/materials/temperatureProperties/TemperaturePropertiesInputs";
 import TemperaturePropertiesResults from "@/components/materials/temperatureProperties/TemperaturePropertiesResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -61,7 +62,13 @@ export default function Page() {
 
   useSyncDesignInputs("temperature-properties", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    material: (v) => {
+      const name = String(v);
+      if (name.includes("Steel")) setBaseModulus(210);
+      else if (name.includes("Aluminum")) setBaseModulus(70);
+    },
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -77,7 +84,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="temperature-properties"
         title="Temperature Derating Calculator"
-        left={
+        inputs={
           <TemperaturePropertiesInputs
             baseYield={baseYield}
             setBaseYield={setBaseYield}
@@ -98,15 +105,7 @@ export default function Page() {
             onCalculate={calculate}
           />
         }
-        center={
-          <CalculatorGuidancePanel title="Temperature derating overview">
-            <p>
-              Estimates how yield strength and stiffness change with temperature using a conservative linear derating
-              factor.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<TemperaturePropertiesResults result={result} />}
+        results={<TemperaturePropertiesResults result={result} />}
       />
   );
 }

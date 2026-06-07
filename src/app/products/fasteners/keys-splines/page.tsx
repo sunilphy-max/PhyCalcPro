@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import KeysSplinesInputs from "@/components/fasteners/keys-splines/KeysSplinesInputs";
 import KeysSplinesResults from "@/components/fasteners/keys-splines/KeysSplinesResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -70,7 +70,10 @@ export default function Page() {
 
   useSyncDesignInputs("keys-splines", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    keyWidth: (v) => setKeyWidth(typeof v === "number" ? v : Number(v)),
+    keyHeight: (v) => setKeyHeight(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -86,7 +89,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="keys-splines"
       title="Keys & Splines"
-      left={
+      inputs={
         <div className="space-y-4">
           <KeysSplinesInputs
           torque={torque}
@@ -115,15 +118,7 @@ export default function Page() {
         />
         </div>
       }
-      center={
-        <CalculatorGuidancePanel title="Keys & splines">
-          <p>
-            Parallel keys are checked for shear in the key and bearing on the shaft/keyway. Allowable shear is
-            0.6×σy and bearing 1.5×σy. Confirm key dimensions against ISO/DIN tables for the shaft size.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<KeysSplinesResults result={result} stressUnit={stressUnit} torqueUnit={torqueUnit} />}
+      results={<KeysSplinesResults result={result} stressUnit={stressUnit} torqueUnit={torqueUnit} />}
     />
   );
 }

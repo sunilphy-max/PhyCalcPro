@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -56,7 +57,9 @@ export default function Page() {
 
   useSyncDesignInputs("cams", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    baseRadius: (v) => setBaseCircle(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -72,7 +75,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="cams"
         title="Cam Profile & Kinematics"
-        left={
+        inputs={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
             <div>
               <h3 className="text-lg font-semibold">Cam design guidance</h3>
@@ -82,32 +85,7 @@ export default function Page() {
             </div>
           </div>
         }
-        center={
-          <CamInputs
-            lift={lift}
-            setLift={setLift}
-            liftUnit={liftUnit}
-            setLiftUnit={setLiftUnit}
-            baseCircle={baseCircle}
-            setBaseCircle={setBaseCircle}
-            baseCircleUnit={baseCircleUnit}
-            setBaseCircleUnit={setBaseCircleUnit}
-            radius={radius}
-            setRadius={setRadius}
-            radiusUnit={radiusUnit}
-            setRadiusUnit={setRadiusUnit}
-            speed={speed}
-            setSpeed={setSpeed}
-            dwellAngle={dwellAngle}
-            setDwellAngle={setDwellAngle}
-            motionLaw={motionLaw}
-            setMotionLaw={setMotionLaw}
-            profileType={profileType}
-            setProfileType={setProfileType}
-            onCalculate={calculate}
-          />
-        }
-        right={<CamResults result={result} lengthUnit={liftUnit} />}
+        results={<CamResults result={result} lengthUnit={liftUnit} />}
       />
   );
 }

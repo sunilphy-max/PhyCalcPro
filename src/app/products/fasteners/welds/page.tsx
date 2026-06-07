@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -80,7 +81,9 @@ export default function Page() {
 
   useSyncDesignInputs("welds", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    weldSize: (v) => setWeldSize(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -96,7 +99,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="welds"
         title="Weld Strength Evaluation"
-        left={
+        inputs={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">Weld design guidance</h3>
@@ -106,38 +109,7 @@ export default function Page() {
             </div>
           </div>
         }
-        center={
-          <WeldInputs
-            weldType={weldType}
-            setWeldType={setWeldType}
-            weldSize={weldSize}
-            setWeldSize={setWeldSize}
-            weldSizeUnit={weldSizeUnit}
-            setWeldSizeUnit={setWeldSizeUnit}
-            weldLength={weldLength}
-            setWeldLength={setWeldLength}
-            weldLengthUnit={weldLengthUnit}
-            setWeldLengthUnit={setWeldLengthUnit}
-            weldCount={weldCount}
-            setWeldCount={setWeldCount}
-            shearForce={shearForce}
-            setShearForce={setShearForce}
-            shearForceUnit={shearForceUnit}
-            setShearForceUnit={setShearForceUnit}
-            axialForce={axialForce}
-            setAxialForce={setAxialForce}
-            axialForceUnit={axialForceUnit}
-            setAxialForceUnit={setAxialForceUnit}
-            eccentricity={eccentricity}
-            setEccentricity={setEccentricity}
-            eccentricityUnit={eccentricityUnit}
-            setEccentricityUnit={setEccentricityUnit}
-            material={material}
-            setMaterial={setMaterial}
-            onCalculate={calculate}
-          />
-        }
-        right={
+        results={
           <WeldResults
             result={result}
             lengthUnit={weldSizeUnit}

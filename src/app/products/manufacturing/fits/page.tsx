@@ -1,9 +1,9 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useCalculatorModule } from "@/hooks/useCalculatorModule";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -79,7 +79,15 @@ export default function Page() {
 
   useSyncDesignInputs("fits", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    fitClass: (v) => {
+      const s = String(v);
+      if (s.length >= 2) {
+        setIsoHoleLetter(s[0]!.toUpperCase());
+        setIsoShaftLetter(s[1]!.toLowerCase());
+      }
+    },
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -95,7 +103,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="fits"
       title="Fits & Clearances Calculator"
-      left={
+      inputs={
         <FitInputs
           nominalSize={nominalSize}
           setNominalSize={setNominalSize}
@@ -124,15 +132,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Fit overview">
-          <p>
-            Compute hole and shaft limits and the resulting clearance or interference range. ISO 286 lookup
-            uses simplified IT grade deviations for screening.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<FitResults result={result} displayUnit={nominalUnit} />}
+      results={<FitResults result={result} displayUnit={nominalUnit} />}
     />
   );
 }

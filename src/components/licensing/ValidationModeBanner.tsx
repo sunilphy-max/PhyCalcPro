@@ -8,7 +8,7 @@ export default function ValidationModeBanner() {
   if (isFreeLaunch) {
     return (
       <div className="border-b border-cyan-200 bg-cyan-50 px-4 py-2 text-center text-sm text-cyan-950 dark:border-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-100">
-        <span className="font-semibold">Early access</span> — All calculators, design standards (US / EU / ISO),
+        <span className="font-semibold">Early access</span> — All engineering modules, design standards (US / EU / ISO),
         and PDF export are free. No signup required.
       </div>
     );

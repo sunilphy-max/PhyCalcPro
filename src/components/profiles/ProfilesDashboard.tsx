@@ -6,45 +6,31 @@ import {
   CalculatorMetricGrid,
   CalculatorPlotSection,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: AreaPropertiesResult;
 };
 
 export default function ProfilesDashboard({ result }: Props) {
-  const formatNumber = (num: number, decimals: number = 6) => {
-    if (Math.abs(num) < 1e-10) return "0";
-    return num.toExponential(decimals);
-  };
-
-  const formatArea = (num: number) => {
-    if (num < 1e-4) return `${(num * 1e6).toFixed(2)} mm²`;
-    if (num < 1e-1) return `${(num * 1e4).toFixed(2)} cm²`;
-    return `${num.toFixed(4)} m²`;
-  };
-
-  const formatInertia = (num: number) => {
-    if (num < 1e-8) return `${(num * 1e12).toFixed(2)} mm⁴`;
-    if (num < 1e-4) return `${(num * 1e8).toFixed(2)} cm⁴`;
-    return `${num.toExponential(3)} m⁴`;
-  };
+  const formatInertia = (num: number) => formatEngineeringValue(num, "m⁴");
 
   return (
     <div className="grid grid-cols-1 gap-4">
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Cross-Sectional Area"
-          value={formatArea(result.area)}
+          value={formatEngineeringValue(result.area, "m²")}
           tone="blue"
         />
         <CalculatorMetricCard
           label="Centroid X"
-          value={`${(result.centroid.x * 1000).toFixed(2)} mm`}
+          value={formatEngineeringValue(result.centroid.x, "m")}
           tone="green"
         />
         <CalculatorMetricCard
           label="Centroid Y"
-          value={`${(result.centroid.y * 1000).toFixed(2)} mm`}
+          value={formatEngineeringValue(result.centroid.y, "m")}
           tone="green"
         />
         <CalculatorMetricCard
@@ -134,7 +120,7 @@ export default function ProfilesDashboard({ result }: Props) {
               {result.shapeData?.shape ? `${result.shapeData.shape} cross-section` : "Shape visualization"}
             </div>
             <div className="text-xs mt-1">
-              Area: {formatArea(result.area)}
+              Area: {formatEngineeringValue(result.area, "m²")}
             </div>
           </div>
         </div>

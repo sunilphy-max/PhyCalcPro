@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -53,7 +54,9 @@ export default function Page() {
 
   useSyncDesignInputs("composites", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    plyCount: (v) => setFiberVolumeFraction(Math.min(0.7, Math.max(0.2, Number(v) / 20))),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -69,7 +72,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="composites"
         title="Composite Property Calculator"
-        left={
+        inputs={
           <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">Composite design overview</h3>
@@ -79,34 +82,7 @@ export default function Page() {
             </div>
           </div>
         }
-        center={
-          <CompositeInputs
-            fiberVolumeFraction={fiberVolumeFraction}
-            setFiberVolumeFraction={setFiberVolumeFraction}
-            fiberModulus={fiberModulus}
-            setFiberModulus={setFiberModulus}
-            matrixModulus={matrixModulus}
-            setMatrixModulus={setMatrixModulus}
-            fiberStrength={fiberStrength}
-            setFiberStrength={setFiberStrength}
-            matrixStrength={matrixStrength}
-            setMatrixStrength={setMatrixStrength}
-            fiberDensity={fiberDensity}
-            setFiberDensity={setFiberDensity}
-            matrixDensity={matrixDensity}
-            setMatrixDensity={setMatrixDensity}
-            fiberPoisson={fiberPoisson}
-            setFiberPoisson={setFiberPoisson}
-            matrixPoisson={matrixPoisson}
-            setMatrixPoisson={setMatrixPoisson}
-            stressUnit={stressUnit}
-            setStressUnit={setStressUnit}
-            densityUnit={densityUnit}
-            setDensityUnit={setDensityUnit}
-            onCalculate={calculate}
-          />
-        }
-        right={
+        results={
           <CompositeResults
             result={result}
             stressUnit={stressUnit}

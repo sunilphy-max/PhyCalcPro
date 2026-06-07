@@ -18,7 +18,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="material-db"
       title="Material Database"
-      left={
+      inputs={
         <div className="rounded-xl bg-white p-6 shadow-sm">
           <h3 className="text-lg font-semibold">Materials Reference</h3>
           <p className="mt-1 text-sm text-slate-500">
@@ -26,12 +26,7 @@ export default function Page() {
           </p>
         </div>
       }
-      center={
-        <div className="rounded-xl bg-white p-6 text-slate-500 shadow-sm">
-          <p>Search the material database by name to view basic mechanical properties and modulus values.</p>
-        </div>
-      }
-      right={<MaterialDatabase />}
+      results={<MaterialDatabase />}
     />
   );
 }

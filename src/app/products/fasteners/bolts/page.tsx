@@ -3,7 +3,6 @@
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { useState, useMemo, useCallback } from "react";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -131,7 +130,7 @@ export default function Page() {
           />
         ) : undefined
       }
-      left={
+      inputs={
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <span className="text-sm font-medium text-slate-700">Analysis mode</span>
@@ -189,15 +188,7 @@ export default function Page() {
           )}
         </div>
       }
-      center={
-        <CalculatorGuidancePanel title="Bolt design">
-          <p>
-            Power and ball screw mechanics, or elastic bolt-pattern load sharing for eccentric shear on a bolt
-            circle (VDI 2230–style screening).
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={
+      results={
         mode === "power_screw" ? (
           <ScrewsResults key={result ? JSON.stringify(result) : "empty"} result={result} projectName={projectName} />
         ) : (

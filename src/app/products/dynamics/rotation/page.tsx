@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -53,7 +54,9 @@ export default function Page() {
 
   useSyncDesignInputs("rotation", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    radius: (v) => setRadius(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -69,7 +72,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="rotation"
         title="Rotational System Calculator"
-        left={<RotationInputs
+        inputs={<RotationInputs
           mass={mass}
           setMass={setMass}
           radius={radius}
@@ -87,7 +90,7 @@ export default function Page() {
         center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Calculate kinetic energy and dynamic forces for a rotating mass and its power requirement.</p>
         </div>}
-        right={<RotationResults result={result} />}
+        results={<RotationResults result={result} />}
       />
   );
 }

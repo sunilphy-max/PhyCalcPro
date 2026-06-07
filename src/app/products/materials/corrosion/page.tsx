@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -7,7 +8,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import CorrosionInputs from "@/components/materials/corrosion/CorrosionInputs";
 import CorrosionResults from "@/components/materials/corrosion/CorrosionResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -83,7 +84,9 @@ export default function Page() {
 
   useSyncDesignInputs("corrosion", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    corrosionRate: (v) => setCorrosionRate(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -99,7 +102,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="corrosion"
         title="Corrosion Allowance Calculator"
-        left={
+        inputs={
           <CorrosionInputs
             initialThickness={initialThickness}
             setInitialThickness={setInitialThickness}
@@ -119,16 +122,8 @@ export default function Page() {
             setMarginUnit={setMarginUnit}
             onCalculate={calculate}
           />
-        }
-        center={
-          <CalculatorGuidancePanel title="Corrosion overview">
-            <p>
-              Produces a corrosion allowance from uniform loss rate and design life, then applies a safety
-              margin to the thickness requirement.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<CorrosionResults result={result} thicknessUnit={thicknessUnit} />}
+        }
+        results={<CorrosionResults result={result} thicknessUnit={thicknessUnit} />}
       />
   );
 }

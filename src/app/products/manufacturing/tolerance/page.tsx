@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -60,7 +61,12 @@ export default function Page() {
 
   useSyncDesignInputs("tolerance", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    minGap: (v) => {
+      const n = typeof v === "number" ? v : Number(v);
+      setTolerances((prev) => [n, ...prev.slice(1)]);
+    },
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -76,7 +82,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="tolerance"
       title="Tolerance Stackup Calculator"
-      left={
+      inputs={
         <ToleranceInputs
           tolerances={tolerances}
           setTolerances={setTolerances}
@@ -89,12 +95,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Compute worst-case and RSS tolerance stackups for assemblies and dimensional chains.</p>
-        </div>
-      }
-      right={<ToleranceResults result={result} displayUnit={toleranceUnit} />}
+      results={<ToleranceResults result={result} displayUnit={toleranceUnit} />}
     />
   );
 }

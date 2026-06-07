@@ -9,6 +9,7 @@ export const searchIndex = allModules.map((m) => ({
   description: m.description,
   route: m.route,
   category: m.category,
+  comingSoon: m.comingSoon,
   keywords: [
     m.title.toLowerCase(),
     m.id.toLowerCase(),

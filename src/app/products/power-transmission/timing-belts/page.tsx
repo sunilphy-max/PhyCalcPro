@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import TimingBeltsInputs from "@/components/power-transmission/timing-belts/TimingBeltsInputs";
 import TimingBeltsResults from "@/components/power-transmission/timing-belts/TimingBeltsResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -62,7 +62,11 @@ export default function Page() {
 
   useSyncDesignInputs("timing-belts", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    pitch: (v) => setPitch(typeof v === "number" ? v : Number(v)),
+    teethDriver: (v) => setTeethDriver(typeof v === "number" ? v : Number(v)),
+    teethDriven: (v) => setTeethDriven(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -78,7 +82,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="timing-belts"
       title="Timing Belt Drive"
-      left={
+      inputs={
         <div className="space-y-4">
           <TimingBeltsInputs
           power={power}
@@ -103,15 +107,7 @@ export default function Page() {
         />
         </div>
       }
-      center={
-        <CalculatorGuidancePanel title="Timing belt drives">
-          <p>
-            Synchronous belts eliminate slip. Confirm manufacturer tooth rating and minimum pulley teeth for
-            the selected pitch profile.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<TimingBeltsResults result={result} lengthUnit={lengthUnit} />}
+      results={<TimingBeltsResults result={result} lengthUnit={lengthUnit} />}
     />
   );
 }

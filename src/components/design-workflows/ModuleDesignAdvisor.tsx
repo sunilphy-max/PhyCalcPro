@@ -37,42 +37,18 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
               Design / Check / Select for {workflow.title}
             </h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              This layer turns the module into a design worksheet: define targets, compare
-              candidate sizes, use standard/catalog tables, and continue into linked checks.
+              Define targets in the inputs column, compare candidates in Select mode, and apply a sizing result
+              before running a detailed check.
             </p>
-            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-              <div className="rounded-xl border border-cyan-100 bg-white/80 px-3 py-2.5">
-                <dt className="font-semibold text-slate-950">Check</dt>
-                <dd className="mt-1 leading-5 text-slate-600">
-                  Verify the geometry and loads you have already entered. Calculate reports stress,
-                  deflection, life, or utilization for your current inputs.
-                </dd>
-              </div>
-              <div className="rounded-xl border border-cyan-100 bg-white/80 px-3 py-2.5">
-                <dt className="font-semibold text-slate-950">Design</dt>
-                <dd className="mt-1 leading-5 text-slate-600">
-                  Start from targets in the inputs column (load, deflection limit, safety factor, rate,
-                  power, and so on). Run design sizes the member or searches catalogs for a match.
-                </dd>
-              </div>
-              <div className="rounded-xl border border-cyan-100 bg-white/80 px-3 py-2.5">
-                <dt className="font-semibold text-slate-950">Select</dt>
-                <dd className="mt-1 leading-5 text-slate-600">
-                  Compare ranked alternatives side by side. Apply loads one candidate into Check mode
-                  so you can review details before committing.
-                </dd>
-              </div>
-            </dl>
+            <p className="mt-3 text-sm text-cyan-900">
+              Use the <span className="font-semibold">Workflow mode</span> control in the inputs column to switch
+              between Check, Design, and Select.
+            </p>
           </div>
           <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800 shadow-sm">
             {maturityLabel[workflow.maturity]}
           </span>
         </div>
-
-        <p className="mt-4 text-sm text-cyan-900">
-          Use the <span className="font-semibold">Workflow mode</span> control in the inputs column (left) to
-          switch between Check, Design, and Select.
-        </p>
       </div>
 
       <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
@@ -85,27 +61,6 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
             <p className="mt-2 text-sm leading-6 text-slate-600">{activeMode?.description}</p>
           </div>
 
-          <div>
-            <h3 className="text-sm font-semibold text-slate-950">Design inputs to define</h3>
-            <ul className="mt-2 grid gap-2 text-sm text-slate-600">
-              {workflow.designInputs.map((item) => (
-                <li key={item} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold text-slate-950">Automatic design targets</h3>
-            <ul className="mt-2 grid gap-2 text-sm text-slate-600">
-              {workflow.autoSizingTargets.map((item) => (
-                <li key={item} className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
         <div className="space-y-5 p-5">
@@ -272,14 +227,11 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-amber-950">
               <Lightbulb className="h-4 w-4" />
-              Expert notes and remaining gaps
+              Expert notes
             </div>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-amber-900">
               {workflow.expertNotes.map((item) => (
                 <li key={item}>{item}</li>
-              ))}
-              {workflow.gaps.map((item) => (
-                <li key={item}>Gap: {item}</li>
               ))}
             </ul>
           </div>

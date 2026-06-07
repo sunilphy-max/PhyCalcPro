@@ -1,12 +1,20 @@
 "use client";
 
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { LoadCaseManagerResult } from "@/lib/structural/loadCaseManager/types";
 
 type Props = {
   result: WithCalculationSpec<LoadCaseManagerResult> | null;
 };
+
+function statusTone(status: string): "green" | "orange" | "red" {
+  if (status === "safe") return "green";
+  if (status === "warning") return "orange";
+  return "red";
+}
 
 export default function LoadCaseManagerResults({ result }: Props) {
   return (
@@ -17,32 +25,37 @@ export default function LoadCaseManagerResults({ result }: Props) {
       result={result ?? undefined}
       title="Export Load Case Manager results"
       description="Export the current summary for review."
+      empty={!result}
+      emptyMessage="Run the calculation to see envelope stresses and safety factor."
+      heading="Load case envelope results"
     >
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-950">Results</h2>
-        {!result ? (
-          <p className="mt-4 text-sm text-slate-500">Run the calculation to see envelope stresses and safety factor.</p>
-        ) : (
-          <div className="mt-4 space-y-4">
-            <Metric label="Envelope axial force" value={`${result.envelopeAxial.toFixed(0)} N`} />
-            <Metric label="Envelope bending moment" value={`${result.envelopeMoment.toFixed(0)} N·m`} />
-            <Metric label="Combined stress" value={`${result.combinedStress.toFixed(1)} MPa`} />
-            <div className="rounded-2xl border border-slate-200 bg-slate-900 p-4 text-white">
-              <div className="text-sm uppercase tracking-[0.2em] text-slate-300">Status</div>
-              <div className="mt-2 text-xl font-semibold">{result.designStatus}</div>
-            </div>
-          </div>
-        )}
-      </div>
+      {result ? (
+        <>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Envelope axial force"
+              value={formatEngineeringValue(result.envelopeAxial, "N")}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Envelope bending moment"
+              value={formatEngineeringValue(result.envelopeMoment, "N·m")}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Combined stress"
+              value={formatEngineeringValue(result.combinedStress, "MPa")}
+              tone="purple"
+            />
+          </CalculatorMetricGrid>
+          <CalculatorMetricCard
+            label="Design status"
+            value={result.designStatus.charAt(0).toUpperCase() + result.designStatus.slice(1)}
+            tone={statusTone(result.designStatus)}
+            size="lg"
+          />
+        </>
+      ) : null}
     </CalculatorResultsShell>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-slate-50 p-4">
-      <div className="text-sm text-slate-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-slate-900">{value}</div>
-    </div>
   );
 }

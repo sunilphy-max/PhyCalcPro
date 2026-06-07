@@ -1,5 +1,9 @@
 import type { Dispatch, SetStateAction } from "react";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { BearingType } from "@/lib/machine/bearings/types";
 
 type Props = {
@@ -46,72 +50,55 @@ export default function BearingInputs({
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Bearing calculator</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Estimate equivalent load, dynamic rating, and life for rolling bearings.
-        </p>
-      </div>
-
+    <CalculatorInputPanel
+      title="Bearing calculator"
+      description="Estimate equivalent load, dynamic rating, and life for rolling bearings."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing life" designAware />}
+    >
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Radial load</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={radialLoad}
-              onChange={(event) => setRadialLoad(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Radial load"
+          value={radialLoad}
+          onChange={setRadialLoad}
+          unit={
             <ModuleUnitSelect
               moduleId="bearings"
               fieldKey="load"
               value={radialUnit}
               onChange={setRadialUnit}
             />
-          </div>
-        </label>
+          }
+        />
 
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Axial load</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={axialLoad}
-              onChange={(event) => setAxialLoad(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
+        <CalculatorUnitField
+          label="Axial load"
+          value={axialLoad}
+          onChange={setAxialLoad}
+          unit={
             <ModuleUnitSelect
               moduleId="bearings"
               fieldKey="load"
               value={axialUnit}
               onChange={setAxialUnit}
             />
-          </div>
-        </label>
+          }
+        />
 
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Speed</span>
-          <input
-            type="number"
-            value={speed}
-            onChange={(event) => setSpeed(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-          <p className="text-xs text-slate-400">RPM</p>
-        </label>
+        <CalculatorUnitField
+          label="Speed"
+          value={speed}
+          onChange={setSpeed}
+          min={0}
+          unit={<span className="text-sm text-slate-500">RPM</span>}
+        />
 
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Desired life</span>
-          <input
-            type="number"
-            value={lifeHours}
-            onChange={(event) => setLifeHours(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-          <p className="text-xs text-slate-400">Hours</p>
-        </label>
+        <CalculatorUnitField
+          label="Desired life"
+          value={lifeHours}
+          onChange={setLifeHours}
+          min={0}
+          unit={<span className="text-sm text-slate-500">h</span>}
+        />
 
         <label className="space-y-2 text-sm text-slate-700">
           <span>Safety factor</span>
@@ -120,7 +107,7 @@ export default function BearingInputs({
             step="0.1"
             value={safetyFactor}
             onChange={(event) => setSafetyFactor(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className={calculatorNumberInputClass}
           />
         </label>
 
@@ -137,8 +124,8 @@ export default function BearingInputs({
         </label>
       </div>
 
-      <div className="space-y-2 text-sm text-slate-700">
-        <label className="block">Material</label>
+      <label className="block space-y-2 text-sm text-slate-700">
+        <span>Material</span>
         <select
           value={material}
           onChange={(event) => setMaterial(event.target.value)}
@@ -148,15 +135,7 @@ export default function BearingInputs({
           <option value="Ceramic">Ceramic</option>
           <option value="Bronze">Bronze</option>
         </select>
-      </div>
-
-      <button
-        type="button"
-        onClick={onCalculate}
-        className="w-full rounded-xl bg-slate-900 text-white px-4 py-3 font-medium hover:bg-slate-800"
-      >
-        Calculate Bearing Life
-      </button>
-    </div>
+      </label>
+    </CalculatorInputPanel>
   );
 }

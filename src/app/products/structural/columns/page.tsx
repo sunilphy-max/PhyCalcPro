@@ -1,7 +1,6 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useCallback, useMemo, useState } from "react";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
@@ -214,64 +213,51 @@ export default function Page() {
   // UI
   // =========================
   return (
-          <CalculatorLayout
-        moduleId="columns"
-        title="Column Buckling Analysis"
-        footer={
-          <SavedProjectsFooter
-            projects={savedProjects}
-            onLoad={(project) => loadProjectIntoForm(project as BucklingProject)}
-          />
-        }
-        left={
-          <BucklingInputs
-            projectName={projectName}
-            setProjectName={setProjectName}
-            length={length}
-            setLength={setLength}
-            lengthUnit={lengthUnit}
-            setLengthUnit={setLengthUnit}
-            load={load}
-            setLoad={setLoad}
-            loadUnit={loadUnit}
-            setLoadUnit={setLoadUnit}
-            inertia={inertia}
-            setInertia={setInertia}
-            area={area}
-            setArea={setArea}
-            inertiaUnit={inertiaUnit}
-            setInertiaUnit={setInertiaUnit}
-            elasticModulus={elasticModulus}
-            setElasticModulus={setElasticModulus}
-            elasticModulusUnit={elasticModulusUnit}
-            setElasticModulusUnit={setElasticModulusUnit}
-            endCondition={endCondition}
-            setEndCondition={setEndCondition}
-            onCalculate={calculate}
-            onSave={saveProject}
-            saving={saving}
-            workflowMode={mode}
-            sectionDesignation={sectionDesignation}
-            setSectionDesignation={setSectionDesignation}
-            onSectionApplied={applySectionProperties}
-            targetSafetyFactor={targetSafetyFactor}
-            setTargetSafetyFactor={setTargetSafetyFactor}
-          />
-        }
-        center={
-          <CalculatorGuidancePanel title="Buckling analysis">
-            <p>
-              Euler and effective-length buckling for columns with selectable end conditions. Results include
-              critical load, stress, and buckling mode shapes.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={
-          <BucklingResults
-            result={result}
-            projectName={projectName}
-          />
-        }
-      />
+    <CalculatorLayout
+      moduleId="columns"
+      title="Column Buckling Analysis"
+      footer={
+        <SavedProjectsFooter
+          projects={savedProjects}
+          onLoad={(project) => loadProjectIntoForm(project as BucklingProject)}
+        />
+      }
+      inputs={
+        <BucklingInputs
+          projectName={projectName}
+          setProjectName={setProjectName}
+          length={length}
+          setLength={setLength}
+          lengthUnit={lengthUnit}
+          setLengthUnit={setLengthUnit}
+          load={load}
+          setLoad={setLoad}
+          loadUnit={loadUnit}
+          setLoadUnit={setLoadUnit}
+          inertia={inertia}
+          setInertia={setInertia}
+          area={area}
+          setArea={setArea}
+          inertiaUnit={inertiaUnit}
+          setInertiaUnit={setInertiaUnit}
+          elasticModulus={elasticModulus}
+          setElasticModulus={setElasticModulus}
+          elasticModulusUnit={elasticModulusUnit}
+          setElasticModulusUnit={setElasticModulusUnit}
+          endCondition={endCondition}
+          setEndCondition={setEndCondition}
+          onCalculate={calculate}
+          onSave={saveProject}
+          saving={saving}
+          workflowMode={mode}
+          sectionDesignation={sectionDesignation}
+          setSectionDesignation={setSectionDesignation}
+          onSectionApplied={applySectionProperties}
+          targetSafetyFactor={targetSafetyFactor}
+          setTargetSafetyFactor={setTargetSafetyFactor}
+        />
+      }
+      results={<BucklingResults result={result} projectName={projectName} />}
+    />
   );
 }

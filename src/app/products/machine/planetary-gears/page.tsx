@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import PlanetaryGearsInputs from "@/components/machine/planetary-gears/PlanetaryGearsInputs";
 import PlanetaryGearsResults from "@/components/machine/planetary-gears/PlanetaryGearsResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -63,7 +63,11 @@ export default function Page() {
 
   useSyncDesignInputs("planetary-gears", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    sunTeeth: (v) => setSunTeeth(typeof v === "number" ? v : Number(v)),
+    planetTeeth: (v) => setPlanetTeeth(typeof v === "number" ? v : Number(v)),
+    module: (v) => setModule(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -79,7 +83,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="planetary-gears"
       title="Planetary Gear Set"
-      left={
+      inputs={
         <PlanetaryGearsInputs
           sunTeeth={sunTeeth}
           setSunTeeth={setSunTeeth}
@@ -100,15 +104,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Planetary gear sets">
-          <p>
-            Ring teeth follow z<sub>r</sub> = z<sub>s</sub> + 2z<sub>p</sub>. Verify equal planet spacing and
-            assembly constraints; adjust planet count for packaging.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<PlanetaryGearsResults result={result} lengthUnit={lengthUnit} targetRatio={targetRatio} />}
+      results={<PlanetaryGearsResults result={result} lengthUnit={lengthUnit} targetRatio={targetRatio} />}
     />
   );
 }

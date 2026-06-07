@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import MultiPulleyInputs from "@/components/power-transmission/multi-pulley/MultiPulleyInputs";
 import MultiPulleyResults from "@/components/power-transmission/multi-pulley/MultiPulleyResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -58,7 +58,16 @@ export default function Page() {
 
   useSyncDesignInputs("multi-pulley", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    driverDiameter: (v) => {
+      const d = typeof v === "number" ? v : Number(v);
+      setPulleys((prev) => prev.map((p, i) => (i === 0 ? { ...p, diameter: d } : p)));
+    },
+    drivenDiameter: (v) => {
+      const d = typeof v === "number" ? v : Number(v);
+      setPulleys((prev) => prev.map((p, i) => (i === 1 ? { ...p, diameter: d } : p)));
+    },
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -74,7 +83,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="multi-pulley"
       title="Multi-Pulley Layout"
-      left={
+      inputs={
         <MultiPulleyInputs
           pulleys={pulleys}
           setPulleys={setPulleys}
@@ -85,15 +94,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Multi-pulley drives">
-          <p>
-            Chain of 2–8 pulleys with per-segment wrap angles, total belt length, and indicative radial
-            bearing loads. Aim for wrap ≥ 120° on the driver.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<MultiPulleyResults result={result} lengthUnit={lengthUnit} />}
+      results={<MultiPulleyResults result={result} lengthUnit={lengthUnit} />}
     />
   );
 }

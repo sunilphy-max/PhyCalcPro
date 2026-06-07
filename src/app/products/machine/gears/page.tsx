@@ -14,7 +14,6 @@ import { toBase } from "@/lib/units/conversions";
 import { solveGearEngine } from "@/lib/machine/gears/engine";
 import type { GearResult, GearMaterial } from "@/lib/machine/gears/types";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
@@ -175,9 +174,8 @@ export default function Page() {
           onLoad={(project) => loadProjectIntoForm(project as GearProject)}
         />
       }
-      left={
-        <div className="space-y-4">
-          <GearInputs
+      inputs={
+        <GearInputs
           power={power}
           setPower={setPower}
           powerUnit={powerUnit}
@@ -204,17 +202,8 @@ export default function Page() {
           onSave={saveProject}
           saving={saving}
         />
-        </div>
       }
-      center={
-        <CalculatorGuidancePanel title="Gear design">
-          <p>
-            Use safety factor and pitch diameters to refine geometry. Start with 20–30 pinion teeth and a module that
-            balances strength with packaging.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<GearResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
+      results={<GearResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
     />
   );
 }

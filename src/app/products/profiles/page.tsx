@@ -105,29 +105,33 @@ export default function Page() {
   };
 
   return (
-          <CalculatorLayout
-        moduleId="profiles"
-        title="Cross-Sectional Area Properties"
-        footer={
-          <SavedProjectsFooter
-            projects={savedProjects}
-            onLoad={(project) => loadProjectIntoForm(project as ProfilesProject)}
-          />
-        }
-        center={
-          <ProfilesInputs
-            projectName={projectName}
-            setProjectName={setProjectName}
-            shape={shape}
-            setShape={setShape}
-            onCalculate={calculate}
-            onSave={saveProject}
-            saving={saving}
-          />
-        }
-        right={
-          <ProfilesResults key={result ? JSON.stringify(result) : 'empty'} result={result} projectName={projectName} />
-        }
-      />
+    <CalculatorLayout
+      moduleId="profiles"
+      title="Cross-Sectional Area Properties"
+      footer={
+        <SavedProjectsFooter
+          projects={savedProjects}
+          onLoad={(project) => loadProjectIntoForm(project as ProfilesProject)}
+        />
+      }
+      inputs={
+        <ProfilesInputs
+          projectName={projectName}
+          setProjectName={setProjectName}
+          shape={shape}
+          setShape={setShape}
+          onCalculate={calculate}
+          onSave={saveProject}
+          saving={saving}
+        />
+      }
+      results={
+        <ProfilesResults
+          key={result ? JSON.stringify(result) : "empty"}
+          result={result}
+          projectName={projectName}
+        />
+      }
+    />
   );
 }

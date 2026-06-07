@@ -8,7 +8,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import FormulaReferenceInputs, {
   defaultFormulaInputs,
   defaultFormulaInputUnits,
@@ -93,7 +92,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="formula-reference"
       title="Engineering Formulas"
-      left={
+      inputs={
         <FormulaReferenceInputs
           formulaId={formulaId}
           setFormulaId={onFormulaChange}
@@ -104,15 +103,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Formula reference">
-          <p>
-            Screening calculations for common mechanics and fluids relationships. Confirm units and
-            assumptions before using results in design checks.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<FormulaReferenceResults result={result} />}
+      results={<FormulaReferenceResults result={result} />}
     />
   );
 }

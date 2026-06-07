@@ -1,6 +1,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { ToleranceResult } from "@/lib/manufacturing/types";
 
 type Props = {
@@ -10,7 +11,7 @@ type Props = {
 
 export default function ToleranceResults({ result, displayUnit }: Props) {
   const format = (value: number | undefined) =>
-    value === undefined ? "—" : `${value.toFixed(4)} ${displayUnit}`;
+    value === undefined ? "—" : formatEngineeringValue(value, displayUnit);
 
   return (
     <CalculatorResultsShell

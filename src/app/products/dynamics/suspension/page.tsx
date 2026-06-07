@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -7,7 +8,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import SuspensionInputs from "@/components/dynamics/suspension/SuspensionInputs";
 import SuspensionResults from "@/components/dynamics/suspension/SuspensionResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -67,7 +68,9 @@ export default function Page() {
 
   useSyncDesignInputs("suspension", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    rollStiffness: (v) => setRollStiffness(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -83,7 +86,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="suspension"
         title="Suspension Stability Calculator"
-        left={
+        inputs={
           <SuspensionInputs
             sprungMass={sprungMass}
             setSprungMass={setSprungMass}
@@ -109,15 +112,8 @@ export default function Page() {
             setHeightUnit={setHeightUnit}
             onCalculate={calculate}
           />
-        }
-        center={
-          <CalculatorGuidancePanel title="Suspension overview">
-            <p>
-              Simple roll response model for lateral force, roll moment, and body roll from cornering acceleration.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<SuspensionResults result={result} />}
+        }
+        results={<SuspensionResults result={result} />}
       />
   );
 }

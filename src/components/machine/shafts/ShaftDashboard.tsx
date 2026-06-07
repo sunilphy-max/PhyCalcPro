@@ -7,6 +7,7 @@ import {
   CalculatorMetricGrid,
   CalculatorPlotSection,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { ShaftResult } from "@/lib/machine/shafts/types";
 
 type Props = {
@@ -34,14 +35,12 @@ export default function ShaftDashboard({ result }: Props) {
         />
         <CalculatorMetricCard
           label="Diameter"
-          value={
-            result.diameter ? `${(result.diameter * 1000).toFixed(1)} mm` : "—"
-          }
+          value={result.diameter ? formatEngineeringValue(result.diameter, "m") : "—"}
           tone="purple"
         />
         <CalculatorMetricCard
           label="Critical Section"
-          value={`@ ${result.criticalSection.toFixed(3)} m`}
+          value={`@ ${formatEngineeringValue(result.criticalSection, "m")}`}
           tone="orange"
         />
       </CalculatorMetricGrid>
@@ -49,19 +48,19 @@ export default function ShaftDashboard({ result }: Props) {
       <CalculatorMetricGrid cols={3}>
         <CalculatorMetricCard
           label="Max Von Mises Stress"
-          value={`${(result.maxStress / 1e6).toFixed(2)} MPa`}
+          value={formatEngineeringValue(result.maxStress, "Pa")}
           tone="red"
           size="lg"
         />
         <CalculatorMetricCard
           label="Max Shear Stress"
-          value={`${(result.maxShearStress / 1e6).toFixed(2)} MPa`}
+          value={formatEngineeringValue(result.maxShearStress, "Pa")}
           tone="orange"
           size="lg"
         />
         <CalculatorMetricCard
           label="Max Bending Stress"
-          value={`${(result.maxBendingStress / 1e6).toFixed(2)} MPa`}
+          value={formatEngineeringValue(result.maxBendingStress, "Pa")}
           tone="amber"
           size="lg"
         />
@@ -128,27 +127,22 @@ export default function ShaftDashboard({ result }: Props) {
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Polar Moment"
-          value={
-            result.polarMoment
-              ? `${(result.polarMoment * 1e12).toFixed(2)} mm⁴`
-              : "—"
-          }
+          value={result.polarMoment ? formatEngineeringValue(result.polarMoment, "m⁴") : "—"}
         />
         <CalculatorMetricCard
           label="Second Moment"
-          value={
-            result.secondMoment
-              ? `${(result.secondMoment * 1e12).toFixed(2)} mm⁴`
-              : "—"
-          }
+          value={result.secondMoment ? formatEngineeringValue(result.secondMoment, "m⁴") : "—"}
         />
         <CalculatorMetricCard
           label="Max Deflection"
-          value={`${(result.maxDeflection * 1000).toFixed(3)} mm`}
+          value={formatEngineeringValue(result.maxDeflection, "m")}
         />
         <CalculatorMetricCard
           label="Max Rotation"
-          value={`${(((Math.max(...result.rotation) || 0) * 180) / Math.PI).toFixed(3)}°`}
+          value={formatEngineeringValue(
+            ((Math.max(...result.rotation) || 0) * 180) / Math.PI,
+            "°"
+          )}
         />
       </CalculatorMetricGrid>
     </div>

@@ -2,6 +2,8 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { RivetResult } from "@/lib/fasteners/rivets/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<RivetResult> | null;
@@ -10,26 +12,19 @@ type Props = {
   stressUnit: string;
 };
 
+function safetyTone(sf: number): "green" | "orange" | "red" {
+  if (sf >= 2) return "green";
+  if (sf >= 1.2) return "orange";
+  return "red";
+}
+
+function statusTone(status: string): "green" | "orange" | "red" {
+  if (status === "safe") return "green";
+  if (status === "warning") return "orange";
+  return "red";
+}
+
 export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-      moduleId="rivets"
-        fileName="rivet"
-        title="Export Rivet results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Rivet joint results</h2>
-          <p className="text-slate-500 mt-2">Run the evaluation to see stress distribution and the controlling failure mode.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
-  const diameter = fromBase(result.rivetDiameter, "length", lengthUnit);
-  const thickness = fromBase(result.plateThickness, "length", lengthUnit);
-
   return (
     <CalculatorResultsShell
       moduleId="rivets"
@@ -37,95 +32,91 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
       calculationSpec={result?.calculationSpec}
       title="Export Rivet results"
       description="Export the current summary and charts for review."
-      csvRows={[
-        { metric: "shearStress", value: result.shearStress },
-        { metric: "vonMisesStress", value: result.vonMisesStress },
-        { metric: "safetyFactorOverall", value: result.safetyFactorOverall },
-      ]}
+      empty={!result}
+      emptyMessage="Run the evaluation to see stress distribution and the controlling failure mode."
+      heading="Rivet joint results"
+      csvRows={
+        result
+          ? [
+              { metric: "shearStress", value: result.shearStress },
+              { metric: "vonMisesStress", value: result.vonMisesStress },
+              { metric: "safetyFactorOverall", value: result.safetyFactorOverall },
+            ]
+          : undefined
+      }
     >
-      <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Rivet evaluation summary</h2>
-          <p className="text-sm text-slate-500 mt-1">The lowest safety factor governs the design result.</p>
-        </div>
+      {result ? (
+        <>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Diameter"
+              value={formatEngineeringValue(fromBase(result.rivetDiameter, "length", lengthUnit), lengthUnit)}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="Plate thickness"
+              value={formatEngineeringValue(fromBase(result.plateThickness, "length", lengthUnit), lengthUnit)}
+              tone="purple"
+            />
+            <CalculatorMetricCard label="Quantity" numericValue={result.quantity} tone="blue" />
+            <CalculatorMetricCard
+              label="Rivet type"
+              value={result.rivetType.replace("_", " ")}
+              tone="blue"
+            />
+          </CalculatorMetricGrid>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Geometry</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Diameter</dt>
-                <dd>{diameter.toFixed(3)} {lengthUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Plate thickness</dt>
-                <dd>{thickness.toFixed(3)} {lengthUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Quantity</dt>
-                <dd>{result.quantity}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Rivet type</dt>
-                <dd className="capitalize">{result.rivetType.replace("_", " ")}</dd>
-              </div>
-            </dl>
-          </div>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Shear stress"
+              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Axial stress"
+              value={formatEngineeringValue(fromBase(result.axialStress, "stress", stressUnit), stressUnit)}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Bearing stress"
+              value={formatEngineeringValue(fromBase(result.bearingStress, "stress", stressUnit), stressUnit)}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Von Mises stress"
+              value={formatEngineeringValue(fromBase(result.vonMisesStress, "stress", stressUnit), stressUnit)}
+              tone="red"
+              size="lg"
+            />
+          </CalculatorMetricGrid>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Stress checks</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Shear stress</dt>
-                <dd>{fromBase(result.shearStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Axial stress</dt>
-                <dd>{fromBase(result.axialStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Bearing stress</dt>
-                <dd>{fromBase(result.bearingStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Von Mises</dt>
-                <dd>{fromBase(result.vonMisesStress, "stress", stressUnit).toFixed(1)} {stressUnit}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
+          <CalculatorMetricGrid cols={3}>
+            <CalculatorMetricCard
+              label="Overall safety factor"
+              numericValue={result.safetyFactorOverall}
+              tone={safetyTone(result.safetyFactorOverall)}
+              size="lg"
+            />
+            <CalculatorMetricCard
+              label="Shear SF"
+              numericValue={result.safetyFactorShear}
+              tone={safetyTone(result.safetyFactorShear)}
+            />
+            <CalculatorMetricCard
+              label="Bearing SF"
+              numericValue={result.safetyFactorBearing}
+              tone={safetyTone(result.safetyFactorBearing)}
+            />
+          </CalculatorMetricGrid>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-700">Safety factors</h3>
-              <p className="text-sm text-slate-500 mt-1">The design is governed by the lowest factor.</p>
-            </div>
-            <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-              {result.safetyFactorOverall.toFixed(2)}×
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-3 text-sm text-slate-600">
-            <div className="flex justify-between">
-              <span>Shear SF</span>
-              <span>{result.safetyFactorShear.toFixed(2)}×</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Axial SF</span>
-              <span>{result.safetyFactorAxial.toFixed(2)}×</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Bearing SF</span>
-              <span>{result.safetyFactorBearing.toFixed(2)}×</span>
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white">
-            Status: {result.designStatus.toUpperCase()} ({result.governingMode})
-          </div>
-        </div>
-      </div>
+          <CalculatorMetricCard
+            label="Design status"
+            value={`${result.designStatus.charAt(0).toUpperCase() + result.designStatus.slice(1)} (${result.governingMode})`}
+            tone={statusTone(result.designStatus)}
+            size="lg"
+          />
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

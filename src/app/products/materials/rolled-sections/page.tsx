@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import RolledSectionsInputs from "@/components/materials/rolled-sections/RolledSectionsInputs";
 import RolledSectionsResults from "@/components/materials/rolled-sections/RolledSectionsResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -45,7 +45,9 @@ export default function Page() {
 
   useSyncDesignInputs("rolled-sections", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    sectionDesignation: (v) => setDesignation(String(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -61,7 +63,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="rolled-sections"
       title="Rolled Sections"
-      left={
+      inputs={
         <RolledSectionsInputs
           family={family}
           setFamily={setFamily}
@@ -76,15 +78,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Rolled sections">
-          <p>
-            Indicative catalog values for preliminary member sizing. Confirm dimensions, grades, and design
-            resistances against the mill certificate and your governing standard.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={
+      results={
         <RolledSectionsResults
           result={result}
           designation={designation}

@@ -2,6 +2,11 @@
 
 import UnitSelector from "@/components/shared/UnitSelector";
 import MeshControls from "@/components/shared/MeshControls";
+import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
+import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
+import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
   span: number;
@@ -26,6 +31,9 @@ type Props = {
   setLoadUnit: (value: string) => void;
   EUnit: string;
   setEUnit: (value: string) => void;
+  sectionDesignation: string;
+  setSectionDesignation: (value: string) => void;
+  onSectionApplied: (designation: string, section: RolledSectionProps) => void;
   onCalculate: () => void;
 };
 
@@ -52,117 +60,75 @@ export default function TrussInputs({
   setLoadUnit,
   EUnit,
   setEUnit,
+  sectionDesignation,
+  setSectionDesignation,
+  onSectionApplied,
   onCalculate,
 }: Props) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4 space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold">Truss geometry</h2>
-        <p className="text-sm text-slate-500 mt-1">
-          Define span, height, panel count, and material properties for the truss.
-        </p>
-      </div>
+    <CalculatorInputPanel
+      title="Truss geometry"
+      description="Define span, height, panel count, and material properties for the truss."
+      footer={<CalculatorCalculateButton onClick={onCalculate} label="Analyze truss" designAware />}
+    >
+      <RolledSectionPicker
+        designation={sectionDesignation}
+        onDesignationChange={setSectionDesignation}
+        onSectionApplied={onSectionApplied}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Span</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={span}
-              min={0.1}
-              step={0.1}
-              onChange={(e) => setSpan(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="length"
-              value={spanUnit}
-              onChange={setSpanUnit}
-              label=""
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Height</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={height}
-              min={0.1}
-              step={0.05}
-              onChange={(e) => setHeight(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="length"
-              value={heightUnit}
-              onChange={setHeightUnit}
-              label=""
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Axial area</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={area}
-              min={1e-6}
-              step={1e-6}
-              onChange={(e) => setArea(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="area"
-              value={areaUnit}
-              onChange={setAreaUnit}
-              label=""
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Young&apos;s modulus</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={E}
-              min={1e6}
-              step={1e8}
-              onChange={(e) => setE(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="stress"
-              value={EUnit}
-              onChange={setEUnit}
-              label=""
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3 col-span-full">
-          <label className="block text-sm font-medium text-slate-700">Midspan downward load</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={load}
-              min={0}
-              step={100}
-              onChange={(e) => setLoad(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="force"
-              value={loadUnit}
-              onChange={setLoadUnit}
-              label=""
-            />
-          </div>
-        </div>
+        <CalculatorUnitField
+          label="Span"
+          value={span}
+          onChange={setSpan}
+          min={0.1}
+          step={0.1}
+          unit={
+            <UnitSelector dimension="length" value={spanUnit} onChange={setSpanUnit} label="" />
+          }
+        />
+        <CalculatorUnitField
+          label="Height"
+          value={height}
+          onChange={setHeight}
+          min={0.1}
+          step={0.05}
+          unit={
+            <UnitSelector dimension="length" value={heightUnit} onChange={setHeightUnit} label="" />
+          }
+        />
+        <CalculatorUnitField
+          label="Axial area"
+          value={area}
+          onChange={setArea}
+          min={1e-6}
+          step="any"
+          unit={
+            <UnitSelector dimension="area" value={areaUnit} onChange={setAreaUnit} label="" />
+          }
+        />
+        <CalculatorUnitField
+          label="Young's modulus"
+          value={E}
+          onChange={setE}
+          min={1e6}
+          step="any"
+          unit={
+            <UnitSelector dimension="stress" value={EUnit} onChange={setEUnit} label="" />
+          }
+        />
+        <CalculatorUnitField
+          label="Midspan downward load"
+          value={load}
+          onChange={setLoad}
+          min={0}
+          step={100}
+          colSpan
+          unit={
+            <UnitSelector dimension="force" value={loadUnit} onChange={setLoadUnit} label="" />
+          }
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
@@ -170,13 +136,6 @@ export default function TrussInputs({
         <p className="text-xs text-slate-500">{panels} panels along the span</p>
         <MeshControls elements={panels} onChangeElements={setPanels} refine />
       </div>
-
-      <button
-        onClick={onCalculate}
-        className="w-full rounded bg-slate-900 px-4 py-3 text-white font-semibold hover:bg-slate-800 transition"
-      >
-        Analyze truss
-      </button>
-    </div>
+    </CalculatorInputPanel>
   );
 }

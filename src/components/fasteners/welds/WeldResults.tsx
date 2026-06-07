@@ -2,6 +2,8 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { WeldResult } from "@/lib/fasteners/welds/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<WeldResult> | null;
@@ -10,130 +12,19 @@ type Props = {
   stressUnit: string;
 };
 
+function safetyTone(sf: number): "green" | "orange" | "red" {
+  if (sf >= 2) return "green";
+  if (sf >= 1.2) return "orange";
+  return "red";
+}
+
+function statusTone(status: string): "green" | "orange" | "red" {
+  if (status === "safe") return "green";
+  if (status === "warning") return "orange";
+  return "red";
+}
+
 export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-      moduleId="welds"
-        fileName="weld"
-        title="Export Weld results"
-        description="Export the current weld analysis summary."
-      >
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Weld analysis results</h2>
-          <p className="mt-2 text-slate-500">Run the evaluation to see governing weld stress and safety factors.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
-  const weldSize = fromBase(result.weldSize, "length", lengthUnit);
-  const throatSize = fromBase(result.throatSize, "length", lengthUnit);
-
-  const content = (
-    <div className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900">Weld design summary</h2>
-        <p className="mt-1 text-sm text-slate-500">Review throat area, stresses, and the controlling failure mode.</p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h3 className="text-sm font-semibold text-slate-700">Geometry</h3>
-          <dl className="mt-3 space-y-3 text-sm text-slate-600">
-            <div className="flex justify-between gap-4">
-              <dt>Weld type</dt>
-              <dd className="capitalize">{result.weldType.replace("_", " ")}</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Weld size</dt>
-              <dd>
-                {weldSize.toFixed(3)} {lengthUnit}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Throat size</dt>
-              <dd>
-                {throatSize.toFixed(3)} {lengthUnit}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Total throat area</dt>
-              <dd>{result.totalThroatArea.toFixed(6)} m²</dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h3 className="text-sm font-semibold text-slate-700">Stress state</h3>
-          <dl className="mt-3 space-y-3 text-sm text-slate-600">
-            <div className="flex justify-between gap-4">
-              <dt>Direct shear</dt>
-              <dd>
-                {fromBase(result.directShearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Moment shear</dt>
-              <dd>
-                {fromBase(result.momentShearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Combined shear</dt>
-              <dd>
-                {fromBase(result.shearStress, "stress", stressUnit).toFixed(1)} {stressUnit}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Axial stress</dt>
-              <dd>
-                {fromBase(result.axialStress, "stress", stressUnit).toFixed(1)} {stressUnit}
-              </dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Resultant stress</dt>
-              <dd>
-                {fromBase(result.resultantStress, "stress", stressUnit).toFixed(1)} {stressUnit}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h3 className="text-sm font-semibold text-slate-700">Safety factors</h3>
-            <p className="mt-1 text-sm text-slate-500">The smallest factor controls the weld design.</p>
-          </div>
-          <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-            {result.safetyFactorOverall.toFixed(2)}×
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-3 text-sm text-slate-600">
-          <div className="flex justify-between">
-            <span>Shear SF</span>
-            <span>{result.safetyFactorShear.toFixed(2)}×</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Axial SF</span>
-            <span>{result.safetyFactorAxial.toFixed(2)}×</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Resultant SF</span>
-            <span>{result.safetyFactorResultant.toFixed(2)}×</span>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white">
-          Status: {result.designStatus.toUpperCase()} ({result.governingMode})
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <CalculatorResultsShell
       moduleId="welds"
@@ -141,13 +32,100 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
       calculationSpec={result?.calculationSpec}
       title="Export Weld results"
       description="Export the current weld analysis summary."
-      csvRows={[
-        { metric: "safetyFactorOverall", value: result.safetyFactorOverall },
-        { metric: "resultantStress", value: fromBase(result.resultantStress, "stress", stressUnit) },
-        { metric: "governingMode", value: result.governingMode },
-      ]}
+      empty={!result}
+      emptyMessage="Run the evaluation to see governing weld stress and safety factors."
+      heading="Weld analysis results"
+      csvRows={
+        result
+          ? [
+              { metric: "safetyFactorOverall", value: result.safetyFactorOverall },
+              { metric: "resultantStress", value: fromBase(result.resultantStress, "stress", stressUnit) },
+              { metric: "governingMode", value: result.governingMode },
+            ]
+          : undefined
+      }
     >
-      {content}
+      {result ? (
+        <>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Weld type"
+              value={result.weldType.replace("_", " ")}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Weld size"
+              value={formatEngineeringValue(fromBase(result.weldSize, "length", lengthUnit), lengthUnit)}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="Throat size"
+              value={formatEngineeringValue(fromBase(result.throatSize, "length", lengthUnit), lengthUnit)}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="Throat area"
+              value={formatEngineeringValue(result.totalThroatArea, "m²")}
+              tone="blue"
+            />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Direct shear"
+              value={formatEngineeringValue(fromBase(result.directShearStress, "stress", stressUnit), stressUnit)}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Moment shear"
+              value={formatEngineeringValue(fromBase(result.momentShearStress, "stress", stressUnit), stressUnit)}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Combined shear"
+              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Axial stress"
+              value={formatEngineeringValue(fromBase(result.axialStress, "stress", stressUnit), stressUnit)}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Resultant stress"
+              value={formatEngineeringValue(fromBase(result.resultantStress, "stress", stressUnit), stressUnit)}
+              tone="red"
+              size="lg"
+            />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricGrid cols={3}>
+            <CalculatorMetricCard
+              label="Overall safety factor"
+              numericValue={result.safetyFactorOverall}
+              tone={safetyTone(result.safetyFactorOverall)}
+              size="lg"
+            />
+            <CalculatorMetricCard
+              label="Shear SF"
+              numericValue={result.safetyFactorShear}
+              tone={safetyTone(result.safetyFactorShear)}
+            />
+            <CalculatorMetricCard
+              label="Axial SF"
+              numericValue={result.safetyFactorAxial}
+              tone={safetyTone(result.safetyFactorAxial)}
+            />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricCard
+            label="Design status"
+            value={`${result.designStatus.charAt(0).toUpperCase() + result.designStatus.slice(1)} (${result.governingMode})`}
+            tone={statusTone(result.designStatus)}
+            size="lg"
+          />
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

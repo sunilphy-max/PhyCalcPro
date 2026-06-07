@@ -1,6 +1,8 @@
 import { fromBase } from "@/lib/units/conversions";
 import type { GearResult } from "@/lib/machine/gears/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 type Props = {
@@ -10,105 +12,75 @@ type Props = {
 };
 
 export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-      moduleId="gears"
-        fileName="gear"
-        title="Export Gear results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">Results</h2>
-          <p className="text-slate-500 mt-2">Run the analysis to review gear geometry and root bending stress.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
-  const pitchDiameterPinion = fromBase(result.pitchDiameterPinion, "length", lengthUnit);
-  const pitchDiameterGear = fromBase(result.pitchDiameterGear, "length", lengthUnit);
-  const bendingStress = fromBase(result.bendingStress, "stress", stressUnit);
-  const allowableStress = fromBase(result.allowableStress, "stress", stressUnit);
-
   return (
     <CalculatorResultsShell
       moduleId="gears"
       fileName="gear"
       title="Export Gear results"
       description="Export the current summary and charts for review."
-      calculationSpec={result.calculationSpec}
-      csvRows={[
-        { metric: "actualRatio", value: result.actualRatio },
-        { metric: "torque", value: result.torque },
-        { metric: "bendingStress", value: result.bendingStress },
-        { metric: "safetyFactor", value: result.safetyFactor },
-      ]}
+      calculationSpec={result?.calculationSpec}
+      empty={!result}
+      emptyMessage="Run the analysis to review gear geometry and root bending stress."
+      heading="Gear results"
+      csvRows={
+        result
+          ? [
+              { metric: "actualRatio", value: result.actualRatio },
+              { metric: "torque", value: result.torque },
+              { metric: "bendingStress", value: result.bendingStress },
+              { metric: "safetyFactor", value: result.safetyFactor },
+            ]
+          : undefined
+      }
     >
-      <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Performance Summary</h2>
-          <p className="text-slate-500 mt-1">Review calculated gear pitch diameters, forces, and the bending safety factor.</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Geometry</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Pinion diameter</dt>
-                <dd>{pitchDiameterPinion.toFixed(3)} {lengthUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Gear diameter</dt>
-                <dd>{pitchDiameterGear.toFixed(3)} {lengthUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Actual ratio</dt>
-                <dd>{result.actualRatio.toFixed(2)}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Lewis factor</dt>
-                <dd>{result.lewisY.toFixed(3)}</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Loads</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Torque</dt>
-                <dd>{result.torque.toFixed(1)} N·m</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Tangential force</dt>
-                <dd>{result.tangentialForce.toFixed(0)} N</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Root bending stress</dt>
-                <dd>{bendingStress.toFixed(1)} {stressUnit}</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Allowable stress</dt>
-                <dd>{allowableStress.toFixed(0)} {stressUnit}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-700">Safety factor</h3>
-              <p className="text-slate-500 mt-1">Based on bending strength and selected material.</p>
-            </div>
-            <div className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">
-              {result.safetyFactor.toFixed(2)}×
-            </div>
-          </div>
-        </div>
-      </div>
+      {result ? (
+        <>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Pinion pitch diameter"
+              value={`${formatDisplayNumber(fromBase(result.pitchDiameterPinion, "length", lengthUnit))} ${lengthUnit}`}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Gear pitch diameter"
+              value={`${formatDisplayNumber(fromBase(result.pitchDiameterGear, "length", lengthUnit))} ${lengthUnit}`}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Actual ratio"
+              numericValue={result.actualRatio}
+              tone="purple"
+            />
+            <CalculatorMetricCard label="Lewis factor" numericValue={result.lewisY} tone="purple" />
+            <CalculatorMetricCard
+              label="Torque"
+              value={`${formatDisplayNumber(result.torque)} N·m`}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Tangential force"
+              value={`${formatDisplayNumber(result.tangentialForce)} N`}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Root bending stress"
+              value={`${formatDisplayNumber(fromBase(result.bendingStress, "stress", stressUnit))} ${stressUnit}`}
+              tone="amber"
+            />
+            <CalculatorMetricCard
+              label="Allowable stress"
+              value={`${formatDisplayNumber(fromBase(result.allowableStress, "stress", stressUnit))} ${stressUnit}`}
+              tone="amber"
+            />
+          </CalculatorMetricGrid>
+          <CalculatorMetricCard
+            label="Bending safety factor"
+            numericValue={result.safetyFactor}
+            tone={result.safetyFactor >= 1.5 ? "green" : "red"}
+            size="lg"
+          />
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

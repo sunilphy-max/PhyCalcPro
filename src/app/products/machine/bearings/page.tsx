@@ -90,43 +90,33 @@ export default function Page() {
   };
 
   return (
-          <CalculatorLayout
-        moduleId="bearings"
-        title="Bearing Load Rating & Life"
-        left={
-          <div className="space-y-4">
-            <div className="rounded-xl bg-white p-4 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Bearing guidance</h3>
-              <p className="text-sm text-slate-500 mt-2">
-                Use this tool to estimate equivalent bearing load, dynamic rating, and expected operating life.
-              </p>
-            </div>
-          </div>
-        }
-        center={
-          <BearingInputs
-            radialLoad={radialLoad}
-            setRadialLoad={setRadialLoad}
-            radialUnit={radialUnit}
-            setRadialUnit={setRadialUnit}
-            axialLoad={axialLoad}
-            setAxialLoad={setAxialLoad}
-            axialUnit={axialUnit}
-            setAxialUnit={setAxialUnit}
-            speed={speed}
-            setSpeed={setSpeed}
-            lifeHours={lifeHours}
-            setLifeHours={setLifeHours}
-            safetyFactor={safetyFactor}
-            setSafetyFactor={setSafetyFactor}
-            bearingType={bearingType}
-            setBearingType={setBearingType}
-            material={material}
-            setMaterial={setMaterial}
-            onCalculate={calculate}
-          />
-        }
-        right={<BearingResults result={result} loadUnit={radialUnit} />}
-      />
+    <CalculatorLayout
+      moduleId="bearings"
+      title="Bearing Load Rating & Life"
+      inputs={
+        <BearingInputs
+          radialLoad={radialLoad}
+          setRadialLoad={setRadialLoad}
+          radialUnit={radialUnit}
+          setRadialUnit={setRadialUnit}
+          axialLoad={axialLoad}
+          setAxialLoad={setAxialLoad}
+          axialUnit={axialUnit}
+          setAxialUnit={setAxialUnit}
+          speed={speed}
+          setSpeed={setSpeed}
+          lifeHours={lifeHours}
+          setLifeHours={setLifeHours}
+          safetyFactor={safetyFactor}
+          setSafetyFactor={setSafetyFactor}
+          bearingType={bearingType}
+          setBearingType={setBearingType}
+          material={material}
+          setMaterial={setMaterial}
+          onCalculate={calculate}
+        />
+      }
+      results={<BearingResults result={result} loadUnit={radialUnit} />}
+    />
   );
 }

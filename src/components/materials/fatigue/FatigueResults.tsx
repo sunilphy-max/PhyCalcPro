@@ -7,6 +7,7 @@ import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<FatigueResult> | null;
@@ -52,7 +53,7 @@ export default function FatigueResults({ result, alternatingUnit }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Allowable alternating stress"
-              value={`${result.allowableStress.toFixed(1)} ${alternatingUnit}`}
+              value={formatEngineeringValue(result.allowableStress, alternatingUnit)}
               tone="blue"
               size="lg"
             />

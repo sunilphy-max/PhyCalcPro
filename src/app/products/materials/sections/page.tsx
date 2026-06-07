@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -63,7 +64,10 @@ export default function Page() {
 
   useSyncDesignInputs("sections", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    width: (v) => setWidth(typeof v === "number" ? v : Number(v)),
+    height: (v) => setHeight(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -79,7 +83,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="sections"
         title="Section Property Calculator"
-        left={<SectionInputs
+        inputs={<SectionInputs
           shape={shape}
           setShape={setShape}
           width={width}
@@ -103,7 +107,7 @@ export default function Page() {
         center={<div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
           <p>Calculate area, centroid position, and second moments of area for standard section shapes.</p>
         </div>}
-        right={<SectionResults
+        results={<SectionResults
           result={result}
           linearUnit={lengthUnit}
           areaUnit={`${lengthUnit}2`}

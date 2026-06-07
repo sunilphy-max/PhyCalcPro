@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import BevelGearsInputs from "@/components/machine/bevel-gears/BevelGearsInputs";
 import BevelGearsResults from "@/components/machine/bevel-gears/BevelGearsResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -71,7 +71,10 @@ export default function Page() {
 
   useSyncDesignInputs("bevel-gears", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    module: (v) => setModule(typeof v === "number" ? v : Number(v)),
+    faceWidth: (v) => setFaceWidth(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -87,7 +90,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="bevel-gears"
       title="Bevel Gear Screening"
-      left={
+      inputs={
         <BevelGearsInputs
           power={power}
           setPower={setPower}
@@ -114,15 +117,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Bevel gear screening">
-          <p>
-            Indicative Lewis bending and Hertz contact screening for straight bevel pinions. Confirm cone geometry,
-            mounting, and manufacturer ratings before final design.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<BevelGearsResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
+      results={<BevelGearsResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
     />
   );
 }

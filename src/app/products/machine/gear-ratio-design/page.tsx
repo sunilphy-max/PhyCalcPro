@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import GearRatioDesignInputs from "@/components/machine/gear-ratio-design/GearRatioDesignInputs";
 import GearRatioDesignResults from "@/components/machine/gear-ratio-design/GearRatioDesignResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -45,7 +45,10 @@ export default function Page() {
 
   useSyncDesignInputs("gear-ratio-design", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    pinionTeeth: (v) => setMinPinionTeeth(typeof v === "number" ? v : Number(v)),
+    ratio: (v) => setTargetRatio(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -61,7 +64,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="gear-ratio-design"
       title="Gear Ratio Design"
-      left={
+      inputs={
         <GearRatioDesignInputs
           targetRatio={targetRatio}
           setTargetRatio={setTargetRatio}
@@ -72,15 +75,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Gear ratio design">
-          <p>
-            Searches integer tooth pairs within the specified bounds. Prefer pinion teeth above 17 to avoid
-            undercutting and verify contact ratio for the selected module.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<GearRatioDesignResults result={result} targetRatio={targetRatio} />}
+      results={<GearRatioDesignResults result={result} targetRatio={targetRatio} />}
     />
   );
 }

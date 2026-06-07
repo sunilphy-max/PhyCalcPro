@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import TorsionSpringInputs from "@/components/springs/torsion-springs/TorsionSpringInputs";
 import TorsionSpringResults from "@/components/springs/torsion-springs/TorsionSpringResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -67,7 +67,9 @@ export default function Page() {
 
   useSyncDesignInputs("torsion-springs", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    legLength: (v) => setLegLength(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -83,7 +85,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="torsion-springs"
       title="Torsion Spring"
-      left={
+      inputs={
         <TorsionSpringInputs
           wireDiameter={wireDiameter}
           setWireDiameter={setWireDiameter}
@@ -106,15 +108,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Torsion springs">
-          <p>
-            Rate k = Ed⁴/(116Dn). Bending stress uses straight-beam approximation — verify leg attachment
-            and coil spacing for production designs.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<TorsionSpringResults result={result} stressUnit={stressUnit} />}
+      results={<TorsionSpringResults result={result} stressUnit={stressUnit} />}
     />
   );
 }

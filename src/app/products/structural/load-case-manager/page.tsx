@@ -7,7 +7,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import LoadCaseManagerInputs from "@/components/structural/loadCaseManager/LoadCaseManagerInputs";
 import LoadCaseManagerResults from "@/components/structural/loadCaseManager/LoadCaseManagerResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -93,7 +93,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="load-case-manager"
         title="Load Case Envelope Calculator"
-        left={
+        inputs={
           <LoadCaseManagerInputs
             cases={cases}
             updateCase={updateCase}
@@ -111,16 +111,8 @@ export default function Page() {
             setStressUnit={setStressUnit}
             onCalculate={calculate}
           />
-        }
-        center={
-          <CalculatorGuidancePanel title="Envelope summary">
-            <p>
-              Computes peak axial, bending, and shear values across all cases, then a combined stress envelope for a
-              rectangular section.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<LoadCaseManagerResults result={result} />}
+        }
+        results={<LoadCaseManagerResults result={result} />}
       />
   );
 }

@@ -2,27 +2,14 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { HeatExchangerResult } from "@/lib/pressure/heat-exchangers/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<HeatExchangerResult> | null;
 };
 
 export default function HeatExchangerResults({ result }: Props) {
-  if (!result) {
-    return (
-      <CalculatorResultsShell
-      moduleId="heat-exchangers"
-        fileName="heat-exchanger"
-        title="Export Heat Exchanger results"
-        description="Export the current summary and charts for review."
-      >
-        <div className="bg-white rounded-xl p-6 shadow-sm text-slate-500">
-          <p>Run the heat exchanger model to see thermal duty, required area, and effectiveness.</p>
-        </div>
-      </CalculatorResultsShell>
-    );
-  }
-
   return (
     <CalculatorResultsShell
       moduleId="heat-exchangers"
@@ -30,75 +17,66 @@ export default function HeatExchangerResults({ result }: Props) {
       calculationSpec={result?.calculationSpec}
       title="Export Heat Exchanger results"
       description="Export the current summary and charts for review."
-      csvRows={[
-        { metric: "heatTransferRate", value: result.heatTransferRate },
-        { metric: "LMTD", value: result.LMTD },
-        { metric: "effectiveness", value: result.effectiveness },
-        { metric: "requiredArea", value: result.requiredArea },
-      ]}
+      empty={!result}
+      emptyMessage="Run the heat exchanger model to see thermal duty, required area, and effectiveness."
+      heading="Heat exchanger results"
+      csvRows={
+        result
+          ? [
+              { metric: "heatTransferRate", value: result.heatTransferRate },
+              { metric: "LMTD", value: result.LMTD },
+              { metric: "effectiveness", value: result.effectiveness },
+              { metric: "requiredArea", value: result.requiredArea },
+            ]
+          : undefined
+      }
     >
-      <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-900">Heat exchanger summary</h2>
-          <p className="text-sm text-slate-500 mt-1">Review the exchanger performance, temperature change, and capacity balance.</p>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Thermal performance</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Heat transfer rate</dt>
-                <dd>{fromBase(result.heatTransferRate, "power", "W").toFixed(0)} W</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Log mean TD</dt>
-                <dd>{result.LMTD.toFixed(2)} K</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Effectiveness</dt>
-                <dd>{(result.effectiveness * 100).toFixed(1)}%</dd>
-              </div>
-            </dl>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Geometry and sizing</h3>
-            <dl className="mt-3 space-y-3 text-sm text-slate-600">
-              <div className="flex justify-between gap-4">
-                <dt>Design area</dt>
-                <dd>{result.area.toFixed(2)} m²</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>Required area</dt>
-                <dd>{result.requiredArea.toFixed(2)} m²</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt>NTU</dt>
-                <dd>{result.NTU.toFixed(2)}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <h3 className="text-sm font-semibold text-slate-700">Temperature results</h3>
-          <dl className="mt-3 space-y-3 text-sm text-slate-600">
-            <div className="flex justify-between gap-4">
-              <dt>Cold outlet temp</dt>
-              <dd>{result.coldOutletTemp.toFixed(1)} °C</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Q maximum</dt>
-              <dd>{fromBase(result.Qmax, "power", "W").toFixed(0)} W</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt>Actual effectiveness</dt>
-              <dd>{(result.actualEffectiveness * 100).toFixed(1)}%</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
+      {result ? (
+        <>
+          <CalculatorMetricGrid cols={2}>
+            <CalculatorMetricCard
+              label="Heat transfer rate"
+              value={formatEngineeringValue(fromBase(result.heatTransferRate, "power", "W"), "W")}
+              tone="red"
+            />
+            <CalculatorMetricCard
+              label="Log mean TD"
+              value={formatEngineeringValue(result.LMTD, "K")}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="Effectiveness"
+              value={formatEngineeringValue(result.effectiveness * 100, "%")}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="NTU"
+              numericValue={result.NTU}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Design area"
+              value={formatEngineeringValue(result.area, "m²")}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Required area"
+              value={formatEngineeringValue(result.requiredArea, "m²")}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Cold outlet temp"
+              value={formatEngineeringValue(result.coldOutletTemp, "°C")}
+              tone="green"
+            />
+            <CalculatorMetricCard
+              label="Q maximum"
+              value={formatEngineeringValue(fromBase(result.Qmax, "power", "W"), "W")}
+              tone="orange"
+            />
+          </CalculatorMetricGrid>
+        </>
+      ) : null}
     </CalculatorResultsShell>
   );
 }

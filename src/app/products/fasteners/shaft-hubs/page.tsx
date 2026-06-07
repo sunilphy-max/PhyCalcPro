@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ShaftHubInputs from "@/components/fasteners/shaft-hubs/ShaftHubInputs";
 import ShaftHubResults from "@/components/fasteners/shaft-hubs/ShaftHubResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -65,7 +65,9 @@ export default function Page() {
 
   useSyncDesignInputs("shaft-hubs", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    interference: (v) => setInterference(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -81,7 +83,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="shaft-hubs"
       title="Shaft Hub Fit"
-      left={
+      inputs={
         <ShaftHubInputs
           shaftDiameter={shaftDiameter}
           setShaftDiameter={setShaftDiameter}
@@ -104,15 +106,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Shaft hub fits">
-          <p>
-            Uses thick-cylinder Lame solution for contact pressure from diametral interference. Friction torque
-            T = p·π·d·L·μ·d/2. Verify assembly temperature rise and hub yield for high interference.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<ShaftHubResults result={result} stressUnit={stressUnit} torqueUnit={torqueUnit} />}
+      results={<ShaftHubResults result={result} stressUnit={stressUnit} torqueUnit={torqueUnit} />}
     />
   );
 }

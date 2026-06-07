@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
@@ -8,7 +9,6 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import PinInputs from "@/components/fasteners/pins/PinInputs";
 import PinResults from "@/components/fasteners/pins/PinResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -61,7 +61,9 @@ export default function Page() {
 
   useSyncDesignInputs("pins", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    pinDiameter: (v) => setPinDiameter(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -77,7 +79,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="pins"
       title="Pin & Clevis"
-      left={
+      inputs={
         <PinInputs
           force={force}
           setForce={setForce}
@@ -98,15 +100,7 @@ export default function Page() {
           onCalculate={calculate}
         />
       }
-      center={
-        <CalculatorGuidancePanel title="Pins & clevis joints">
-          <p>
-            Single-shear pins are checked for direct shear and bearing on the plate. Allowable shear is 0.6×σy
-            and bearing 1.5×σy. Use multiple pins when load sharing is uniform.
-          </p>
-        </CalculatorGuidancePanel>
-      }
-      right={<PinResults result={result} stressUnit={stressUnit} />}
+      results={<PinResults result={result} stressUnit={stressUnit} />}
     />
   );
 }

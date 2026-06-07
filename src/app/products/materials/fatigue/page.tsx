@@ -1,5 +1,6 @@
 "use client";
 
+import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -7,7 +8,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
+
 import FatigueInputs from "@/components/materials/fatigue/FatigueInputs";
 import FatigueResults from "@/components/materials/fatigue/FatigueResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
@@ -73,7 +74,9 @@ export default function Page() {
 
   useSyncDesignInputs("fatigue", designUserInputs);
 
-  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+  const applyDesignFields = useApplyDesignFields({
+    alternatingStress: (v) => setAlternatingStress(typeof v === "number" ? v : Number(v)),
+  });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
@@ -89,7 +92,7 @@ export default function Page() {
           <CalculatorLayout
         moduleId="fatigue"
         title="Fatigue Life Calculator"
-        left={
+        inputs={
           <FatigueInputs
             alternatingStress={alternatingStress}
             setAlternatingStress={setAlternatingStress}
@@ -111,16 +114,8 @@ export default function Page() {
             setMeanStressMethod={setMeanStressMethod}
             onCalculate={calculate}
           />
-        }
-        center={
-          <CalculatorGuidancePanel title="Fatigue overview">
-            <p>
-              Evaluates a Goodman-style fatigue criterion and estimates allowable alternating stress for cyclic
-              loading.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<FatigueResults result={result} alternatingUnit={alternatingUnit} />}
+        }
+        results={<FatigueResults result={result} alternatingUnit={alternatingUnit} />}
       />
   );
 }
