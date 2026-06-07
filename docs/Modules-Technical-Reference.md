@@ -106,14 +106,20 @@ standard screening equations (for example beam stress/deflection, shaft von Mise
 Lewis gear bending, ISO 281 bearing life, spring shear stress, pressure hoop stress, pump-down
 time, thermal conductance, coil field and battery cooling flow).
 
-This is the platform layer needed for MITCalc-style worksheets. It does **not** mean every
-module has complete user-input-driven automatic sizing yet. Current coverage is:
+This is the platform layer needed for MITCalc-style worksheets. As of the full rollout:
+
+- **`designModeRegistry.ts`** maps every module ID to a category design solver (catalog sweep, reverse sizing, or optimization screen).
+- **`computedCandidates.ts`** calls the registry so the advisor shows live ranked candidates from page `userInputs`.
+- **Calculate** on product pages branches on workflow mode: **Check** runs the forward solver; **Design** applies the best registry candidate then re-runs the check.
+- Shared helpers: `sweepCatalogForUtilization`, `materialCatalogService`, `scripts/scaffold-design-mode.mjs`.
 
 | Coverage type | Meaning |
 |---------------|---------|
-| **Solver-backed** | Existing solver computes key worksheet quantities; automatic sizing can be layered next. |
-| **Catalog-backed** | Module already behaves like a reference/selection table. |
-| **Workflow scaffold** | Design contract, computed reference candidates, links and notes exist; user-input-specific candidate generation remains planned. |
+| **Solver-backed** | Design mode runs a real reverse/catalog solver and applies fields before check (beams, columns, gears, shafts, pipes, …). |
+| **Catalog-backed** | Design mode ranks catalog entries (material-db, rolled-sections, bearings, tools reference). |
+| **Check-only** | formula-reference, unit-converter — advisor registered; Design mode does not resize (by design). |
+
+**Count:** 61 modules with real design paths · 2 check-only tools · 1 profiles page (section-from-required-I).
 
 ---
 

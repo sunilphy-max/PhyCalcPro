@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import FlywheelInputs from "@/components/machine/flywheels/FlywheelInputs";
 import FlywheelResults from "@/components/machine/flywheels/FlywheelResults";
 import { toBase } from "@/lib/units/conversions";
@@ -10,6 +16,7 @@ import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
 import type { FlywheelResult } from "@/lib/machine/flywheels/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("flywheels");
   const [outerDiameter, setOuterDiameter] = useState(1);
   const [outerDiameterUnit, setOuterDiameterUnit] = useState("m");
@@ -24,7 +31,7 @@ export default function Page() {
   const [yieldStressUnit, setYieldStressUnit] = useState("Pa");
   const [result, setResult] = useState<FlywheelResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       outerDiameter: toBase(outerDiameter, "length", outerDiameterUnit),
       thickness: toBase(thickness, "length", thicknessUnit),
@@ -35,6 +42,24 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveFlywheelEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      speedDriver: rpm,
+      energy: 5000,
+    }), [rpm]);
+
+  useSyncDesignInputs("flywheels", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("flywheels", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

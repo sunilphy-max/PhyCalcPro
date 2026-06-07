@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import SafetyFactorInputs from "@/components/fasteners/safety-factor/SafetyFactorInputs";
 import SafetyFactorResults from "@/components/fasteners/safety-factor/SafetyFactorResults";
@@ -10,6 +15,7 @@ import { solveSafetyFactorEngine } from "@/lib/fasteners/safetyFactor/engine";
 import type { SafetyFactorResult } from "@/lib/fasteners/safetyFactor/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("safety-factor");
   const [diameter, setDiameter] = useState(0.02);
   const [diameterUnit, setDiameterUnit] = useState("m");
@@ -26,7 +32,7 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState("Pa");
   const [result, setResult] = useState<SafetyFactorResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       diameter: toBase(diameter, "length", diameterUnit),
       axialForce: toBase(axialForce, "force", axialForceUnit),
@@ -38,6 +44,25 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveSafetyFactorEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      appliedStress: yieldStrength / 2,
+      yieldStress: yieldStrength,
+      loadFactor: 1.5,
+    }), [yieldStrength]);
+
+  useSyncDesignInputs("safety-factor", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("safety-factor", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

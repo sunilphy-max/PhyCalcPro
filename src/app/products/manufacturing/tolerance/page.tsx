@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import ToleranceInputs from "@/components/manufacturing/ToleranceInputs";
 import ToleranceResults from "@/components/manufacturing/ToleranceResults";
 import { toBase, fromBase } from "@/lib/units/conversions";
@@ -11,6 +17,7 @@ import type { ToleranceResult } from "@/lib/manufacturing/types";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("tolerance");
   const [toleranceUnit, setToleranceUnit] = useState("mm");
   const [tolerances, setTolerances] = useState([0.05, 0.02, 0.01]);
@@ -18,7 +25,7 @@ export default function Page() {
   const [monteCarloSamples, setMonteCarloSamples] = useState(1000);
   const [result, setResult] = useState<WithCalculationSpec<ToleranceResult> | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       tolerances: tolerances.map((value) => toBase(value, "length", toleranceUnit)),
       ...(tolerancesY.length
@@ -43,6 +50,24 @@ export default function Page() {
           raw.monteCarloStdDev !== undefined ? fromBase(raw.monteCarloStdDev, "length", toleranceUnit) : undefined,
       })
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      minGap: tolerances[0] ?? 0.05,
+      nominalGap: tolerances[1] ?? 0.02,
+    }), [tolerances]);
+
+  useSyncDesignInputs("tolerance", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("tolerance", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

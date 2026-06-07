@@ -1,0 +1,128 @@
+import type { EndCondition } from "@/lib/structural/columns/types";
+import type { Load } from "@/lib/structural/beams/types";
+import type { BeamApplicationId } from "@/lib/structural/beams/applicationPresets";
+
+/** Live module state passed from calculator pages to the design advisor and computed candidates. */
+export type ModuleUserInputs = {
+  // Beams / structural geometry
+  length?: number;
+  lengthUnit?: string;
+  width?: number;
+  height?: number;
+  loads?: Load[];
+  support?: "simply_supported" | "cantilever" | "fixed_fixed";
+  material?: string;
+  E?: number;
+  I?: number;
+  c?: number;
+  inertia?: number;
+  applicationId?: BeamApplicationId;
+  allowableStressPa?: number;
+  deflectionLimit?: number;
+  sectionDesignation?: string;
+  designMaxDeflection?: number;
+  designMaxStressPa?: number;
+  pressure?: number;
+  thickness?: number;
+  requiredI?: number;
+
+  // Columns
+  columnLength?: number;
+  axialLoad?: number;
+  area?: number;
+  elasticModulus?: number;
+  endCondition?: EndCondition;
+  targetSafetyFactor?: number;
+
+  // Springs
+  wireDiameter?: number;
+  meanDiameter?: number;
+  activeCoils?: number;
+  freeLength?: number;
+  deflection?: number;
+  modulus?: number;
+  ultimateStrength?: number;
+  targetRate?: number;
+  maxForce?: number;
+  maxOD?: number;
+  lift?: number;
+  baseRadius?: number;
+
+  // Power transmission
+  power?: number;
+  powerUnit?: string;
+  speedDriver?: number;
+  rpm?: number;
+  diameterDriver?: number;
+  diameterDriven?: number;
+  centerDistance?: number;
+  serviceFactor?: number;
+  ratio?: number;
+  gearRatio?: number;
+  beltSection?: string;
+
+  // Machine
+  torque?: number;
+  bendingMoment?: number;
+  shearForce?: number;
+  pinionTeeth?: number;
+  module?: number;
+  faceWidth?: number;
+  bearingSeries?: string;
+  bore?: number;
+  energy?: number;
+  requiredLife?: number;
+
+  // Fasteners
+  patternRadius?: number;
+  eccentricity?: number;
+  eccentricityX?: number;
+  eccentricityY?: number;
+  weldCount?: number;
+  shaftDiameter?: number;
+  count?: number;
+  boltSize?: string;
+  appliedStress?: number;
+  loadFactor?: number;
+  yieldStress?: number;
+
+  // Materials
+  stressAmplitude?: number;
+  meanStress?: number;
+  enduranceLimit?: number;
+  targetCycles?: number;
+  designLife?: number;
+  minThickness?: number;
+  requiredStrength?: number;
+  temperature?: number;
+
+  // Pressure / thermal
+  heatDuty?: number;
+  deltaT?: number;
+  minGap?: number;
+  nominalGap?: number;
+  costTarget?: number;
+  cycleTimeTarget?: number;
+
+  // Dynamics
+  mass?: number;
+  dampingRatio?: number;
+  excitationHz?: number;
+  velocity?: number;
+  impactDuration?: number;
+  naturalFrequency?: number;
+  dampingCoeff?: number;
+  trackWidth?: number;
+  wheelbase?: number;
+  lateralAcceleration?: number;
+  cgHeight?: number;
+
+  // Advanced
+  heatLeak?: number;
+  maxHeatLeak?: number;
+  current?: number;
+  coilLength?: number;
+  targetField?: number;
+  inductance?: number;
+  leakRate?: number;
+};

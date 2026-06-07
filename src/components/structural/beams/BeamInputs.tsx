@@ -4,6 +4,9 @@ import { Load, UDL } from "@/lib/structural/beams/types";
 import { materials } from "@/data/materials";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
+import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
+import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 import {
   beamApplicationPresets,
   type BeamApplicationId,
@@ -61,6 +64,15 @@ type Props = {
 
   meshSegments: number;
   setMeshSegments: (value: number) => void;
+
+  workflowMode?: DesignWorkflowMode;
+  sectionDesignation: string;
+  setSectionDesignation: (value: string) => void;
+  onSectionApplied: (designation: string, section: RolledSectionProps) => void;
+  designMaxDeflection?: number;
+  setDesignMaxDeflection?: (value: number) => void;
+  designMaxStress?: number;
+  setDesignMaxStress?: (value: number) => void;
 };
 
 export default function BeamInputs(props: Props) {
@@ -68,6 +80,8 @@ export default function BeamInputs(props: Props) {
   const selectedApplication =
     beamApplicationPresets.find((preset) => preset.id === props.applicationId) ??
     beamApplicationPresets[0]!;
+  const isDesignMode = props.workflowMode === "design";
+  const showManualSection = !isDesignMode;
 
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
@@ -129,6 +143,47 @@ export default function BeamInputs(props: Props) {
         ))}
       </select>
 
+      {isDesignMode ? (
+        <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-800">Design targets</p>
+          <label className="block text-sm text-slate-700">
+            Max deflection ({props.lengthUnit})
+            <input
+              type="number"
+              className="mt-1 w-full rounded border p-2"
+              value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
+              onChange={(e) => props.setDesignMaxDeflection?.(+e.target.value)}
+            />
+          </label>
+          <label className="block text-sm text-slate-700">
+            Max bending stress ({props.stressUnit})
+            <input
+              type="number"
+              className="mt-1 w-full rounded border p-2"
+              value={
+                props.designMaxStress ??
+                ((materials.find((m) => m.name === props.material)?.yieldStress ?? 250e6) *
+                  selectedApplication.allowableStressRatio) /
+                  (props.stressUnit === "MPa" ? 1e6 : props.stressUnit === "Pa" ? 1 : 1e6)
+              }
+              onChange={(e) => props.setDesignMaxStress?.(+e.target.value)}
+            />
+          </label>
+          <p className="text-xs text-cyan-900">
+            Design mode searches the rolled-section catalog for the lightest section that passes stress and
+            deflection limits with your load case.
+          </p>
+        </div>
+      ) : null}
+
+      {!isDesignMode ? (
+        <RolledSectionPicker
+          designation={props.sectionDesignation}
+          onDesignationChange={props.setSectionDesignation}
+          onSectionApplied={props.onSectionApplied}
+        />
+      ) : null}
+
       {/* ================= LENGTH ================= */}
       <div className="flex gap-2">
         <input
@@ -175,6 +230,7 @@ export default function BeamInputs(props: Props) {
       </div>
 
       {/* ================= INERTIA ================= */}
+      {showManualSection ? (
       <div className="flex gap-2">
         <input
           className="flex-1 border p-2 rounded"
@@ -188,6 +244,7 @@ export default function BeamInputs(props: Props) {
           onChange={props.setInertiaUnit}
         />
       </div>
+      ) : null}
 
       {/* ================= MOMENT/STRESS UNITS ================= */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -212,6 +269,7 @@ export default function BeamInputs(props: Props) {
       </div>
 
       {/* ================= DISTANCE C (Neutral Axis to Extreme Fiber) ================= */}
+      {showManualSection ? (
       <div className="flex gap-2">
         <input
           className="flex-1 border p-2 rounded"
@@ -226,6 +284,7 @@ export default function BeamInputs(props: Props) {
           onChange={props.setLengthUnit}
         />
       </div>
+      ) : null}
 
       {/* ================= LOADS SECTION ================= */}
       <div className="border-t pt-3 mt-3">
@@ -345,7 +404,7 @@ export default function BeamInputs(props: Props) {
         onClick={props.onCalculate}
         className="w-full bg-black text-white py-2 rounded"
       >
-        Solve
+        {isDesignMode ? "Size section" : "Solve"}
       </button>
 
       <button

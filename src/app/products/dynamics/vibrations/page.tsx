@@ -1,8 +1,15 @@
 "use client";
 
+import { toBase } from "@/lib/units/conversions";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import VibrationInputs from "@/components/dynamics/vibrations/VibrationInputs";
 import VibrationResults from "@/components/dynamics/vibrations/VibrationResults";
 import { normalizeInput } from "@/lib/physics";
@@ -11,6 +18,7 @@ import type { VibrationResult, SupportType } from "@/lib/dynamics/vibrations/typ
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("vibrations");
   const [length, setLength] = useState(5);
   const [lengthUnit, setLengthUnit] = useState("m");
@@ -50,7 +58,7 @@ export default function Page() {
     convertOutput: (raw) => raw,
   });
 
-  const calculate = () => {
+  const runCheck = () => {
     const { output: solved } = vibrationPipeline.run({
       length,
       E,
@@ -62,6 +70,29 @@ export default function Page() {
       dampingRatio,
     });
     setResult(wrapResult(solved));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      length: toBase(length, "length", lengthUnit),
+      E: toBase(E, "stress", EUnit),
+      inertia: toBase(I, "inertia", inertiaUnit),
+      dampingRatio,
+    }), [length, lengthUnit, E, EUnit, I, inertiaUnit, dampingRatio]);
+
+  useSyncDesignInputs("vibrations", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.inertia != null) setI(fields.inertia as never);
+    if (fields.I != null) setI(fields.I as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("vibrations", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

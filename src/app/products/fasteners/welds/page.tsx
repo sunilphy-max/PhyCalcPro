@@ -1,9 +1,15 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import WeldInputs from "@/components/fasteners/welds/WeldInputs";
 import WeldResults from "@/components/fasteners/welds/WeldResults";
 import { toBase } from "@/lib/units/conversions";
@@ -29,6 +35,7 @@ const MATERIALS: Record<string, WeldMaterial> = {
 };
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("welds", (units) =>
     applyUnitMap(units, { length: setWeldLengthUnit, force: setShearForceUnit })
   );
@@ -47,7 +54,7 @@ export default function Page() {
   const [material, setMaterial] = useState("Steel");
   const [result, setResult] = useState<WeldResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       weldType,
       weldSize: toBase(weldSize, "length", weldSizeUnit),
@@ -60,6 +67,27 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveWeldEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      shearForce: toBase(shearForce, "force", shearForceUnit),
+      axialLoad: toBase(axialForce, "force", axialForceUnit),
+      length: toBase(weldLength, "length", weldLengthUnit),
+      weldCount,
+      eccentricity: toBase(eccentricity, "length", eccentricityUnit),
+    }), [shearForce, shearForceUnit, axialForce, axialForceUnit, weldLength, weldLengthUnit, weldCount, eccentricity, eccentricityUnit]);
+
+  useSyncDesignInputs("welds", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("welds", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

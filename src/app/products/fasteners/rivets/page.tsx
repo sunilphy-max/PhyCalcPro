@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import RivetInputs from "@/components/fasteners/rivets/RivetInputs";
 import RivetResults from "@/components/fasteners/rivets/RivetResults";
 import { toBase } from "@/lib/units/conversions";
@@ -31,6 +37,7 @@ const MATERIALS: Record<string, RivetMaterial> = {
 };
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("rivets");
   const [rivetDiameter, setRivetDiameter] = useState(0.01);
   const [rivetDiameterUnit, setRivetDiameterUnit] = useState("m");
@@ -45,7 +52,7 @@ export default function Page() {
   const [rivetType, setRivetType] = useState<RivetType>("solid");
   const [result, setResult] = useState<RivetResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       rivetDiameter: toBase(rivetDiameter, "length", rivetDiameterUnit),
       plateThickness: toBase(plateThickness, "length", plateThicknessUnit),
@@ -57,6 +64,24 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveRivetEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      maxForce: toBase(shearForce, "force", shearUnit),
+      count: quantity,
+    }), [shearForce, shearUnit, quantity]);
+
+  useSyncDesignInputs("rivets", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("rivets", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

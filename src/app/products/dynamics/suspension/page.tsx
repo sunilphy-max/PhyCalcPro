@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import SuspensionInputs from "@/components/dynamics/suspension/SuspensionInputs";
@@ -15,6 +20,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 const defaults = moduleUnitProfiles.suspension;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("suspension", (units) =>
     applyUnitMap(units, {
       sprungMass: setMassUnit,
@@ -38,7 +44,7 @@ export default function Page() {
   const [heightUnit, setHeightUnit] = useState(defaults.cgHeight.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<SuspensionResult> | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config: SuspensionConfig = {
       sprungMass,
       trackWidth,
@@ -48,6 +54,27 @@ export default function Page() {
       cgHeight,
     };
     setResult(wrapResult(solveSuspensionEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      mass: sprungMass,
+      trackWidth,
+      wheelbase,
+      lateralAcceleration,
+      cgHeight,
+    }), [sprungMass, trackWidth, wheelbase, lateralAcceleration, cgHeight]);
+
+  useSyncDesignInputs("suspension", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("suspension", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

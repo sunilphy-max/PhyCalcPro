@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-import { fromBase } from "@/lib/units/conversions";
+import { fromBase, toBase } from "@/lib/units/conversions";
 import { normalizeInput } from "@/lib/physics";
 import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { searchBeamSections } from "@/lib/design-workflows/solvers/beamDesign";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
@@ -27,6 +29,7 @@ type BeamProjectData = {
   support?: string;
   loads: Load[];
   applicationId?: BeamApplicationId;
+  sectionDesignation?: string;
 };
 type BeamProject = LocalProject<BeamProjectData>;
 import { solveBeamEngine } from "@/lib/structural/beams/engine";
@@ -67,6 +70,10 @@ export default function Page() {
   const [material, setMaterial] = useState("Steel");
   const [applicationId, setApplicationId] =
     useState<BeamApplicationId>("general_mechanics");
+  const [sectionDesignation, setSectionDesignation] = useState("");
+  const [designMaxDeflection, setDesignMaxDeflection] = useState<number | undefined>(undefined);
+  const [designMaxStress, setDesignMaxStress] = useState<number | undefined>(undefined);
+  const { mode, setUserInputs } = useDesignWorkflow();
   // =========================
   // UNITS
   // =========================
@@ -174,6 +181,58 @@ const handleLoadDrag = (
     beamMaterials.find((m) => m.name === material) ?? beamMaterials[0] ?? DEFAULT_BEAM_MATERIAL;
   const applicationPreset = getBeamApplicationPreset(applicationId);
 
+  const applySectionProperties = useCallback(
+    (_designation: string, section: { ix: number; depth: number }) => {
+      setI(section.ix);
+      setC(section.depth / 2);
+    },
+    []
+  );
+
+  useEffect(() => {
+    const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
+    const allowableStressPa = designMaxStress
+      ? toBase(designMaxStress, "stress", stressUnit)
+      : yieldStressPa * applicationPreset.allowableStressRatio;
+    const spanBase = normalizeInput({ value: length, unit: lengthUnit, dimension: "length" });
+    const deflectionLimit = designMaxDeflection
+      ? toBase(designMaxDeflection, "length", lengthUnit)
+      : spanBase / applicationPreset.deflectionLimitRatio;
+
+    setUserInputs({
+      length,
+      lengthUnit,
+      loads,
+      support,
+      material,
+      E: selectedMaterial.E,
+      I,
+      c,
+      applicationId,
+      allowableStressPa,
+      deflectionLimit,
+      sectionDesignation,
+      designMaxDeflection,
+      designMaxStressPa: designMaxStress ? toBase(designMaxStress, "stress", stressUnit) : undefined,
+    });
+  }, [
+    length,
+    lengthUnit,
+    loads,
+    support,
+    material,
+    I,
+    c,
+    applicationId,
+    designMaxDeflection,
+    designMaxStress,
+    stressUnit,
+    sectionDesignation,
+    selectedMaterial,
+    applicationPreset,
+    setUserInputs,
+  ]);
+
   const beamPipeline = useCalculationPipeline({
     normalize: (input: {
       length: number;
@@ -266,20 +325,24 @@ const handleLoadDrag = (
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
     }),
   });
-  const calculate = () => {
+  const runCheck = (sectionI = I, sectionC = c) => {
     const { normalized, raw, output: converted } = beamPipeline.run({
       length,
-      I,
-      c,
+      I: sectionI,
+      c: sectionC,
       support,
       meshSegments,
       loads,
     });
 
     const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
-    const allowableStressPa = yieldStressPa * applicationPreset.allowableStressRatio;
+    const allowableStressPa = designMaxStress
+      ? toBase(designMaxStress, "stress", stressUnit)
+      : yieldStressPa * applicationPreset.allowableStressRatio;
     const deflectionLimitBase =
-      normalized.length / applicationPreset.deflectionLimitRatio;
+      designMaxDeflection != null
+        ? toBase(designMaxDeflection, "length", lengthUnit)
+        : normalized.length / applicationPreset.deflectionLimitRatio;
     const stressUtilization =
       allowableStressPa > 0 ? raw.maxStress / allowableStressPa : 0;
     const deflectionUtilization =
@@ -315,6 +378,39 @@ const handleLoadDrag = (
     });
   };
 
+  const calculate = () => {
+    if (mode === "design") {
+      const { normalized } = beamPipeline.run({
+        length,
+        I,
+        c,
+        support,
+        meshSegments,
+        loads,
+      });
+      const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
+      const allowableStressPa = designMaxStress
+        ? toBase(designMaxStress, "stress", stressUnit)
+        : yieldStressPa * applicationPreset.allowableStressRatio;
+      const deflectionLimitBase =
+        designMaxDeflection != null
+          ? toBase(designMaxDeflection, "length", lengthUnit)
+          : normalized.length / applicationPreset.deflectionLimitRatio;
+      const search = searchBeamSections(normalized, allowableStressPa, deflectionLimitBase);
+      if (search.best) {
+        setSectionDesignation(search.best.designation);
+        setI(search.best.I);
+        setC(search.best.c);
+        runCheck(search.best.I, search.best.c);
+      } else {
+        runCheck();
+      }
+      return;
+    }
+
+    runCheck();
+  };
+
   // =========================
   // SAVE
   // =========================
@@ -331,6 +427,7 @@ const handleLoadDrag = (
       support,
       loads,
       applicationId,
+      sectionDesignation,
     });
 
     setSavedProjects(projects);
@@ -350,6 +447,7 @@ const handleLoadDrag = (
     setMaterial(p.material === "Concrete" ? "Steel" : p.material ?? "Steel");
     setLoads(p.loads ?? []);
     setApplicationId(p.applicationId ?? "general_mechanics");
+    setSectionDesignation(p.sectionDesignation ?? "");
     if (p.support === "simply_supported" || p.support === "cantilever" || p.support === "fixed_fixed") {
       setSupport(p.support);
     }
@@ -410,6 +508,21 @@ const handleLoadDrag = (
             saving={saving}
             meshSegments={meshSegments}
             setMeshSegments={setMeshSegments}
+            workflowMode={mode}
+            sectionDesignation={sectionDesignation}
+            setSectionDesignation={setSectionDesignation}
+            onSectionApplied={applySectionProperties}
+            designMaxDeflection={designMaxDeflection ?? length / applicationPreset.deflectionLimitRatio}
+            setDesignMaxDeflection={setDesignMaxDeflection}
+            designMaxStress={
+              designMaxStress ??
+              fromBase(
+                (selectedMaterial.yieldStress ?? 250e6) * applicationPreset.allowableStressRatio,
+                "stress",
+                stressUnit
+              )
+            }
+            setDesignMaxStress={setDesignMaxStress}
           />
       }
       results={

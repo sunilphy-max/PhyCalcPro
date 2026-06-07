@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import PressureVesselInputs from "@/components/pressure/vessels/PressureVesselInputs";
 import PressureVesselResults from "@/components/pressure/vessels/PressureVesselResults";
 import { toBase } from "@/lib/units/conversions";
@@ -10,6 +16,7 @@ import { solvePressureVesselEngine } from "@/lib/pressure/vessels/engine";
 import type { PressureVesselResult } from "@/lib/pressure/vessels/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("vessels");
   const [radius, setRadius] = useState(0.5);
   const [radiusUnit, setRadiusUnit] = useState("m");
@@ -24,7 +31,7 @@ export default function Page() {
   const [segments, setSegments] = useState(40);
   const [result, setResult] = useState<PressureVesselResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       radius: toBase(radius, "length", radiusUnit),
       thickness: toBase(thickness, "length", thicknessUnit),
@@ -36,6 +43,28 @@ export default function Page() {
     };
 
     setResult(wrapResult(solvePressureVesselEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      pressure: toBase(pressure, "pressure", pressureUnit),
+      length: toBase(radius, "length", radiusUnit),
+      E: toBase(E, "stress", EUnit),
+      thickness: toBase(thickness, "length", thicknessUnit),
+    }), [pressure, pressureUnit, radius, radiusUnit, E, EUnit, thickness, thicknessUnit]);
+
+  useSyncDesignInputs("vessels", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.thickness != null) setThickness(fields.thickness as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("vessels", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

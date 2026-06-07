@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import KeysSplinesInputs from "@/components/fasteners/keys-splines/KeysSplinesInputs";
 import KeysSplinesResults from "@/components/fasteners/keys-splines/KeysSplinesResults";
@@ -13,6 +19,7 @@ import type { KeysSplinesResult } from "@/lib/fasteners/keys-splines/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("keys-splines", (units) =>
     applyUnitMap(units, {
       torque: setTorqueUnit,
@@ -37,7 +44,7 @@ export default function Page() {
   const [splineTeeth, setSplineTeeth] = useState(6);
   const [result, setResult] = useState<(KeysSplinesResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveKeysSplinesEngine({
@@ -52,6 +59,25 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      torque: toBase(torque, "torque", torqueUnit),
+      shaftDiameter: toBase(shaftDiameter, "length", lengthUnit),
+      yieldStress: toBase(yieldStress, "stress", stressUnit),
+    }), [torque, torqueUnit, shaftDiameter, lengthUnit, yieldStress, stressUnit]);
+
+  useSyncDesignInputs("keys-splines", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("keys-splines", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

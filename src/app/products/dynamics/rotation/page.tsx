@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import RotationInputs from "@/components/dynamics/rotation/RotationInputs";
 import RotationResults from "@/components/dynamics/rotation/RotationResults";
 import { toBase, fromBase } from "@/lib/units/conversions";
@@ -10,6 +16,7 @@ import { solveRotationEngine } from "@/lib/dynamics/rotation/engine";
 import type { RotationResult } from "@/lib/dynamics/rotation/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("rotation");
   const [mass, setMass] = useState(10);
   const [radius, setRadius] = useState(0.3);
@@ -19,7 +26,7 @@ export default function Page() {
   const [powerUnit, setPowerUnit] = useState("W");
   const [result, setResult] = useState<RotationResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       mass: mass,
       radius: toBase(radius, "length", lengthUnit),
@@ -36,6 +43,24 @@ export default function Page() {
       centripetalForce: raw.centripetalForce,
       torque: raw.torque,
     }));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      torque: power,
+      inertia: mass * radius * radius,
+    }), [power, mass, radius]);
+
+  useSyncDesignInputs("rotation", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("rotation", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

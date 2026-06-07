@@ -1,10 +1,16 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useCalculatorModule } from "@/hooks/useCalculatorModule";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import FitInputs from "@/components/manufacturing/FitInputs";
 import FitResults from "@/components/manufacturing/FitResults";
 import { toBase, fromBase } from "@/lib/units/conversions";
@@ -12,6 +18,7 @@ import { solveFitsEngine } from "@/lib/manufacturing/engine";
 import type { FitResult } from "@/lib/manufacturing/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useCalculatorModule("fits", (units) =>
     applyUnitMap(units, {
       nominalSize: setNominalUnit,
@@ -32,7 +39,7 @@ export default function Page() {
   const [toleranceUnit, setToleranceUnit] = useState("mm");
   const [result, setResult] = useState<FitResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       nominalSize: toBase(nominalSize, "length", nominalUnit),
       holeUpper: toBase(holeUpper, "length", toleranceUnit),
@@ -62,6 +69,24 @@ export default function Page() {
         fitType: raw.fitType,
       })
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      minGap: holeLower,
+      nominalGap: shaftUpper,
+    }), [holeLower, shaftUpper]);
+
+  useSyncDesignInputs("fits", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("fits", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CompositeInputs from "@/components/materials/composites/CompositeInputs";
 import CompositeResults from "@/components/materials/composites/CompositeResults";
@@ -10,6 +15,7 @@ import { solveCompositeEngine } from "@/lib/materials/composites/engine";
 import type { CompositeResult } from "@/lib/materials/composites/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("composites");
   const [fiberVolumeFraction, setFiberVolumeFraction] = useState(0.6);
   const [fiberModulus, setFiberModulus] = useState(230e9);
@@ -24,7 +30,7 @@ export default function Page() {
   const [densityUnit, setDensityUnit] = useState("kg/m3");
   const [result, setResult] = useState<CompositeResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       fiberVolumeFraction,
       fiberModulus: toBase(fiberModulus, "stress", stressUnit),
@@ -38,6 +44,23 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveCompositeEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      requiredStrength: fiberStrength,
+    }), [fiberStrength]);
+
+  useSyncDesignInputs("composites", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("composites", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

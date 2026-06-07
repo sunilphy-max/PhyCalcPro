@@ -18,6 +18,15 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Benchmarks | compression-springs, timing-belts, bevel-gears, keys-splines, circular-plates |
 | Code checks | Specialized templates for compression springs, v-belts, timing belts, keys-splines |
 | UI depth | Shafts Kt, fatigue methods, tolerance 2D/MC, fits ISO lookup (prior session) |
+| Design workflow | Design/Check/Select context wired to pilot solvers (beams, columns, compression-springs, v-belts) |
+| Design workflow | Live computed candidates from module user inputs (not demo constants) |
+| Design workflow | Rolled-section picker + catalog auto-search on beams and columns |
+| Design workflow | Homepage repositioned as engineering design workspace |
+| Design workflow | **All 63 product modules** registered with designModeRegistry + computed candidates |
+| Design workflow | Category design solvers (structural, machine, power, springs, fasteners, materials, pressure, dynamics, manufacturing, advanced) |
+| Design workflow | Shared sweepCatalogForUtilization + materialCatalogService infrastructure |
+| Design workflow | Page Calculate branches on workflow mode (50+ modules via scaffold + pilots) |
+| Local projects | saveLocalProject extended to gears, v-belts, compression-springs |
 
 ## True remaining (optional / out of scope)
 
@@ -29,6 +38,9 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Circular plate annular / variable thickness | Solid disk only; use dedicated FEA externally |
 | Homogenization (columns/gears/bearings → `inputs`/`results`) | Already on CalculatorLayout; low benefit |
 | Rolled sections | Expand beyond starter tables; add EN/UK designation aliases |
+| Design workflow | Extend solver-backed design mode to remaining modules (shafts, gears, bolts, vessels, etc.) |
+| Design workflow | Select-mode candidate apply-to-inputs action in advisor panel |
+| Design workflow | Per-page live userInputs sync (scaffold uses defaults; deepen key modules) |
 | Multi-pulley | Closed-loop path layout (current: open chain) |
 | Micropitting | US AGMA implementation marked planned |
 | Benchmark coverage | Remaining modules without JSON fixtures |

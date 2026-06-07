@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CamInputs from "@/components/machine/cams/CamInputs";
 import CamResults from "@/components/machine/cams/CamResults";
 import { toBase } from "@/lib/units/conversions";
@@ -13,6 +19,7 @@ const defaultMotionLaw: MotionLaw = "simple_harmonic";
 const defaultProfileType: CamProfileType = "flat_follower";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("cams");
   const [lift, setLift] = useState(0.02);
   const [liftUnit, setLiftUnit] = useState("m");
@@ -26,7 +33,7 @@ export default function Page() {
   const [profileType, setProfileType] = useState<CamProfileType>(defaultProfileType);
   const [result, setResult] = useState<CamResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       lift: toBase(lift, "length", liftUnit),
       baseCircle: toBase(baseCircle, "length", baseCircleUnit),
@@ -38,6 +45,25 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveCamEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      lift: toBase(lift, "length", liftUnit),
+      baseRadius: toBase(baseCircle, "length", baseCircleUnit),
+      speedDriver: speed,
+    }), [lift, liftUnit, baseCircle, baseCircleUnit, speed]);
+
+  useSyncDesignInputs("cams", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("cams", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

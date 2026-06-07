@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CamToolpathsInputs from "@/components/manufacturing/CamToolpathsInputs";
 import CamToolpathsResults from "@/components/manufacturing/CamToolpathsResults";
@@ -9,6 +14,7 @@ import { solveCamToolpathsEngine } from "@/lib/manufacturing/camToolpaths/engine
 import type { CamToolpathsResult } from "@/lib/manufacturing/camToolpaths/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("cam-toolpaths");
   const [toolDiameter, setToolDiameter] = useState(12);
   const [numFlutes, setNumFlutes] = useState(4);
@@ -21,7 +27,7 @@ export default function Page() {
   const [stepOverPercent, setStepOverPercent] = useState(60);
   const [result, setResult] = useState<CamToolpathsResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const raw = solveCamToolpathsEngine({
       toolDiameter,
       numFlutes,
@@ -35,6 +41,23 @@ export default function Page() {
     });
 
     setResult(wrapResult(raw));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      cycleTimeTarget: stockLength / Math.max(feedPerTooth * numFlutes * spindleSpeed / 60, 1),
+    }), [stockLength, feedPerTooth, numFlutes, spindleSpeed]);
+
+  useSyncDesignInputs("cam-toolpaths", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("cam-toolpaths", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

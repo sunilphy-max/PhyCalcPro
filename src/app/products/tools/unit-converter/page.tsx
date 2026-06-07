@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import UnitConverterInputs, {
   type UnitConverterDimensionKey,
@@ -14,6 +20,7 @@ import type { UnitConverterResult } from "@/lib/tools/unit-converter/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const [value, setValue] = useState(1000);
   const [dimensionKey, setDimensionKey] = useState<UnitConverterDimensionKey>("length");
   const [fromUnit, setFromUnit] = useState("mm");
@@ -33,7 +40,7 @@ export default function Page() {
     setResult(null);
   };
 
-  const calculate = () => {
+  const runCheck = () => {
     const profile = getModuleFieldProfile("unit-converter", dimensionKey);
     setResult(
       wrapResult(
@@ -45,6 +52,23 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      power: value,
+    }), [value]);
+
+  useSyncDesignInputs("unit-converter", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("unit-converter", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import BearingInputs from "@/components/machine/bearings/BearingInputs";
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import { toBase } from "@/lib/units/conversions";
@@ -31,6 +37,7 @@ const MATERIALS: Record<string, BearingMaterial> = {
 };
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("bearings");
   const [radialLoad, setRadialLoad] = useState(500);
   const [radialUnit, setRadialUnit] = useState("N");
@@ -43,7 +50,7 @@ export default function Page() {
   const [material, setMaterial] = useState("Steel");
   const [result, setResult] = useState<BearingResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       radialLoad: toBase(radialLoad, "force", radialUnit),
       axialLoad: toBase(axialLoad, "force", axialUnit),
@@ -55,6 +62,29 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveBearingEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      maxForce: toBase(radialLoad, "force", radialUnit),
+      axialLoad: toBase(axialLoad, "force", axialUnit),
+      speedDriver: speed,
+      requiredLife: lifeHours,
+      targetSafetyFactor: safetyFactor,
+    }), [radialLoad, radialUnit, axialLoad, axialUnit, speed, lifeHours, safetyFactor]);
+
+  useSyncDesignInputs("bearings", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.bearingSeries != null) setBearingType(fields.bearingSeries as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("bearings", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

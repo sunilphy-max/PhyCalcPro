@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import LoadCaseManagerInputs from "@/components/structural/loadCaseManager/LoadCaseManagerInputs";
@@ -16,6 +21,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 const defaults = moduleUnitProfiles["load-case-manager"];
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("load-case-manager", (units) =>
     applyUnitMap(units, {
       sectionWidth: setWidthUnit,
@@ -47,7 +53,7 @@ export default function Page() {
     );
   };
 
-  const calculate = () => {
+  const runCheck = () => {
     const config: LoadCaseManagerConfig = {
       cases,
       width: normalizeFieldValue("load-case-manager", "sectionWidth", width, widthUnit),
@@ -56,6 +62,29 @@ export default function Page() {
         normalizeFieldValue("load-case-manager", "yieldStrength", yieldStrength, stressUnit) / 1e6,
     };
     setResult(wrapResult(solveLoadCaseManagerEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      axialLoad: cases[0]?.axialForce ?? 0,
+      bendingMoment: cases[0]?.bendingMoment ?? 0,
+      shearForce: cases[0]?.shearForce ?? 0,
+      targetSafetyFactor: 2,
+    }), [cases]);
+
+  useSyncDesignInputs("load-case-manager", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.height != null) setHeight(fields.height as never);
+    if (fields.width != null) setWidth(fields.width as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("load-case-manager", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

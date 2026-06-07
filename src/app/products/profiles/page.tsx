@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import ProfilesInputs from "@/components/profiles/ProfilesInputs";
@@ -17,6 +22,7 @@ type ProfilesProjectData = {
 type ProfilesProject = LocalProject<ProfilesProjectData>;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("profiles");
 
   // =========================
@@ -40,7 +46,7 @@ export default function Page() {
   // =========================
   // SOLVER
   // =========================
-  const calculate = () => {
+  const runCheck = () => {
     const config: AreaPropertiesConfig = {
       shape,
     };
@@ -74,6 +80,28 @@ export default function Page() {
   // =========================
   // UI
   // =========================
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      requiredI: result?.ixx,
+      width: shape.shape === "rectangle" ? shape.rectangle?.width : undefined,
+      height: shape.shape === "rectangle" ? shape.rectangle?.height : undefined,
+    }), [result, shape]);
+
+  useSyncDesignInputs("profiles", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.width != null) setShape(fields.width as never);
+    if (fields.height != null) setShape(fields.height as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("profiles", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
+  };
+
   return (
           <CalculatorLayout
         moduleId="profiles"

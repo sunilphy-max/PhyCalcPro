@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ExtensionSpringInputs from "@/components/springs/extension-springs/ExtensionSpringInputs";
 import ExtensionSpringResults from "@/components/springs/extension-springs/ExtensionSpringResults";
@@ -13,6 +19,7 @@ import type { ExtensionSpringResult } from "@/lib/springs/extension-springs/type
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("extension-springs", (units) =>
     applyUnitMap(units, {
       wireDiameter: setLengthUnit,
@@ -35,7 +42,7 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState("MPa");
   const [result, setResult] = useState<(ExtensionSpringResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveExtensionSpringEngine({
@@ -49,6 +56,27 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      wireDiameter: toBase(wireDiameter, "length", lengthUnit),
+      meanDiameter: toBase(meanDiameter, "length", lengthUnit),
+      activeCoils,
+      modulus: toBase(modulus, "stress", stressUnit) * 1e6,
+      deflection: toBase(deflection, "length", lengthUnit),
+    }), [wireDiameter, meanDiameter, lengthUnit, activeCoils, modulus, stressUnit, deflection]);
+
+  useSyncDesignInputs("extension-springs", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("extension-springs", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

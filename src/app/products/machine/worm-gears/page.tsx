@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import WormGearsInputs from "@/components/machine/worm-gears/WormGearsInputs";
 import WormGearsResults from "@/components/machine/worm-gears/WormGearsResults";
@@ -13,6 +19,7 @@ import type { WormGearResult } from "@/lib/machine/worm-gears/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("worm-gears", (units) =>
     applyUnitMap(units, {
       power: setPowerUnit,
@@ -36,7 +43,7 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState("MPa");
   const [result, setResult] = useState<(WormGearResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const normalizedPower =
       powerUnit === "kW" ? power * 1000 : powerUnit === "hp" ? power * 745.7 : power;
     setResult(
@@ -54,6 +61,25 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      power: powerUnit === "kW" ? power * 1000 : power,
+      speedDriver: speed,
+      ratio: gearTeeth / Math.max(wormStarts, 1),
+    }), [power, powerUnit, speed, gearTeeth, wormStarts]);
+
+  useSyncDesignInputs("worm-gears", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("worm-gears", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

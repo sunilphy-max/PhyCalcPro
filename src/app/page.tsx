@@ -181,14 +181,14 @@ export default function HomePage() {
                 <div>
                   <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">PhyCalcPro engineering workspace</p>
                   <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
-                    Engineering calculators for machines, structures and advanced systems.
+                    Size, check and select engineering designs in one workspace.
                   </h1>
                 </div>
 
                 <p className="max-w-2xl text-base leading-8 text-slate-600">
-                  Analyze beams, shafts, gears, fasteners, pressure systems, vacuum hardware,
-                  cryogenic loads, magnetic coils, battery packs and hydrogen systems with clear
-                  assumptions, standards context and export-ready results.
+                  Move from targets to sized members and drives—not just forward calculations. Compare catalog
+                  candidates, verify stress and deflection or buckling margin, and export assumption-backed
+                  reports across structures, machines, power transmission and advanced systems.
                 </p>
 
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -209,7 +209,7 @@ export default function HomePage() {
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <Link href="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
-                  Browse all calculators
+                  Open design workspace
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
@@ -228,8 +228,8 @@ export default function HomePage() {
               </div>
               {isFreeLaunch() ? (
                 <p className="text-sm text-slate-600">
-                  Early access: all {moduleCount} calculators, standards/reference metadata,
-                  PDF/CSV export and no signup required.
+                  Early access: design/check/select workflows, {moduleCount} engineering modules,
+                  standards metadata, PDF/CSV export and no signup required.
                 </p>
               ) : null}
             </div>

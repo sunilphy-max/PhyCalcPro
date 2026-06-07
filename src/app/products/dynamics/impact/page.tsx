@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { toBase } from "@/lib/units/conversions";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ImpactInputs from "@/components/dynamics/impact/ImpactInputs";
@@ -16,6 +22,7 @@ import { toBaseUnit } from "@/lib/physics/units";
 const profile = moduleUnitProfiles.impact;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useCalculatorModule("impact", (units) =>
     applyUnitMap(units, {
       mass: setMassUnit,
@@ -38,7 +45,7 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState(profile.stress.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<ImpactResult> | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const durationMs =
       durationUnit === "ms"
         ? impactDuration
@@ -52,6 +59,25 @@ export default function Page() {
       yieldStrength: toBaseUnit(yieldStrength, "stress", stressUnit) / 1e6,
     };
     setResult(wrapResult(solveImpactEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      mass: toBase(mass, "mass", massUnit),
+      velocity: toBase(velocityChange, "velocity", velocityUnit),
+      impactDuration,
+    }), [mass, massUnit, velocityChange, velocityUnit, impactDuration]);
+
+  useSyncDesignInputs("impact", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("impact", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

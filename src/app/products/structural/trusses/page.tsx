@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import TrussInputs from "@/components/structural/trusses/TrussInputs";
 import TrussResults from "@/components/structural/trusses/TrussResults";
 import { toBase } from "@/lib/units/conversions";
@@ -10,6 +16,7 @@ import { solveTrussEngine } from "@/lib/structural/trusses/engine";
 import type { TrussResult } from "@/lib/structural/trusses/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("trusses");
   const [span, setSpan] = useState(6);
   const [height, setHeight] = useState(1.2);
@@ -25,7 +32,7 @@ export default function Page() {
   const [meshSegments, setMeshSegments] = useState(4);
   const [result, setResult] = useState<TrussResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       span: toBase(span, "length", spanUnit),
       height: toBase(height, "length", heightUnit),
@@ -36,6 +43,29 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveTrussEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      length: toBase(span, "length", spanUnit),
+      height: toBase(height, "length", heightUnit),
+      maxForce: toBase(load, "force", loadUnit),
+      E: toBase(E, "stress", EUnit),
+      area,
+    }), [span, spanUnit, height, heightUnit, load, loadUnit, E, EUnit, area]);
+
+  useSyncDesignInputs("trusses", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.area != null) setArea(fields.area as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("trusses", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

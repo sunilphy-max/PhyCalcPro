@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import GearRatioDesignInputs from "@/components/machine/gear-ratio-design/GearRatioDesignInputs";
 import GearRatioDesignResults from "@/components/machine/gear-ratio-design/GearRatioDesignResults";
@@ -11,6 +17,7 @@ import type { GearRatioDesignResult } from "@/lib/machine/gear-ratio-design/type
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("gear-ratio-design");
 
   const [targetRatio, setTargetRatio] = useState(3.5);
@@ -18,7 +25,7 @@ export default function Page() {
   const [minPinionTeeth, setMinPinionTeeth] = useState(12);
   const [result, setResult] = useState<(GearRatioDesignResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveGearRatioDesignEngine({
@@ -28,6 +35,24 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      ratio: targetRatio,
+      pinionTeeth: minPinionTeeth,
+    }), [targetRatio, minPinionTeeth]);
+
+  useSyncDesignInputs("gear-ratio-design", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("gear-ratio-design", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

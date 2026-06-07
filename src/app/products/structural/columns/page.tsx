@@ -3,7 +3,7 @@
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BucklingInputs from "@/components/structural/columns/BucklingInputs";
@@ -12,6 +12,8 @@ import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveBucklingEngine } from "@/lib/structural/columns/engine";
 import type { BucklingConfig, BucklingResult, EndCondition } from "@/lib/structural/columns/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { searchColumnSections } from "@/lib/design-workflows/solvers/columnDesign";
 
 type BucklingProjectData = {
   length: number;
@@ -20,6 +22,8 @@ type BucklingProjectData = {
   area: number;
   elasticModulus: number;
   endCondition: EndCondition;
+  sectionDesignation?: string;
+  targetSafetyFactor?: number;
 };
 
 type BucklingProject = LocalProject<BucklingProjectData>;
@@ -42,6 +46,9 @@ export default function Page() {
   const [area, setArea] = useState(0.001);
   const [elasticModulus, setElasticModulus] = useState(210e9);
   const [endCondition, setEndCondition] = useState<EndCondition>("pinned");
+  const [sectionDesignation, setSectionDesignation] = useState("");
+  const [targetSafetyFactor, setTargetSafetyFactor] = useState(2);
+  const { mode, setUserInputs } = useDesignWorkflow();
 
   // =========================
   // UNITS
@@ -64,12 +71,47 @@ export default function Page() {
   // =========================
   // SOLVER
   // =========================
-  const calculate = () => {
+  const applySectionProperties = useCallback(
+    (_designation: string, section: { ix: number; area: number }) => {
+      setInertia(section.ix);
+      setArea(section.area);
+    },
+    []
+  );
+
+  useEffect(() => {
+    setUserInputs({
+      columnLength: toBase(length, "length", lengthUnit),
+      axialLoad: toBase(load, "force", loadUnit),
+      inertia: toBase(inertia, "inertia", inertiaUnit),
+      area,
+      elasticModulus: toBase(elasticModulus, "stress", elasticModulusUnit),
+      endCondition,
+      targetSafetyFactor,
+      sectionDesignation,
+    });
+  }, [
+    length,
+    lengthUnit,
+    load,
+    loadUnit,
+    inertia,
+    inertiaUnit,
+    area,
+    elasticModulus,
+    elasticModulusUnit,
+    endCondition,
+    targetSafetyFactor,
+    sectionDesignation,
+    setUserInputs,
+  ]);
+
+  const runCheck = (sectionI = inertia, sectionA = area) => {
     const normalizedInputs: BucklingConfig = {
       length: toBase(length, "length", lengthUnit),
       P: toBase(load, "force", loadUnit),
-      I: toBase(inertia, "inertia", inertiaUnit),
-      A: area, // Area is already in m^2, no conversion needed
+      I: toBase(sectionI, "inertia", inertiaUnit),
+      A: sectionA,
       E: toBase(elasticModulus, "stress", elasticModulusUnit),
       endCondition,
     };
@@ -93,6 +135,31 @@ export default function Page() {
     setResult(wrapResult(converted));
   };
 
+  const calculate = () => {
+    if (mode === "design") {
+      const search = searchColumnSections(
+        {
+          length: toBase(length, "length", lengthUnit),
+          P: toBase(load, "force", loadUnit),
+          E: toBase(elasticModulus, "stress", elasticModulusUnit),
+          endCondition,
+        },
+        targetSafetyFactor
+      );
+      if (search.best) {
+        setSectionDesignation(search.best.designation);
+        setInertia(search.best.I);
+        setArea(search.best.area);
+        runCheck(search.best.I, search.best.area);
+      } else {
+        runCheck();
+      }
+      return;
+    }
+
+    runCheck();
+  };
+
   // =========================
   // SAVE
   // =========================
@@ -106,6 +173,8 @@ export default function Page() {
       area,
       elasticModulus,
       endCondition,
+      sectionDesignation,
+      targetSafetyFactor,
     });
 
     setSavedProjects(projects);
@@ -123,6 +192,8 @@ export default function Page() {
     setArea(p.area);
     setElasticModulus(p.elasticModulus);
     setEndCondition(p.endCondition);
+    setSectionDesignation(p.sectionDesignation ?? "");
+    setTargetSafetyFactor(p.targetSafetyFactor ?? 2);
   };
 
   // =========================
@@ -165,6 +236,12 @@ export default function Page() {
             onCalculate={calculate}
             onSave={saveProject}
             saving={saving}
+            workflowMode={mode}
+            sectionDesignation={sectionDesignation}
+            setSectionDesignation={setSectionDesignation}
+            onSectionApplied={applySectionProperties}
+            targetSafetyFactor={targetSafetyFactor}
+            setTargetSafetyFactor={setTargetSafetyFactor}
           />
         }
         center={

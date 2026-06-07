@@ -1,10 +1,16 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import ScrewsInputs from "@/components/fasteners/bolts/ScrewsInputs";
 import ScrewsResults from "@/components/fasteners/bolts/ScrewsResults";
 import BoltPatternInputs from "@/components/fasteners/bolts/BoltPatternInputs";
@@ -25,6 +31,7 @@ type ScrewProjectData = {
 type ScrewProject = LocalProject<ScrewProjectData>;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("bolts");
   const [mode, setMode] = useState<AnalysisMode>("power_screw");
   const [config, setConfig] = useState<ScrewConfig>({
@@ -56,7 +63,7 @@ export default function Page() {
     loadLocalProjects<ScrewProjectData>("screws")
   );
 
-  const calculate = () => {
+  const runCheck = () => {
     if (mode === "bolt_pattern") {
       setPatternResult(
         solveBoltPattern({
@@ -86,6 +93,28 @@ export default function Page() {
     setProjectName(p.name);
     setConfig(p.config);
     setMode("power_screw");
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      maxForce: toBase(shearForce, "force", forceUnit),
+      axialLoad: toBase(axialForce, "force", forceUnit),
+      allowableStressPa: 260e6,
+    }), [shearForce, forceUnit, axialForce]);
+
+  useSyncDesignInputs("bolts", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.majorDiameter != null) setConfig(fields.majorDiameter as never);
+    if (fields.boltSize != null) setConfig(fields.boltSize as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("bolts", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

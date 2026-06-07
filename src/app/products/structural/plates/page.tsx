@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import PlateInputs from "@/components/structural/plates/PlateInputs";
 import PlateResults from "@/components/structural/plates/PlateResults";
 import { toBase } from "@/lib/units/conversions";
@@ -10,6 +16,7 @@ import { solvePlateEngine } from "@/lib/structural/plates/engine";
 import type { BoundaryType, PlateResult } from "@/lib/structural/plates/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("plates");
   const [length, setLength] = useState(2);
   const [width, setWidth] = useState(1.2);
@@ -25,7 +32,7 @@ export default function Page() {
   const [boundaryType, setBoundaryType] = useState<BoundaryType>("clamped");
   const [result, setResult] = useState<PlateResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       length: toBase(length, "length", lengthUnit),
       width: toBase(width, "length", lengthUnit),
@@ -39,6 +46,29 @@ export default function Page() {
     };
 
     setResult(wrapResult(solvePlateEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      length: toBase(length, "length", lengthUnit),
+      width: toBase(width, "length", lengthUnit),
+      pressure: toBase(pressure, "pressure", pressureUnit),
+      E: toBase(E, "stress", EUnit),
+      thickness: toBase(thickness, "length", thicknessUnit),
+    }), [length, lengthUnit, width, pressure, pressureUnit, E, EUnit, thickness, thicknessUnit]);
+
+  useSyncDesignInputs("plates", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.thickness != null) setThickness(fields.thickness as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("plates", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

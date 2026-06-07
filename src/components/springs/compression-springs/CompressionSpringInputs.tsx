@@ -6,6 +6,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 
 type Props = {
   wireDiameter: number;
@@ -27,6 +28,17 @@ type Props = {
   stressUnit: string;
   setStressUnit: Dispatch<SetStateAction<string>>;
   onCalculate: () => void;
+  workflowMode?: DesignWorkflowMode;
+  targetRate?: number;
+  setTargetRate?: Dispatch<SetStateAction<number>>;
+  maxForce?: number;
+  setMaxForce?: Dispatch<SetStateAction<number>>;
+  maxOD?: number;
+  setMaxOD?: Dispatch<SetStateAction<number>>;
+  onSave?: () => void;
+  saving?: boolean;
+  projectName?: string;
+  setProjectName?: Dispatch<SetStateAction<string>>;
 };
 
 export default function CompressionSpringInputs({
@@ -49,14 +61,84 @@ export default function CompressionSpringInputs({
   stressUnit,
   setStressUnit,
   onCalculate,
+  workflowMode = "check",
+  targetRate = 50,
+  setTargetRate,
+  maxForce = 450,
+  setMaxForce,
+  maxOD = 40,
+  setMaxOD,
+  onSave,
+  saving = false,
+  projectName,
+  setProjectName,
 }: Props) {
+  const isDesignMode = workflowMode === "design";
+
   return (
     <CalculatorInputPanel
       title="Compression spring"
-      description="Size wire and coils; estimate rate, solid height, shear stress and safety factor."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate spring" />}
+      description={
+        isDesignMode
+          ? "Enter targets and envelope limits; design mode iterates wire diameter and active coils."
+          : "Size wire and coils; estimate rate, solid height, shear stress and safety factor."
+      }
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton
+            onClick={onCalculate}
+            label={isDesignMode ? "Size spring" : "Calculate spring"}
+          />
+          {onSave ? (
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save project"}
+            </button>
+          ) : null}
+        </div>
+      }
     >
+      {setProjectName ? (
+        <input
+          className="mb-4 w-full rounded border p-2 text-sm"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name"
+        />
+      ) : null}
+
+      {isDesignMode ? (
+        <div className="mb-4 grid gap-4 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4 sm:grid-cols-2">
+          <CalculatorUnitField
+            label="Target spring rate"
+            value={targetRate}
+            onChange={(value) => setTargetRate?.(value)}
+            unit={<span className="text-sm text-slate-500">N/m</span>}
+          />
+          <CalculatorUnitField
+            label="Maximum force"
+            value={maxForce}
+            onChange={(value) => setMaxForce?.(value)}
+            unit={<span className="text-sm text-slate-500">N</span>}
+          />
+          <CalculatorUnitField
+            label="Maximum OD"
+            value={maxOD}
+            onChange={(value) => setMaxOD?.(value)}
+            unit={
+              <ModuleUnitSelect moduleId="compression-springs" fieldKey="meanDiameter" value={lengthUnit} onChange={setLengthUnit} />
+            }
+          />
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2">
+        {!isDesignMode ? (
+        <>
         <CalculatorUnitField
           label="Wire diameter (d)"
           value={wireDiameter}
@@ -73,6 +155,8 @@ export default function CompressionSpringInputs({
             <ModuleUnitSelect moduleId="compression-springs" fieldKey="meanDiameter" value={lengthUnit} onChange={setLengthUnit} />
           }
         />
+        </>
+        ) : null}
         <CalculatorUnitField
           label="Free length"
           value={freeLength}
@@ -81,6 +165,8 @@ export default function CompressionSpringInputs({
             <ModuleUnitSelect moduleId="compression-springs" fieldKey="freeLength" value={lengthUnit} onChange={setLengthUnit} />
           }
         />
+        {!isDesignMode ? (
+        <>
         <CalculatorUnitField
           label="Operating deflection"
           value={deflection}
@@ -100,6 +186,8 @@ export default function CompressionSpringInputs({
             className={calculatorNumberInputClass}
           />
         </label>
+        </>
+        ) : null}
         <CalculatorUnitField
           label="Shear modulus (G ≈ E/2.6)"
           value={modulus}

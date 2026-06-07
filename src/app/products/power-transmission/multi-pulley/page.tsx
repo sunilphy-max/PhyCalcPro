@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import MultiPulleyInputs from "@/components/power-transmission/multi-pulley/MultiPulleyInputs";
 import MultiPulleyResults from "@/components/power-transmission/multi-pulley/MultiPulleyResults";
@@ -13,6 +19,7 @@ import type { MultiPulleyResult } from "@/lib/powerTransmission/multi-pulley/typ
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("multi-pulley", (units) =>
     applyUnitMap(units, { diameter: setLengthUnit, centerDistance: setLengthUnit })
   );
@@ -26,7 +33,7 @@ export default function Page() {
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [result, setResult] = useState<(MultiPulleyResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const diameters = pulleys.map((p) => toBase(p.diameter, "length", lengthUnit));
     const centerDistances = pulleys
       .slice(0, -1)
@@ -40,6 +47,25 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      power: 5000,
+      speedDriver: 1200,
+      ratio: (pulleys[1]?.diameter ?? 300) / Math.max(pulleys[0]?.diameter ?? 150, 1),
+    }), [pulleys]);
+
+  useSyncDesignInputs("multi-pulley", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("multi-pulley", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CorrosionInputs from "@/components/materials/corrosion/CorrosionInputs";
@@ -17,6 +22,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 const defaults = moduleUnitProfiles.corrosion;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("corrosion", (units) =>
     applyUnitMap(units, {
       initialThickness: setThicknessUnit,
@@ -36,7 +42,7 @@ export default function Page() {
   const [marginUnit, setMarginUnit] = useState(defaults.safetyMargin.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<CorrosionResult> | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config: CorrosionConfig = {
       initialThickness: fromBaseUnit(
         normalizeFieldValue("corrosion", "initialThickness", initialThickness, thicknessUnit),
@@ -67,6 +73,24 @@ export default function Page() {
         remainingThickness: toDisplayLength(raw.remainingThickness),
       })
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      minThickness: initialThickness,
+      designLife,
+    }), [initialThickness, designLife]);
+
+  useSyncDesignInputs("corrosion", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("corrosion", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

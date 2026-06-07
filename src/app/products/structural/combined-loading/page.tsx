@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { toBase } from "@/lib/units/conversions";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CombinedLoadingInputs from "@/components/structural/combinedLoading/CombinedLoadingInputs";
@@ -16,6 +22,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 const defaults = moduleUnitProfiles["combined-loading"];
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("combined-loading", (units) =>
     applyUnitMap(units, {
       axialForce: setAxialUnit,
@@ -44,7 +51,7 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState(defaults.yieldStrength.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<CombinedLoadingResult> | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config: CombinedLoadingConfig = {
       axialForce: normalizeFieldValue("combined-loading", "axialForce", axialForce, axialUnit),
       bendingMoment: normalizeFieldValue("combined-loading", "bendingMoment", bendingMoment, momentUnit),
@@ -56,6 +63,30 @@ export default function Page() {
         normalizeFieldValue("combined-loading", "yieldStrength", yieldStrength, stressUnit) / 1e6,
     };
     setResult(wrapResult(solveCombinedLoadingEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      axialLoad: toBase(axialForce, "force", axialUnit),
+      bendingMoment: toBase(bendingMoment, "moment", momentUnit),
+      torque: toBase(torque, "torque", torqueUnit),
+      shearForce: toBase(shearForce, "force", shearUnit),
+      allowableStressPa: toBase(yieldStrength, "stress", stressUnit) * 1e6,
+    }), [axialForce, axialUnit, bendingMoment, momentUnit, torque, torqueUnit, shearForce, shearUnit, yieldStrength, stressUnit]);
+
+  useSyncDesignInputs("combined-loading", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.width != null) setWidth(fields.width as number);
+    if (fields.height != null) setHeight(fields.height as number);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("combined-loading", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

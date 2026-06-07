@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Calculator, CheckCircle2, GitBranch, Lightbulb, Table2 } from "lucide-react";
 import { allModules } from "@/data/modules";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { getComputedDesignSet } from "@/lib/design-workflows/computedCandidates";
-import type { DesignWorkflowMode, ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
+import type { ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 
 type Props = {
   workflow: ModuleDesignWorkflow;
@@ -18,9 +18,9 @@ const maturityLabel: Record<ModuleDesignWorkflow["maturity"], string> = {
 };
 
 export default function ModuleDesignAdvisor({ workflow }: Props) {
-  const [mode, setMode] = useState<DesignWorkflowMode>("design");
+  const { mode, setMode, userInputs, applyDesignCandidate } = useDesignWorkflow();
   const activeMode = workflow.modes.find((item) => item.id === mode) ?? workflow.modes[0];
-  const computedDesign = getComputedDesignSet(workflow.moduleId);
+  const computedDesign = getComputedDesignSet(workflow.moduleId, userInputs);
   const linkedModules = workflow.linkedWorkflowModuleIds
     .map((id) => allModules.find((catalogModule) => catalogModule.id === id || catalogModule.route.endsWith(`/${id}`)))
     .filter((catalogModule): catalogModule is NonNullable<typeof catalogModule> => Boolean(catalogModule));
@@ -117,6 +117,9 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
                       <th className="px-3 py-2 font-semibold">Status</th>
                       <th className="px-3 py-2 font-semibold">Governing</th>
                       <th className="px-3 py-2 font-semibold">Detail</th>
+                      {mode === "select" ? (
+                        <th className="px-3 py-2 font-semibold">Action</th>
+                      ) : null}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-cyan-100">
@@ -143,6 +146,21 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
                         </td>
                         <td className="px-3 py-2 text-slate-600">{item.governing}</td>
                         <td className="px-3 py-2 text-slate-600">{item.detail}</td>
+                        {mode === "select" ? (
+                          <td className="px-3 py-2">
+                            {item.fields ? (
+                              <button
+                                type="button"
+                                onClick={() => applyDesignCandidate(item.fields!)}
+                                className="rounded-lg border border-cyan-300 bg-white px-2.5 py-1 text-xs font-semibold text-cyan-800 transition hover:bg-cyan-50"
+                              >
+                                Apply
+                              </button>
+                            ) : (
+                              <span className="text-slate-400">—</span>
+                            )}
+                          </td>
+                        ) : null}
                       </tr>
                     ))}
                   </tbody>

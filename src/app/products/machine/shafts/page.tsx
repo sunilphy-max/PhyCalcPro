@@ -1,10 +1,16 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import ShaftInputs from "@/components/machine/shafts/ShaftInputs";
 import ShaftResults from "@/components/machine/shafts/ShaftResults";
 import { toBase, fromBase } from "@/lib/units/conversions";
@@ -49,6 +55,7 @@ type ShaftProjectData = {
 type ShaftProject = LocalProject<ShaftProjectData>;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("shafts", (units) =>
     applyUnitMap(units, {
       length: setLengthUnit,
@@ -103,7 +110,7 @@ export default function Page() {
   // =========================
   // SOLVER
   // =========================
-  const calculate = () => {
+  const runCheck = () => {
     const mat = MATERIALS[material] || MATERIALS["Steel"];
 
     const normalizedInputs: ShaftConfig = {
@@ -181,6 +188,28 @@ export default function Page() {
   // =========================
   // UI
   // =========================
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      torque: loads[0]?.torque != null ? toBase(loads[0].torque, "torque", torqueUnit) : undefined,
+      bendingMoment: loads[0]?.bendingMoment != null ? toBase(loads[0].bendingMoment, "moment", momentUnit) : undefined,
+      length: toBase(length, "length", lengthUnit),
+      targetSafetyFactor: 2,
+    }), [loads, torqueUnit, momentUnit, length, lengthUnit]);
+
+  useSyncDesignInputs("shafts", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.diameter != null) setDiameter(fields.diameter as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("shafts", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
+  };
+
   return (
     <CalculatorLayout
       moduleId="shafts"

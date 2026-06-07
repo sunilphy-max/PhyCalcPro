@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import TorsionSpringInputs from "@/components/springs/torsion-springs/TorsionSpringInputs";
 import TorsionSpringResults from "@/components/springs/torsion-springs/TorsionSpringResults";
@@ -13,6 +19,7 @@ import type { TorsionSpringResult } from "@/lib/springs/torsion-springs/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("torsion-springs", (units) =>
     applyUnitMap(units, {
       wireDiameter: setLengthUnit,
@@ -34,7 +41,7 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState("MPa");
   const [result, setResult] = useState<(TorsionSpringResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveTorsionSpringEngine({
@@ -48,6 +55,26 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      wireDiameter: toBase(wireDiameter, "length", lengthUnit),
+      meanDiameter: toBase(meanDiameter, "length", lengthUnit),
+      activeCoils,
+      modulus: toBase(modulus, "stress", stressUnit) * 1e6,
+    }), [wireDiameter, meanDiameter, lengthUnit, activeCoils, modulus, stressUnit]);
+
+  useSyncDesignInputs("torsion-springs", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("torsion-springs", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

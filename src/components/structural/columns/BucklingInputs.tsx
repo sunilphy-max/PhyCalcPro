@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import type { EndCondition } from "@/lib/structural/columns/types";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
+import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
   projectName: string;
@@ -42,6 +44,13 @@ type Props = {
   onCalculate: () => void;
   onSave: () => void;
   saving: boolean;
+
+  workflowMode?: DesignWorkflowMode;
+  sectionDesignation: string;
+  setSectionDesignation: (value: string) => void;
+  onSectionApplied: (designation: string, section: RolledSectionProps) => void;
+  targetSafetyFactor: number;
+  setTargetSafetyFactor: (value: number) => void;
 };
 
 export default function BucklingInputs({
@@ -70,7 +79,16 @@ export default function BucklingInputs({
   onCalculate,
   onSave,
   saving,
+  workflowMode = "check",
+  sectionDesignation,
+  setSectionDesignation,
+  onSectionApplied,
+  targetSafetyFactor,
+  setTargetSafetyFactor,
 }: Props) {
+  const isDesignMode = workflowMode === "design";
+  const showManualSection = !isDesignMode;
+
   return (
     <div className="bg-white rounded-xl p-4 shadow-sm space-y-3">
       {/* Project Name */}
@@ -84,6 +102,34 @@ export default function BucklingInputs({
       {/* Geometry Section */}
       <div className="border-t pt-3 mt-3">
         <h4 className="font-semibold mb-2">Column Geometry</h4>
+
+        {!isDesignMode ? (
+          <RolledSectionPicker
+            designation={sectionDesignation}
+            onDesignationChange={setSectionDesignation}
+            onSectionApplied={onSectionApplied}
+            className="mb-3"
+          />
+        ) : null}
+
+        {isDesignMode ? (
+          <div className="mb-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3">
+            <label className="block text-sm text-slate-700">
+              Target buckling safety factor
+              <input
+                type="number"
+                step="0.1"
+                min={1}
+                className="mt-1 w-full rounded border p-2"
+                value={targetSafetyFactor}
+                onChange={(e) => setTargetSafetyFactor(+e.target.value)}
+              />
+            </label>
+            <p className="mt-2 text-xs text-cyan-900">
+              Design mode selects the lightest catalog section with Pcr/P at or above this target.
+            </p>
+          </div>
+        ) : null}
 
         {/* Length */}
         <div className="mb-3">
@@ -106,6 +152,7 @@ export default function BucklingInputs({
         </div>
 
         {/* Area */}
+        {showManualSection ? (
         <div className="mb-3">
           <label className="block text-sm text-gray-600 mb-1">Cross-sectional Area</label>
           <div className="flex gap-2">
@@ -119,8 +166,10 @@ export default function BucklingInputs({
             <span className="px-2 py-2 text-gray-600">m²</span>
           </div>
         </div>
+        ) : null}
 
         {/* Second Moment of Inertia */}
+        {showManualSection ? (
         <div className="mb-3">
           <label className="block text-sm text-gray-600 mb-1">Second Moment of Inertia</label>
           <div className="flex gap-2">
@@ -139,6 +188,7 @@ export default function BucklingInputs({
             />
           </div>
         </div>
+        ) : null}
       </div>
 
       {/* Material Section */}
@@ -208,7 +258,7 @@ export default function BucklingInputs({
         onClick={onCalculate}
         className="w-full bg-black text-white py-2 rounded"
       >
-        Calculate
+        {isDesignMode ? "Size section" : "Calculate"}
       </button>
 
       <button

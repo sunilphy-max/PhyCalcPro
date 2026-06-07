@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import PinInputs from "@/components/fasteners/pins/PinInputs";
 import PinResults from "@/components/fasteners/pins/PinResults";
@@ -13,6 +19,7 @@ import type { PinResult } from "@/lib/fasteners/pins/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("pins", (units) =>
     applyUnitMap(units, {
       force: setForceUnit,
@@ -32,7 +39,7 @@ export default function Page() {
   const [pinCount, setPinCount] = useState(1);
   const [result, setResult] = useState<(PinResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solvePinEngine({
@@ -44,6 +51,24 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      shearForce: toBase(force, "force", forceUnit),
+      shaftDiameter: toBase(pinDiameter, "length", lengthUnit),
+    }), [force, forceUnit, pinDiameter, lengthUnit]);
+
+  useSyncDesignInputs("pins", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("pins", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

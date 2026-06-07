@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import CircularPlatesInputs from "@/components/structural/circular-plates/CircularPlatesInputs";
 import CircularPlatesResults from "@/components/structural/circular-plates/CircularPlatesResults";
@@ -13,6 +19,7 @@ import type { CircularPlateConfig, CircularPlateResult } from "@/lib/structural/
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("circular-plates", (units) =>
     applyUnitMap(units, {
       radius: setLengthUnit,
@@ -34,7 +41,7 @@ export default function Page() {
   const [modulusUnit, setModulusUnit] = useState("GPa");
   const [result, setResult] = useState<(CircularPlateResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveCircularPlateEngine({
@@ -48,6 +55,28 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      length: toBase(radius, "length", lengthUnit),
+      pressure: toBase(pressure, "pressure", pressureUnit),
+      E: toBase(modulus, "stress", modulusUnit) * 1e9,
+      thickness: toBase(thickness, "length", lengthUnit),
+    }), [radius, lengthUnit, pressure, pressureUnit, modulus, modulusUnit, thickness]);
+
+  useSyncDesignInputs("circular-plates", designUserInputs);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.thickness != null) setThickness(fields.thickness as never);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("circular-plates", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

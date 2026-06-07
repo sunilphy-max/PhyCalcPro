@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CostEstimatorInputs from "@/components/manufacturing/CostEstimatorInputs";
 import CostEstimatorResults from "@/components/manufacturing/CostEstimatorResults";
@@ -9,6 +14,7 @@ import { solveCostEstimatorEngine } from "@/lib/manufacturing/costEstimator/engi
 import type { CostEstimatorResult } from "@/lib/manufacturing/costEstimator/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("cost-estimator");
   const [materialVolume, setMaterialVolume] = useState(0.5);
   const [materialDensity, setMaterialDensity] = useState(7800);
@@ -22,7 +28,7 @@ export default function Page() {
   const [scrapPercent, setScrapPercent] = useState(6);
   const [result, setResult] = useState<CostEstimatorResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const raw = solveCostEstimatorEngine({
       materialVolume,
       materialDensity,
@@ -37,6 +43,23 @@ export default function Page() {
     });
 
     setResult(wrapResult(raw));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      costTarget: materialVolume * materialDensity * materialCostPerKg,
+    }), [materialVolume, materialDensity, materialCostPerKg]);
+
+  useSyncDesignInputs("cost-estimator", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("cost-estimator", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

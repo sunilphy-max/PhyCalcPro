@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import GearInputs from "@/components/machine/gears/GearInputs";
 import GearResults from "@/components/machine/gears/GearResults";
+import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { toBase } from "@/lib/units/conversions";
 import { solveGearEngine } from "@/lib/machine/gears/engine";
 import type { GearResult, GearMaterial } from "@/lib/machine/gears/types";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 
 const MATERIALS: Record<string, GearMaterial> = {
   Steel: {
@@ -33,7 +38,23 @@ const MATERIALS: Record<string, GearMaterial> = {
   },
 };
 
+type GearProjectData = {
+  power: number;
+  powerUnit: string;
+  rpm: number;
+  pinionTeeth: number;
+  gearRatio: number;
+  module: number;
+  moduleUnit: string;
+  faceWidth: number;
+  faceWidthUnit: string;
+  material: string;
+};
+
+type GearProject = LocalProject<GearProjectData>;
+
 export default function Page() {
+  const { mode: workflowMode, setUserInputs } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("gears", (units) =>
     applyUnitMap(units, {
       power: setPowerUnit,
@@ -56,8 +77,13 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState("Pa");
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [result, setResult] = useState<(GearResult & { calculationSpec?: CalculationSpec }) | null>(null);
+  const [projectName, setProjectName] = useState("Gear Design Project");
+  const [saving, setSaving] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<GearProject[]>(() =>
+    loadLocalProjects<GearProjectData>("gears")
+  );
 
-  const calculate = () => {
+  const runCheck = () => {
     const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
     const config = {
       power: normalizedPower,
@@ -73,44 +99,119 @@ export default function Page() {
     setResult(wrapResult(raw));
   };
 
+  const saveProject = () => {
+    setSaving(true);
+    const projects = saveLocalProject<GearProjectData>("gears", projectName, {
+      power,
+      powerUnit,
+      rpm,
+      pinionTeeth,
+      gearRatio,
+      module,
+      moduleUnit,
+      faceWidth,
+      faceWidthUnit,
+      material,
+    });
+    setSavedProjects(projects);
+    setSaving(false);
+  };
+
+  const loadProjectIntoForm = (project: GearProject) => {
+    setProjectName(project.name);
+    setPower(project.power);
+    setPowerUnit(project.powerUnit);
+    setRpm(project.rpm);
+    setPinionTeeth(project.pinionTeeth);
+    setGearRatio(project.gearRatio);
+    setModule(project.module);
+    setModuleUnit(project.moduleUnit);
+    setFaceWidth(project.faceWidth);
+    setFaceWidthUnit(project.faceWidthUnit);
+    setMaterial(project.material);
+  };
+
+
+  useEffect(() => {
+    const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
+    setUserInputs({
+      power: normalizedPower,
+      speedDriver: rpm,
+      ratio: gearRatio,
+      pinionTeeth,
+      module,
+      faceWidth,
+    });
+  }, [power, powerUnit, rpm, gearRatio, pinionTeeth, module, faceWidth, setUserInputs]);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.module != null) setModule(fields.module as number);
+    if (fields.faceWidth != null) setFaceWidth(fields.faceWidth as number);
+    if (fields.pinionTeeth != null) setPinionTeeth(fields.pinionTeeth as number);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const normalizedPower = powerUnit === "kW" ? power * 1000 : power;
+      const design = runModuleDesignMode("gears", {
+        power: normalizedPower,
+        speedDriver: rpm,
+        ratio: gearRatio,
+        pinionTeeth,
+      });
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
+  };
+
   return (
-          <CalculatorLayout
-        moduleId="gears"
-        title="Spur Gear Design"
-        left={
-          <GearInputs
-            power={power}
-            setPower={setPower}
-            powerUnit={powerUnit}
-            setPowerUnit={setPowerUnit}
-            rpm={rpm}
-            setRpm={setRpm}
-            pinionTeeth={pinionTeeth}
-            setPinionTeeth={setPinionTeeth}
-            gearRatio={gearRatio}
-            setGearRatio={setGearRatio}
-            module={module}
-            setModule={setModule}
-            moduleUnit={moduleUnit}
-            setModuleUnit={setModuleUnit}
-            faceWidth={faceWidth}
-            setFaceWidth={setFaceWidth}
-            faceWidthUnit={faceWidthUnit}
-            setFaceWidthUnit={setFaceWidthUnit}
-            material={material}
-            setMaterial={setMaterial}
-            onCalculate={calculate}
-          />
-        }
-        center={
-          <CalculatorGuidancePanel title="Gear design">
-            <p>
-              Use safety factor and pitch diameters to refine geometry. Start with 20–30 pinion teeth and a module that
-              balances strength with packaging.
-            </p>
-          </CalculatorGuidancePanel>
-        }
-        right={<GearResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
-      />
+    <CalculatorLayout
+      moduleId="gears"
+      title="Spur Gear Design"
+      footer={
+        <SavedProjectsFooter
+          projects={savedProjects}
+          onLoad={(project) => loadProjectIntoForm(project as GearProject)}
+        />
+      }
+      left={
+        <GearInputs
+          power={power}
+          setPower={setPower}
+          powerUnit={powerUnit}
+          setPowerUnit={setPowerUnit}
+          rpm={rpm}
+          setRpm={setRpm}
+          pinionTeeth={pinionTeeth}
+          setPinionTeeth={setPinionTeeth}
+          gearRatio={gearRatio}
+          setGearRatio={setGearRatio}
+          module={module}
+          setModule={setModule}
+          moduleUnit={moduleUnit}
+          setModuleUnit={setModuleUnit}
+          faceWidth={faceWidth}
+          setFaceWidth={setFaceWidth}
+          faceWidthUnit={faceWidthUnit}
+          setFaceWidthUnit={setFaceWidthUnit}
+          material={material}
+          setMaterial={setMaterial}
+          onCalculate={calculate}
+          projectName={projectName}
+          setProjectName={setProjectName}
+          onSave={saveProject}
+          saving={saving}
+        />
+      }
+      center={
+        <CalculatorGuidancePanel title="Gear design">
+          <p>
+            Use safety factor and pitch diameters to refine geometry. Start with 20–30 pinion teeth and a module that
+            balances strength with packaging.
+          </p>
+        </CalculatorGuidancePanel>
+      }
+      right={<GearResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />}
+    />
   );
 }

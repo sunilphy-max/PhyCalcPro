@@ -1,8 +1,14 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import SectionInputs from "@/components/materials/SectionInputs";
 import SectionResults from "@/components/materials/SectionResults";
 import { toBase, fromBase } from "@/lib/units/conversions";
@@ -10,6 +16,7 @@ import { solveSectionEngine } from "@/lib/materials/engine";
 import type { SectionConfig, SectionResult } from "@/lib/materials/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("sections");
   const [shape, setShape] = useState<SectionConfig["shape"]>("rectangle");
   const [width, setWidth] = useState(0.1);
@@ -22,7 +29,7 @@ export default function Page() {
   const [lengthUnit, setLengthUnit] = useState("m");
   const [result, setResult] = useState<SectionResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config: SectionConfig = {
       shape,
       width: shape === "rectangle" ? toBase(width, "length", lengthUnit) : undefined,
@@ -45,6 +52,25 @@ export default function Page() {
       Ixx: fromBase(raw.Ixx, "inertia", inertiaUnit),
       Iyy: fromBase(raw.Iyy, "inertia", inertiaUnit),
     }));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      requiredI: result?.Ixx,
+      width,
+      height,
+    }), [result, width, height]);
+
+  useSyncDesignInputs("sections", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("sections", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

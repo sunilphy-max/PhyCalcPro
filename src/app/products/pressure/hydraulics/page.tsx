@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import HydraulicsInputs from "@/components/pressure/hydraulics/HydraulicsInputs";
 import HydraulicsResults from "@/components/pressure/hydraulics/HydraulicsResults";
@@ -10,6 +15,7 @@ import { solveHydraulicsEngine } from "@/lib/pressure/hydraulics/engine";
 import type { HydraulicsResult } from "@/lib/pressure/hydraulics/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("hydraulics");
   const [boreDiameter, setBoreDiameter] = useState(0.1);
   const [rodDiameter, setRodDiameter] = useState(0.04);
@@ -22,7 +28,7 @@ export default function Page() {
   const [forceUnit, setForceUnit] = useState("N");
   const [result, setResult] = useState<HydraulicsResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       boreDiameter: toBase(boreDiameter, "length", boreUnit),
       rodDiameter: toBase(rodDiameter, "length", boreUnit),
@@ -32,6 +38,24 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveHydraulicsEngine(config)));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      pressure: toBase(pressure, "pressure", pressureUnit),
+      maxForce: toBase(forceGoal, "force", forceUnit),
+    }), [pressure, pressureUnit, forceGoal, forceUnit]);
+
+  useSyncDesignInputs("hydraulics", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("hydraulics", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

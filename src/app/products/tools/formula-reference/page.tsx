@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useCallback, useState, useMemo } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import FormulaReferenceInputs, {
   defaultFormulaInputs,
@@ -18,6 +24,7 @@ import { getModuleFieldProfile } from "@/lib/units/moduleProfiles";
 import type { PhysicsDimension } from "@/lib/physics/units";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const [formulaId, setFormulaId] = useState("kinetic_energy");
   const [inputs, setInputs] = useState(() => defaultFormulaInputs("kinetic_energy"));
   const [inputUnits, setInputUnits] = useState(() => defaultFormulaInputUnits("kinetic_energy"));
@@ -59,8 +66,25 @@ export default function Page() {
     return base;
   };
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(wrapResult(solveFormulaReferenceEngine({ formulaId, inputs: toBaseInputs() })));
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+
+    }), []);
+
+  useSyncDesignInputs("formula-reference", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("formula-reference", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

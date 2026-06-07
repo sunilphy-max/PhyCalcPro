@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ShaftHubInputs from "@/components/fasteners/shaft-hubs/ShaftHubInputs";
 import ShaftHubResults from "@/components/fasteners/shaft-hubs/ShaftHubResults";
@@ -13,6 +19,7 @@ import type { ShaftHubResult } from "@/lib/fasteners/shaft-hubs/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("shaft-hubs", (units) =>
     applyUnitMap(units, {
       shaftDiameter: setLengthUnit,
@@ -35,7 +42,7 @@ export default function Page() {
   const [result, setResult] = useState<(ShaftHubResult & { calculationSpec?: CalculationSpec }) | null>(null);
   const torqueUnit = "N·m";
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveShaftHubEngine({
@@ -48,6 +55,24 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      shaftDiameter: toBase(shaftDiameter, "length", lengthUnit),
+      torque: result?.frictionTorque,
+    }), [shaftDiameter, lengthUnit, result]);
+
+  useSyncDesignInputs("shaft-hubs", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("shaft-hubs", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

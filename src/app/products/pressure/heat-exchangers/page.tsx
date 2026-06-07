@@ -1,7 +1,12 @@
 "use client";
 
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import HeatExchangerInputs from "@/components/pressure/heat-exchangers/HeatExchangerInputs";
 import HeatExchangerResults from "@/components/pressure/heat-exchangers/HeatExchangerResults";
@@ -9,6 +14,7 @@ import { solveHeatExchangerEngine } from "@/lib/pressure/heat-exchangers/engine"
 import type { HeatExchangerResult, HeatExchangerFlowType } from "@/lib/pressure/heat-exchangers/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("heat-exchangers");
   const [hotFlowRate, setHotFlowRate] = useState(1.2);
   const [coldFlowRate, setColdFlowRate] = useState(1.5);
@@ -22,7 +28,7 @@ export default function Page() {
   const [flowType, setFlowType] = useState<HeatExchangerFlowType>("counterflow");
   const [result, setResult] = useState<HeatExchangerResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveHeatExchangerEngine({
@@ -39,6 +45,24 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      heatDuty: hotFlowRate * hotCp * Math.abs(hotInletTemp - hotOutletTemp) * 1000,
+      deltaT: Math.abs(hotInletTemp - coldInletTemp),
+    }), [hotFlowRate, hotCp, hotInletTemp, hotOutletTemp, coldInletTemp]);
+
+  useSyncDesignInputs("heat-exchangers", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("heat-exchangers", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

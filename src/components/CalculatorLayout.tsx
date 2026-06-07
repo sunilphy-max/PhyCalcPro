@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
 import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
 import ModuleDesignAdvisor from "@/components/design-workflows/ModuleDesignAdvisor";
+import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
 import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
 import { computeReleaseTier } from "@/lib/qa/maturityGates";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
@@ -59,6 +60,7 @@ export default function CalculatorLayout({
   const resultColumn = results ?? right;
 
   return (
+    <DesignWorkflowProvider moduleId={moduleId}>
     <div className="min-h-full bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.08),transparent_40%),radial-gradient(circle_at_top_right,_rgba(168,85,247,0.06),transparent_40%),#f8fafc] p-4 md:p-6">
       <div className="mx-auto max-w-[1600px] space-y-6">
         <div className="rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur-sm md:p-6">
@@ -96,5 +98,6 @@ export default function CalculatorLayout({
         {footer ? <div>{footer}</div> : null}
       </div>
     </div>
+    </DesignWorkflowProvider>
   );
 }

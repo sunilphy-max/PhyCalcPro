@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import BrakesClutchesInputs from "@/components/machine/brakes-clutches/BrakesClutchesInputs";
 import BrakesClutchesResults from "@/components/machine/brakes-clutches/BrakesClutchesResults";
@@ -13,6 +19,7 @@ import type { BrakesClutchesResult } from "@/lib/machine/brakes-clutches/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("brakes-clutches", (units) =>
     applyUnitMap(units, {
       outerRadius: setLengthUnit,
@@ -32,7 +39,7 @@ export default function Page() {
   const [forceUnit, setForceUnit] = useState("N");
   const [result, setResult] = useState<(BrakesClutchesResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     setResult(
       wrapResult(
         solveBrakesClutchesEngine({
@@ -46,6 +53,24 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      torque: actuationForce * outerRadius / 1000,
+      speedDriver: speed,
+    }), [actuationForce, outerRadius, speed]);
+
+  useSyncDesignInputs("brakes-clutches", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("brakes-clutches", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

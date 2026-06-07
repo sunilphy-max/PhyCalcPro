@@ -1,6 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import FatigueInputs from "@/components/materials/fatigue/FatigueInputs";
@@ -16,6 +21,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 const defaults = moduleUnitProfiles.fatigue;
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("fatigue", (units) =>
     applyUnitMap(units, {
       alternatingStress: setAlternatingUnit,
@@ -39,7 +45,7 @@ export default function Page() {
   const toStressPa = (value: number, unit: string) =>
     normalizeFieldValue("fatigue", "alternatingStress", value, unit);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config: FatigueConfig = {
       alternatingStress: toStressPa(alternatingStress, alternatingUnit),
       meanStress: toStressPa(meanStress, meanUnit),
@@ -55,6 +61,26 @@ export default function Page() {
         correctedEndurance: displayFieldValue("fatigue", "enduranceLimit", raw.correctedEndurance, enduranceUnit),
       })
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      stressAmplitude: alternatingStress * 1e6,
+      meanStress: meanStress * 1e6,
+      enduranceLimit: enduranceLimit * 1e6,
+      targetCycles: 1e6,
+    }), [alternatingStress, meanStress, enduranceLimit]);
+
+  useSyncDesignInputs("fatigue", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("fatigue", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

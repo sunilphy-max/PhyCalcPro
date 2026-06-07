@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import TimingBeltsInputs from "@/components/power-transmission/timing-belts/TimingBeltsInputs";
 import TimingBeltsResults from "@/components/power-transmission/timing-belts/TimingBeltsResults";
@@ -13,6 +19,7 @@ import type { TimingBeltResult } from "@/lib/powerTransmission/timing-belts/type
 import type { CalculationSpec } from "@/lib/standards/types";
 
 export default function Page() {
+  const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("timing-belts", (units) =>
     applyUnitMap(units, { power: setPowerUnit, pitch: setLengthUnit })
   );
@@ -28,7 +35,7 @@ export default function Page() {
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [result, setResult] = useState<(TimingBeltResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const normalizedPower = powerUnit === "kW" ? power * 1000 : powerUnit === "hp" ? power * 745.7 : power;
     setResult(
       wrapResult(
@@ -43,6 +50,26 @@ export default function Page() {
         })
       )
     );
+  };
+
+
+  const designUserInputs = useMemo((): ModuleUserInputs => ({
+      power: powerUnit === "kW" ? power * 1000 : powerUnit === "hp" ? power * 745.7 : power,
+      speedDriver,
+      ratio: teethDriven / Math.max(teethDriver, 1),
+      serviceFactor,
+    }), [power, powerUnit, speedDriver, teethDriver, teethDriven, serviceFactor]);
+
+  useSyncDesignInputs("timing-belts", designUserInputs);
+
+  const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("timing-belts", designUserInputs);
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (

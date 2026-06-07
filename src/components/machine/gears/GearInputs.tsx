@@ -23,6 +23,10 @@ type Props = {
   material: string;
   setMaterial: Dispatch<SetStateAction<string>>;
   onCalculate: () => void;
+  projectName?: string;
+  setProjectName?: Dispatch<SetStateAction<string>>;
+  onSave?: () => void;
+  saving?: boolean;
 };
 
 export default function GearInputs({
@@ -47,9 +51,21 @@ export default function GearInputs({
   material,
   setMaterial,
   onCalculate,
+  projectName,
+  setProjectName,
+  onSave,
+  saving = false,
 }: Props) {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm space-y-6">
+      {setProjectName ? (
+        <input
+          className="w-full rounded border p-2 text-sm"
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name"
+        />
+      ) : null}
       <div>
         <h2 className="text-lg font-semibold">Gear design inputs</h2>
         <p className="text-sm text-slate-500 mt-1">
@@ -165,6 +181,16 @@ export default function GearInputs({
       >
         Calculate Gear Design
       </button>
+      {onSave ? (
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving}
+          className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+        >
+          {saving ? "Saving..." : "Save project"}
+        </button>
+      ) : null}
     </div>
   );
 }

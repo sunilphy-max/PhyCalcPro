@@ -1,8 +1,11 @@
 "use client";
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+
+import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import FrameInputs from "@/components/structural/frames/FrameInputs";
 import FrameResults from "@/components/structural/frames/FrameResults";
 import { toBase } from "@/lib/units/conversions";
@@ -10,6 +13,7 @@ import { solveFrameEngine } from "@/lib/structural/frames/engine";
 import type { FrameResult } from "@/lib/structural/frames/types";
 
 export default function Page() {
+  const { mode: workflowMode, setUserInputs } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("frames");
   const [span, setSpan] = useState(6);
   const [height, setHeight] = useState(3);
@@ -26,7 +30,7 @@ export default function Page() {
   const [EUnit, setEUnit] = useState("Pa");
   const [result, setResult] = useState<FrameResult | null>(null);
 
-  const calculate = () => {
+  const runCheck = () => {
     const config = {
       span: toBase(span, "length", spanUnit),
       height: toBase(height, "length", heightUnit),
@@ -38,6 +42,36 @@ export default function Page() {
     };
 
     setResult(wrapResult(solveFrameEngine(config)));
+  };
+
+
+  useEffect(() => {
+    setUserInputs({
+      length: toBase(span, "length", spanUnit),
+      height: toBase(height, "length", heightUnit),
+      maxForce: toBase(load, "force", loadUnit),
+      E: toBase(E, "stress", EUnit),
+      I: toBase(I, "inertia", inertiaUnit),
+      area: toBase(area, "area", areaUnit),
+    });
+  }, [span, spanUnit, height, heightUnit, load, loadUnit, E, EUnit, I, inertiaUnit, area, areaUnit, setUserInputs]);
+
+  const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    if (fields.I != null) setI(fields.I as number);
+    if (fields.area != null) setArea(fields.area as number);
+  }, []);
+
+  const calculate = () => {
+    if (workflowMode === "design") {
+      const design = runModuleDesignMode("frames", {
+        length: toBase(span, "length", spanUnit),
+        height: toBase(height, "length", heightUnit),
+        maxForce: toBase(load, "force", loadUnit),
+        E: toBase(E, "stress", EUnit),
+      });
+      if (design?.best?.fields) applyDesignFields(design.best.fields);
+    }
+    runCheck();
   };
 
   return (
