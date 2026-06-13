@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { PressurePipeResult } from "@/lib/pressure/pipes/types";
@@ -8,6 +9,8 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 
 type Props = {
@@ -19,6 +22,49 @@ export default function PressurePipeResults({ result }: Props) {
     result?.angles.map((theta) =>
       (theta < 0 ? theta + 2 * Math.PI : theta) * (180 / Math.PI)
     ) ?? [];
+
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    return [
+      {
+        id: "hoop-stress",
+        label: "Hoop stress",
+        content: (
+          <EngineeringPlot
+            title="Hoop stress distribution"
+            x={angles}
+            y={result.hoopStress}
+            yLabel="Hoop stress"
+            xLabel="Circumference angle"
+            xUnit="deg"
+            unitLabel="Pa"
+          />
+        ),
+      },
+      {
+        id: "radial-disp",
+        label: "Radial displacement",
+        content: (
+          <EngineeringPlot
+            title="Radial displacement around circumference"
+            x={angles}
+            y={result.radialDisplacement}
+            yLabel="Radial displacement"
+            xLabel="Circumference angle"
+            xUnit="deg"
+            unitLabel="m"
+          />
+        ),
+      },
+      {
+        id: "intensity",
+        label: "Stress intensity",
+        content: (
+          <FEAColorStrip title="Hoop stress intensity" x={angles} values={result.hoopStress} unit="Pa" />
+        ),
+      },
+    ];
+  }, [angles, result]);
 
   return (
     <CalculatorResultsShell
@@ -62,30 +108,7 @@ export default function PressurePipeResults({ result }: Props) {
               size="lg"
             />
           </CalculatorMetricGrid>
-          <EngineeringPlot
-            title="Radial displacement around circumference"
-            x={angles}
-            y={result.radialDisplacement}
-            yLabel="Radial displacement"
-            xLabel="Circumference angle"
-            xUnit="deg"
-            unitLabel="m"
-          />
-          <EngineeringPlot
-            title="Hoop stress distribution"
-            x={angles}
-            y={result.hoopStress}
-            yLabel="Hoop stress"
-            xLabel="Circumference angle"
-            xUnit="deg"
-            unitLabel="Pa"
-          />
-          <FEAColorStrip
-            title="Hoop Stress Intensity"
-            x={angles}
-            values={result.hoopStress}
-            unit="Pa"
-          />
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="hoop-stress" label="Result chart" />
         </>
       ) : null}
     </CalculatorResultsShell>

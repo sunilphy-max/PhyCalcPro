@@ -1,10 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
 import type { AreaPropertiesResult } from "@/lib/profiles/types";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
-  CalculatorPlotSection,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
@@ -12,14 +14,113 @@ type Props = {
   result: AreaPropertiesResult;
 };
 
+function DetailRows({ rows }: { rows: { label: string; value: string }[] }) {
+  return (
+    <div className="space-y-2 text-sm">
+      {rows.map((row) => (
+        <div key={row.label} className="flex justify-between gap-4">
+          <span className="text-slate-600 dark:text-slate-400">{row.label}</span>
+          <span className="font-mono text-slate-900 dark:text-slate-100">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ProfilesDashboard({ result }: Props) {
   const formatInertia = (num: number) => formatEngineeringValue(num, "m⁴");
+
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    return [
+      {
+        id: "visualization",
+        label: "Cross-section",
+        content: (
+          <div className="flex h-48 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
+            <div className="text-center text-slate-500 dark:text-slate-400">
+              <div className="mb-2 text-4xl">📐</div>
+              <div className="text-sm">
+                {result.shapeData?.shape ? `${result.shapeData.shape} cross-section` : "Shape visualization"}
+              </div>
+              <div className="mt-1 text-xs">Area: {formatEngineeringValue(result.area, "m²")}</div>
+            </div>
+          </div>
+        ),
+      },
+      {
+        id: "second-moments",
+        label: "Second moments",
+        content: (
+          <DetailRows
+            rows={[
+              { label: "Ixx (about x-axis):", value: formatInertia(result.ixx) },
+              { label: "Iyy (about y-axis):", value: formatInertia(result.iyy) },
+              { label: "Ixy (product):", value: formatInertia(result.ixy) },
+            ]}
+          />
+        ),
+      },
+      {
+        id: "principal",
+        label: "Principal moments",
+        content: (
+          <DetailRows
+            rows={[
+              { label: "I₁ (max principal):", value: formatInertia(result.i1) },
+              { label: "I₂ (min principal):", value: formatInertia(result.i2) },
+              { label: "Principal angle θ:", value: `${result.theta.toFixed(2)}°` },
+            ]}
+          />
+        ),
+      },
+      {
+        id: "moduli",
+        label: "Section moduli",
+        content: (
+          <DetailRows
+            rows={[
+              { label: "Sx (about x-axis):", value: `${formatInertia(result.sx)}/m` },
+              { label: "Sy (about y-axis):", value: `${formatInertia(result.sy)}/m` },
+            ]}
+          />
+        ),
+      },
+      {
+        id: "shape-info",
+        label: "Shape details",
+        content: (
+          <DetailRows
+            rows={[
+              {
+                label: "Shape type:",
+                value: result.shapeData?.shape ? result.shapeData.shape : "Unknown",
+              },
+              {
+                label: "Radius of gyration (x):",
+                value:
+                  result.ixx > 0
+                    ? `${Math.sqrt(result.ixx / result.area).toExponential(3)} m`
+                    : "N/A",
+              },
+              {
+                label: "Radius of gyration (y):",
+                value:
+                  result.iyy > 0
+                    ? `${Math.sqrt(result.iyy / result.area).toExponential(3)} m`
+                    : "N/A",
+              },
+            ]}
+          />
+        ),
+      },
+    ];
+  }, [result]);
 
   return (
     <div className="grid grid-cols-1 gap-4">
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
-          label="Cross-Sectional Area"
+          label="Cross-sectional area"
           value={formatEngineeringValue(result.area, "m²")}
           tone="blue"
         />
@@ -33,98 +134,10 @@ export default function ProfilesDashboard({ result }: Props) {
           value={formatEngineeringValue(result.centroid.y, "m")}
           tone="green"
         />
-        <CalculatorMetricCard
-          label="Polar Moment"
-          value={formatInertia(result.j)}
-          tone="purple"
-        />
+        <CalculatorMetricCard label="Polar moment" value={formatInertia(result.j)} tone="purple" />
       </CalculatorMetricGrid>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <CalculatorPlotSection title="Second Moments of Area">
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Ixx (about x-axis):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.ixx)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Iyy (about y-axis):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.iyy)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Ixy (product):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.ixy)}</span>
-            </div>
-          </div>
-        </CalculatorPlotSection>
-
-        <CalculatorPlotSection title="Principal Moments">
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">I₁ (max principal):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.i1)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">I₂ (min principal):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.i2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Principal angle θ:</span>
-              <span className="text-gray-900 font-mono">{result.theta.toFixed(2)}°</span>
-            </div>
-          </div>
-        </CalculatorPlotSection>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <CalculatorPlotSection title="Section Moduli">
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Sx (about x-axis):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.sx)}/m</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Sy (about y-axis):</span>
-              <span className="text-gray-900 font-mono">{formatInertia(result.sy)}/m</span>
-            </div>
-          </div>
-        </CalculatorPlotSection>
-
-        <CalculatorPlotSection title="Shape Information">
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Shape type:</span>
-              <span className="text-gray-900 capitalize">{result.shapeData?.shape || "Unknown"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Radius of gyration (x):</span>
-              <span className="text-gray-900 font-mono">
-                {result.ixx > 0 ? Math.sqrt(result.ixx / result.area).toExponential(3) : "N/A"} m
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Radius of gyration (y):</span>
-              <span className="text-gray-900 font-mono">
-                {result.iyy > 0 ? Math.sqrt(result.iyy / result.area).toExponential(3) : "N/A"} m
-              </span>
-            </div>
-          </div>
-        </CalculatorPlotSection>
-      </div>
-
-      <CalculatorPlotSection title="Cross-Section Visualization">
-        <div className="flex items-center justify-center h-48 bg-gray-50 rounded border border-gray-200">
-          <div className="text-center text-gray-500">
-            <div className="text-4xl mb-2">📐</div>
-            <div className="text-sm">
-              {result.shapeData?.shape ? `${result.shapeData.shape} cross-section` : "Shape visualization"}
-            </div>
-            <div className="text-xs mt-1">
-              Area: {formatEngineeringValue(result.area, "m²")}
-            </div>
-          </div>
-        </div>
-      </CalculatorPlotSection>
+      <EngineeringPlotPicker tabs={plotTabs} defaultTabId="visualization" label="Section view" />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FrameDiagram from "./FrameDiagram";
@@ -9,6 +10,8 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 
 type Props = {
@@ -16,6 +19,44 @@ type Props = {
 };
 
 export default function FrameResults({ result }: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    return [
+      {
+        id: "diagram",
+        label: "Frame model",
+        content: <FrameDiagram result={result} />,
+      },
+      {
+        id: "deflection",
+        label: "Midspan deflection",
+        content: (
+          <EngineeringPlot
+            title="Beam midspan deflection"
+            x={result.topNodesX}
+            y={result.topDeflections}
+            yLabel="Deflection"
+            xLabel="Position along top chord"
+            xUnit="m"
+            unitLabel="m"
+          />
+        ),
+      },
+      {
+        id: "intensity",
+        label: "Deflection intensity",
+        content: (
+          <FEAColorStrip
+            title="Frame deflection intensity"
+            x={result.topNodesX}
+            values={result.topDeflections}
+            unit="m"
+          />
+        ),
+      },
+    ];
+  }, [result]);
+
   return (
     <CalculatorResultsShell
       moduleId="frames"
@@ -58,22 +99,7 @@ export default function FrameResults({ result }: Props) {
               size="lg"
             />
           </CalculatorMetricGrid>
-          <EngineeringPlot
-            title="Beam midspan deflection"
-            x={result.topNodesX}
-            y={result.topDeflections}
-            yLabel="Deflection"
-            xLabel="Position along top chord"
-            xUnit="m"
-            unitLabel="m"
-          />
-          <FrameDiagram result={result} />
-          <FEAColorStrip
-            title="Frame Deflection Intensity"
-            x={result.topNodesX}
-            values={result.topDeflections}
-            unit="m"
-          />
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="diagram" label="Result chart" />
         </>
       ) : null}
     </CalculatorResultsShell>

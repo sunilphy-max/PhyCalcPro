@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Calculator, CheckCircle2, GitBranch, Lightbulb, Table2 } from "lucide-react";
+import { useState } from "react";
+import { ArrowRight, BookOpen, Calculator, ChevronDown, GitBranch, Lightbulb, Table2 } from "lucide-react";
 import { allModules } from "@/data/modules";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { getComputedDesignSet } from "@/lib/design-workflows/computedCandidates";
@@ -12,117 +13,103 @@ type Props = {
 };
 
 const maturityLabel: Record<ModuleDesignWorkflow["maturity"], string> = {
-  workflow: "Workflow scaffold",
-  "solver-backed": "Solver-backed",
-  "catalog-backed": "Catalog-backed",
+  workflow: "UI only — Check runs the solver",
+  "solver-backed": "Design auto-sizes before check",
+  "catalog-backed": "Design ranks catalog entries",
 };
 
 export default function ModuleDesignAdvisor({ workflow }: Props) {
+  const [open, setOpen] = useState(false);
   const { mode, userInputs, applyDesignCandidate } = useDesignWorkflow();
-  const activeMode = workflow.modes.find((item) => item.id === mode) ?? workflow.modes[0];
   const computedDesign = getComputedDesignSet(workflow.moduleId, userInputs);
   const linkedModules = workflow.linkedWorkflowModuleIds
     .map((id) => allModules.find((catalogModule) => catalogModule.id === id || catalogModule.route.endsWith(`/${id}`)))
     .filter((catalogModule): catalogModule is NonNullable<typeof catalogModule> => Boolean(catalogModule));
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-cyan-200 bg-white shadow-sm">
-      <div className="border-b border-cyan-100 bg-cyan-50/80 p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
-              Design workflow
-            </p>
-            <h2 className="mt-1 text-lg font-semibold text-slate-950">
-              Design / Check / Select for {workflow.title}
-            </h2>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Define targets in the inputs column, compare candidates in Select mode, and apply a sizing result
-              before running a detailed check.
-            </p>
-            <p className="mt-3 text-sm text-cyan-900">
-              Use the <span className="font-semibold">Workflow mode</span> control in the inputs column to switch
-              between Check, Design, and Select.
-            </p>
-          </div>
-          <span className="w-fit rounded-full bg-white px-3 py-1 text-xs font-semibold text-cyan-800 shadow-sm">
-            {maturityLabel[workflow.maturity]}
-          </span>
+    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
+        aria-expanded={open}
+      >
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+            Sizing candidates & standards reference
+          </p>
+          <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
+            {mode === "select"
+              ? "Compare options and Apply a candidate to the form"
+              : "Catalog tables, workflow strategy, linked modules — optional detail"}
+            {" · "}
+            <span className="text-cyan-700 dark:text-cyan-400">{maturityLabel[workflow.maturity]}</span>
+          </p>
         </div>
-      </div>
+        <ChevronDown
+          className={`h-5 w-5 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`}
+        />
+      </button>
 
-      <div className="grid gap-0 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-5 border-b border-slate-200 p-5 lg:border-b-0 lg:border-r">
-          <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-              <CheckCircle2 className="h-4 w-4 text-cyan-600" />
-              Active mode: {activeMode?.label}
-            </div>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{activeMode?.description}</p>
-          </div>
-
-        </div>
-
-        <div className="space-y-5 p-5">
+      {open ? (
+        <div className="space-y-5 border-t border-slate-200 p-4 dark:border-slate-700">
           {computedDesign ? (
-            <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+            <div className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-4 dark:border-cyan-900/50 dark:bg-cyan-950/20">
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
                 <Calculator className="h-4 w-4 text-cyan-700" />
-                Computed design candidates
+                Live sizing candidates
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{computedDesign.method}</p>
-              <div className="mt-3 overflow-x-auto rounded-xl border border-cyan-200 bg-white">
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{computedDesign.method}</p>
+              <div className="mt-3 overflow-x-auto rounded-lg border border-cyan-200 bg-white dark:border-cyan-900/40 dark:bg-slate-950">
                 <table className="min-w-full text-left text-xs">
-                  <thead className="bg-cyan-50 text-cyan-900">
+                  <thead className="bg-cyan-50 text-cyan-900 dark:bg-cyan-950/40 dark:text-cyan-100">
                     <tr>
-                      <th className="px-3 py-2 font-semibold">Option</th>
-                      <th className="px-3 py-2 font-semibold">Size</th>
-                      <th className="px-3 py-2 font-semibold">Util.</th>
-                      <th className="px-3 py-2 font-semibold">Margin</th>
-                      <th className="px-3 py-2 font-semibold">Status</th>
-                      <th className="px-3 py-2 font-semibold">Governing</th>
-                      <th className="px-3 py-2 font-semibold">Detail</th>
+                      <th className="px-2.5 py-2 font-semibold">Option</th>
+                      <th className="px-2.5 py-2 font-semibold">Size</th>
+                      <th className="px-2.5 py-2 font-semibold">Util.</th>
+                      <th className="px-2.5 py-2 font-semibold">Status</th>
+                      <th className="px-2.5 py-2 font-semibold">Governing</th>
                       {mode === "select" ? (
-                        <th className="px-3 py-2 font-semibold">Action</th>
+                        <th className="px-2.5 py-2 font-semibold">Apply</th>
                       ) : null}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-cyan-100">
+                  <tbody className="divide-y divide-cyan-100 dark:divide-slate-800">
                     {computedDesign.candidates.map((item) => (
                       <tr key={item.option}>
-                        <td className="px-3 py-2 font-medium text-slate-900">{item.option}</td>
-                        <td className="px-3 py-2 text-slate-600">{item.size}</td>
-                        <td className="px-3 py-2 text-slate-600">{item.utilization.toFixed(2)}</td>
-                        <td className="px-3 py-2 text-slate-600">
-                          {Number.isFinite(item.margin) ? item.margin.toFixed(2) : "—"}
+                        <td className="px-2.5 py-2 font-medium text-slate-900 dark:text-white">
+                          {item.option}
                         </td>
-                        <td className="px-3 py-2">
+                        <td className="px-2.5 py-2 text-slate-600 dark:text-slate-300">{item.size}</td>
+                        <td className="px-2.5 py-2 text-slate-600 dark:text-slate-300">
+                          {item.utilization.toFixed(2)}
+                        </td>
+                        <td className="px-2.5 py-2">
                           <span
-                            className={`rounded-full px-2 py-0.5 font-semibold ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                               item.status === "pass"
                                 ? "bg-emerald-100 text-emerald-700"
                                 : item.status === "review"
-                                ? "bg-amber-100 text-amber-700"
-                                : "bg-red-100 text-red-700"
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-red-100 text-red-700"
                             }`}
                           >
                             {item.status}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-slate-600">{item.governing}</td>
-                        <td className="px-3 py-2 text-slate-600">{item.detail}</td>
+                        <td className="px-2.5 py-2 text-slate-600 dark:text-slate-300">{item.governing}</td>
                         {mode === "select" ? (
-                          <td className="px-3 py-2">
+                          <td className="px-2.5 py-2">
                             {item.fields ? (
                               <button
                                 type="button"
                                 onClick={() => applyDesignCandidate(item.fields!)}
-                                className="rounded-lg border border-cyan-300 bg-white px-2.5 py-1 text-xs font-semibold text-cyan-800 transition hover:bg-cyan-50"
+                                className="rounded-md border border-cyan-400 bg-white px-2 py-1 text-[11px] font-semibold text-cyan-800 hover:bg-cyan-50 dark:border-cyan-700 dark:bg-slate-900 dark:text-cyan-200"
                               >
                                 Apply
                               </button>
                             ) : (
-                              <span className="text-slate-400">—</span>
+                              "—"
                             )}
                           </td>
                         ) : null}
@@ -131,90 +118,66 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
                   </tbody>
                 </table>
               </div>
-              <p className="mt-3 text-sm font-medium text-cyan-950">
+              <p className="mt-2 text-xs font-medium text-cyan-950 dark:text-cyan-100">
                 Recommendation: {computedDesign.recommendation}
               </p>
-              <div className="mt-3 grid gap-3 lg:grid-cols-2">
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-cyan-800">
-                    Assumptions
-                  </div>
-                  <ul className="mt-1 list-disc space-y-1 pl-4 text-xs leading-5 text-slate-600">
-                    {computedDesign.assumptions.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-cyan-800">
-                    Equations
-                  </div>
-                  <ul className="mt-1 list-disc space-y-1 pl-4 text-xs leading-5 text-slate-600">
-                    {computedDesign.equations.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
             </div>
           ) : null}
 
           <div>
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-              <Table2 className="h-4 w-4 text-cyan-600" />
-              Workflow candidate strategy
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
+              <Table2 className="h-4 w-4 text-slate-500" />
+              Candidate strategy (reference)
             </div>
-            <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+            <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
               <table className="min-w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-500">
+                <thead className="bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                   <tr>
-                    <th className="px-3 py-2 font-semibold">Candidate</th>
-                    <th className="px-3 py-2 font-semibold">Basis</th>
-                    <th className="px-3 py-2 font-semibold">Pass criteria</th>
-                    <th className="px-3 py-2 font-semibold">Tradeoff</th>
+                    <th className="px-2.5 py-2 font-semibold">Option</th>
+                    <th className="px-2.5 py-2 font-semibold">Basis</th>
+                    <th className="px-2.5 py-2 font-semibold">Pass</th>
+                    <th className="px-2.5 py-2 font-semibold">Tradeoff</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-900">
                   {workflow.candidates.map((candidate) => (
                     <tr key={candidate.option}>
-                      <td className="px-3 py-2 font-medium text-slate-900">{candidate.option}</td>
-                      <td className="px-3 py-2 text-slate-600">{candidate.basis}</td>
-                      <td className="px-3 py-2 text-slate-600">{candidate.pass}</td>
-                      <td className="px-3 py-2 text-slate-600">{candidate.tradeoff}</td>
+                      <td className="px-2.5 py-2 font-medium text-slate-900 dark:text-white">
+                        {candidate.option}
+                      </td>
+                      <td className="px-2.5 py-2 text-slate-600 dark:text-slate-300">{candidate.basis}</td>
+                      <td className="px-2.5 py-2 text-slate-600 dark:text-slate-300">{candidate.pass}</td>
+                      <td className="px-2.5 py-2 text-slate-600 dark:text-slate-300">{candidate.tradeoff}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="mt-2 text-xs text-slate-500">
-              Candidate columns to calculate: {workflow.candidateColumns.join(", ")}.
-            </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                <BookOpen className="h-4 w-4 text-cyan-600" />
-                Tables to use
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                <BookOpen className="h-3.5 w-3.5" />
+                Standards & tables
               </div>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
+              <ul className="mt-2 list-disc space-y-0.5 pl-4 text-xs text-slate-600 dark:text-slate-400">
                 {workflow.catalogTables.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
             </div>
-
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                <GitBranch className="h-4 w-4 text-cyan-600" />
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                <GitBranch className="h-3.5 w-3.5" />
                 Continue workflow
               </div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 flex flex-wrap gap-1.5">
                 {linkedModules.map((catalogModule) => (
                   <Link
                     key={catalogModule.id}
                     href={catalogModule.route}
-                    className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:text-cyan-700"
+                    className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-700 hover:border-cyan-300 hover:text-cyan-800 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
                   >
                     {catalogModule.title}
                     <ArrowRight className="h-3 w-3" />
@@ -224,19 +187,19 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
             </div>
           </div>
 
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <div className="flex items-center gap-2 text-sm font-semibold text-amber-950">
-              <Lightbulb className="h-4 w-4" />
+          <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+            <div className="flex items-center gap-2 text-xs font-semibold text-amber-950 dark:text-amber-100">
+              <Lightbulb className="h-3.5 w-3.5" />
               Expert notes
             </div>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-amber-900">
+            <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-xs leading-5 text-amber-900 dark:text-amber-200/90">
               {workflow.expertNotes.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
           </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

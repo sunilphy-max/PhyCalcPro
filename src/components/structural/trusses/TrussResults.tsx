@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import TrussDiagram from "./TrussDiagram";
@@ -8,6 +9,8 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 
 type Props = {
@@ -24,6 +27,32 @@ export default function TrussResults({ result }: Props) {
     if (member.force < best.force) return member;
     return best;
   }, result.memberForces[0]);
+
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    return [
+      {
+        id: "diagram",
+        label: "Truss model",
+        content: <TrussDiagram result={result} />,
+      },
+      {
+        id: "deflection",
+        label: "Top chord deflection",
+        content: (
+          <EngineeringPlot
+            title="Top chord deflection"
+            x={result.topNodesX}
+            y={result.topDeflections}
+            yLabel="Deflection"
+            xLabel="Position along top chord"
+            xUnit="m"
+            unitLabel="m"
+          />
+        ),
+      },
+    ];
+  }, [result]);
 
   return (
     <CalculatorResultsShell
@@ -60,16 +89,6 @@ export default function TrussResults({ result }: Props) {
               size="lg"
             />
           </CalculatorMetricGrid>
-          <EngineeringPlot
-            title="Top chord deflection"
-            x={result.topNodesX}
-            y={result.topDeflections}
-            yLabel="Deflection"
-            xLabel="Position along top chord"
-            xUnit="m"
-            unitLabel="m"
-          />
-          <TrussDiagram result={result} />
           {highestTension && highestCompression ? (
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
@@ -84,6 +103,7 @@ export default function TrussResults({ result }: Props) {
               />
             </CalculatorMetricGrid>
           ) : null}
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="diagram" label="Result chart" />
         </>
       ) : null}
     </CalculatorResultsShell>

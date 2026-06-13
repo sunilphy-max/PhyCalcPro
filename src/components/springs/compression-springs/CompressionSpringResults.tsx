@@ -48,15 +48,6 @@ export default function CompressionSpringResults({ result, lengthUnit, stressUni
     >
       {result ? (
         <>
-          {geometry ? (
-            <SpringOutlinePreview
-              wireDiameter={geometry.wireDiameter}
-              meanDiameter={geometry.meanDiameter}
-              activeCoils={geometry.activeCoils}
-              freeLength={geometry.freeLength}
-              unit={lengthUnit}
-            />
-          ) : null}
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Spring rate"
@@ -83,11 +74,7 @@ export default function CompressionSpringResults({ result, lengthUnit, stressUni
               numericValue={result.springIndex}
               tone={result.springIndex >= 4 && result.springIndex <= 12 ? "blue" : "orange"}
             />
-            <CalculatorMetricCard
-              label="Wahl factor Kw"
-              numericValue={result.wahlFactor}
-              tone="blue"
-            />
+            <CalculatorMetricCard label="Wahl factor Kw" numericValue={result.wahlFactor} tone="blue" />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Corrected shear stress"
@@ -111,6 +98,17 @@ export default function CompressionSpringResults({ result, lengthUnit, stressUni
             value={result.bucklingRisk ? "Check buckling — guide the spring" : "Buckle-proof (EN 13906-1)"}
             tone={result.bucklingRisk ? "orange" : "green"}
           />
+          {geometry ? (
+            <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+              <SpringOutlinePreview
+                wireDiameter={geometry.wireDiameter}
+                meanDiameter={geometry.meanDiameter}
+                activeCoils={geometry.activeCoils}
+                freeLength={geometry.freeLength}
+                unit={lengthUnit}
+              />
+            </div>
+          ) : null}
         </>
       ) : null}
     </CalculatorResultsShell>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import VibrationDiagram from "./VibrationDiagram";
@@ -10,6 +11,8 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
@@ -24,6 +27,77 @@ export default function VibrationResults({ result }: Props) {
     modalMass: result.modalMass[index],
     modalStiffness: result.modalStiffness[index],
   }));
+
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    const norm = (shape: number[]) =>
+      shape.map((value) => value / Math.max(...shape.map(Math.abs), 1e-12));
+
+    return [
+      {
+        id: "mode-1",
+        label: "Mode 1 shape",
+        content: (
+          <EngineeringPlot
+            title="First mode shape"
+            x={result.x}
+            y={norm(result.modeShapes[0])}
+            yLabel="Normalized displacement"
+            xLabel="Position along beam"
+            xUnit="m"
+            unitLabel="—"
+            color="#0ea5e9"
+          />
+        ),
+      },
+      {
+        id: "mode-2",
+        label: "Mode 2 shape",
+        content: (
+          <EngineeringPlot
+            title="Second mode shape"
+            x={result.x}
+            y={norm(result.modeShapes[1])}
+            yLabel="Normalized displacement"
+            xLabel="Position along beam"
+            xUnit="m"
+            unitLabel="—"
+            color="#8b5cf6"
+          />
+        ),
+      },
+      {
+        id: "diagram",
+        label: "Mode shape diagram",
+        content: <VibrationDiagram support={result.support} x={result.x} />,
+      },
+      {
+        id: "schematic",
+        label: "Model schematic",
+        content: (
+          <VibrationInputSchematic
+            support={result.support}
+            length={result.length}
+            segments={result.segments}
+          />
+        ),
+      },
+      {
+        id: "intensity-1",
+        label: "Mode 1 intensity",
+        content: (
+          <FEAColorStrip title="Mode 1 amplitude" x={result.x} values={result.modeShapes[0]} unit="-" />
+        ),
+      },
+      {
+        id: "intensity-2",
+        label: "Mode 2 intensity",
+        content: (
+          <FEAColorStrip title="Mode 2 amplitude" x={result.x} values={result.modeShapes[1]} unit="-" />
+        ),
+      },
+    ];
+  }, [result]);
 
   return (
     <CalculatorResultsShell
@@ -46,7 +120,7 @@ export default function VibrationResults({ result }: Props) {
     >
       {result ? (
         <>
-          <CalculatorMetricGrid cols={3}>
+          <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="1st natural frequency"
               value={formatEngineeringValue(result.frequencies[0], "Hz")}
@@ -54,17 +128,12 @@ export default function VibrationResults({ result }: Props) {
               size="lg"
             />
             <CalculatorMetricCard
-              label={`1st damped natural (ζ=${result.dampingRatio})`}
+              label={`1st damped (ζ=${result.dampingRatio})`}
               value={formatEngineeringValue(result.dampedNaturalFrequencies[0] ?? 0, "Hz")}
               tone="green"
               size="lg"
             />
-            <CalculatorMetricCard
-              label="Mesh segments"
-              numericValue={result.segments}
-              tone="purple"
-              size="lg"
-            />
+            <CalculatorMetricCard label="Mesh segments" numericValue={result.segments} tone="purple" size="lg" />
             <CalculatorMetricCard
               label="Beam length"
               value={formatEngineeringValue(result.length, "m")}
@@ -83,63 +152,17 @@ export default function VibrationResults({ result }: Props) {
             ))}
           </CalculatorMetricGrid>
           {result.resonanceNote ? (
-            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
               {result.resonanceNote}
             </p>
           ) : null}
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="mode-1" label="Result chart" />
           {result.solverMeta ? (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-              <div className="font-semibold text-gray-900">Solver metadata</div>
-              <p className="mt-1">
-                {result.solverMeta.solver} | support: {result.solverMeta.support} | mesh:{" "}
-                {result.solverMeta.meshSegments}
-              </p>
-            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {result.solverMeta.solver} · {result.solverMeta.support} · mesh{" "}
+              {result.solverMeta.meshSegments}
+            </p>
           ) : null}
-          <EngineeringPlot
-            title="First mode shape"
-            x={result.x}
-            y={result.modeShapes[0].map(
-              (value) =>
-                value / Math.max(...result.modeShapes[0].map(Math.abs), 1e-12)
-            )}
-            yLabel="Normalized displacement"
-            xLabel="Position along beam"
-            xUnit="m"
-            unitLabel="—"
-            color="#0ea5e9"
-          />
-          <EngineeringPlot
-            title="Second mode shape"
-            x={result.x}
-            y={result.modeShapes[1].map(
-              (value) =>
-                value / Math.max(...result.modeShapes[1].map(Math.abs), 1e-12)
-            )}
-            yLabel="Normalized displacement"
-            xLabel="Position along beam"
-            xUnit="m"
-            unitLabel="—"
-            color="#8b5cf6"
-          />
-          <VibrationDiagram support={result.support} x={result.x} />
-          <VibrationInputSchematic
-            support={result.support}
-            length={result.length}
-            segments={result.segments}
-          />
-          <FEAColorStrip
-            title="Mode 1 Amplitude Intensity"
-            x={result.x}
-            values={result.modeShapes[0]}
-            unit="-"
-          />
-          <FEAColorStrip
-            title="Mode 2 Amplitude Intensity"
-            x={result.x}
-            values={result.modeShapes[1]}
-            unit="-"
-          />
         </>
       ) : null}
     </CalculatorResultsShell>

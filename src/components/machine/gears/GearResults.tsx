@@ -36,12 +36,6 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
     >
       {result ? (
         <>
-          <GearMeshPreview
-            moduleMm={result.module * 1000}
-            pinionTeeth={result.pinionTeeth}
-            gearTeeth={result.gearTeeth}
-            faceWidthMm={result.faceWidth * 1000}
-          />
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Pinion pitch diameter"
@@ -86,6 +80,14 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
             tone={result.safetyFactor >= 1.5 ? "green" : "red"}
             size="lg"
           />
+          <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+            <GearMeshPreview
+              moduleMm={result.module * 1000}
+              pinionTeeth={result.pinionTeeth}
+              gearTeeth={result.gearTeeth}
+              faceWidthMm={result.faceWidth * 1000}
+            />
+          </div>
         </>
       ) : null}
     </CalculatorResultsShell>

@@ -33,17 +33,17 @@ const DEFAULT_MODES: ModuleDesignWorkflow["modes"] = [
   {
     id: "check",
     label: "Check",
-    description: "Verify the geometry and loads already entered in the calculator.",
+    description: "Calculate with current inputs; show results and code checks.",
   },
   {
     id: "design",
     label: "Design",
-    description: "Work from target load, life, stiffness, or safety factor toward a recommended size.",
+    description: "Auto-size from targets, apply best candidate, then calculate.",
   },
   {
     id: "select",
     label: "Select",
-    description: "Compare practical catalog or standard-size candidates before committing to a design.",
+    description: "Compare catalog options; Apply loads one into the form.",
   },
 ];
 

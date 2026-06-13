@@ -5,7 +5,6 @@ import EngineeringPlot from "@/components/EngineeringPlot";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
-  CalculatorPlotSection,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { BucklingResult } from "@/lib/structural/columns/types";
@@ -28,50 +27,39 @@ export default function BucklingDashboard({ result }: Props) {
           value={result.isSafe ? "Safe" : "At Risk"}
           status={status}
         />
+        <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} tone="blue" />
+        <CalculatorMetricCard label="Slenderness ratio" numericValue={result.slenderness} tone="purple" />
         <CalculatorMetricCard
-          label="Safety factor"
-          numericValue={result.safetyFactor}
-          tone="blue"
-        />
-        <CalculatorMetricCard
-          label="Slenderness Ratio"
-          numericValue={result.slenderness}
-          tone="purple"
-        />
-        <CalculatorMetricCard
-          label="Buckling Mode"
-          value={
-            result.bucklingMode.charAt(0).toUpperCase() +
-            result.bucklingMode.slice(1)
-          }
+          label="Buckling mode"
+          value={result.bucklingMode.charAt(0).toUpperCase() + result.bucklingMode.slice(1)}
           tone="orange"
         />
       </CalculatorMetricGrid>
 
       <CalculatorMetricGrid cols={3}>
         <CalculatorMetricCard
-          label="Critical Load (Pcr)"
+          label="Critical load (Pcr)"
           value={formatEngineeringValue(result.Pcr, "N")}
           tone="blue"
           size="lg"
         />
         <CalculatorMetricCard
-          label="Critical Stress"
+          label="Critical stress"
           value={formatEngineeringValue(result.criticalStress, "Pa")}
           tone="blue"
           size="lg"
         />
         <CalculatorMetricCard
-          label="Applied Stress"
+          label="Applied stress"
           value={formatEngineeringValue(result.stress, "Pa")}
           tone="orange"
           size="lg"
         />
       </CalculatorMetricGrid>
 
-      <CalculatorPlotSection title="Buckling Mode Shape">
+      <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
         <EngineeringPlot
-          title="Mode Shape"
+          title="Buckling mode shape"
           x={result.x}
           y={result.deflection}
           yLabel="Deflection"
@@ -80,22 +68,13 @@ export default function BucklingDashboard({ result }: Props) {
           unitLabel="m"
           showPeak={false}
         />
-      </CalculatorPlotSection>
+      </div>
 
       <CalculatorMetricGrid cols={4}>
-        <CalculatorMetricCard
-          label="Effective Length"
-          value={formatEngineeringValue(result.Le, "m")}
-        />
-        <CalculatorMetricCard
-          label="Radius of Gyration"
-          value={formatEngineeringValue(result.radius, "m")}
-        />
-        <CalculatorMetricCard
-          label="Effective Length Factor (k)"
-          numericValue={result.k}
-        />
-        <CalculatorMetricCard label="Buckling Formula" value="Euler" />
+        <CalculatorMetricCard label="Effective length" value={formatEngineeringValue(result.Le, "m")} />
+        <CalculatorMetricCard label="Radius of gyration" value={formatEngineeringValue(result.radius, "m")} />
+        <CalculatorMetricCard label="Effective length factor (k)" numericValue={result.k} />
+        <CalculatorMetricCard label="Buckling formula" value="Euler" />
       </CalculatorMetricGrid>
     </div>
   );

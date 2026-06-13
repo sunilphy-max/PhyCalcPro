@@ -8,6 +8,8 @@ import FEAColorStrip from "@/components/shared/FEAColorStrip";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type {
@@ -53,24 +55,17 @@ export default function BeamDashboard({
   const [probeX, setProbeX] = useState<number | null>(null);
   const application = applicationContext ?? result.applicationContext;
 
-  // -----------------------------------
-  // nearest result index
-  // -----------------------------------
   const probeIndex = useMemo(() => {
     if (probeX === null) return null;
-
     let bestIndex = 0;
     let bestDistance = Infinity;
-
     result.x.forEach((x: number, i: number) => {
       const d = Math.abs(x - probeX);
-
       if (d < bestDistance) {
         bestDistance = d;
         bestIndex = i;
       }
     });
-
     return bestIndex;
   }, [probeX, result.x]);
 
@@ -84,218 +79,120 @@ export default function BeamDashboard({
         }
       : null;
 
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    const tabs: PlotPickerTab[] = [
+      {
+        id: "model",
+        label: "Beam model & probe",
+        content: (
+          <BeamDiagram
+            loads={loads}
+            length={length}
+            support={support}
+            onLoadDrag={onLoadDrag}
+            probeX={probeX}
+            setProbeX={setProbeX}
+            xPositions={result.x}
+            deflection={result.deflection}
+          />
+        ),
+      },
+      {
+        id: "shear-moment",
+        label: "Shear & moment",
+        content: (
+          <EngineeringPlot
+            title="Shear Force V(x)"
+            x={result.x}
+            y={result.shear}
+            yLabel="Shear force"
+            xLabel="Position along beam"
+            xUnit={units.length}
+            unitLabel={units.force}
+            probeX={probeX}
+            series={[
+              {
+                y: result.moment,
+                label: "Bending moment",
+                unitLabel: units.moment,
+                secondaryAxis: true,
+              },
+            ]}
+            secondaryYLabel="Bending moment"
+            secondaryUnitLabel={units.moment}
+          />
+        ),
+      },
+      {
+        id: "deflection",
+        label: "Deflection",
+        content: (
+          <EngineeringPlot
+            title="Deflection y(x)"
+            x={result.x}
+            y={result.deflection}
+            yLabel="Deflection"
+            xLabel="Position along beam"
+            xUnit={units.length}
+            unitLabel={units.length}
+            probeX={probeX}
+            color="#0891b2"
+          />
+        ),
+      },
+    ];
+
+    if (result.stress) {
+      tabs.push({
+        id: "stress",
+        label: "Bending stress",
+        content: (
+          <EngineeringPlot
+            title="Stress Distribution σ(x)"
+            x={result.x}
+            y={result.stress}
+            yLabel="Stress"
+            xLabel="Position along beam"
+            xUnit={units.length}
+            unitLabel={units.stress}
+            probeX={probeX}
+            color="#7c3aed"
+          />
+        ),
+      });
+    }
+
+    tabs.push({
+      id: "intensity",
+      label: "Intensity maps",
+      content: (
+        <div className="space-y-3">
+          <FEAColorStrip
+            title="Deflection intensity"
+            x={result.x}
+            values={result.deflection}
+            unit={units.length}
+            xUnit={units.length}
+          />
+          {result.stress ? (
+            <FEAColorStrip
+              title="Stress intensity"
+              x={result.x}
+              values={result.stress}
+              unit={units.stress}
+              xUnit={units.length}
+            />
+          ) : null}
+        </div>
+      ),
+    });
+
+    return tabs;
+  }, [loads, length, support, onLoadDrag, probeX, result, units]);
+
   return (
     <div className="grid grid-cols-1 gap-4">
-      {application ? (
-        <div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 shadow-sm">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
-                Application preset
-              </p>
-              <h2 className="mt-1 text-lg font-semibold text-slate-950">
-                {application.label}
-              </h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600">
-                {application.description}
-              </p>
-            </div>
-            <div className="rounded-lg bg-white px-3 py-2 text-xs text-slate-700 shadow-sm">
-              Load factor {application.loadFactor.toFixed(2)} · allowable stress{" "}
-              {(application.allowableStressRatio * 100).toFixed(0)}% yield · L/
-              {application.deflectionLimitRatio}
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-3 lg:grid-cols-3">
-            <div className="rounded-lg border border-cyan-100 bg-white p-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Applicable references
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {application.standards.map((standard) => (
-                  <span
-                    key={standard}
-                    className="rounded-full bg-cyan-100 px-2.5 py-1 text-xs font-medium text-cyan-900"
-                  >
-                    {standard}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-lg border border-cyan-100 bg-white p-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Modified calculations
-              </div>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-5 text-slate-600">
-                {application.calculationNotes.map((note) => (
-                  <li key={note}>{note}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-lg border border-cyan-100 bg-white p-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Limitations
-              </div>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-5 text-slate-600">
-                {application.limitations.map((limitation) => (
-                  <li key={limitation}>{limitation}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* ========================================= */}
-      {/* TOP INSPECTOR BAR */}
-      {/* ========================================= */}
-      <div className="bg-slate-900 text-white rounded-xl px-4 py-3 grid grid-cols-1 md:grid-cols-5 gap-4 text-sm shadow">
-
-        <div>
-          <div className="text-slate-400">Case</div>
-          <div className="font-semibold">
-            {caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active Case")}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-slate-400">Position ({units.length})</div>
-          <div className="font-semibold">
-            {probeData
-              ? formatEngineeringValue(probeData.x, units.length, { digits: 3 })
-              : "—"}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-slate-400">Shear V(x) ({units.force})</div>
-          <div className="font-semibold">
-            {probeData
-              ? formatEngineeringValue(probeData.shear, units.force)
-              : "—"}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-slate-400">Moment M(x) ({units.moment})</div>
-          <div className="font-semibold">
-            {probeData
-              ? formatEngineeringValue(probeData.moment, units.moment)
-              : "—"}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-slate-400">Deflection y(x) ({units.length})</div>
-          <div className="font-semibold">
-            {probeData
-              ? formatEngineeringValue(probeData.deflection, units.length, {
-                  useExponential: true,
-                })
-              : "—"}
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================= */}
-      {/* BEAM */}
-      {/* ========================================= */}
-      <BeamDiagram
-        loads={loads}
-        length={length}
-        support={support}
-        onLoadDrag={onLoadDrag}
-        probeX={probeX}
-        setProbeX={setProbeX}
-        xPositions={result.x}
-        deflection={result.deflection}
-      />
-
-      {/* ========================================= */}
-      {/* SHEAR + MOMENT OVERLAY */}
-      {/* ========================================= */}
-      <EngineeringPlot
-        title="Shear Force V(x)"
-        x={result.x}
-        y={result.shear}
-        yLabel="Shear force"
-        xLabel="Position along beam"
-        xUnit={units.length}
-        unitLabel={units.force}
-        probeX={probeX}
-        series={[
-          {
-            y: result.moment,
-            label: "Bending moment",
-            unitLabel: units.moment,
-            secondaryAxis: true,
-          },
-        ]}
-        secondaryYLabel="Bending moment"
-        secondaryUnitLabel={units.moment}
-      />
-
-      {/* ========================================= */}
-      {/* MOMENT */}
-      {/* ========================================= */}
-      <EngineeringPlot
-        title="Bending Moment M(x)"
-        x={result.x}
-        y={result.moment}
-        yLabel="Bending moment"
-        xLabel="Position along beam"
-        xUnit={units.length}
-        unitLabel={units.moment}
-        probeX={probeX}
-      />
-
-      {/* ========================================= */}
-      {/* DEFLECTION */}
-      {/* ========================================= */}
-      <EngineeringPlot
-        title="Deflection y(x)"
-        x={result.x}
-        y={result.deflection}
-        yLabel="Deflection"
-        xLabel="Position along beam"
-        xUnit={units.length}
-        unitLabel={units.length}
-        probeX={probeX}
-        color="#0891b2"
-      />
-
-      {/* ========================================= */}
-      {/* Stress Distribution */}
-      {/* ========================================= */}
-      {result.stress && (
-        <EngineeringPlot
-          title="Stress Distribution σ(x)"
-          x={result.x}
-          y={result.stress}
-          yLabel="Stress"
-          xLabel="Position along beam"
-          xUnit={units.length}
-          unitLabel={units.stress}
-          probeX={probeX}
-          color="#7c3aed"
-        />
-      )}
-      <FEAColorStrip
-        title="Deflection intensity"
-        x={result.x}
-        values={result.deflection}
-        unit={units.length}
-        xUnit={units.length}
-      />
-      <FEAColorStrip
-        title="Stress intensity"
-        x={result.x}
-        values={result.stress}
-        unit={units.stress}
-        xUnit={units.length}
-      />
-
+      {/* Key results first */}
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label={`Max moment (${units.moment})`}
@@ -354,24 +251,57 @@ export default function BeamDashboard({
         </CalculatorMetricGrid>
       ) : null}
 
-      {result.solverMeta ? (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
-          <div className="font-semibold text-slate-900">Solver Metadata</div>
-          <p className="text-slate-600 mt-1">
-            {result.solverMeta.solver} | support: {result.solverMeta.support} | mesh:{" "}
-            {result.solverMeta.meshSegments}
-          </p>
-          {result.solverMeta.warnings.length ? (
-            <ul className="mt-2 list-disc pl-5 text-amber-700">
-              {result.solverMeta.warnings.map((warning) => (
-                <li key={warning}>{warning}</li>
-              ))}
-            </ul>
-          ) : null}
+      {/* Probe bar */}
+      <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-900 px-3 py-2.5 text-sm text-white shadow sm:grid-cols-5">
+        <div>
+          <div className="text-slate-400">Case</div>
+          <div className="font-semibold">
+            {caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active")}
+          </div>
         </div>
+        <div>
+          <div className="text-slate-400">Position ({units.length})</div>
+          <div className="font-semibold">
+            {probeData
+              ? formatEngineeringValue(probeData.x, units.length, { digits: 3 })
+              : "Click beam model"}
+          </div>
+        </div>
+        <div>
+          <div className="text-slate-400">Shear ({units.force})</div>
+          <div className="font-semibold">
+            {probeData ? formatEngineeringValue(probeData.shear, units.force) : "—"}
+          </div>
+        </div>
+        <div>
+          <div className="text-slate-400">Moment ({units.moment})</div>
+          <div className="font-semibold">
+            {probeData ? formatEngineeringValue(probeData.moment, units.moment) : "—"}
+          </div>
+        </div>
+        <div>
+          <div className="text-slate-400">Deflection ({units.length})</div>
+          <div className="font-semibold">
+            {probeData
+              ? formatEngineeringValue(probeData.deflection, units.length, {
+                  useExponential: true,
+                })
+              : "—"}
+          </div>
+        </div>
+      </div>
+
+      <EngineeringPlotPicker tabs={plotTabs} defaultTabId="model" label="Result chart" />
+
+      {result.solverMeta ? (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {result.solverMeta.solver} · {result.solverMeta.support} · mesh{" "}
+          {result.solverMeta.meshSegments}
+          {result.solverMeta.warnings.length
+            ? ` · ${result.solverMeta.warnings.join("; ")}`
+            : ""}
+        </p>
       ) : null}
     </div>
   );
 }
-
- 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import PlateHeatmap from "./PlateHeatmap";
@@ -8,6 +9,8 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 
 type Props = {
@@ -15,6 +18,57 @@ type Props = {
 };
 
 export default function PlateResults({ result }: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    return [
+      {
+        id: "heatmap",
+        label: "Deflection surface",
+        content: (
+          <PlateHeatmap
+            title="Deflection surface"
+            x={result.x}
+            y={result.y}
+            z={result.w}
+            xUnit="m"
+            yUnit="m"
+            zUnit="m"
+          />
+        ),
+      },
+      {
+        id: "along-length",
+        label: "Deflection along length",
+        content: (
+          <EngineeringPlot
+            title="Mid-span deflection along length"
+            x={result.x}
+            y={result.deflectionAlongLength}
+            yLabel="Deflection"
+            xLabel="Length"
+            xUnit="m"
+            unitLabel="m"
+          />
+        ),
+      },
+      {
+        id: "along-width",
+        label: "Deflection along width",
+        content: (
+          <EngineeringPlot
+            title="Mid-span deflection along width"
+            x={result.y}
+            y={result.deflectionAlongWidth}
+            yLabel="Deflection"
+            xLabel="Width"
+            xUnit="m"
+            unitLabel="m"
+          />
+        ),
+      },
+    ];
+  }, [result]);
+
   return (
     <CalculatorResultsShell
       moduleId="plates"
@@ -50,33 +104,7 @@ export default function PlateResults({ result }: Props) {
               size="lg"
             />
           </CalculatorMetricGrid>
-          <EngineeringPlot
-            title="Mid-span deflection along length"
-            x={result.x}
-            y={result.deflectionAlongLength}
-            yLabel="Deflection"
-            xLabel="Length"
-            xUnit="m"
-            unitLabel="m"
-          />
-          <EngineeringPlot
-            title="Mid-span deflection along width"
-            x={result.y}
-            y={result.deflectionAlongWidth}
-            yLabel="Deflection"
-            xLabel="Width"
-            xUnit="m"
-            unitLabel="m"
-          />
-          <PlateHeatmap
-            title="Deflection surface"
-            x={result.x}
-            y={result.y}
-            z={result.w}
-            xUnit="m"
-            yUnit="m"
-            zUnit="m"
-          />
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="heatmap" label="Result chart" />
         </>
       ) : null}
     </CalculatorResultsShell>
