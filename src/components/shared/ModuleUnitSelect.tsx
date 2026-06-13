@@ -1,6 +1,7 @@
 "use client";
 
 import UnitSelector from "@/components/shared/UnitSelector";
+import { calculatorUnitSelectClass } from "@/components/calculator/styles";
 import { getModuleFieldProfile } from "@/lib/units/moduleProfiles";
 import type { PhysicsDimension } from "@/lib/physics/units";
 
@@ -26,7 +27,7 @@ export default function ModuleUnitSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
+        className={calculatorUnitSelectClass}
       >
         <option value={value}>{value}</option>
       </select>

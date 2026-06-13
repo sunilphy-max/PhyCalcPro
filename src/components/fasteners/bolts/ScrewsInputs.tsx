@@ -4,6 +4,12 @@ import { useState } from "react";
 import type { ScrewConfig, ScrewType, ThreadType } from "@/lib/fasteners/bolts/types";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import {
+  calculatorFieldLabelClass,
+  calculatorNumberInputClass,
+  calculatorSelectClass,
+  calculatorTextInputClass,
+} from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
@@ -80,7 +86,7 @@ export default function ScrewsInputs({
     >
       {/* Project Name */}
       <input
-        className="w-full p-2 border rounded"
+        className={calculatorTextInputClass}
         value={projectName}
         onChange={(e) => setProjectName(e.target.value)}
         placeholder="Project Name"
@@ -120,11 +126,11 @@ export default function ScrewsInputs({
 
           {/* Thread Type */}
           <div>
-            <label className="block text-sm text-gray-600 mb-1">Thread Type</label>
+            <label className={calculatorFieldLabelClass}>Thread Type</label>
             <select
               value={(config as any).threadType}
               onChange={(e) => updateConfig({ threadType: e.target.value as ThreadType })}
-              className="w-full border p-2 rounded"
+              className={calculatorSelectClass}
             >
               <option value="square">Square Thread</option>
               <option value="acme">Acme Thread</option>
@@ -141,7 +147,7 @@ export default function ScrewsInputs({
                 step="0.1"
                 value={(config as any).majorDiameter * 1000}
                 onChange={(e) => updateConfig({ majorDiameter: parseFloat(e.target.value) / 1000 })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -151,7 +157,7 @@ export default function ScrewsInputs({
                 step="0.1"
                 value={(config as any).pitch * 1000}
                 onChange={(e) => updateConfig({ pitch: parseFloat(e.target.value) / 1000 })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
           </div>
@@ -164,7 +170,7 @@ export default function ScrewsInputs({
                 step="0.1"
                 value={((config as any).lead || (config as any).pitch) * 1000}
                 onChange={(e) => updateConfig({ lead: parseFloat(e.target.value) / 1000 })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -174,7 +180,7 @@ export default function ScrewsInputs({
                 min="1"
                 value={(config as any).starts || 1}
                 onChange={(e) => updateConfig({ starts: parseInt(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
           </div>
@@ -188,7 +194,7 @@ export default function ScrewsInputs({
                 step="100"
                 value={(config as any).axialForce}
                 onChange={(e) => updateConfig({ axialForce: parseFloat(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -200,7 +206,7 @@ export default function ScrewsInputs({
                 max="1"
                 value={(config as any).frictionCoefficient}
                 onChange={(e) => updateConfig({ frictionCoefficient: parseFloat(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
           </div>
@@ -221,7 +227,7 @@ export default function ScrewsInputs({
                 step="0.1"
                 value={(config as any).majorDiameter * 1000}
                 onChange={(e) => updateConfig({ majorDiameter: parseFloat(e.target.value) / 1000 })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -231,7 +237,7 @@ export default function ScrewsInputs({
                 step="0.1"
                 value={(config as any).pitch * 1000}
                 onChange={(e) => updateConfig({ pitch: parseFloat(e.target.value) / 1000 })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
           </div>
@@ -244,7 +250,7 @@ export default function ScrewsInputs({
                 step="0.01"
                 value={(config as any).ballDiameter * 1000}
                 onChange={(e) => updateConfig({ ballDiameter: parseFloat(e.target.value) / 1000 })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -256,7 +262,7 @@ export default function ScrewsInputs({
                 max="90"
                 value={(config as any).contactAngle}
                 onChange={(e) => updateConfig({ contactAngle: parseFloat(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
           </div>
@@ -270,7 +276,7 @@ export default function ScrewsInputs({
                 step="100"
                 value={(config as any).axialForce}
                 onChange={(e) => updateConfig({ axialForce: parseFloat(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -280,7 +286,7 @@ export default function ScrewsInputs({
                 step="100"
                 value={(config as any).speed}
                 onChange={(e) => updateConfig({ speed: parseFloat(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
           </div>
@@ -295,7 +301,7 @@ export default function ScrewsInputs({
                 max="0.01"
                 value={(config as any).frictionCoefficient}
                 onChange={(e) => updateConfig({ frictionCoefficient: parseFloat(e.target.value) })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
               />
             </div>
             <div>
@@ -305,7 +311,7 @@ export default function ScrewsInputs({
                 step="10"
                 value={(config as any).preload || ""}
                 onChange={(e) => updateConfig({ preload: parseFloat(e.target.value) || undefined })}
-                className="w-full border p-2 rounded"
+                className={calculatorNumberInputClass}
                 placeholder="No preload"
               />
             </div>

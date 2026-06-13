@@ -7,48 +7,42 @@ import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWork
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
+import {
+  calculatorFieldLabelClass,
+  calculatorSelectClass,
+  calculatorTextInputClass,
+} from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
   setProjectName: (name: string) => void;
-
-  // Column properties
   length: number;
   setLength: (v: number) => void;
   lengthUnit: string;
   setLengthUnit: (u: string) => void;
-
-  // Load
   load: number;
   setLoad: (v: number) => void;
   loadUnit: string;
   setLoadUnit: (u: string) => void;
-
-  // Cross-section
   inertia: number;
   setInertia: (v: number) => void;
   area: number;
   setArea: (v: number) => void;
   inertiaUnit: string;
   setInertiaUnit: (u: string) => void;
-
-  // Material
   elasticModulus: number;
   setElasticModulus: (v: number) => void;
   elasticModulusUnit: string;
   setElasticModulusUnit: (u: string) => void;
   yieldStrength: number;
   setYieldStrength: (v: number) => void;
-
-  // End condition
   endCondition: EndCondition;
   setEndCondition: (c: EndCondition) => void;
-
-  // Actions
   onCalculate: () => void;
   onSave: () => void;
   saving: boolean;
-
   workflowMode?: DesignWorkflowMode;
   sectionDesignation: string;
   setSectionDesignation: (value: string) => void;
@@ -98,7 +92,7 @@ export default function BucklingInputs({
   return (
     <CalculatorInputPanel
       title="Column buckling"
-      description="Euler buckling and stability analysis for slender columns."
+      description="Euler buckling and code utilization for slender compression members."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton
@@ -110,197 +104,142 @@ export default function BucklingInputs({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save project"}
+            {saving ? "Saving…" : "Save project"}
           </button>
         </div>
       }
     >
-      {/* Project Name */}
-      <input
-        className="w-full p-2 border rounded"
-        value={projectName}
-        onChange={(e) => setProjectName(e.target.value)}
-        placeholder="Project Name"
-      />
-
-      {/* Geometry Section */}
-      <div className="border-t pt-3 mt-3">
-        <h4 className="font-semibold mb-2">Column Geometry</h4>
-
-        {!isDesignMode ? (
-          <RolledSectionPicker
-            designation={sectionDesignation}
-            onDesignationChange={setSectionDesignation}
-            onSectionApplied={onSectionApplied}
-            className="mb-3"
+      <CalculatorFormSection title="Project">
+        <label className={calculatorFieldLabelClass}>
+          Project name
+          <input
+            className={`${calculatorTextInputClass} mt-2`}
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Optional label for save/export"
           />
-        ) : null}
+        </label>
+      </CalculatorFormSection>
 
-        {isDesignMode ? (
-          <div className="mb-3 rounded-xl border border-cyan-200 bg-cyan-50/70 p-3">
-            <label className="block text-sm text-slate-700">
-              Target buckling safety factor
-              <input
-                type="number"
-                step="0.1"
-                min={1}
-                className="mt-1 w-full rounded border p-2"
-                value={targetSafetyFactor}
-                onChange={(e) => setTargetSafetyFactor(+e.target.value)}
-              />
-            </label>
-            <p className="mt-2 text-xs text-cyan-900">
-              Design mode selects the lightest catalog section with Pcr/P at or above this target.
-            </p>
-          </div>
-        ) : null}
+      {!isDesignMode ? (
+        <RolledSectionPicker
+          designation={sectionDesignation}
+          onDesignationChange={setSectionDesignation}
+          onSectionApplied={onSectionApplied}
+        />
+      ) : null}
 
-        {/* Length */}
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">Length</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="0.001"
-              className="flex-1 border p-2 rounded"
-              value={length}
-              onChange={(e) => setLength(+e.target.value)}
-            />
-            <ModuleUnitSelect
-              moduleId="columns"
-              fieldKey="length"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-            />
-          </div>
-        </div>
-
-        {/* Area */}
-        {showManualSection ? (
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">Cross-sectional Area</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="1e-6"
-              className="flex-1 border p-2 rounded"
-              value={area}
-              onChange={(e) => setArea(+e.target.value)}
-            />
-            <span className="px-2 py-2 text-gray-600">m²</span>
-          </div>
-        </div>
-        ) : null}
-
-        {/* Second Moment of Inertia */}
-        {showManualSection ? (
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">Second Moment of Inertia</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="1e-8"
-              className="flex-1 border p-2 rounded"
-              value={inertia}
-              onChange={(e) => setInertia(+e.target.value)}
-            />
-            <ModuleUnitSelect
-              moduleId="columns"
-              fieldKey="inertia"
-              value={inertiaUnit}
-              onChange={setInertiaUnit}
-            />
-          </div>
-        </div>
-        ) : null}
-      </div>
-
-      {/* Material Section */}
-      <div className="border-t pt-3 mt-3">
-        <h4 className="font-semibold mb-2">Material</h4>
-
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">Elastic Modulus (E)</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="1e6"
-              className="flex-1 border p-2 rounded"
-              value={elasticModulus}
-              onChange={(e) => setElasticModulus(+e.target.value)}
-            />
-            <ModuleUnitSelect
-              moduleId="columns"
-              fieldKey="stress"
-              value={elasticModulusUnit}
-              onChange={setElasticModulusUnit}
-            />
-          </div>
-        </div>
-
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">Yield Strength (Fy)</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="1e6"
-              className="flex-1 border p-2 rounded"
-              value={yieldStrength}
-              onChange={(e) => setYieldStrength(+e.target.value)}
-            />
-            <ModuleUnitSelect
-              moduleId="columns"
-              fieldKey="stress"
-              value={elasticModulusUnit}
-              onChange={setElasticModulusUnit}
-            />
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            Used by AISC 360 §E3 / EN 1993-1-1 §6.3 compression checks.
+      {isDesignMode ? (
+        <CalculatorFormSection title="Design target">
+          <CalculatorUnitField
+            label="Target buckling safety factor"
+            value={targetSafetyFactor}
+            onChange={setTargetSafetyFactor}
+            min={1}
+            step={0.1}
+            unit={<span className="inline-flex min-w-[5.5rem] items-center px-2 text-sm text-slate-500">—</span>}
+          />
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Design mode selects the lightest catalog section with Pcr/P at or above this target.
           </p>
-        </div>
-      </div>
+        </CalculatorFormSection>
+      ) : null}
 
-      {/* Loading Section */}
-      <div className="border-t pt-3 mt-3">
-        <h4 className="font-semibold mb-2">Axial Load</h4>
+      <CalculatorFormSection title="Geometry">
+        <CalculatorUnitField
+          label="Column length"
+          value={length}
+          onChange={setLength}
+          step={0.001}
+          unit={
+            <ModuleUnitSelect moduleId="columns" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
+          }
+        />
 
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">Load</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              className="flex-1 border p-2 rounded"
-              value={load}
-              onChange={(e) => setLoad(+e.target.value)}
+        {showManualSection ? (
+          <>
+            <CalculatorUnitField
+              label="Cross-sectional area"
+              value={area}
+              onChange={setArea}
+              step={1e-6}
+              unit={<span className="inline-flex min-w-[5.5rem] items-center px-2 text-sm text-slate-600">m²</span>}
             />
+            <CalculatorUnitField
+              label="Second moment of inertia"
+              value={inertia}
+              onChange={setInertia}
+              step={1e-8}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="columns"
+                  fieldKey="inertia"
+                  value={inertiaUnit}
+                  onChange={setInertiaUnit}
+                />
+              }
+            />
+          </>
+        ) : null}
+      </CalculatorFormSection>
+
+      <CalculatorFormSection title="Material">
+        <CalculatorUnitField
+          label="Elastic modulus (E)"
+          value={elasticModulus}
+          onChange={setElasticModulus}
+          step={1e6}
+          unit={
             <ModuleUnitSelect
               moduleId="columns"
-              fieldKey="load"
-              value={loadUnit}
-              onChange={setLoadUnit}
+              fieldKey="stress"
+              value={elasticModulusUnit}
+              onChange={setElasticModulusUnit}
             />
-          </div>
-        </div>
+          }
+        />
+        <CalculatorUnitField
+          label="Yield strength (Fy)"
+          value={yieldStrength}
+          onChange={setYieldStrength}
+          step={1e6}
+          unit={
+            <ModuleUnitSelect
+              moduleId="columns"
+              fieldKey="stress"
+              value={elasticModulusUnit}
+              onChange={setElasticModulusUnit}
+            />
+          }
+        />
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Used by AISC 360 §E3 / EN 1993-1-1 §6.3 compression checks.
+        </p>
+      </CalculatorFormSection>
 
-        {/* End Condition */}
-        <div className="mb-3">
-          <label className="block text-sm text-gray-600 mb-1">End Condition</label>
+      <CalculatorFormSection title="Loading & end condition">
+        <CalculatorUnitField
+          label="Axial compressive load"
+          value={load}
+          onChange={setLoad}
+          unit={<ModuleUnitSelect moduleId="columns" fieldKey="load" value={loadUnit} onChange={setLoadUnit} />}
+        />
+        <label className={calculatorFieldLabelClass}>
+          End condition
           <select
             value={endCondition}
             onChange={(e) => setEndCondition(e.target.value as EndCondition)}
-            className="w-full border p-2 rounded"
+            className={`${calculatorSelectClass} mt-2`}
           >
-            <option value="pinned">Pinned-Pinned</option>
-            <option value="fixed">Fixed-Fixed</option>
+            <option value="pinned">Pinned–pinned</option>
+            <option value="fixed">Fixed–fixed</option>
             <option value="cantilever">Cantilever</option>
             <option value="guided">Guided</option>
           </select>
-        </div>
-      </div>
-
+        </label>
+      </CalculatorFormSection>
     </CalculatorInputPanel>
   );
 }

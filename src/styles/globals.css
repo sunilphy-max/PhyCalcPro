@@ -59,6 +59,43 @@
     margin: 0;
   }
 
+  /*
+   * Form controls inside calculator panels: explicit fg/bg so numeric values stay
+   * visible when the OS uses dark mode (inherited light text on white field bg).
+   */
+  .calculator-panel :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea),
+  .calculator-workspace :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea) {
+    border-radius: 0.5rem;
+    border: 1px solid rgb(203 213 225);
+    background-color: #fff;
+    color: #0f172a;
+    -webkit-text-fill-color: #0f172a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .calculator-panel :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea),
+    .calculator-workspace :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea) {
+      border-color: rgb(51 65 85);
+      background-color: rgb(2 6 23);
+      color: #f8fafc;
+      -webkit-text-fill-color: #f8fafc;
+    }
+  }
+
+  .calculator-panel select option,
+  .calculator-workspace select option {
+    background-color: #fff;
+    color: #0f172a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .calculator-panel select option,
+    .calculator-workspace select option {
+      background-color: rgb(2 6 23);
+      color: #f8fafc;
+    }
+  }
+
   /* Documentation — KaTeX display & inline math */
   .documentation-prose .katex {
     font-size: 1.05em;

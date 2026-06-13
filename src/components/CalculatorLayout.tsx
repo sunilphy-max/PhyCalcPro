@@ -12,6 +12,7 @@ import { computeReleaseTier } from "@/lib/qa/maturityGates";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 import { allModules } from "@/data/modules";
+import { calculatorWorkspaceClass } from "@/components/calculator/styles";
 
 /**
  * Two-column module layout (used beside products sidebar):
@@ -67,9 +68,9 @@ export default function CalculatorLayout({
 
   return (
     <DesignWorkflowProvider moduleId={moduleId}>
-    <div className="min-h-full bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.08),transparent_40%),radial-gradient(circle_at_top_right,_rgba(168,85,247,0.06),transparent_40%),#f8fafc] p-4 md:p-6">
-      <div className="mx-auto max-w-[1600px] space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-sm backdrop-blur-sm md:p-6">
+    <div className="min-h-full bg-slate-50 p-4 md:p-6 dark:bg-slate-950">
+      <div className="mx-auto max-w-[1600px] space-y-5">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.28em] text-slate-500">Engineering module</p>
@@ -103,12 +104,12 @@ export default function CalculatorLayout({
         {designWorkflow ? <ModuleDesignAdvisor workflow={designWorkflow} /> : null}
 
         <div
-          className={`grid grid-cols-1 gap-6 ${
-            inputColumn ? "lg:grid-cols-[minmax(300px,420px)_1fr]" : "lg:grid-cols-1"
+          className={`grid grid-cols-1 gap-5 ${
+            inputColumn ? "lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]" : "lg:grid-cols-1"
           }`}
         >
           {inputColumn ? (
-            <div className="space-y-4">
+            <div className={calculatorWorkspaceClass}>
               {designWorkflow ? <DesignModeToggle workflow={designWorkflow} /> : null}
               {moduleId ? <DesignTargetFields moduleId={moduleId} /> : null}
               {inputColumn}

@@ -13,6 +13,17 @@ import {
 } from "@/lib/structural/beams/applicationPresets";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
+import {
+  calculatorDangerLinkClass,
+  calculatorFieldLabelClass,
+  calculatorLoadCardClass,
+  calculatorNumberInputClass,
+  calculatorSecondaryButtonClass,
+  calculatorSelectClass,
+  calculatorTextInputClass,
+} from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
@@ -57,7 +68,6 @@ type Props = {
   saveProject: () => void;
   saving: boolean;
 
-  // ✅ LOADS (IMPORTANT)
   loads: Load[];
   updateLoad: (i: number, l: Load) => void;
   removeLoad: (i: number) => void;
@@ -79,7 +89,9 @@ type Props = {
 
 export default function BeamInputs(props: Props) {
   const beamMaterials = materials.filter((material) =>
-    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(material.category)
+    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(
+      material.category
+    )
   );
   const selectedApplication =
     beamApplicationPresets.find((preset) => preset.id === props.applicationId) ??
@@ -87,10 +99,15 @@ export default function BeamInputs(props: Props) {
   const isDesignMode = props.workflowMode === "design";
   const showManualSection = !isDesignMode;
 
+  const defaultDesignStress =
+    ((materials.find((m) => m.name === props.material)?.yieldStress ?? 250e6) *
+      selectedApplication.allowableStressRatio) /
+    (props.stressUnit === "MPa" ? 1e6 : props.stressUnit === "Pa" ? 1 : 1e6);
+
   return (
     <CalculatorInputPanel
       title="Beam analysis"
-      description="Deflection, bending moment, and shear force for point loads and UDLs."
+      description="Deflection, bending moment, and shear for point loads, UDLs, and applied moments."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton
@@ -102,326 +119,288 @@ export default function BeamInputs(props: Props) {
             type="button"
             onClick={props.saveProject}
             disabled={props.saving}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
           >
-            {props.saving ? "Saving..." : "Save project"}
+            {props.saving ? "Saving…" : "Save project"}
           </button>
         </div>
       }
     >
-      {/* ================= PROJECT NAME ================= */}
-      <input
-        className="w-full p-2 border rounded"
-        value={props.projectName}
-        onChange={(e) => props.setProjectName(e.target.value)}
-      />
-
-      {/* ================= SUPPORT TYPE ================= */}
-      <select
-        className="w-full border p-2 rounded"
-        value={props.support}
-        onChange={(e) => props.setSupport(e.target.value as Props["support"])}
-      >
-        <option value="simply_supported">Simply Supported</option>
-        <option value="cantilever">Cantilever</option>
-        <option value="fixed_fixed">Fixed-Fixed</option>
-      </select>
-
-      {/* ================= APPLICATION ================= */}
-      <div className="rounded-xl border border-cyan-100 bg-cyan-50/70 p-3">
-        <label className="text-xs font-semibold uppercase tracking-wide text-cyan-700">
-          What are you working on?
+      <CalculatorFormSection title="Project">
+        <label className={calculatorFieldLabelClass}>
+          Project name
+          <input
+            className={`${calculatorTextInputClass} mt-2`}
+            value={props.projectName}
+            onChange={(e) => props.setProjectName(e.target.value)}
+            placeholder="Optional label for save/export"
+          />
         </label>
-        <select
-          className="mt-2 w-full rounded border border-cyan-200 bg-white p-2 text-sm"
-          value={props.applicationId}
-          onChange={(e) => props.setApplicationId(e.target.value as BeamApplicationId)}
-        >
-          {beamApplicationPresets.map((preset) => (
-            <option key={preset.id} value={preset.id}>
-              {preset.label}
-            </option>
-          ))}
-        </select>
-        <p className="mt-2 text-xs leading-relaxed text-cyan-900">
-          {selectedApplication.description}
-        </p>
-        <p className="mt-2 text-xs text-cyan-800">
-          Load factor {selectedApplication.loadFactor.toFixed(2)} · allowable stress{" "}
-          {(selectedApplication.allowableStressRatio * 100).toFixed(0)}% of yield · deflection
-          target L/{selectedApplication.deflectionLimitRatio}
-        </p>
-      </div>
+      </CalculatorFormSection>
 
-      {/* ================= MATERIAL ================= */}
-      <select
-        className="w-full border p-2 rounded"
-        value={props.material}
-        onChange={(e) => props.setMaterial(e.target.value)}
-      >
-        {beamMaterials.map((m) => (
-          <option key={m.name} value={m.name}>
-            {m.name}
-          </option>
-        ))}
-      </select>
+      <CalculatorFormSection title="Support & material">
+        <label className={calculatorFieldLabelClass}>
+          Support condition
+          <select
+            className={`${calculatorSelectClass} mt-2`}
+            value={props.support}
+            onChange={(e) => props.setSupport(e.target.value as Props["support"])}
+          >
+            <option value="simply_supported">Simply supported</option>
+            <option value="cantilever">Cantilever</option>
+            <option value="fixed_fixed">Fixed–fixed</option>
+          </select>
+        </label>
 
-      {isDesignMode ? (
-        <div className="rounded-xl border border-cyan-200 bg-cyan-50/70 p-3 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-cyan-800">Design targets</p>
-          <label className="block text-sm text-slate-700">
-            Max deflection ({props.lengthUnit})
-            <input
-              type="number"
-              className="mt-1 w-full rounded border p-2"
-              value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
-              onChange={(e) => props.setDesignMaxDeflection?.(+e.target.value)}
-            />
+        <label className={calculatorFieldLabelClass}>
+          Material
+          <select
+            className={`${calculatorSelectClass} mt-2`}
+            value={props.material}
+            onChange={(e) => props.setMaterial(e.target.value)}
+          >
+            {beamMaterials.map((m) => (
+              <option key={m.name} value={m.name}>
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="rounded-xl border border-cyan-200 bg-cyan-50/80 p-3 dark:border-cyan-900/50 dark:bg-cyan-950/30">
+          <label className="text-xs font-semibold uppercase tracking-wide text-cyan-800 dark:text-cyan-200">
+            Application preset
           </label>
-          <label className="block text-sm text-slate-700">
-            Max bending stress ({props.stressUnit})
-            <input
-              type="number"
-              className="mt-1 w-full rounded border p-2"
-              value={
-                props.designMaxStress ??
-                ((materials.find((m) => m.name === props.material)?.yieldStress ?? 250e6) *
-                  selectedApplication.allowableStressRatio) /
-                  (props.stressUnit === "MPa" ? 1e6 : props.stressUnit === "Pa" ? 1 : 1e6)
-              }
-              onChange={(e) => props.setDesignMaxStress?.(+e.target.value)}
-            />
-          </label>
-          <p className="text-xs text-cyan-900">
-            Design mode searches the rolled-section catalog for the lightest section that passes stress and
-            deflection limits with your load case.
+          <select
+            className={`${calculatorSelectClass} mt-2`}
+            value={props.applicationId}
+            onChange={(e) => props.setApplicationId(e.target.value as BeamApplicationId)}
+          >
+            {beamApplicationPresets.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-2 text-xs leading-relaxed text-cyan-950 dark:text-cyan-100">
+            {selectedApplication.description}
+          </p>
+          <p className="mt-1 text-xs text-cyan-900 dark:text-cyan-200/90">
+            Load factor {selectedApplication.loadFactor.toFixed(2)} · allowable stress{" "}
+            {(selectedApplication.allowableStressRatio * 100).toFixed(0)}% of yield · deflection L/
+            {selectedApplication.deflectionLimitRatio}
           </p>
         </div>
-      ) : null}
+      </CalculatorFormSection>
 
-      {!isDesignMode ? (
+      {isDesignMode ? (
+        <CalculatorFormSection title="Design targets" description="Limits used when sizing from the rolled-section catalog.">
+          <CalculatorUnitField
+            label="Max deflection"
+            value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
+            onChange={(v) => props.setDesignMaxDeflection?.(v)}
+            unit={
+              <ModuleUnitSelect
+                moduleId="beams"
+                fieldKey="length"
+                value={props.lengthUnit}
+                onChange={props.setLengthUnit}
+              />
+            }
+          />
+          <CalculatorUnitField
+            label="Max bending stress"
+            value={props.designMaxStress ?? defaultDesignStress}
+            onChange={(v) => props.setDesignMaxStress?.(v)}
+            unit={
+              <ModuleUnitSelect
+                moduleId="beams"
+                fieldKey="stress"
+                value={props.stressUnit}
+                onChange={props.setStressUnit}
+              />
+            }
+          />
+        </CalculatorFormSection>
+      ) : (
         <RolledSectionPicker
           designation={props.sectionDesignation}
           onDesignationChange={props.setSectionDesignation}
           onSectionApplied={props.onSectionApplied}
         />
-      ) : null}
+      )}
 
-      {/* ================= LENGTH ================= */}
-      <div className="flex gap-2">
-        <input
-          className="flex-1 border p-2 rounded"
+      <CalculatorFormSection title="Geometry">
+        <CalculatorUnitField
+          label="Span length"
           value={props.length}
-          onChange={(e) => props.setLength(+e.target.value)}
+          onChange={props.setLength}
+          unit={
+            <ModuleUnitSelect
+              moduleId="beams"
+              fieldKey="length"
+              value={props.lengthUnit}
+              onChange={props.setLengthUnit}
+            />
+          }
         />
-        <ModuleUnitSelect
-          moduleId="beams"
-          fieldKey="length"
-          value={props.lengthUnit}
-          onChange={props.setLengthUnit}
-        />
-      </div>
 
-      {/* ================= FORCE ================= */}
-      <div className="flex gap-2">
-        <input
-          className="flex-1 border p-2 rounded"
-          value={props.force}
-          onChange={(e) => props.setForce(+e.target.value)}
-        />
-        <ModuleUnitSelect
-          moduleId="beams"
-          fieldKey="force"
-          value={props.forceUnit}
-          onChange={props.setForceUnit}
-        />
-      </div>
-
-      {/* ================= UDL ================= */}
-      <div className="flex gap-2">
-        <input
-          className="flex-1 border p-2 rounded"
-          value={props.udl}
-          onChange={(e) => props.setUdl(+e.target.value)}
-        />
-        <ModuleUnitSelect
-          moduleId="beams"
-          fieldKey="udl"
-          value={props.udlUnit}
-          onChange={props.setUdlUnit}
-        />
-      </div>
-
-      {/* ================= INERTIA ================= */}
-      {showManualSection ? (
-      <div className="flex gap-2">
-        <input
-          className="flex-1 border p-2 rounded"
-          value={props.I}
-          onChange={(e) => props.setI(+e.target.value)}
-        />
-        <ModuleUnitSelect
-          moduleId="beams"
-          fieldKey="inertia"
-          value={props.inertiaUnit}
-          onChange={props.setInertiaUnit}
-        />
-      </div>
-      ) : null}
-
-      {/* ================= MOMENT/STRESS UNITS ================= */}
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <label className="text-sm text-gray-500">Moment units</label>
-          <ModuleUnitSelect
-            moduleId="beams"
-            fieldKey="moment"
-            value={props.momentUnit}
-            onChange={props.setMomentUnit}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-sm text-gray-500">Stress units</label>
-          <ModuleUnitSelect
-            moduleId="beams"
-            fieldKey="stress"
-            value={props.stressUnit}
-            onChange={props.setStressUnit}
-          />
-        </div>
-      </div>
-
-      {/* ================= DISTANCE C (Neutral Axis to Extreme Fiber) ================= */}
-      {showManualSection ? (
-      <div className="flex gap-2">
-        <input
-          className="flex-1 border p-2 rounded"
-          placeholder="Distance to extreme fiber (c)"
-          value={props.c}
-          onChange={(e) => props.setC(+e.target.value)}
-        />
-        <ModuleUnitSelect
-          moduleId="beams"
-          fieldKey="length"
-          value={props.lengthUnit}
-          onChange={props.setLengthUnit}
-        />
-      </div>
-      ) : null}
-
-      {/* ================= LOADS SECTION ================= */}
-      <div className="border-t pt-3 mt-3">
-        <h4 className="font-semibold mb-2">Loads</h4>
-
-        {(props.loads ?? []).map((load, i) => (
-          <div key={i} className="mb-2 p-2 border rounded">
-
-            <div className="text-sm mb-1">
-              {load.type === "point"
-                ? "Point Load"
-                : load.type === "udl"
-                ? "UDL"
-                : "Moment"}
-            </div>
-
-            {/* VALUE */}
-            <input
-              className="w-full border p-1 mb-1"
-              value={load.value}
-              onChange={(e) =>
-                props.updateLoad(i, {
-                  ...load,
-                  value: +e.target.value,
-                })
+        {showManualSection ? (
+          <>
+            <CalculatorUnitField
+              label="Second moment of area (I)"
+              value={props.I}
+              onChange={props.setI}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey="inertia"
+                  value={props.inertiaUnit}
+                  onChange={props.setInertiaUnit}
+                />
               }
             />
+            <CalculatorUnitField
+              label="Distance to extreme fiber (c)"
+              value={props.c}
+              onChange={props.setC}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey="length"
+                  value={props.lengthUnit}
+                  onChange={props.setLengthUnit}
+                />
+              }
+            />
+          </>
+        ) : null}
+      </CalculatorFormSection>
 
-            {/* POSITION / RANGE */}
-            {load.type === "point" ? (
+      <CalculatorFormSection
+        title="Loads"
+        description="Add point forces, distributed loads, or moments along the span."
+      >
+        {(props.loads ?? []).map((load, i) => (
+          <div key={i} className={calculatorLoadCardClass}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-slate-900 dark:text-white">
+                {load.type === "point" ? "Point load" : load.type === "udl" ? "UDL" : "Applied moment"}
+              </span>
+              <button type="button" className={calculatorDangerLinkClass} onClick={() => props.removeLoad(i)}>
+                Remove
+              </button>
+            </div>
+
+            <label className={calculatorFieldLabelClass}>
+              Magnitude
               <input
-                className="w-full border p-1"
-                value={load.position}
+                type="number"
+                step="any"
+                className={`${calculatorNumberInputClass} mt-1 w-full`}
+                value={load.value}
                 onChange={(e) =>
                   props.updateLoad(i, {
                     ...load,
-                    position: +e.target.value,
+                    value: +e.target.value,
                   })
                 }
               />
+            </label>
+
+            {load.type === "point" || load.type === "moment" ? (
+              <label className={calculatorFieldLabelClass}>
+                Position along span
+                <input
+                  type="number"
+                  step="any"
+                  className={`${calculatorNumberInputClass} mt-1 w-full`}
+                  value={load.position}
+                  onChange={(e) =>
+                    props.updateLoad(i, {
+                      ...load,
+                      position: +e.target.value,
+                    })
+                  }
+                />
+              </label>
             ) : load.type === "udl" ? (
-              <>
-                <input
-                  className="w-full border p-1 mb-1"
-                  value={load.start}
-                  onChange={(e) =>
-                    props.updateLoad(i, {
-                      ...(load as UDL),
-                      start: +e.target.value,
-                    })
-                  }
-                />
-                <input
-                  className="w-full border p-1"
-                  value={load.end}
-                  onChange={(e) =>
-                    props.updateLoad(i, {
-                      ...(load as UDL),
-                      end: +e.target.value,
-                    })
-                  }
-                />
-              </>
-            ) : (
-              <input
-                className="w-full border p-1"
-                value={load.position}
-                onChange={(e) =>
-                  props.updateLoad(i, {
-                    ...load,
-                    position: +e.target.value,
-                  })
-                }
-              />
-            )}
-
-            <button
-              className="text-red-500 text-sm mt-1"
-              onClick={() => props.removeLoad(i)}
-            >
-              Remove
-            </button>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <label className={calculatorFieldLabelClass}>
+                  Start position
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${calculatorNumberInputClass} mt-1 w-full`}
+                    value={load.start}
+                    onChange={(e) =>
+                      props.updateLoad(i, {
+                        ...(load as UDL),
+                        start: +e.target.value,
+                      })
+                    }
+                  />
+                </label>
+                <label className={calculatorFieldLabelClass}>
+                  End position
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${calculatorNumberInputClass} mt-1 w-full`}
+                    value={load.end}
+                    onChange={(e) =>
+                      props.updateLoad(i, {
+                        ...(load as UDL),
+                        end: +e.target.value,
+                      })
+                    }
+                  />
+                </label>
+              </div>
+            ) : null}
           </div>
         ))}
 
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={props.addPointLoad}
-            className="bg-gray-200 px-2 py-1 rounded"
-          >
-            + Point Load
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={props.addPointLoad} className={calculatorSecondaryButtonClass}>
+            + Point load
           </button>
-
-          <button
-            onClick={props.addUDL}
-            className="bg-gray-200 px-2 py-1 rounded"
-          >
+          <button type="button" onClick={props.addUDL} className={calculatorSecondaryButtonClass}>
             + UDL
           </button>
         </div>
-      </div>
+      </CalculatorFormSection>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
-        <p className="text-xs text-slate-500">
-          Increase element count for smoother moment, shear, and deflection curves.
-        </p>
-        <MeshControls
-          elements={props.meshSegments}
-          onChangeElements={props.setMeshSegments}
-          refine
-        />
-      </div>
+      <CalculatorFormSection title="Result units">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className={calculatorFieldLabelClass}>
+            Moment units
+            <div className="mt-2">
+              <ModuleUnitSelect
+                moduleId="beams"
+                fieldKey="moment"
+                value={props.momentUnit}
+                onChange={props.setMomentUnit}
+              />
+            </div>
+          </label>
+          <label className={calculatorFieldLabelClass}>
+            Stress units
+            <div className="mt-2">
+              <ModuleUnitSelect
+                moduleId="beams"
+                fieldKey="stress"
+                value={props.stressUnit}
+                onChange={props.setStressUnit}
+              />
+            </div>
+          </label>
+        </div>
+      </CalculatorFormSection>
 
+      <CalculatorFormSection title="Mesh refinement" description="Increase element count for smoother curves.">
+        <MeshControls elements={props.meshSegments} onChangeElements={props.setMeshSegments} refine />
+      </CalculatorFormSection>
     </CalculatorInputPanel>
   );
 }

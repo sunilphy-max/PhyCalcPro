@@ -35,7 +35,7 @@ export default function CalculatorUnitField({
     <div
       className={`space-y-2 ${colSpan ? "sm:col-span-2" : ""} ${className}`.trim()}
     >
-      <label className="block text-sm font-medium text-slate-700">{label}</label>
+      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
       <div className={calculatorUnitFieldRowClass}>
         <input
           type="number"

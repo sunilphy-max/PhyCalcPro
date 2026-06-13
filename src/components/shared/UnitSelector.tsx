@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { calculatorUnitSelectClass } from "@/components/calculator/styles";
 import type { Dimension } from "@/lib/units/types";
 import { getUnitsForDimension, unitFactors } from "@/lib/physics/units";
 
@@ -36,7 +37,7 @@ export default function UnitSelector({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-800"
+        className={calculatorUnitSelectClass}
         aria-label={label ?? `Unit for ${dimension}`}
       >
         {units.map((u) => (
