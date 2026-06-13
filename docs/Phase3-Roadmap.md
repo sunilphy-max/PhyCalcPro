@@ -12,13 +12,17 @@ Phase 3 makes PhyCalcPro a **professional public product** with clear pricing, l
 | **Entitlements** | Free vs Pro feature gates |
 | **Activation** | `/billing/success` verifies Checkout session server-side |
 
+## Free launch override
+
+During early access, set `NEXT_PUBLIC_FREE_LAUNCH=true` (see [Launch-Plan.md](./Launch-Plan.md)) to unlock all design codes and export without Pro UI. This is independent of Stripe configuration.
+
 ## Plans
 
 | Plan | Price (configurable) | Includes |
 |------|----------------------|----------|
 | **Free** | $0 | All modules, **Indicative** design code, CSV export |
 | **Supporter** | One-time donation | Thank-you badge; same features as Free (configurable later) |
-| **Pro** | Monthly subscription | **US / EU / ISO** design codes, **PDF export** with engineering checks |
+| **Pro** | Monthly subscription | **US / EU / ISO** design codes, **structured PDF export** with engineering checks, formulas, and chart images |
 
 ## Environment variables
 
@@ -33,6 +37,7 @@ Copy `.env.example` to `.env.local` and set:
 - `NEXT_PUBLIC_APP_URL` — e.g. `https://phycalcpro.com` or `http://localhost:3000`
 - `NEXT_PUBLIC_DEV_ENTITLEMENT` — `free` \| `pro` \| `supporter` \| unset (local dev only; unset = normal Free)
 - `NEXT_PUBLIC_VALIDATION_MODE=true` — unlocks Indicative + US + EU + ISO + PDF for site-wide validation (never on public production)
+- `NEXT_PUBLIC_FREE_LAUNCH=true` — unlocks all features; hides Pricing/Account (see Launch-Plan)
 - `NEXT_PUBLIC_SUPABASE_ENABLED` — must be `true` to use cloud sign-in (off by default)
 
 ## Stripe setup (test mode)
@@ -49,8 +54,8 @@ This is suitable for solo launch; **Phase 3.1** can link entitlements to Supabas
 
 ## Feature gates (code)
 
-- `DesignCodeSelector` — US / EU / ISO require Pro
-- `ResultExportControls` — PDF export requires Pro
+- `DesignCodeSelector` — US / EU / ISO require Pro (unless `allFeaturesUnlocked()`)
+- `ResultExportControls` — structured PDF export requires Pro (unless free launch / validation mode)
 - Engineering checks for code standards still run in-app when Pro is active
 
 ## Do not claim before verification

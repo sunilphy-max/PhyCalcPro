@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PhyCalcPro
 
-## Getting Started
+Engineering calculator suite for structural, machine, materials, pressure, dynamics, and advanced-systems design screening. Each module runs in the browser with optional cloud project save.
 
-First, run the development server:
+**Disclaimer:** Results are **indicative** unless a module is marked **beta** with implemented code checks. PhyCalcPro does not replace licensed professional review or official code certification.
+
+## Quick start
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Product calculators live under `/products/*`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Development server |
+| `npm run build` | Layout validation + production build |
+| `npm test` | Vitest unit and benchmark tests |
+| `npm run test:verification` | JSON verification workbook cases |
+| `npm run validate:layout` | Enforce `CalculatorLayout` contract on product pages |
+| `node scripts/audit-module-docs.mjs` | Module documentation audit |
+| `node scripts/test-normalize-math.mjs` | LaTeX normalization regression checks |
 
-## Learn More
+## Documentation
 
-To learn more about Next.js, take a look at the following resources:
+- **In-app:** [/documentation](http://localhost:3000/documentation) — browse by module or read the full reference
+- **Source manual:** [docs/Modules-Technical-Reference.md](./docs/Modules-Technical-Reference.md)
+- **Verification:** [docs/VerificationGuide.md](./docs/VerificationGuide.md)
+- **Launch / gating:** [docs/Launch-Plan.md](./docs/Launch-Plan.md)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Architecture (summary)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Next.js App Router** — product pages under `src/app/products/`
+- **Single sidebar** — `src/app/products/layout.tsx`; category layouts are passthrough only
+- **Module chrome** — `CalculatorLayout` + `CalculatorInputPanel` / `CalculatorResultsShell`
+- **Design codes** — US / EU / ISO / Indicative via `DesignCodeContext`; sets default units on change
+- **Standards layer** — `src/lib/standards/` attaches `CalculationSpec` checks after each solve
+- **Structured PDF export** — `src/lib/export/structuredReport.ts` (title block, metrics, checks, formulas, charts)
+- **Projects** — local save + optional Supabase sync; dashboard at `/projects`
+- **Cross-calculator handoff** — gear → shaft → bearing chain via `crossCalcHandoff`
 
-## Deploy on Vercel
+See [AGENTS.md](./AGENTS.md) for contributor conventions (layout contract, plots, units, numeric inputs).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Flagship modules (2026 remediation)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Module | Standards / depth |
+|--------|-------------------|
+| Beams / columns | AISC 360 Ch. E–G, EN 1993-1-1 §6.2–6.3 |
+| Gears | ISO 6336 bending + contact worksheet |
+| Bearings | ISO 281 with catalog C ratings and life exponents |
+| Compression springs | EN 13906-1 (G input, buckling screen, τ_zul) |
+| Bolts | VDI 2230-1 single-bolt mode + power-screw / pattern modes |
+| Fatigue | Basquin S–N + Marin factors + Goodman / Gerber / Morrow |
+
+## License
+
+Private — see repository owner for terms.

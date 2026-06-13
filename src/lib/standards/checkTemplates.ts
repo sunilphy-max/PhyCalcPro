@@ -53,7 +53,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       EU: ref("DIN", "3990", "Scuffing"),
       ISO: ref("ISO", "6336-20", "Scuffing"),
     },
-    { US: "implemented", EU: "implemented", ISO: "implemented", INDICATIVE: "implemented" }
+    { US: "planned", EU: "planned", ISO: "planned", INDICATIVE: "planned" }
   ),
   checkDef(
     "bending_fatigue",
@@ -85,7 +85,7 @@ export const gearChecks: ModuleCheckDefinition[] = [
       ISO: ref("ISO", "6336-22", "Micropitting"),
       EU: ref("DIN", "3990", "Micropitting"),
     },
-    { ISO: "implemented", EU: "implemented", INDICATIVE: "implemented", US: "planned" }
+    { ISO: "planned", EU: "planned", INDICATIVE: "planned", US: "planned" }
   ),
 ];
 

@@ -1,4 +1,5 @@
 import { solveGearEngine } from "@/lib/machine/gears/engine";
+import { GEAR_MODULE_SERIES_1_MM } from "@/data/catalogs/standardSeries";
 import { solveShaftEngine } from "@/lib/machine/shafts/engine";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
 import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
@@ -110,7 +111,7 @@ export function designGearModule(userInputs: ModuleUserInputs): ModuleDesignMode
   const bestPinionTeeth =
     (toothSweep.best?.fields?.pinionTeeth as number | undefined) ?? userInputs.pinionTeeth ?? 20;
 
-  const modules = [2, 2.5, 3, 4, 5, 6];
+  const modules = GEAR_MODULE_SERIES_1_MM.filter((m) => m >= 1 && m <= 12);
   const moduleItems = modules.map((m) => {
     const moduleM = m / 1000;
     const faceWidth = (10 * m) / 1000;

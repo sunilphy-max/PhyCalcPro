@@ -10,6 +10,7 @@ import { useEntitlement } from "@/contexts/EntitlementContext";
 const allNavigationItems = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
+  { href: "/projects", label: "Projects" },
   { href: "/pricing", label: "Pricing", monetizationOnly: true },
   { href: "/account", label: "Account", monetizationOnly: true },
   { href: "/status", label: "Quality" },

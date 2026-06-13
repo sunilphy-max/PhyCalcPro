@@ -1,23 +1,35 @@
-import { materials } from "@/data/materials";
+import { materials, type Material, type MaterialCategory } from "@/data/materials";
 
 export type MaterialCatalogEntry = {
   name: string;
+  category: MaterialCategory;
+  standard?: string;
   E: number;
   yieldStress: number;
   ultimateStrength: number;
   density: number;
   poisson?: number;
+  enduranceLimit?: number;
+  hardnessHB?: number;
 };
 
-export function getMaterialCatalog(): MaterialCatalogEntry[] {
-  return materials.map((item) => ({
+function toEntry(item: Material): MaterialCatalogEntry {
+  return {
     name: item.name,
+    category: item.category,
+    standard: item.standard,
     E: item.E,
-    yieldStress: item.yieldStress ?? 250e6,
-    ultimateStrength: (item as { ultimateStrength?: number }).ultimateStrength ?? (item.yieldStress ?? 250e6) * 1.6,
-    density: (item as { density?: number }).density ?? 7850,
-    poisson: (item as { poisson?: number }).poisson,
-  }));
+    yieldStress: item.yieldStress,
+    ultimateStrength: item.ultimateStrength,
+    density: item.density,
+    poisson: item.poisson,
+    enduranceLimit: item.enduranceLimit,
+    hardnessHB: item.hardnessHB,
+  };
+}
+
+export function getMaterialCatalog(): MaterialCatalogEntry[] {
+  return materials.map(toEntry);
 }
 
 export function findMaterialByName(name?: string): MaterialCatalogEntry | undefined {

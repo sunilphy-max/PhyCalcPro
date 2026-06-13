@@ -48,7 +48,14 @@ npm run generate:verification-template
 }
 ```
 
-Run automated checks (when cases exist):
+## Automated tests
+
+| Command | Purpose |
+|---------|---------|
+| `npm test` | Vitest — unit tests and externally sourced benchmarks (Shigley, Roark, AISC, ISO, VDI, EN) in `src/lib/**/*.test.ts` |
+| `npm run test:verification` | JSON workbook cases in `src/data/verification/` |
+
+Run automated verification workbook checks (when cases exist):
 
 ```bash
 npm run test:verification

@@ -59,7 +59,11 @@ export default function FatigueResults({ result, alternatingUnit }: Props) {
             />
             <CalculatorMetricCard
               label="Predicted life"
-              value={`${result.predictedCycles.toLocaleString()} cycles`}
+              value={
+                result.infiniteLife
+                  ? "> 10\u2076 cycles (infinite life)"
+                  : `${result.predictedCycles.toLocaleString()} cycles`
+              }
               tone="purple"
               size="lg"
             />

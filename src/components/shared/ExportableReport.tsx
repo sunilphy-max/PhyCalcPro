@@ -9,6 +9,8 @@ import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaul
 import { buildCsvRowsFromResult, mergeCsvRows, type CsvRow } from "@/lib/export/csvRows";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
+import type { ReportMeta } from "@/lib/export/structuredReport";
+import { allModules } from "@/data/modules";
 
 type Props = {
   fileName: string;
@@ -21,6 +23,8 @@ type Props = {
   result?: Record<string, unknown> | null;
   qualityOverrides?: Partial<ModuleQualityChecklist>;
   showQualityChecklist?: boolean;
+  /** Title block metadata (project, engineer, revision) for the PDF report */
+  reportMeta?: ReportMeta;
   children: ReactNode;
   className?: string;
   showControlsWhenEmpty?: boolean;
@@ -36,6 +40,7 @@ export default function ExportableReport({
   result,
   qualityOverrides,
   showQualityChecklist = true,
+  reportMeta,
   children,
   className = "space-y-6",
   showControlsWhenEmpty = true,
@@ -43,6 +48,9 @@ export default function ExportableReport({
   const reportRef = useRef<HTMLDivElement>(null);
   const mergedCsv = mergeCsvRows(buildCsvRowsFromResult(result ?? undefined), csvRows);
   const checklist = moduleId ? getModuleQualityChecklist(moduleId, qualityOverrides) : null;
+  const moduleTitle = moduleId
+    ? allModules.find((m) => m.id === moduleId)?.title
+    : undefined;
 
   return (
     <div className={className}>
@@ -53,6 +61,9 @@ export default function ExportableReport({
           title={title}
           description={description}
           csvRows={mergedCsv}
+          moduleTitle={moduleTitle}
+          calculationSpec={calculationSpec}
+          reportMeta={reportMeta}
         />
       ) : null}
       <div ref={reportRef} className="space-y-6 export-report-content">

@@ -48,8 +48,10 @@ export default function DocumentationPage() {
             <em>Not available</em> means the check is catalogued but not yet verified for that code.
           </li>
           <li>
-            Export CSV and PDF reports with engineering checks — included during early access (no
-            signup required).
+            Export **structured PDF** reports (title block, metrics, engineering checks, formulas, charts) plus CSV — included during early access (no signup required).
+          </li>
+          <li>
+            Save and reload work from the <Link href="/projects" className="font-medium underline">Projects</Link> dashboard; flagship modules support cross-calculator handoff (e.g. gear → shaft → bearing).
           </li>
         </ul>
         <p className="mt-4 text-sm text-slate-500">

@@ -78,7 +78,9 @@ type Props = {
 };
 
 export default function BeamInputs(props: Props) {
-  const beamMaterials = materials.filter((material) => material.name !== "Concrete");
+  const beamMaterials = materials.filter((material) =>
+    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(material.category)
+  );
   const selectedApplication =
     beamApplicationPresets.find((preset) => preset.id === props.applicationId) ??
     beamApplicationPresets[0]!;

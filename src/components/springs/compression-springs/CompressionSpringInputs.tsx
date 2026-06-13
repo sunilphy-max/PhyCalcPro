@@ -7,6 +7,7 @@ import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
+import type { SpringWireType } from "@/lib/springs/compression-springs/types";
 
 type Props = {
   wireDiameter: number;
@@ -21,8 +22,12 @@ type Props = {
   setDeflection: Dispatch<SetStateAction<number>>;
   modulus: number;
   setModulus: Dispatch<SetStateAction<number>>;
+  modulusUnit: string;
+  setModulusUnit: Dispatch<SetStateAction<string>>;
   ultimateStrength: number;
   setUltimateStrength: Dispatch<SetStateAction<number>>;
+  wireType: SpringWireType;
+  setWireType: (wireType: SpringWireType) => void;
   lengthUnit: string;
   setLengthUnit: Dispatch<SetStateAction<string>>;
   stressUnit: string;
@@ -54,8 +59,12 @@ export default function CompressionSpringInputs({
   setDeflection,
   modulus,
   setModulus,
+  modulusUnit,
+  setModulusUnit,
   ultimateStrength,
   setUltimateStrength,
+  wireType,
+  setWireType,
   lengthUnit,
   setLengthUnit,
   stressUnit,
@@ -189,21 +198,38 @@ export default function CompressionSpringInputs({
         </>
         ) : null}
         <CalculatorUnitField
-          label="Shear modulus (G ≈ E/2.6)"
+          label="Shear modulus G"
           value={modulus}
           onChange={setModulus}
           unit={
-            <ModuleUnitSelect moduleId="compression-springs" fieldKey="modulus" value={stressUnit} onChange={setStressUnit} />
+            <ModuleUnitSelect moduleId="compression-springs" fieldKey="modulus" value={modulusUnit} onChange={setModulusUnit} />
           }
         />
-        <CalculatorUnitField
-          label="Ultimate tensile strength"
-          value={ultimateStrength}
-          onChange={setUltimateStrength}
-          unit={
-            <ModuleUnitSelect moduleId="compression-springs" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />
-          }
-        />
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Wire grade (EN 10270 / ASTM)</span>
+          <select
+            value={wireType}
+            onChange={(e) => setWireType(e.target.value as SpringWireType)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="music">Music wire (A228 / EN 10270-1 SH)</option>
+            <option value="hard-drawn">Hard-drawn (A227)</option>
+            <option value="oil-tempered">Oil-tempered (A229)</option>
+            <option value="chrome-vanadium">Chrome-vanadium (A232)</option>
+            <option value="chrome-silicon">Chrome-silicon (A401)</option>
+            <option value="custom">Custom (enter Rm below)</option>
+          </select>
+        </label>
+        {wireType === "custom" ? (
+          <CalculatorUnitField
+            label="Ultimate tensile strength Rm"
+            value={ultimateStrength}
+            onChange={setUltimateStrength}
+            unit={
+              <ModuleUnitSelect moduleId="compression-springs" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />
+            }
+          />
+        ) : null}
       </div>
     </CalculatorInputPanel>
   );

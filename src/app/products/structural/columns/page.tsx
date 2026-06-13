@@ -47,6 +47,7 @@ export default function Page() {
   const [inertia, setInertia] = useState(1e-7);
   const [area, setArea] = useState(0.001);
   const [elasticModulus, setElasticModulus] = useState(210e9);
+  const [yieldStrength, setYieldStrength] = useState(250e6);
   const [endCondition, setEndCondition] = useState<EndCondition>("pinned");
   const [sectionDesignation, setSectionDesignation] = useState("");
   const [targetSafetyFactor, setTargetSafetyFactor] = useState(2);
@@ -126,6 +127,7 @@ export default function Page() {
       I: toBase(sectionI, "inertia", inertiaUnit),
       A: sectionA,
       E: toBase(elasticModulus, "stress", elasticModulusUnit),
+      fy: toBase(yieldStrength, "stress", elasticModulusUnit),
       endCondition,
     };
 
@@ -244,6 +246,8 @@ export default function Page() {
           setElasticModulus={setElasticModulus}
           elasticModulusUnit={elasticModulusUnit}
           setElasticModulusUnit={setElasticModulusUnit}
+          yieldStrength={yieldStrength}
+          setYieldStrength={setYieldStrength}
           endCondition={endCondition}
           setEndCondition={setEndCondition}
           onCalculate={calculate}

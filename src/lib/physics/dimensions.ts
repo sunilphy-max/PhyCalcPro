@@ -41,6 +41,8 @@ export const dimensions = {
   torque: defineDimension({ mass: 1, length: 2, time: -2 }),
   inertia: defineDimension({ length: 4 }),
   forcePerLength: defineDimension({ mass: 1, time: -2 }),
+  temperature: defineDimension({ temperature: 1 }),
+  inverseTemperature: defineDimension({ temperature: -1 }),
 } as const;
 
 export function sameDimension(a: DimensionVector, b: DimensionVector): boolean {

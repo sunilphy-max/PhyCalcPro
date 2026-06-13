@@ -70,7 +70,7 @@ export default function Page() {
   const [support, setSupport] = useState<
     "simply_supported" | "cantilever" | "fixed_fixed"
   >("simply_supported");
-  const [material, setMaterial] = useState("Steel");
+  const [material, setMaterial] = useState("S275JR");
   const [applicationId, setApplicationId] =
     useState<BeamApplicationId>("general_mechanics");
   const [sectionDesignation, setSectionDesignation] = useState("");
@@ -179,7 +179,9 @@ const handleLoadDrag = (
   // =========================
   // SOLVER
   // =========================
-  const beamMaterials = materials.filter((m) => m.name !== "Concrete");
+  const beamMaterials = materials.filter((m) =>
+    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(m.category)
+  );
   const selectedMaterial =
     beamMaterials.find((m) => m.name === material) ?? beamMaterials[0] ?? DEFAULT_BEAM_MATERIAL;
   const applicationPreset = getBeamApplicationPreset(applicationId);
@@ -365,6 +367,7 @@ const handleLoadDrag = (
       deflectionLimit: deflectionLimitBase,
       c: normalized.c,
       I: normalized.I,
+      E: selectedMaterial.E,
       spanLength: normalized.length,
     }).calculationSpec;
 
@@ -456,7 +459,7 @@ const handleLoadDrag = (
     setUdl(p.udl);
     setI(p.inertia);
     setC(p.c);
-    setMaterial(p.material === "Concrete" ? "Steel" : p.material ?? "Steel");
+    setMaterial(p.material && materials.some((m) => m.name === p.material) ? p.material : "S275JR");
     setLoads(p.loads ?? []);
     setApplicationId(p.applicationId ?? "general_mechanics");
     setSectionDesignation(p.sectionDesignation ?? "");

@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-06-07T19:23:49.698Z",
+  "ranAt": "2026-06-13T01:50:48.618Z",
   "total": 13,
   "passed": 13,
   "failed": 0,
@@ -89,14 +89,14 @@
       "fields": [
         {
           "field": "springRate",
-          "expected": 2021.5,
-          "actual": 2019.2307692307693,
+          "expected": 2025,
+          "actual": 2025,
           "pass": true
         },
         {
           "field": "safetyFactor",
-          "expected": 9.513048070267537,
-          "actual": 9.513048070267537,
+          "expected": 5.3121,
+          "actual": 5.31212940675908,
           "pass": true
         }
       ]
@@ -107,9 +107,15 @@
       "pass": true,
       "fields": [
         {
+          "field": "surfaceFactor",
+          "expected": 0.8598,
+          "actual": 0.8598756600257245,
+          "pass": true
+        },
+        {
           "field": "safetyFactor",
-          "expected": 2.0416666666666665,
-          "actual": 2.0416666666666665,
+          "expected": 1.7554,
+          "actual": 1.755579472552521,
           "pass": true
         }
       ]

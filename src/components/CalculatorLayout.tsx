@@ -11,6 +11,7 @@ import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
 import { computeReleaseTier } from "@/lib/qa/maturityGates";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
+import { allModules } from "@/data/modules";
 
 /**
  * Two-column module layout (used beside products sidebar):
@@ -49,6 +50,9 @@ export default function CalculatorLayout({
     ? computeReleaseTier(moduleId, benchmarkStats)
     : undefined;
   const designWorkflow = moduleId ? getModuleDesignWorkflow(moduleId) : undefined;
+  const isScreeningModule = moduleId
+    ? allModules.find((m) => m.id === moduleId)?.category === "advanced-systems"
+    : false;
 
   const inputColumn =
     inputs ??
@@ -86,6 +90,15 @@ export default function CalculatorLayout({
             ) : null}
           </div>
         </div>
+
+        {isScreeningModule ? (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+            <span className="font-semibold">Screening-level module.</span> These advanced-systems tools
+            use first-order closed-form estimates for early feasibility studies — not detailed design
+            verification. Validate governing results with a dedicated analysis or the applicable standard
+            before release.
+          </div>
+        ) : null}
 
         {designWorkflow ? <ModuleDesignAdvisor workflow={designWorkflow} /> : null}
 

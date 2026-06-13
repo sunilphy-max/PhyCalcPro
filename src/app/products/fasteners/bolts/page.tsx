@@ -14,14 +14,22 @@ import ScrewsInputs from "@/components/fasteners/bolts/ScrewsInputs";
 import ScrewsResults from "@/components/fasteners/bolts/ScrewsResults";
 import BoltPatternInputs from "@/components/fasteners/bolts/BoltPatternInputs";
 import BoltPatternResults from "@/components/fasteners/bolts/BoltPatternResults";
+import Vdi2230Inputs from "@/components/fasteners/bolts/Vdi2230Inputs";
+import Vdi2230Results from "@/components/fasteners/bolts/Vdi2230Results";
 import { solveScrewEngine } from "@/lib/fasteners/bolts/engine";
 import { solveBoltPattern } from "@/lib/fasteners/bolts/boltPattern";
+import {
+  solveVdi2230,
+  type BoltPropertyClass,
+  type TighteningMethod,
+  type Vdi2230Result,
+} from "@/lib/fasteners/bolts/vdi2230";
 import type { ScrewConfig, ScrewResult } from "@/lib/fasteners/bolts/types";
 import type { BoltPatternResult } from "@/lib/fasteners/bolts/boltPatternTypes";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { toBase } from "@/lib/units/conversions";
 
-type AnalysisMode = "power_screw" | "bolt_pattern";
+type AnalysisMode = "power_screw" | "bolt_pattern" | "vdi2230";
 
 type ScrewProjectData = {
   config: ScrewConfig;
@@ -54,8 +62,18 @@ export default function Page() {
   const [lengthUnit, setLengthUnit] = useState("m");
   const [forceUnit, setForceUnit] = useState("N");
 
+  const [jointSize, setJointSize] = useState("M12");
+  const [propertyClass, setPropertyClass] = useState<BoltPropertyClass>("8.8");
+  const [tighteningMethod, setTighteningMethod] = useState<TighteningMethod>("torque_wrench");
+  const [clampLength, setClampLength] = useState(0.04);
+  const [jointAxialLoad, setJointAxialLoad] = useState(15000);
+  const [jointTransverseLoad, setJointTransverseLoad] = useState(5000);
+  const [threadFriction, setThreadFriction] = useState(0.12);
+  const [interfaceFriction, setInterfaceFriction] = useState(0.12);
+
   const [result, setResult] = useState<ScrewResult | null>(null);
   const [patternResult, setPatternResult] = useState<BoltPatternResult | null>(null);
+  const [vdiResult, setVdiResult] = useState<Vdi2230Result | null>(null);
   const [projectName, setProjectName] = useState("Bolt Design Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<ScrewProject[]>(() =>
@@ -75,9 +93,30 @@ export default function Page() {
         })
       );
       setResult(null);
+      setVdiResult(null);
+      return;
+    }
+    if (mode === "vdi2230") {
+      setVdiResult(
+        solveVdi2230({
+          size: jointSize,
+          propertyClass,
+          tighteningMethod,
+          clampLength: toBase(clampLength, "length", lengthUnit),
+          jointModulus: 205e9,
+          axialLoad: toBase(jointAxialLoad, "force", forceUnit),
+          transverseLoad: toBase(jointTransverseLoad, "force", forceUnit),
+          threadFriction,
+          headFriction: threadFriction,
+          interfaceFriction,
+        })
+      );
+      setResult(null);
+      setPatternResult(null);
       return;
     }
     setPatternResult(null);
+    setVdiResult(null);
     setResult(wrapResult(solveScrewEngine(config)));
   };
 
@@ -134,7 +173,7 @@ export default function Page() {
         <div className="space-y-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <span className="text-sm font-medium text-slate-700">Analysis mode</span>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setMode("power_screw")}
@@ -153,6 +192,15 @@ export default function Page() {
               >
                 Bolt pattern
               </button>
+              <button
+                type="button"
+                onClick={() => setMode("vdi2230")}
+                className={`rounded-lg px-3 py-2 text-sm font-medium ${
+                  mode === "vdi2230" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-700"
+                }`}
+              >
+                VDI 2230 joint
+              </button>
             </div>
           </div>
           {mode === "power_screw" ? (
@@ -164,6 +212,30 @@ export default function Page() {
               onCalculate={calculate}
               onSave={saveProject}
               saving={saving}
+            />
+          ) : mode === "vdi2230" ? (
+            <Vdi2230Inputs
+              size={jointSize}
+              setSize={setJointSize}
+              propertyClass={propertyClass}
+              setPropertyClass={setPropertyClass}
+              tighteningMethod={tighteningMethod}
+              setTighteningMethod={setTighteningMethod}
+              clampLength={clampLength}
+              setClampLength={setClampLength}
+              axialLoad={jointAxialLoad}
+              setAxialLoad={setJointAxialLoad}
+              transverseLoad={jointTransverseLoad}
+              setTransverseLoad={setJointTransverseLoad}
+              threadFriction={threadFriction}
+              setThreadFriction={setThreadFriction}
+              interfaceFriction={interfaceFriction}
+              setInterfaceFriction={setInterfaceFriction}
+              lengthUnit={lengthUnit}
+              setLengthUnit={setLengthUnit}
+              forceUnit={forceUnit}
+              setForceUnit={setForceUnit}
+              onCalculate={calculate}
             />
           ) : (
             <BoltPatternInputs
@@ -191,6 +263,8 @@ export default function Page() {
       results={
         mode === "power_screw" ? (
           <ScrewsResults key={result ? JSON.stringify(result) : "empty"} result={result} projectName={projectName} />
+        ) : mode === "vdi2230" ? (
+          <Vdi2230Results result={vdiResult} />
         ) : (
           <BoltPatternResults result={patternResult} forceUnit={forceUnit} />
         )

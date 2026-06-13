@@ -2,20 +2,20 @@
   "id": "compression-springs-indicative-01",
   "moduleId": "compression-springs",
   "designCode": "INDICATIVE",
-  "description": "Compression spring — 2 mm wire, 20 mm mean diameter, 10 active coils",
+  "description": "Compression spring — 2 mm wire, 20 mm mean diameter, 10 active coils, G = 81 GPa",
   "inputs": {
     "wireDiameter": 0.002,
     "meanDiameter": 0.02,
     "activeCoils": 10,
     "freeLength": 0.05,
-    "modulus": 210000000000,
+    "modulus": 81000000000,
     "deflection": 0.01,
     "ultimateStrength": 1400000000
   },
   "expected": {
-    "springRate": 2021.5,
-    "safetyFactor": 9.513048070267537
+    "springRate": 2025,
+    "safetyFactor": 5.3121
   },
   "tolerancePercent": 5,
-  "source": "PhyCalcPro regression — compression spring v1"
+  "source": "Closed form: k = G·d^4/(8·D^3·n); τ = Kw·8·F·D/(π·d^3); τ_zul = 0.56·Rm (EN 13906-1)"
 }

@@ -4,6 +4,7 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import type { CalculationSpec } from "@/lib/standards/types";
+import GearMeshPreview from "@/components/shared/geometry/GearMeshPreview";
 
 type Props = {
   result: (GearResult & { calculationSpec?: CalculationSpec }) | null;
@@ -35,6 +36,12 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
     >
       {result ? (
         <>
+          <GearMeshPreview
+            moduleMm={result.module * 1000}
+            pinionTeeth={result.pinionTeeth}
+            gearTeeth={result.gearTeeth}
+            faceWidthMm={result.faceWidth * 1000}
+          />
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Pinion pitch diameter"

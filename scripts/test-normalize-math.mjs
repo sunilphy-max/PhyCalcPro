@@ -65,9 +65,19 @@ function convertMathDelimiters(markdown) {
   return result;
 }
 
+function fixPartialDerivativeShorthand(markdown) {
+  return markdown.replace(
+    /\\partial\^(\d+)\s+(\w+)\/\\partial\s+(\w+)(\^(\d+))?/g,
+    (_, order, num, den, _sup, exp) =>
+      `\\frac{\\partial^${order} ${num}}{\\partial ${den}${exp ? `^${exp}` : ""}}`
+  );
+}
+
 function normalizeDocumentationMath(markdown) {
-  let result = convertPlainTextFormulas(markdown);
+  let result = fixPartialDerivativeShorthand(markdown);
+  result = convertPlainTextFormulas(result);
   result = wrapStandaloneLatexLines(result);
+  result = fixPartialDerivativeShorthand(result);
   result = convertMathDelimiters(result);
   return result;
 }
@@ -103,6 +113,11 @@ const normalized = normalizeDocumentationMath(
 );
 assertIncludes("normalize pipeline display", normalized, "$$");
 assertIncludes("normalize preserves converted plain", normalized, "G d^{4}");
+
+const partial = String.raw`M_x = -D(\partial^2 w/\partial x^2 + \nu\,\partial^2 w/\partial y^2)`;
+const partialOut = fixPartialDerivativeShorthand(partial);
+assertIncludes("partial derivative fix", partialOut, "\\frac{\\partial^2 w}{\\partial x^2}");
+assertIncludes("partial derivative y", partialOut, "\\frac{\\partial^2 w}{\\partial y^2}");
 
 if (failed > 0) {
   console.error(`\n${failed} assertion(s) failed`);

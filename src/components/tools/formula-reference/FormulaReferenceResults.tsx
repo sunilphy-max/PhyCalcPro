@@ -1,5 +1,6 @@
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import MathExpression from "@/components/shared/MathExpression";
 import type { FormulaReferenceResult } from "@/lib/tools/formula-reference/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
@@ -32,7 +33,11 @@ export default function FormulaReferenceResults({ result }: Props) {
         <>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard label="Formula" value={result.formulaName} tone="blue" />
-            <CalculatorMetricCard label="Expression" value={result.expression} tone="purple" />
+            <CalculatorMetricCard
+              label="Expression"
+              value={<MathExpression expression={result.expression} display />}
+              tone="purple"
+            />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Result"

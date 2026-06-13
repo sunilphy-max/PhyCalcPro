@@ -12,17 +12,20 @@ export type FEMPostResult = {
 };
 
 function getSupportMoments(reactions: number[], support: SupportType, nodeCount: number) {
+  // The FEM reaction moment acts on the beam from the support; the internal
+  // bending moment diagram (sagging positive) starts at its negative, e.g. a
+  // cantilever with tip load P has M(0) = -P·L, not +P·L.
   if (support === "cantilever") {
     return {
-      leftMoment: reactions[1] || 0,
+      leftMoment: -(reactions[1] || 0),
       rightMoment: 0,
     };
   }
 
   if (support === "fixed_fixed") {
     return {
-      leftMoment: reactions[1] || 0,
-      rightMoment: reactions[nodeCount * 2 - 1] || 0,
+      leftMoment: -(reactions[1] || 0),
+      rightMoment: -(reactions[nodeCount * 2 - 1] || 0),
     };
   }
 
@@ -101,8 +104,10 @@ export function postProcessFEM(
   moment.push(Number.isFinite(leftMoment) ? leftMoment : 0);
   for (let i = 1; i < x.length; i++) {
     const dx = x[i] - x[i - 1];
-    const averageShear = 0.5 * (shear[i - 1] + shear[i]);
-    moment.push(moment[i - 1] + averageShear * dx);
+    // Sample shear at the interval midpoint: exact for nodal point loads
+    // (avoids averaging across the step discontinuity) and for linear UDL shear.
+    const midShear = shearAtPosition(0.5 * (x[i - 1] + x[i]), loads, reactions, support, endX);
+    moment.push(moment[i - 1] + (Number.isFinite(midShear) ? midShear : 0) * dx);
   }
 
   for (const M of moment) {

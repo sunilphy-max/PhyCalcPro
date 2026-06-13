@@ -5,6 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MathExpression from "@/components/shared/MathExpression";
 import { calculatorNumberInputClass } from "@/components/calculator/styles";
 import {
   FORMULA_CATEGORIES,
@@ -97,8 +98,8 @@ export default function FormulaReferenceInputs({
           </select>
         </label>
 
-        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-800">
-          {formulaMeta.expression}
+        <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800">
+          <MathExpression expression={formulaMeta.expression} display />
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">

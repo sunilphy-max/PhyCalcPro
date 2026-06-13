@@ -4,7 +4,8 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorNumberInputClass } from "@/components/calculator/styles";
-import type { BearingType } from "@/lib/machine/bearings/types";
+import type { BearingType, BearingReliability } from "@/lib/machine/bearings/types";
+import { bearingsOfType } from "@/data/catalogs/bearingCatalog";
 
 type Props = {
   radialLoad: number;
@@ -22,10 +23,16 @@ type Props = {
   safetyFactor: number;
   setSafetyFactor: Dispatch<SetStateAction<number>>;
   bearingType: BearingType;
-  setBearingType: Dispatch<SetStateAction<BearingType>>;
-  material: string;
-  setMaterial: Dispatch<SetStateAction<string>>;
+  setBearingType: (type: BearingType) => void;
+  designation: string;
+  setDesignation: (designation: string) => void;
+  reliability: BearingReliability;
+  setReliability: (reliability: BearingReliability) => void;
   onCalculate: () => void;
+  onSave?: () => void;
+  saving?: boolean;
+  projectName?: string;
+  setProjectName?: (name: string) => void;
 };
 
 export default function BearingInputs({
@@ -45,16 +52,48 @@ export default function BearingInputs({
   setSafetyFactor,
   bearingType,
   setBearingType,
-  material,
-  setMaterial,
+  designation,
+  setDesignation,
+  reliability,
+  setReliability,
   onCalculate,
+  onSave,
+  saving = false,
+  projectName,
+  setProjectName,
 }: Props) {
+  const catalogOptions = bearingsOfType(bearingType);
   return (
     <CalculatorInputPanel
       title="Bearing calculator"
       description="Estimate equivalent load, dynamic rating, and life for rolling bearings."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing life" designAware />}
+      footer={
+        <div className="space-y-2">
+          <CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing life" designAware />
+          {onSave ? (
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={saving}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save project"}
+            </button>
+          ) : null}
+        </div>
+      }
     >
+      {setProjectName ? (
+        <label className="block space-y-2 text-sm text-slate-700">
+          <span>Project name</span>
+          <input
+            type="text"
+            value={projectName ?? ""}
+            onChange={(event) => setProjectName(event.target.value)}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          />
+        </label>
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <CalculatorUnitField
           label="Radial load"
@@ -119,21 +158,40 @@ export default function BearingInputs({
             className="w-full rounded border border-slate-300 bg-white px-3 py-2"
           >
             <option value="deep_groove">Deep groove ball</option>
-            <option value="angular_contact">Angular contact</option>
+            <option value="angular_contact">Angular contact (40°)</option>
+            <option value="cylindrical_roller">Cylindrical roller</option>
           </select>
         </label>
       </div>
 
       <label className="block space-y-2 text-sm text-slate-700">
-        <span>Material</span>
+        <span>Catalog bearing</span>
         <select
-          value={material}
-          onChange={(event) => setMaterial(event.target.value)}
+          value={designation}
+          onChange={(event) => setDesignation(event.target.value)}
           className="w-full rounded border border-slate-300 bg-white px-3 py-2"
         >
-          <option value="Steel">Steel</option>
-          <option value="Ceramic">Ceramic</option>
-          <option value="Bronze">Bronze</option>
+          {catalogOptions.map((entry) => (
+            <option key={entry.designation} value={entry.designation}>
+              {entry.designation} — d {entry.boreMm} mm, C {(entry.dynamicRatingN / 1000).toFixed(1)} kN
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="block space-y-2 text-sm text-slate-700">
+        <span>Reliability (ISO 281 a1)</span>
+        <select
+          value={reliability}
+          onChange={(event) => setReliability(Number(event.target.value) as BearingReliability)}
+          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+        >
+          <option value={90}>90% (a1 = 1.00)</option>
+          <option value={95}>95% (a1 = 0.64)</option>
+          <option value={96}>96% (a1 = 0.55)</option>
+          <option value={97}>97% (a1 = 0.47)</option>
+          <option value={98}>98% (a1 = 0.37)</option>
+          <option value={99}>99% (a1 = 0.25)</option>
         </select>
       </label>
     </CalculatorInputPanel>

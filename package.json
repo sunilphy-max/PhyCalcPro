@@ -9,7 +9,9 @@
     "lint": "eslint",
     "validate:layout": "node scripts/validate-product-layout.mjs",
     "generate:verification-template": "node scripts/generate-verification-template.mjs",
-    "test:verification": "tsx scripts/run-verification.ts"
+    "test:verification": "tsx scripts/run-verification.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.0",
@@ -43,6 +45,7 @@
     "tailwindcss": "^4.2.4",
     "tsx": "^4.19.4",
     "typescript": "^5",
+    "vitest": "^4.1.8",
     "xlsx": "^0.18.5"
   }
 }

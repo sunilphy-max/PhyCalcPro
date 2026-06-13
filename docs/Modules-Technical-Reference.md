@@ -6,7 +6,7 @@ Engineering software manual for the **62 active product modules** shipped under 
 
 **Disclaimer:** All modules produce **indicative** results unless explicitly marked **beta** with implemented code checks. Nothing here replaces licensed professional review or official code compliance certification.
 
-**Equations (authoring):** Use LaTeX in `\( … \)` for inline math and `\[ … \]` for display blocks (or `$ … $` / `$$ … $$`). The site converts these to KaTeX. List items like `- Torque: \(T = …\)` render as labeled display equations.
+**Equations (authoring):** Use LaTeX in `\( … \)` for inline math and `\[ … \]` for display blocks (or `$ … $` / `$$ … $$`). The site converts these to KaTeX. Use `\frac{\partial^2 w}{\partial x^2}` for partial derivatives (slash shorthand is normalized at load time). List items like `- Torque: \(T = …\)` render as labeled display equations.
 
 ---
 
@@ -72,23 +72,30 @@ Changing design code sets **default units** via `useDesignCodeUnits` / `modulePr
 - Field definitions: `src/lib/units/moduleProfiles.ts` (expansion modules profiled; legacy gaps remain for trusses, cost-estimator, cam-toolpaths).
 - Preferred input widget: `CalculatorUnitField` + `calculatorNumberInputClass`.
 - Metric display: `CalculatorMetricCard` / `formatEngineeringValue` for auto scientific notation when \(|v| \ge 1000\) or \(|v| < 0.01\).
+- **Temperature:** affine conversions among °C, K, and °F (not a simple offset-only scale).
 
 ### 1.5 Export
 
 `ExportableReport` with `moduleId` enables:
 
-- PDF capture of results (plots tagged `data-export-plot`, diagrams `data-export-diagram`).
-- Default CSV rows from solver output.
+- **Structured PDF reports** via `src/lib/export/structuredReport.ts` — title block, input summary, metric results, engineering checks, formula steps, and embedded chart images (`collectChartImages` from Plotly).
+- CSV export from solver output.
 - Quality checklist from `moduleQualityDefaults`.
 - Engineering checks panel when `calculationSpec` is present.
 
-Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUnit`.
+Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUnit` and `data-export-plot` for high-resolution capture.
 
-### 1.6 Release tiers
+### 1.6 Testing & verification
+
+- **Vitest** (`npm test`) — unit tests and externally sourced benchmarks (Shigley, Roark, AISC, ISO 6336/281, VDI 2230, EN 13906, etc.) under `src/lib/**/**/*.test.ts`.
+- **Verification workbook** — `npm run test:verification` runs JSON cases in `src/data/verification/`.
+- **FEM regression** — analytical comparisons for beam equilibrium, column buckling, and plate shear-locking in `src/lib/structural/__tests__/`.
+
+### 1.7 Release tiers
 
 `CalculatorLayout` shows catalog `validationStatus` and a computed release tier from benchmark stats (`ReleaseTierBadge`). Benchmark solvers exist for a subset (gears, columns, combined-loading, impact, fatigue, corrosion, suspension, rotation).
 
-### 1.7 Design workflow layer
+### 1.8 Design workflow layer
 
 Every calculator page now receives a shared **Design / Check / Select** advisor through `CalculatorLayout`.
 The workflow registry (`src/lib/design-workflows/moduleDesignWorkflows.ts`) provides:
@@ -121,6 +128,12 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 
 **Count:** 61 modules with real design paths · 2 check-only tools · 1 profiles page (section-from-required-I).
 
+### 1.9 Persistence & cross-calculator handoff
+
+- **Local projects** — `src/lib/localProjects.ts` saves inputs/results per module; `/projects` dashboard lists and reloads saved work.
+- **Cloud sync** — optional Supabase workspace sync via `/api/workspaces/models` when authenticated.
+- **Cross-calc handoff** — `crossCalcHandoff.ts` + `CrossCalcHandoffBanner` carry gear outputs → shaft sizing → bearing selection on linked pages.
+
 ---
 
 ## 2. Module inventory
@@ -149,7 +162,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 | Unit profiles (`moduleProfiles.ts`) | All expansion modules + majority of legacy modules |
 | Modern `inputs`/`results` or full `*Inputs`/`*Results` | **All 62 modules** (Tier 2 homogenization complete, 2026-06) |
 | `CalculatorResultsShell` / metric cards | Universal on expansion modules; widespread elsewhere |
-| Specialized code evaluators | 5 modules |
+| Specialized code evaluators | 5 modules (beams, columns, gears, combined-loading, welds); flagship solvers also attach standard checks (ISO 6336, ISO 281, EN 13906, VDI 2230) |
 | Extracted from monolith (complete) | impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties |
 
 ### Validation catalog status
@@ -180,11 +193,11 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 
 **Outputs:** \(V(x)\), \(M(x)\), \(w(x)\), \(\sigma(x)\); peaks; interactive load diagram; `calculationSpec` with flexure and deflection checks.
 
-**Design codes:** AISC 360-22 (Ch. F flexure, serviceability), EN 1993-1-1 (Cl. 6.2.5). **Implemented:** bending stress, deflection. **Planned:** shear (Ch. G / Cl. 6.2.6), lateral–torsional buckling.
+**Design codes:** AISC 360-22 (Ch. F flexure, Ch. G shear, LTB screening), EN 1993-1-1 (Cl. 6.2.5–6.2.8). **Implemented:** bending stress, deflection, shear utilization, LTB screening when section data provided.
 
-**UI:** Modern `inputs`/`results`; `useDesignCodeUnits`; local project save. Featured module.
+**UI:** Modern `inputs`/`results`; `useDesignCodeUnits`; local project save; cross-calc links. Featured module.
 
-**Gaps:** No shear check in solver spec; no LTB; legacy `useCalculationPipeline` instead of `useStandardCalculation`; high refactor risk (core FEM).
+**Gaps:** No full 3D or Timoshenko beam model; LTB is screening-level only; high refactor risk (core FEM).
 
 ---
 
@@ -240,11 +253,11 @@ Effective-length factor \(k\) from end condition (pinned, fixed, fixed–pinned,
 
 **Outputs:** \(P_{cr}\), critical stress, slenderness, buckling mode shapes (1–3), deflected shape under load.
 
-**Design codes:** **Implemented** for US (AISC 360-22 Ch. E), EU (EN 1993-1-1 buckling), ISO 10721 — buckling utilization and Euler critical check.
+**Design codes:** **Implemented** for US (AISC 360-22 Ch. E elastic + E3 inelastic), EU (EN 1993-1-1 §6.3), ISO 10721 — buckling utilization with \(f_y\) input.
 
-**UI:** Legacy `left`/`center`/`right` with `CalculatorGuidancePanel`; `useStandardCalculation` + region units.
+**UI:** Modern `inputs`/`results`; `useStandardCalculation` + region units.
 
-**Gaps:** Linear elastic buckling only; no inelastic column curves; area unit conversion noted as incomplete in page code.
+**Gaps:** FEM eigenvalue is linear elastic; code checks use column curves for inelastic range; limited built-up / composite sections.
 
 ---
 
@@ -257,7 +270,7 @@ Effective-length factor \(k\) from end condition (pinned, fixed, fixed–pinned,
 **Key behavior:** Biharmonic plate equation in weak form; moments from curvature:
 
 \[
-M_x = -D(\partial^2 w/\partial x^2 + \nu\,\partial^2 w/\partial y^2), \quad D = \frac{E t^3}{12(1-\nu^2)}
+M_x = -D\left(\frac{\partial^2 w}{\partial x^2} + \nu\,\frac{\partial^2 w}{\partial y^2}\right), \quad D = \frac{E t^3}{12(1-\nu^2)}
 \]
 
 **Inputs:** \(L\), \(W\), thickness \(t\), \(E\), \(\nu\), pressure \(q\), mesh density, boundary type.
@@ -334,41 +347,43 @@ M_x = -D(\partial^2 w/\partial x^2 + \nu\,\partial^2 w/\partial y^2), \quad D = 
 
 ### 4.2 Gear Design (`gears`) — **beta**
 
-**Purpose:** Spur gear pair sizing — Lewis bending and simplified Hertzian contact.
+**Purpose:** Spur gear pair sizing — Lewis bending and ISO 6336 contact/bending rating worksheet.
 
 **Method:** **Closed-form / empirical**
 
 - Torque: \(T = \dfrac{60P}{2\pi n}\)
 - Lewis bending: \(\sigma_b = \dfrac{F_t}{b\,m\,Y}\)
-- Contact (simplified): Hertz-style \(\sigma_c \propto \sqrt{F_t E' (1/R_1 + 1/R_2)}\)
+- ISO 6336: contact and bending safety factors with \(K_v\), \(K_H\beta\), \(Z_E\), \(Z_H\), life factors
 
-**Design codes:** Bending and contact **implemented** (Indicative, AGMA 2101, DIN 3990, ISO 6336-2/3). **Planned:** scuffing, bending/contact fatigue, micropitting.
+**Design codes:** Bending and contact **implemented** (Indicative, AGMA 2101, DIN 3990, ISO 6336-2/3). **Planned:** scuffing, micropitting, detailed damage accumulation.
 
-**UI:** Legacy three-column; unit profile; benchmarked.
+**UI:** Modern `inputs`/`results`; unit profile; benchmarked; gear mesh preview; cross-calc handoff to shafts/bearings.
 
-**Gaps:** No profile shift, helix angle, or gear mesh FEA; scuffing/fatigue checks catalogued as planned only.
+**Gaps:** No profile shift, helix angle, or gear mesh FEA; scuffing/micropitting catalogued as planned only.
 
 ---
 
 ### 4.3 Bearing Selection (`bearings`)
 
-**Purpose:** Rolling-element bearing equivalent load and L10 life screening.
+**Purpose:** Rolling-element bearing equivalent load and L10 life screening with catalog dynamic ratings.
 
-**Method:** **Closed-form** (ISO 281 style)
+**Method:** **Closed-form** (ISO 281)
 
 \[
-P = X F_r + Y F_a, \quad L_{10} = \left(\frac{C}{P}\right)^3 \times 10^6 \text{ rev}
+P = X F_r + Y F_a, \quad L_{10} = a_1 \left(\frac{C}{P}\right)^p \times 10^6 \text{ rev}
 \]
 
-**Inputs:** radial/axial load, speed, bearing type, material dynamic rating factor, required life, safety factor.
+where \(p = 3\) for ball bearings and \(p = 10/3\) for roller bearings; \(C\) from `bearingCatalog.ts` when a series is selected.
 
-**Outputs:** equivalent load, required \(C\), expected life hours.
+**Inputs:** radial/axial load, speed, bearing type/series, reliability (a1), required life, safety factor.
+
+**Outputs:** equivalent load, required \(C\), expected life hours, catalog match.
 
 **Design codes:** ISO 281 referenced; indicative dynamic capacity and L10 checks.
 
-**UI:** Legacy layout; unit profile.
+**UI:** Modern `inputs`/`results`; unit profile; project save; cross-calc handoff from gears/shafts.
 
-**Gaps:** Catalog coefficients simplified (deep groove, angular contact only); no temperature or contamination factors.
+**Gaps:** Temperature and contamination factors (a23) not fully exposed; limited series vs. full manufacturer catalogs.
 
 ---
 
@@ -416,15 +431,15 @@ E_k = \tfrac{1}{2} I \omega^2, \quad \sigma_\theta \approx \rho \omega^2 r^2
 
 ### 5.1 Bolt Calculator (`bolts`)
 
-**Purpose:** Bolted joint — preload, tensile, shear, bearing on threads.
+**Purpose:** Bolted joint — preload, tensile, shear, bearing; **VDI 2230-1** single-bolt worksheet mode; power-screw and bolt-pattern modes.
 
-**Method:** **FEM** wrapper (`solveScrewFEM`) with validation layer — simplified 1D/threaded fastener model, not full 3D contact FEA.
+**Method:** **FEM** wrapper (`solveScrewFEM`) with validation layer for power screws; **VDI 2230** closed procedure (`solveVdi2230`) for preloaded joints; elastic pattern sharing for multi-bolt layouts.
 
-**Design codes:** AISC J3, EN 1993-1-8, VDI 2230 referenced; indicative tensile/shear/bearing checks.
+**Design codes:** AISC J3, EN 1993-1-8, **VDI 2230-1** (worksheet mode); indicative tensile/shear/bearing checks in power-screw mode.
 
-**UI:** Legacy layout; unit profile. Featured module.
+**UI:** Modern `inputs`/`results`; unit profile; mode selector (power screw / bolt pattern / VDI 2230). Featured module.
 
-**Gaps:** VDI high-fidelity joint analysis not implemented; FEM label is simplified; moderate refactor risk despite good validators.
+**Gaps:** VDI is single-bolt concentric load (no full multi-bolt VDI system FEA); bolt table covers ISO coarse/fine M3–M64.
 
 ---
 
@@ -483,15 +498,15 @@ E_k = \tfrac{1}{2} I \omega^2, \quad \sigma_\theta \approx \rho \omega^2 r^2
 
 ### 6.1 Material Database (`material-db`)
 
-**Purpose:** Lookup table for common engineering materials (\(E\), \(\nu\), density, yield, etc.).
+**Purpose:** Lookup table for graded engineering materials (\(E\), \(\nu\), density, yield, ultimate, fatigue limits, etc.) — ~58 entries across steels, alloys, polymers, and composites.
 
-**Method:** **Reference data** — no solver.
+**Method:** **Reference data** — no solver; category filter in UI.
 
 **Design codes:** Property lookup check (indicative).
 
-**UI:** Legacy three-column; database in results column; no calculate pipeline.
+**UI:** Modern `inputs`/`results`; database in results column; feeds design-workflow material sweeps via `materialCatalogService`.
 
-**Gaps:** No unit profile; not integrated as live input source for all modules; static dataset.
+**Gaps:** Not yet live-linked as default input source on every module page; static dataset (no user-defined grades).
 
 ---
 
@@ -545,19 +560,21 @@ f_y(T) = f_{y,0}(1 - k_y \Delta T), \quad f_E(T) = E_0(1 - k_E \Delta T)
 
 ### 6.5 Fatigue Assessment (`fatigue`)
 
-**Purpose:** High-cycle fatigue screening with modified Goodman and S–N estimate.
+**Purpose:** High-cycle fatigue screening with modified mean-stress criteria and Basquin S–N life estimate.
 
 **Method:** **Empirical**
 
 \[
-\sigma_a \le S_e \left(1 - \frac{\sigma_m}{\sigma_u}\right), \quad N \propto \left(\frac{S_e}{\sigma_a}\right)^3
+\sigma_a \le S_e \left(1 - \frac{\sigma_m}{\sigma_u}\right) \text{ (Goodman)}, \quad N_f = \left(\frac{\sigma_f'}{\sigma_a}\right)^{1/b} \text{ (Basquin)}
 \]
 
-**Design codes:** ISO 12107, ASME VIII-2 referenced; indicative Goodman and life checks.
+Marin factors adjust \(S_e\) for surface, size, temperature, and reliability.
 
-**UI:** Legacy layout; extracted monolith; `CalculatorResultsShell` style results.
+**Design codes:** ISO 12107, ASME VIII-2 referenced; Goodman / Gerber / Morrow selector; indicative life checks.
 
-**Gaps:** Single-stage Goodman; no mean-stress corrections (Gerber, Morrow), notch factors, or multiaxial fatigue; **advanced-numerics**.
+**UI:** Modern `inputs`/`results`; `CalculatorResultsShell` style results.
+
+**Gaps:** Single-stage screening; no multiaxial or fracture-mechanics damage; **advanced-numerics**.
 
 ---
 
@@ -1069,31 +1086,32 @@ From `src/data/moduleMaturity.ts`:
 3. **Solver-backed design mode** — Registry covers all modules; continue deepening reverse-sizing quality per module family.
 4. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
 5. **Hook consolidation** — Prefer `useStandardCalculation` over ad hoc `useDesignCodeUnits` + manual `attach*CalculationSpec` (beams is the outlier).
-6. **Export** — Ensure all plots use `EngineeringPlot` with export attributes; wrap SVG diagrams with `data-export-diagram`.
+6. **Export** — Structured PDF reports (`structuredReport.ts`) with chart capture; ensure plots use `EngineeringPlot` with `data-export-plot`.
 
 ### 13.2 MITCalc-style design depth
 
 | Priority | Gap |
 |----------|-----|
-| High | Add solver-backed automatic sizing for shafts, beams, springs, bolts, gears, bearings, belts/chains, pressure vessels and welds. |
-| High | Add standard/catalog tables: shaft diameters, bearing series, bolt sizes/grades, keyways, spring wires, belt/chain families, pipe schedules, material grades. |
-| High | Persist design alternatives and compare candidate rows with actual computed safety, weight, cost and availability. |
-| Medium | Link assemblies: gear ratio → gear strength → shaft → keys/splines → bearings → fatigue → report. |
-| Medium | Add expert coefficient recommendations and invalid-geometry warnings per standard. |
-| Medium | Add CAD/SVG/DXF export for geometry-producing modules. |
+| Medium | Deepen reverse-sizing quality per module (tolerance stacks, weld groups, vessel nozzles). |
+| Medium | Persist design **alternatives comparison** rows with weight/cost/availability scoring. |
+| Medium | CAD/SVG/DXF export for geometry-producing modules. |
+| Low | Expert coefficient auto-recommendations per standard clause. |
+
+**Recently addressed (2026 gap remediation):** Standard/catalog tables (bolt table M3–M64, bearing 60xx series, spring wire grades, ISO 54 gear modules); solver-backed design sweeps; `/projects` dashboard; cross-calc gear → shaft → bearing handoff; structured PDF reports; Vitest external benchmarks.
 
 ### 13.3 Design code depth
 
 | Priority | Gap |
 |----------|-----|
-| Medium | Shafts: Kt UI wiring; DIN 743 / AGMA fatigue checks |
-| Medium | Tolerance/fits: expose 2D stack, Monte Carlo, ISO 286 auto UI |
+| Medium | Shafts: DIN 743 / AGMA fatigue checks as formal code checks |
+| Medium | Tolerance/fits: expose full ISO 286 auto UI on all stack types |
 | Low | Welds: eccentric weld group combined stress refinement |
-| Low | Bolts: bolt pattern load sharing |
+| Low | Bolts: full multi-bolt VDI 2230 system (beyond elastic pattern sharing) |
+| Low | Gears: scuffing and micropitting (ISO 6336-20/22) |
 
-**Recently addressed (2026 expansion):** Full UI for 19 expansion modules (springs, power transmission, gearing extensions, connections, circular-plates, rolled-sections, tools); fatigue Gerber/Morrow selector; tolerance 2D + Monte Carlo UI; fits ISO 286 lookup; shaft Kt input.
+**Recently addressed (2026 remediation):** AISC 360 / EC3 beam shear + LTB + column inelastic curves; ISO 6336 gear worksheet; ISO 281 bearing life with catalog C; EN 13906 compression springs; VDI 2230 single-bolt mode; Basquin + Marin fatigue; graded material catalog.
 
-Only **columns, combined-loading, welds**, and partial **beams/gears** have non-generic implemented evaluators.
+Dedicated evaluators: **beams, columns, gears, combined-loading, welds**. Additional standard checks attach via solver output on bearings, springs, and bolts.
 
 ---
 
@@ -1119,8 +1137,10 @@ Only **columns, combined-loading, welds**, and partial **beams/gears** have non-
 
 ### 14.3 Springs
 
+Shear modulus \(G\) is a direct input (EN 13906-1); do not approximate \(G = E/2.6\).
+
 \[
-k = \frac{G d^4}{8 D^3 n}, \quad K_s = \frac{4C-1}{4C-4} + \frac{0.615}{C}, \quad C = \frac{D}{d}
+k = \frac{G d^4}{8 D^3 n}, \quad K_w = \frac{4C-1}{4C-4} + \frac{0.615}{C}, \quad C = \frac{D}{d}
 \]
 
 \[
@@ -1217,25 +1237,25 @@ F_1 = \frac{P \times 1000}{v}, \quad F_2 = F_1 e^{-\mu \theta_d}, \quad F_{pre} 
 
 ### Compression Springs (`compression-springs`)
 
-**Purpose:** Helical compression spring rate, solid height, shear stress, and safety factor.
+**Purpose:** Helical compression spring rate, solid height, shear stress, buckling screen, and safety factor.
 
-**Method:** **Closed-form** (`solveCompressionSpringEngine`); \(G = E/2.6\).
+**Method:** **Closed-form** (`solveCompressionSpringEngine`) per **EN 13906-1** — shear modulus \(G\) entered directly (not derived from \(E\)).
 
 **Key relations:**
 
 \[
-k = \frac{G d^4}{8 D^3 n}, \quad K_s = \frac{4C-1}{4C-4} + \frac{0.615}{C}, \quad C = \frac{D}{d}
+k = \frac{G d^4}{8 D^3 n}, \quad K_w = \frac{4C-1}{4C-4} + \frac{0.615}{C}, \quad C = \frac{D}{d}
 \]
 
 \[
-h_s = n d + 2d, \quad \tau = \frac{8 F D K_s}{\pi d^3}
+h_s = n d + 2d, \quad \tau = \frac{8 F D K_w}{\pi d^3}, \quad \tau_{zul} = 0.56 R_m
 \]
 
-**Inputs:** wire diameter \(d\), mean diameter \(D\), active coils \(n\), modulus \(E\), deflection, ultimate strength.
+**Inputs:** wire diameter \(d\), mean diameter \(D\), active coils \(n\), modulus \(G\), deflection, wire grade / \(R_m\).
 
-**Outputs:** spring rate, solid height, max load, shear stress, safety factor, natural frequency estimate.
+**Outputs:** spring rate, solid height, max load, shear stress, buckling risk (EN 13906-1), safety factor, natural frequency estimate; spring outline preview.
 
-**Design codes:** Indicative.
+**Design codes:** EN 13906-1 referenced; indicative shear and buckling checks.
 
 ---
 

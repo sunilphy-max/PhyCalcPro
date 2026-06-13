@@ -98,6 +98,10 @@ export default function ShaftDashboard({ result }: Props) {
             xLabel="Position along shaft"
             xUnit="m"
             unitLabel="Pa"
+            series={[
+              { y: result.bendingStress, label: "Bending stress" },
+              { y: result.shearStress, label: "Torsional shear" },
+            ]}
           />
         </CalculatorPlotSection>
         <CalculatorPlotSection title="Deflection">

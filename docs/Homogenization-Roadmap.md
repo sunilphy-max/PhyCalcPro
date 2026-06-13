@@ -42,5 +42,5 @@ Shared components live in `src/components/calculator/`.
 
 ## Plots
 
-- Use `EngineeringPlot` (`data-export-plot`) for PDF capture
+- Use `EngineeringPlot` (`data-export-plot`) for structured PDF chart capture via `collectChartImages`
 - SVG diagrams: wrap with `data-export-diagram`

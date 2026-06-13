@@ -13,6 +13,7 @@ export type BucklingConfig = {
   P: number; // Applied axial load (N)
   endCondition: EndCondition; // Boundary conditions
   meshSegments?: number; // FEA mesh segments
+  fy?: number; // Yield strength (Pa) — used by design-code checks
 };
 
 export type BucklingResult = {
@@ -48,4 +49,15 @@ export type BucklingResult = {
 
   // Analysis metadata
   analysisType: "FEA";
+
+  // Base-unit (SI) snapshot for design-code checks. These stay in Pa/N/m²
+  // even when the display copies of Pcr/stress are converted to UI units.
+  codeCheckBasis?: {
+    fyPa: number;
+    eulerStressPa: number;
+    appliedLoadN: number;
+    areaM2: number;
+    elasticModulusPa: number;
+    slenderness: number;
+  };
 };

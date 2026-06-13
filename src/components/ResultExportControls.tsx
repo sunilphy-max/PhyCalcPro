@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { RefObject } from "react";
 import Link from "next/link";
 import { useEntitlement } from "@/contexts/EntitlementContext";
+import type { CalculationSpec } from "@/lib/standards/types";
+import type { ReportMeta } from "@/lib/export/structuredReport";
 
 type CSVRow = Record<string, string | number | null | undefined>;
 
@@ -13,6 +15,10 @@ type Props = {
   title?: string;
   description?: string;
   csvRows?: CSVRow[];
+  /** Module title shown in the report title block */
+  moduleTitle?: string;
+  calculationSpec?: CalculationSpec | null;
+  reportMeta?: ReportMeta;
 };
 
 function sanitizeFileName(name: string): string {
@@ -52,6 +58,9 @@ export default function ResultExportControls({
   title = "Export summary",
   description,
   csvRows,
+  moduleTitle,
+  calculationSpec,
+  reportMeta,
 }: Props) {
   const { canExportPdf, unlockAllFeatures, isMonetizationEnabled } = useEntitlement();
   const pdfEnabled = canExportPdf();
@@ -75,39 +84,23 @@ export default function ResultExportControls({
     setExporting(true);
     setStatusMessage(null);
 
-    let restorePlots: (() => void) | undefined;
     try {
-      const { jsPDF } = await import("jspdf");
-      const { preparePlotsForCapture } = await import("@/lib/export/plotCapture");
-      const { captureElementToCanvas } = await import("@/lib/export/reportCapture");
+      const { collectChartImages } = await import("@/lib/export/plotCapture");
+      const { generateStructuredReportPdf } = await import("@/lib/export/structuredReport");
 
-      restorePlots = await preparePlotsForCapture(reportRef.current);
+      const chartImages = await collectChartImages(reportRef.current);
 
-      const canvas = await captureElementToCanvas(reportRef.current);
+      await generateStructuredReportPdf({
+        fileName: sanitizeFileName(fileName),
+        moduleTitle: moduleTitle ?? title ?? "Calculation report",
+        meta: reportMeta,
+        spec: calculationSpec,
+        resultRows: csvRows,
+        chartImages,
+      });
 
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const imgData = canvas.toDataURL("image/png");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const imgWidth = pageWidth - margin * 2;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = margin;
-
-      pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight - margin * 2;
-
-      while (heightLeft > 0) {
-        pdf.addPage();
-        position = heightLeft - imgHeight + margin;
-        pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight - margin * 2;
-      }
-
-      pdf.save(`${sanitizeFileName(fileName)}.pdf`);
       setStatusTone("success");
-      setStatusMessage("PDF exported successfully.");
+      setStatusMessage("PDF report exported.");
     } catch (error) {
       console.error("PDF export error:", error);
       setStatusTone("error");
@@ -115,7 +108,6 @@ export default function ResultExportControls({
         error instanceof Error ? error.message : "PDF export failed. Try again."
       );
     } finally {
-      restorePlots?.();
       setExporting(false);
     }
   };

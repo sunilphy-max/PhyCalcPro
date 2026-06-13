@@ -471,6 +471,14 @@ export const categories: EngineeringCategory[] = [
         icon: LayoutGrid,
       },
       {
+        id: "profiles",
+        title: "Area Properties",
+        description: "Centroid, inertia and moduli for common profile shapes",
+        route: "/products/profiles",
+        category: "materials",
+        icon: Ruler,
+      },
+      {
         id: "composites",
         title: "Composite Materials",
         description: "Design laminate layups and composite section behavior",

@@ -132,7 +132,7 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
   },
   "heat-exchangers": {
     area: { dimension: "area", defaultUnit: "m2", units: ["m2", "mm2", "ft2"], label: "Area" },
-    temperature: { dimension: "dimensionless", defaultUnit: "C", units: ["C", "K", "F"], label: "Temperature" },
+    temperature: { dimension: "temperature", defaultUnit: "C", units: ["C", "K", "F"], label: "Temperature" },
   },
   hydraulics: {
     diameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Diameter" },
@@ -166,8 +166,8 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
   "temperature-properties": {
     baseYield: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi", "ksi"], label: "Yield strength" },
     baseModulus: { dimension: "stress", defaultUnit: "GPa", units: ["GPa", "MPa", "Pa", "psi"], label: "Young's modulus" },
-    coefficient: { dimension: "dimensionless", defaultUnit: "1/C", units: ["1/C", "1/K", "1/F"], label: "Thermal expansion coeff." },
-    temperature: { dimension: "dimensionless", defaultUnit: "C", units: ["C", "K", "F"], label: "Operating temperature" },
+    coefficient: { dimension: "inverseTemperature", defaultUnit: "1/C", units: ["1/C", "1/K", "1/F"], label: "Thermal expansion coeff." },
+    temperature: { dimension: "temperature", defaultUnit: "C", units: ["C", "K", "F"], label: "Operating temperature" },
   },
   pipes: {
     radius: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Radius" },
@@ -222,8 +222,8 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     density: { dimension: "density", defaultUnit: "kg/m3", units: ["kg/m3", "g/cm3", "lb/ft3"], label: "Density" },
   },
   temperature: {
-    temperature: { dimension: "dimensionless", defaultUnit: "C", units: ["C", "K", "F"], label: "Temperature" },
-    expansion: { dimension: "dimensionless", defaultUnit: "1/C", units: ["1/C", "1/K", "1/F"], label: "Expansion coeff." },
+    temperature: { dimension: "temperature", defaultUnit: "C", units: ["C", "K", "F"], label: "Temperature" },
+    expansion: { dimension: "inverseTemperature", defaultUnit: "1/C", units: ["1/C", "1/K", "1/F"], label: "Expansion coeff." },
     length: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Length" },
   },
   frames: {

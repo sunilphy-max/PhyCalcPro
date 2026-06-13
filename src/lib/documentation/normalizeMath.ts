@@ -12,6 +12,15 @@ function slugify(text: string): string {
 }
 
 /** \( … \) → $ … $ ; \[ … \] → $$ … $$ */
+/** Fix `\partial^2 w/\partial x^2` shorthand to `\frac{\partial^2 w}{\partial x^2}`. */
+export function fixPartialDerivativeShorthand(markdown: string): string {
+  return markdown.replace(
+    /\\partial\^(\d+)\s+(\w+)\/\\partial\s+(\w+)(\^(\d+))?/g,
+    (_, order: string, num: string, den: string, _sup: string | undefined, exp: string | undefined) =>
+      `\\frac{\\partial^${order} ${num}}{\\partial ${den}${exp ? `^${exp}` : ""}}`
+  );
+}
+
 export function convertMathDelimiters(markdown: string): string {
   let result = markdown;
 
@@ -183,8 +192,10 @@ export function convertPlainTextFormulas(markdown: string): string {
 }
 
 export function normalizeDocumentationMath(markdown: string): string {
-  let result = convertPlainTextFormulas(markdown);
+  let result = fixPartialDerivativeShorthand(markdown);
+  result = convertPlainTextFormulas(result);
   result = wrapStandaloneLatexLines(result);
+  result = fixPartialDerivativeShorthand(result);
   result = convertMathDelimiters(result);
   result = promoteListItemEquations(result);
   result = attachEquationCitations(result);

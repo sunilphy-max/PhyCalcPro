@@ -213,7 +213,7 @@ export default function BeamDashboard({
       />
 
       {/* ========================================= */}
-      {/* SHEAR */}
+      {/* SHEAR + MOMENT OVERLAY */}
       {/* ========================================= */}
       <EngineeringPlot
         title="Shear Force V(x)"
@@ -224,6 +224,16 @@ export default function BeamDashboard({
         xUnit={units.length}
         unitLabel={units.force}
         probeX={probeX}
+        series={[
+          {
+            y: result.moment,
+            label: "Bending moment",
+            unitLabel: units.moment,
+            secondaryAxis: true,
+          },
+        ]}
+        secondaryYLabel="Bending moment"
+        secondaryUnitLabel={units.moment}
       />
 
       {/* ========================================= */}

@@ -17,6 +17,17 @@ const Plot = dynamic(() => import("react-plotly.js"), {
   ),
 });
 
+export type PlotSeries = {
+  y: number[];
+  /** Legend label (e.g. "Bending moment") */
+  label: string;
+  /** Unit shown in legend/hover; falls back to the primary unitLabel */
+  unitLabel?: string;
+  color?: string;
+  /** Plot against the secondary (right) axis when units differ */
+  secondaryAxis?: boolean;
+};
+
 type Props = {
   title: string;
   x: number[];
@@ -33,6 +44,11 @@ type Props = {
   color?: string;
   /** Hide peak marker when not needed */
   showPeak?: boolean;
+  /** Additional overlay series sharing the same x values (e.g. moment over shear) */
+  series?: PlotSeries[];
+  /** Right-axis title when any overlay series uses secondaryAxis */
+  secondaryYLabel?: string;
+  secondaryUnitLabel?: string;
 };
 
 export default function EngineeringPlot({
@@ -46,6 +62,9 @@ export default function EngineeringPlot({
   unitLabel,
   color,
   showPeak = true,
+  series = [],
+  secondaryYLabel,
+  secondaryUnitLabel,
 }: Props) {
   const cleanY = y.map((v) => (Number.isFinite(v) ? v : 0));
 
@@ -81,9 +100,13 @@ export default function EngineeringPlot({
 
   const traceCount =
     1 +
+    series.length +
     (peakIndex >= 0 ? 1 : 0) +
     (probeIndex >= 0 ? 1 : 0);
   const showLegend = traceCount > 1;
+  const hasSecondaryAxis = series.some((s) => s.secondaryAxis);
+
+  const overlayPalette = ["#9333ea", "#0d9488", "#ea580c", "#be185d"];
 
   const hoverYUnit = unitLabel ? ` ${unitLabel}` : "";
   const hoverXUnit = xUnit ? ` ${xUnit}` : "";
@@ -129,6 +152,29 @@ export default function EngineeringPlot({
               `${xLabel}: %{x:.4f}${hoverXUnit}<br>` +
               `${yLabel}: %{y:.4f}${hoverYUnit}<extra></extra>`,
           },
+          ...series.map((overlay, idx) => {
+            const overlayUnit = overlay.unitLabel ?? unitLabel;
+            const overlayName = overlayUnit
+              ? `${overlay.label} (${overlayUnit})`
+              : overlay.label;
+            return {
+              x,
+              y: overlay.y.map((v) => (Number.isFinite(v) ? v : 0)),
+              type: "scatter" as const,
+              mode: "lines" as const,
+              line: {
+                color: overlay.color ?? overlayPalette[idx % overlayPalette.length],
+                width: plotTheme.lineWidth,
+                shape: "spline" as const,
+                dash: idx % 2 === 1 ? ("dot" as const) : undefined,
+              },
+              name: overlayName,
+              yaxis: overlay.secondaryAxis ? ("y2" as const) : undefined,
+              hovertemplate:
+                `${xLabel}: %{x:.4f}${hoverXUnit}<br>` +
+                `${overlay.label}: %{y:.4f}${overlayUnit ? ` ${overlayUnit}` : ""}<extra></extra>`,
+            };
+          }),
           ...(peakIndex >= 0
             ? [
                 {
@@ -201,6 +247,25 @@ export default function EngineeringPlot({
             titlefont: { size: 12 },
             automargin: true,
           },
+          ...(hasSecondaryAxis
+            ? {
+                yaxis2: {
+                  title: {
+                    text: formatAxisTitle(
+                      secondaryYLabel ?? series.find((s) => s.secondaryAxis)?.label ?? "",
+                      secondaryUnitLabel ?? series.find((s) => s.secondaryAxis)?.unitLabel
+                    ),
+                    standoff: 14,
+                  },
+                  overlaying: "y" as const,
+                  side: "right" as const,
+                  showgrid: false,
+                  ticks: "outside" as const,
+                  tickfont: { size: 11 },
+                  automargin: true,
+                },
+              }
+            : {}),
           hovermode: "x unified",
           legend: showLegend
             ? {

@@ -15,10 +15,10 @@ export type ModuleMaturity = {
 const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
   beams: {
     numericalDepth: 5,
-    validationQuality: 3,
+    validationQuality: 4,
     refactorRisk: "high",
     maturityBand: "fem",
-    notes: "Core FEM workflow with broad usage and legacy interfaces.",
+    notes: "Core FEM workflow validated against closed-form benchmarks; AISC 360 Ch. F/G and EC3 §6.2 checks.",
   },
   frames: {
     numericalDepth: 5,
@@ -36,10 +36,10 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
   },
   columns: {
     numericalDepth: 4,
-    validationQuality: 3,
+    validationQuality: 4,
     refactorRisk: "medium",
     maturityBand: "fem",
-    notes: "Buckling + FEM hybrid model, manageable migration surface.",
+    notes: "Euler-validated FEM buckling with AISC 360 §E3 and EN 1993-1-1 §6.3 curve checks.",
   },
   plates: {
     numericalDepth: 4,
@@ -70,18 +70,18 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
     notes: "Mechanics + fatigue pipeline with many derived parameters.",
   },
   gears: {
-    numericalDepth: 3,
-    validationQuality: 2,
+    numericalDepth: 4,
+    validationQuality: 3,
     refactorRisk: "medium",
     maturityBand: "formula",
-    notes: "Established equation set with moderate assumptions.",
+    notes: "Lewis screening plus ISO 6336 Method B/C bending and pitting rating with KV, ZH, ZE, Yeps factors.",
   },
   bearings: {
     numericalDepth: 3,
-    validationQuality: 2,
+    validationQuality: 3,
     refactorRisk: "low",
     maturityBand: "formula",
-    notes: "Predominantly catalog/equation life calculations.",
+    notes: "ISO 281 L10 life with catalog C ratings, a1 reliability and ball/roller exponents.",
   },
   cams: {
     numericalDepth: 3,
@@ -102,7 +102,7 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
     validationQuality: 4,
     refactorRisk: "medium",
     maturityBand: "fem",
-    notes: "Good validators already present; candidate for standard contract.",
+    notes: "Shigley-benchmarked power screws plus VDI 2230 single-bolt preloaded joint worksheet.",
   },
   welds: {
     numericalDepth: 3,
@@ -259,7 +259,7 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
   "worm-gears": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Worm efficiency and contact stress." },
   "planetary-gears": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Planetary tooth count sizing." },
   "gear-ratio-design": { numericalDepth: 2, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Integer tooth ratio search." },
-  "compression-springs": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Helical spring rate and stress." },
+  "compression-springs": { numericalDepth: 3, validationQuality: 3, refactorRisk: "low", maturityBand: "formula", notes: "EN 13906-1 allowable stress, wire-grade Rm fits, buckling screen; Shigley-benchmarked." },
   "extension-springs": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Extension spring screening." },
   "torsion-springs": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Torsion spring leg bending." },
   "keys-splines": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Key shear and bearing capacity." },

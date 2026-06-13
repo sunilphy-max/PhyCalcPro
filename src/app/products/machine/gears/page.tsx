@@ -18,6 +18,7 @@ import type { CalculationSpec } from "@/lib/standards/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 const MATERIALS: Record<string, GearMaterial> = {
   Steel: {
     name: "Steel",
@@ -98,6 +99,31 @@ export default function Page() {
 
     const raw = solveGearEngine(config);
     setResult(wrapResult(raw));
+
+    // Carry mesh forces downstream: gear -> shaft -> bearing chain.
+    const pressureAngle = (20 * Math.PI) / 180;
+    const radialForce = raw.tangentialForce * Math.tan(pressureAngle);
+    publishHandoff("shafts", {
+      fromModuleId: "gears",
+      fromTitle: "Spur Gear Design",
+      summary: `Pinion torque ${(raw.torque).toFixed(1)} N·m at ${rpm} rpm; Ft = ${(raw.tangentialForce / 1000).toFixed(2)} kN, Fr = ${(radialForce / 1000).toFixed(2)} kN (20° pressure angle).`,
+      params: {
+        torque: raw.torque,
+        tangentialForce: raw.tangentialForce,
+        radialForce,
+        speed: rpm,
+      },
+    });
+    const resultantPerBearing = Math.sqrt(raw.tangentialForce ** 2 + radialForce ** 2) / 2;
+    publishHandoff("bearings", {
+      fromModuleId: "gears",
+      fromTitle: "Spur Gear Design",
+      summary: `Gear mesh reaction per bearing ≈ ${(resultantPerBearing / 1000).toFixed(2)} kN at ${rpm} rpm (two-bearing symmetric shaft).`,
+      params: {
+        radialLoad: resultantPerBearing,
+        speed: rpm,
+      },
+    });
   };
 
   const saveProject = () => {

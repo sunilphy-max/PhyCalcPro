@@ -10,7 +10,7 @@ import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { toBase } from "@/lib/units/conversions";
 import { solveCompressionSpringEngine } from "@/lib/springs/compression-springs/engine";
-import type { CompressionSpringResult } from "@/lib/springs/compression-springs/types";
+import type { CompressionSpringResult, SpringWireType } from "@/lib/springs/compression-springs/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
@@ -42,7 +42,7 @@ export default function Page() {
       meanDiameter: setLengthUnit,
       freeLength: setLengthUnit,
       deflection: setLengthUnit,
-      modulus: setStressUnit,
+      modulus: setModulusUnit,
       stress: setStressUnit,
     })
   );
@@ -60,6 +60,8 @@ export default function Page() {
   const [maxOD, setMaxOD] = useState(40);
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [stressUnit, setStressUnit] = useState("MPa");
+  const [modulusUnit, setModulusUnit] = useState("GPa");
+  const [wireType, setWireType] = useState<SpringWireType>("music");
   const [result, setResult] = useState<(CompressionSpringResult & { calculationSpec?: CalculationSpec }) | null>(null);
   const [projectName, setProjectName] = useState("Compression Spring Project");
   const [saving, setSaving] = useState(false);
@@ -82,7 +84,7 @@ export default function Page() {
       activeCoils,
       freeLength: toBase(freeLength, "length", lengthUnit),
       deflection: toBase(deflection, "length", lengthUnit),
-      modulus: toBase(modulus, "stress", stressUnit),
+      modulus: toBase(modulus, "stress", modulusUnit),
       ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
       targetRate,
       maxForce,
@@ -115,8 +117,9 @@ export default function Page() {
           activeCoils,
           freeLength: toBase(freeLength, "length", lengthUnit),
           deflection: toBase(deflection, "length", lengthUnit),
-          modulus: toBase(modulus, "stress", stressUnit),
+          modulus: toBase(modulus, "stress", modulusUnit),
           ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
+          wireType,
         })
       )
     );
@@ -188,8 +191,12 @@ export default function Page() {
           setDeflection={setDeflection}
           modulus={modulus}
           setModulus={setModulus}
+          modulusUnit={modulusUnit}
+          setModulusUnit={setModulusUnit}
           ultimateStrength={ultimateStrength}
           setUltimateStrength={setUltimateStrength}
+          wireType={wireType}
+          setWireType={setWireType}
           lengthUnit={lengthUnit}
           setLengthUnit={setLengthUnit}
           stressUnit={stressUnit}
@@ -216,7 +223,13 @@ export default function Page() {
               springs (L0/D &gt; 4). Rate k = Gd⁴/(8D³n).
             </p>
           </CalculatorGuidancePanel>
-          <CompressionSpringResults result={result} lengthUnit={lengthUnit} stressUnit={stressUnit} />
+          <CompressionSpringResults
+            result={result}
+            lengthUnit={lengthUnit}
+            stressUnit={stressUnit}
+            projectName={projectName}
+            geometry={{ wireDiameter, meanDiameter, activeCoils, freeLength }}
+          />
         </>
       }
     />

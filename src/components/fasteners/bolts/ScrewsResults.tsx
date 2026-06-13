@@ -21,6 +21,7 @@ export default function ScrewsResults({ result, projectName }: Props) {
       empty={!result}
       emptyMessage="Run a calculation to see results."
       heading={`Results: ${projectName}`}
+      reportMeta={{ project: projectName }}
       csvRows={
         result
           ? [

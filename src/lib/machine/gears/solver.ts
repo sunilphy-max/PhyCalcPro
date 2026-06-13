@@ -28,20 +28,22 @@ export function solveGearDesign(config: GearConfig): GearResult {
   );
   const contactSafetyFactor = allowableStress / Math.max(contactStress, 1e-9);
 
-  const pitchLineVelocity = (Math.PI * pitchDiameterPinion * config.speed) / 60000;
-  const scuffingIndex = tangentialForce * pitchLineVelocity / Math.max(config.faceWidth, 1e-9);
-  const scuffingLimit = 5000;
-  const scuffingSafetyFactor = scuffingLimit / Math.max(scuffingIndex, 1e-9);
+  // Pitch line velocity v = π·d·n/60 (d in m, n in rpm)
+  const pitchLineVelocity = (Math.PI * pitchDiameterPinion * config.speed) / 60;
 
-  const bendingFatigueLimit = allowableStress * 0.4;
+  // Estimated ultimate strength for steels when only yield is known (S_u ≈ 1.5·S_y)
+  const ultimateStrength = allowableStress * 1.5;
+
+  // Tooth-bending endurance: 0.5·S_u rotating-bending limit with ~0.9 combined
+  // surface/size knockdown → 0.45·S_u (screening level; ISO 6336-5 σ_FE in Phase 2)
+  const bendingFatigueLimit = 0.45 * ultimateStrength;
   const bendingFatigueSafetyFactor = bendingFatigueLimit / Math.max(bendingStress, 1e-9);
-  const contactFatigueLimit = allowableStress * 0.35;
-  const contactFatigueSafetyFactor = contactFatigueLimit / Math.max(contactStress, 1e-9);
 
-  const oilFilmParam = pitchLineVelocity * Math.sqrt(contactStress / 1e6);
-  const micropittingLimit = 8;
-  const micropittingIndex = oilFilmParam / Math.max(config.faceWidth * 1000, 1e-9);
-  const micropittingSafetyFactor = micropittingLimit / Math.max(micropittingIndex, 1e-9);
+  // Contact (pitting) endurance from hardness: HB ≈ S_u/3.45 MPa, and the
+  // ISO 6336-5 through-hardened steel fit σ_H,lim ≈ (2·HB + 200) MPa
+  const brinellHardness = ultimateStrength / 3.45e6;
+  const contactFatigueLimit = (2 * brinellHardness + 200) * 1e6;
+  const contactFatigueSafetyFactor = contactFatigueLimit / Math.max(contactStress, 1e-9);
 
   return {
     pinionTeeth,
@@ -59,10 +61,9 @@ export function solveGearDesign(config: GearConfig): GearResult {
     safetyFactor,
     contactStress,
     contactSafetyFactor,
-    scuffingSafetyFactor,
+    pitchLineVelocity,
     bendingFatigueSafetyFactor,
     contactFatigueSafetyFactor,
-    micropittingSafetyFactor,
-    micropittingIndex,
+    material: config.material,
   };
 }

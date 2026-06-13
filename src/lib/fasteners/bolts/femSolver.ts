@@ -30,8 +30,11 @@ function clamp(value: number, min: number, max: number) {
 
 export function solveScrewFEM(config: ScrewConfig): ScrewResult {
   const material = {
-    ...DEFAULT_MATERIAL,
-    ...(config.material ?? {}),
+    E: config.material?.E ?? DEFAULT_MATERIAL.E,
+    yieldStrength: config.material?.yieldStrength ?? DEFAULT_MATERIAL.yieldStrength,
+    ultimateStrength: config.material?.ultimateStrength,
+    shearStrength: config.material?.shearStrength ?? DEFAULT_MATERIAL.shearStrength,
+    density: config.material?.density ?? DEFAULT_MATERIAL.density,
   };
 
   const majorDiameter = config.majorDiameter;
@@ -39,10 +42,16 @@ export function solveScrewFEM(config: ScrewConfig): ScrewResult {
   const lead = config.lead > 0 ? config.lead : pitch * (config as PowerScrewConfig).starts || pitch;
   const rootDiameter = Math.max(majorDiameter - 2 * threadDepth((config as PowerScrewConfig).threadType ?? "square", pitch), 0);
   const pitchDiameter = (majorDiameter + rootDiameter) / 2;
-  const radius = pitchDiameter / 2;
+  // Outer fiber of the core section, where torsional shear peaks
+  const radius = rootDiameter / 2;
 
-  const polarMoment = Math.PI * (Math.pow(majorDiameter / 2, 4) - Math.pow(rootDiameter / 2, 4)) / 32;
-  const tensileArea = Math.PI * (Math.pow(majorDiameter / 2, 2) - Math.pow(rootDiameter / 2, 2));
+  // Torsional shear is carried by the core of the screw, not the thread; use the
+  // root-diameter section (J = π·d_r⁴/32).
+  const polarMoment = Math.PI * Math.pow(rootDiameter, 4) / 32;
+  // Tensile-stress area per Shigley: A_t = (π/4)·((d_p + d_r)/2)², the area of a
+  // circle whose diameter is the mean of pitch and root diameters.
+  const tensileDiameter = (pitchDiameter + rootDiameter) / 2;
+  const tensileArea = (Math.PI / 4) * Math.pow(tensileDiameter, 2);
 
   const axialForce = config.axialForce;
   const friction = clamp(config.frictionCoefficient, 0, 1);
@@ -56,26 +65,39 @@ export function solveScrewFEM(config: ScrewConfig): ScrewResult {
   let bucklingLoad = 0;
   let power = 0;
 
+  // Lateral (whirling) critical speed of a shaft of length L, simply supported:
+  // ω_cr = (π/L)²·√(E·I/(ρ·A)), N_cr [rpm] = 60·ω_cr/(2π). Core section used.
+  const whirlingSpeedRpm = (length: number) => {
+    if (!(length > 0)) return 0;
+    const coreArea = (Math.PI / 4) * Math.pow(rootDiameter, 2);
+    const coreI = (Math.PI / 64) * Math.pow(rootDiameter, 4);
+    const omega = Math.pow(Math.PI / length, 2) * Math.sqrt((material.E * coreI) / (material.density * coreArea));
+    return (60 * omega) / (2 * Math.PI);
+  };
+
   if (isPower) {
     const screw = config as PowerScrewConfig;
     const effectiveLead = screw.lead > 0 ? screw.lead : pitch * (screw.starts || 1);
     const dm = pitchDiameter;
-    torque = screw.torque ?? axialForce * (effectiveLead / 2 + friction * dm / 2);
+    // Raising torque per Shigley: T = F·dm/2 · (l + π·μ·dm)/(π·dm − μ·l)
+    torque = screw.torque ?? (axialForce * dm / 2) *
+      ((effectiveLead + Math.PI * friction * dm) / (Math.PI * dm - friction * effectiveLead));
     helixAngle = Math.atan(effectiveLead / (Math.PI * dm)) * (180 / Math.PI);
-    efficiency = effectiveLead > 0 ? (effectiveLead / (effectiveLead + Math.PI * friction * dm)) * 100 : 0;
-    const K = 1.0;
-    const secondMoment = Math.PI * (Math.pow(majorDiameter, 4) - Math.pow(rootDiameter, 4)) / 64;
+    // η = F·l / (2π·T): useful work per revolution over input work
+    efficiency = torque > 0 ? ((axialForce * effectiveLead) / (2 * Math.PI * torque)) * 100 : 0;
+    const K = 1.0; // pinned-pinned end condition
+    const secondMoment = (Math.PI / 64) * Math.pow(rootDiameter, 4);
     bucklingLoad = (Math.PI * Math.PI * material.E * secondMoment) / Math.pow(screw.length * K, 2);
-    criticalSpeed = (torque > 0 && screw.speed) ? torque * screw.speed / 1000 : 0;
+    criticalSpeed = whirlingSpeedRpm(screw.length);
   } else {
-    const screw = config as BallScrewConfig;
-    torque = screw.speed ? screw.speed * 0 : axialForce * (lead / (2 * Math.PI) + friction * pitchDiameter / 2);
+    // Ideal driving torque F·l/(2π) plus a rolling-friction term on the pitch radius
+    torque = axialForce * (lead / (2 * Math.PI) + friction * pitchDiameter / 2);
     helixAngle = Math.atan(lead / (Math.PI * pitchDiameter)) * (180 / Math.PI);
-    efficiency = lead > 0 ? (lead / (lead + Math.PI * friction * pitchDiameter)) * 100 : 0;
-    const K = 1.0;
-    const secondMoment = Math.PI * (Math.pow(majorDiameter, 4) - Math.pow(rootDiameter, 4)) / 64;
-    bucklingLoad = (Math.PI * Math.PI * material.E * secondMoment) / Math.pow(screw.lead * K, 2);
-    criticalSpeed = (screw.speed > 0) ? screw.speed : 0;
+    efficiency = torque > 0 ? ((axialForce * lead) / (2 * Math.PI * torque)) * 100 : 0;
+    // Ball screw config carries no unsupported length, so buckling and whirling
+    // speed cannot be evaluated; leave them unset rather than report bogus values.
+    bucklingLoad = 0;
+    criticalSpeed = 0;
   }
 
   const tensileStress = axialForce / Math.max(tensileArea, 1e-12);
@@ -84,6 +106,18 @@ export function solveScrewFEM(config: ScrewConfig): ScrewResult {
 
   const safetyFactor = Math.max(material.yieldStrength / Math.max(vonMisesStress, 1e-12), 0.01);
   const designStatus = safetyFactor >= 1.5 ? "safe" : safetyFactor >= 1.2 ? "warning" : "critical";
+
+  // Fatigue: treat the duty as pulsating (R = 0), so σ_a = σ_m = σ_vm/2, and apply
+  // modified Goodman: 1/n_f = σ_a/S_e + σ_m/S_u. S_e ≈ 0.45·S_u folds a 0.5·S_u
+  // endurance limit with ~0.9 combined Marin (surface/size) knockdown.
+  const ultimateStrength = material.ultimateStrength ?? 1.5 * material.yieldStrength;
+  const enduranceLimit = 0.45 * ultimateStrength;
+  const alternatingStress = vonMisesStress / 2;
+  const meanStress = vonMisesStress / 2;
+  const fatigueSafetyFactor = Math.max(
+    1 / Math.max(alternatingStress / enduranceLimit + meanStress / ultimateStrength, 1e-12),
+    0.01,
+  );
 
   power = torque * ((config as BallScrewConfig).speed ? ((config as BallScrewConfig).speed * Math.PI / 30) : 0);
 
@@ -114,7 +148,7 @@ export function solveScrewFEM(config: ScrewConfig): ScrewResult {
     compressiveStress: tensileStress,
     vonMisesStress,
     safetyFactor,
-    fatigueSafetyFactor: safetyFactor * 0.8,
+    fatigueSafetyFactor,
     power: Math.max(power, 0),
     speed: (config as BallScrewConfig).speed,
     criticalSpeed: Math.max(criticalSpeed, 0),

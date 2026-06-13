@@ -74,7 +74,8 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
   const totalReaction = (raw.reactions ?? []).reduce((acc, reaction, index) => {
     return index % 2 === 0 ? acc + reaction : acc;
   }, 0);
-  const staticEquilibriumResidual = Math.abs(totalReaction + totalPointAndUdl);
+  // Reactions are positive upward, applied loads positive downward
+  const staticEquilibriumResidual = Math.abs(totalReaction - totalPointAndUdl);
 
   return {
     x: clean(raw.x),

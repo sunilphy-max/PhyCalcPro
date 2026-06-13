@@ -2,16 +2,20 @@
   "id": "fatigue-indicative-01",
   "moduleId": "fatigue",
   "designCode": "INDICATIVE",
-  "description": "Modified Goodman — alternating 120 MPa, mean 30 MPa",
+  "description": "Modified Goodman with Marin surface factor — alternating 120 MPa, mean 30 MPa, machined, bending",
   "inputs": {
     "alternatingStress": 120000000,
     "meanStress": 30000000,
     "ultimateStrength": 520000000,
-    "enduranceLimit": 260000000
+    "enduranceLimit": 260000000,
+    "meanStressMethod": "goodman",
+    "surfaceFinish": "machined",
+    "loadType": "bending"
   },
   "expected": {
-    "safetyFactor": 2.0416666666666665
+    "surfaceFactor": 0.8598,
+    "safetyFactor": 1.7554
   },
   "tolerancePercent": 2,
-  "source": "PhyCalcPro regression — fatigue v1"
+  "source": "Shigley's Mechanical Engineering Design (10th ed.) — ka = 4.51·Su^-0.265 (Table 6-2), modified Goodman (Eq. 6-46), hand-computed: SF = 0.8598·260·(1−30/520)/120 = 1.755"
 }

@@ -1,67 +1,58 @@
 import type { DesignCodeId, EngineeringCheck } from "../types";
 import { makeSafetyFactorCheck } from "../buildSpec";
 import type { GearResult } from "@/lib/machine/gears/types";
+import { runIso6336Rating } from "./iso6336";
 
 /**
- * Phase 1 β allowables — simplified; calibrate against AGMA / ISO 6336 worksheets.
+ * US / EU / ISO gear checks run the ISO 6336 worksheet (Method B/C level
+ * approximations; the AGMA 2101 rating shares the same structure and the
+ * dynamic factor here uses the AGMA transmission accuracy curve).
  */
-function bendingAllowablePa(designCode: DesignCodeId, yieldPa: number): number {
-  switch (designCode) {
-    case "US":
-      return 0.4 * yieldPa;
-    case "EU":
-      return 0.35 * yieldPa;
-    case "ISO":
-      return 0.38 * yieldPa;
-    default:
-      return yieldPa;
-  }
-}
-
-function contactAllowablePa(designCode: DesignCodeId, yieldPa: number): number {
-  switch (designCode) {
-    case "US":
-      return 0.55 * yieldPa;
-    case "EU":
-    case "ISO":
-      return 0.5 * yieldPa;
-    default:
-      return yieldPa;
-  }
-}
-
 export function buildGearCodeChecks(
   result: GearResult,
-  designCode: DesignCodeId
+  designCode: DesignCodeId,
+  options?: { ePa?: number; poisson?: number; ultimatePa?: number }
 ): EngineeringCheck[] {
   if (designCode === "INDICATIVE") return [];
 
-  const yieldPa = result.allowableStress;
-  const bendAllow = bendingAllowablePa(designCode, yieldPa);
-  const contactAllow = contactAllowablePa(designCode, yieldPa);
+  const ultimatePa = options?.ultimatePa ?? result.allowableStress * 1.5;
+  const rating = runIso6336Rating({
+    tangentialForceN: result.tangentialForce,
+    faceWidthM: result.faceWidth,
+    moduleM: result.module,
+    z1: result.pinionTeeth,
+    z2: result.gearTeeth,
+    pinionDiameterM: result.pitchDiameterPinion,
+    pitchVelocityMs: result.pitchLineVelocity,
+    ePa: options?.ePa ?? 210e9,
+    poisson: options?.poisson ?? 0.3,
+    ultimatePa,
+  });
 
-  const bendingSf =
-    result.bendingStress > 0 ? bendAllow / result.bendingStress : 999;
-  const contactSf =
-    result.contactStress > 0 ? contactAllow / result.contactStress : 999;
-
+  const f = rating.factors;
   return [
     makeSafetyFactorCheck(
       "bending_strength",
-      "Bending strength safety factor",
-      bendingSf,
+      `Bending safety S_F (ISO 6336-3): σ_F = ${(rating.bendingStressPa / 1e6).toFixed(0)} MPa vs σ_FE = ${(rating.allowableBendingStressPa / 1e6).toFixed(0)} MPa (K_A=${f.KA.toFixed(2)}, K_V=${f.KV.toFixed(2)}, K_β=${f.KHbeta.toFixed(2)}, Y_FS=${f.YFS.toFixed(2)})`,
+      rating.bendingSafetyFactor,
       designCode
     ),
     makeSafetyFactorCheck(
       "contact_strength",
-      "Contact (pitting) strength safety factor",
-      contactSf,
+      `Pitting safety S_H (ISO 6336-2): σ_H = ${(rating.contactStressPa / 1e6).toFixed(0)} MPa vs σ_H,lim = ${(rating.allowableContactStressPa / 1e6).toFixed(0)} MPa (Z_H=${f.ZH.toFixed(2)}, Z_E=${(f.ZE / 1e3).toFixed(1)} √MPa, ε_α=${f.contactRatio.toFixed(2)})`,
+      rating.contactSafetyFactor,
       designCode
     ),
     makeSafetyFactorCheck(
-      "micropitting",
-      "Micropitting safety factor",
-      result.micropittingSafetyFactor,
+      "bending_fatigue",
+      "Bending fatigue safety factor (0.45·Su endurance screening)",
+      result.bendingFatigueSafetyFactor,
+      designCode
+    ),
+    makeSafetyFactorCheck(
+      "contact_fatigue",
+      "Contact fatigue safety factor (hardness-based endurance)",
+      result.contactFatigueSafetyFactor,
       designCode
     ),
   ];
@@ -70,11 +61,11 @@ export function buildGearCodeChecks(
 export function gearCodeMethod(designCode: DesignCodeId): string {
   switch (designCode) {
     case "US":
-      return "Lewis bending + Hertzian contact vs AGMA 2101-style allowables (β)";
+      return "ISO 6336-2/-3 rating worksheet (AGMA 2101-equivalent structure, AGMA Kv curve)";
     case "EU":
-      return "Lewis bending + Hertzian contact vs DIN 3990 / ISO 6336-style allowables (β)";
+      return "ISO 6336-2/-3 rating worksheet (DIN 3990 equivalent, Method C factors)";
     case "ISO":
-      return "Lewis bending + Hertzian contact vs ISO 6336-style allowables (β)";
+      return "ISO 6336-2/-3 rating worksheet (Method C factor approximations)";
     default:
       return "Lewis bending and simplified Hertzian contact (indicative)";
   }

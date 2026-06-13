@@ -3,6 +3,7 @@
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitField from "@/components/shared/ModuleUnitField";
+import type { FatigueLoadType, SurfaceFinish } from "@/lib/materials/fatigue/types";
 
 type Props = {
   alternatingStress: number;
@@ -23,6 +24,10 @@ type Props = {
   setEnduranceUnit: (u: string) => void;
   meanStressMethod: "goodman" | "gerber" | "morrow";
   setMeanStressMethod: (m: "goodman" | "gerber" | "morrow") => void;
+  surfaceFinish: SurfaceFinish;
+  setSurfaceFinish: (s: SurfaceFinish) => void;
+  loadType: FatigueLoadType;
+  setLoadType: (l: FatigueLoadType) => void;
   onCalculate: () => void;
 };
 
@@ -47,6 +52,31 @@ export default function FatigueInputs(props: Props) {
           <option value="goodman">Goodman (linear)</option>
           <option value="gerber">Gerber (parabolic)</option>
           <option value="morrow">Morrow (σf&apos; mean stress)</option>
+        </select>
+      </label>
+      <label className="space-y-2 text-sm text-slate-700">
+        <span>Surface finish (Marin ka)</span>
+        <select
+          value={props.surfaceFinish}
+          onChange={(e) => props.setSurfaceFinish(e.target.value as SurfaceFinish)}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          <option value="ground">Ground</option>
+          <option value="machined">Machined / cold-drawn</option>
+          <option value="hot-rolled">Hot-rolled</option>
+          <option value="as-forged">As-forged</option>
+        </select>
+      </label>
+      <label className="space-y-2 text-sm text-slate-700">
+        <span>Load type (Marin kc)</span>
+        <select
+          value={props.loadType}
+          onChange={(e) => props.setLoadType(e.target.value as FatigueLoadType)}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        >
+          <option value="bending">Bending</option>
+          <option value="axial">Axial</option>
+          <option value="torsion">Torsion</option>
         </select>
       </label>
     </CalculatorInputPanel>

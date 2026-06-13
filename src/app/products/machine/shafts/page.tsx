@@ -17,6 +17,9 @@ import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveShaftEngine } from "@/lib/machine/shafts/engine";
 import type { ShaftConfig, ShaftResult, ShaftMaterial, LoadCase } from "@/lib/machine/shafts/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 
 // Standard materials
 const MATERIALS: Record<string, ShaftMaterial> = {
@@ -141,6 +144,20 @@ export default function Page() {
 
     const raw = solveShaftEngine(normalizedInputs);
 
+    // Forward transverse load estimate to the bearing module: with the
+    // governing bending moment M on span L, a symmetric two-bearing shaft
+    // sees reactions of roughly 2·M/L each.
+    const spanM = toBase(length, "length", lengthUnit);
+    if (raw.maxBendingMoment > 0 && spanM > 0) {
+      const reaction = (2 * raw.maxBendingMoment) / spanM;
+      publishHandoff("bearings", {
+        fromModuleId: "shafts",
+        fromTitle: "Shaft Analysis",
+        summary: `Estimated bearing reaction ≈ ${(reaction / 1000).toFixed(2)} kN from M_max = ${raw.maxBendingMoment.toFixed(0)} N·m on a ${length} ${lengthUnit} span.`,
+        params: { radialLoad: reaction },
+      });
+    }
+
     const converted: ShaftResult = {
       ...raw,
       x: raw.x.map((v) => fromBase(v, "length", lengthUnit)),
@@ -236,6 +253,24 @@ export default function Page() {
       }
       inputs={
         <div className="space-y-4">
+          <ShaftLayoutPreview length={length} diameter={diameter} loads={loads} lengthUnit={lengthUnit} />
+          <CrossCalcHandoffBanner
+            moduleId="shafts"
+            onApply={(params) => {
+              setLoads((current) => {
+                const midspan = length / 2;
+                const next = [...current];
+                const imported = {
+                  position: midspan,
+                  torque: params.torque != null ? fromBase(params.torque, "torque", torqueUnit) : undefined,
+                  bendingMoment: 0,
+                };
+                if (next.length > 0) next[0] = { ...next[0]!, ...imported };
+                else next.push(imported);
+                return next;
+              });
+            }}
+          />
           <ShaftInputs
             projectName={projectName}
             setProjectName={setProjectName}

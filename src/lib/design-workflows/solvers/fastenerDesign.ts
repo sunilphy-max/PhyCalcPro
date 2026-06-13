@@ -8,13 +8,7 @@ import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogF
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
 
-const BOLT_SIZES = [
-  { name: "M6", area: 20.1 },
-  { name: "M8", area: 36.6 },
-  { name: "M10", area: 58 },
-  { name: "M12", area: 84.3 },
-  { name: "M16", area: 157 },
-];
+import { COARSE_THREADS } from "@/data/catalogs/boltTable";
 
 const WELD_STEEL = { name: "Steel", strength: 410e6, yieldStress: 250e6 };
 const RIVET_MATERIAL = {
@@ -34,16 +28,16 @@ function fromSweep(
 export function designBoltSize(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const shear = userInputs.maxForce ?? userInputs.shearForce ?? 18000;
   const allowable = userInputs.allowableStressPa ?? 260e6;
-  const items = BOLT_SIZES.map((bolt) => {
-    const stress = shear / (bolt.area * 1e-6);
+  const items = COARSE_THREADS.map((bolt) => {
+    const stress = shear / bolt.stressArea;
     return {
-      label: bolt.name,
+      label: bolt.designation,
       utilization: stress / allowable,
-      fields: { boltSize: bolt.name, majorDiameter: parseInt(bolt.name.slice(1), 10) / 1000 },
-      detail: `tau ${(stress / 1e6).toFixed(0)} MPa`,
+      fields: { boltSize: bolt.designation, majorDiameter: bolt.d },
+      detail: `tau ${(stress / 1e6).toFixed(0)} MPa (As ${(bolt.stressArea * 1e6).toFixed(1)} mm²)`,
     };
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Metric bolt size selection from shear stress.");
+  return fromSweep(sweepCatalogForUtilization(items), "ISO coarse-thread size selection from shear stress.");
 }
 
 export function designWeldThroat(userInputs: ModuleUserInputs): ModuleDesignModeResult {

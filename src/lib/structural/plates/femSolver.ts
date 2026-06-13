@@ -84,32 +84,44 @@ function assembleElementStiffness(mesh: ReturnType<typeof generatePlateMesh>, E:
 
   const ke = Array.from({ length: 12 }, () => Array(12).fill(0));
 
+  const gradientsAt = (xi: number, eta: number) => {
+    const { dNdXi, dNdEta } = shapeFunctionDerivatives(xi, eta);
+    const J = computeJacobian(dNdXi, dNdEta, hx, hy);
+    const detJ = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+    const invJ = invert2x2(J);
+    const dNdx: number[] = [];
+    const dNdy: number[] = [];
+    for (let i = 0; i < 4; i++) {
+      dNdx.push(invJ[0][0] * dNdXi[i] + invJ[0][1] * dNdEta[i]);
+      dNdy.push(invJ[1][0] * dNdXi[i] + invJ[1][1] * dNdEta[i]);
+    }
+    return { dNdx, dNdy, detJ };
+  };
+
+  // Bending: full 2x2 Gauss integration
   for (const xi of GAUSS_POINTS) {
     for (const eta of GAUSS_POINTS) {
-      const { dNdXi, dNdEta } = shapeFunctionDerivatives(xi, eta);
-      const J = computeJacobian(dNdXi, dNdEta, hx, hy);
-      const detJ = J[0][0] * J[1][1] - J[0][1] * J[1][0];
-      const invJ = invert2x2(J);
-
-      const dNdx: number[] = [];
-      const dNdy: number[] = [];
-
-      for (let i = 0; i < 4; i++) {
-        dNdx.push(invJ[0][0] * dNdXi[i] + invJ[0][1] * dNdEta[i]);
-        dNdy.push(invJ[1][0] * dNdXi[i] + invJ[1][1] * dNdEta[i]);
-      }
-
+      const { dNdx, dNdy, detJ } = gradientsAt(xi, eta);
       const Bb = buildBendingMatrix(dNdx, dNdy);
-      const Bs = buildShearMatrix(dNdx, dNdy);
-
       const BtDbB = multiplyMatrices(transpose(Bb), multiplyMatrices(Db, Bb));
-      const BtDsB = multiplyMatrices(transpose(Bs), multiplyMatrices(Ds, Bs));
-      const localStiffness = addMatrices(BtDbB, BtDsB).map((row) => row.map((value) => value * detJ));
-
       for (let a = 0; a < 12; a++) {
         for (let b = 0; b < 12; b++) {
-          ke[a][b] += localStiffness[a][b];
+          ke[a][b] += BtDbB[a][b] * detJ;
         }
+      }
+    }
+  }
+
+  // Transverse shear: selective reduced integration (single Gauss point,
+  // weight 4) to avoid shear locking of bilinear Mindlin elements on thin plates
+  {
+    const center = gradientsAt(0, 0);
+    const shapeAtCenter = [0.25, 0.25, 0.25, 0.25];
+    const Bs = buildShearMatrix(center.dNdx, center.dNdy, shapeAtCenter);
+    const BtDsB = multiplyMatrices(transpose(Bs), multiplyMatrices(Ds, Bs));
+    for (let a = 0; a < 12; a++) {
+      for (let b = 0; b < 12; b++) {
+        ke[a][b] += BtDsB[a][b] * center.detJ * 4;
       }
     }
   }
@@ -131,15 +143,15 @@ function buildBendingMatrix(dNdx: number[], dNdy: number[]) {
   return Bb;
 }
 
-function buildShearMatrix(dNdx: number[], dNdy: number[]) {
+function buildShearMatrix(dNdx: number[], dNdy: number[], N: number[]) {
   const Bs = Array.from({ length: 2 }, () => Array(12).fill(0));
 
   for (let i = 0; i < 4; i++) {
     const offset = i * 3;
     Bs[0][offset] = dNdx[i];
-    Bs[0][offset + 1] = 1;
+    Bs[0][offset + 1] = N[i];
     Bs[1][offset] = dNdy[i];
-    Bs[1][offset + 2] = 1;
+    Bs[1][offset + 2] = N[i];
   }
 
   return Bs;

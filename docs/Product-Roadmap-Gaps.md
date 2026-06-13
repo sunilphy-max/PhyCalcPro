@@ -38,7 +38,7 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 |------|--------|
 | CAD export | Intentionally excluded |
 | Full ISO 6336 / AGMA rating worksheets | Indicative screening only; not full standard worksheets |
-| Bolt pattern FEA / VDI 2230 full joint | Elastic pattern sharing only |
+| Bolt pattern FEA / VDI 2230 full multi-bolt system | Single-bolt VDI 2230 worksheet + elastic pattern sharing |
 | Circular plate annular / variable thickness | Solid disk only; use dedicated FEA externally |
 | Homogenization (columns/gears/bearings → `inputs`/`results`) | Already on CalculatorLayout; low benefit |
 | Rolled sections | Expand beyond starter tables; add EN/UK designation aliases |

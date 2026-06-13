@@ -10,6 +10,7 @@ export type ThreadType = "square" | "acme" | "buttress";
 export type ThreadMaterial = {
   E?: number; // Elastic modulus (Pa)
   yieldStrength?: number; // Yield strength (Pa)
+  ultimateStrength?: number; // Ultimate tensile strength (Pa)
   shearStrength?: number; // Shear strength (Pa)
   density?: number; // Density (kg/m^3)
 };

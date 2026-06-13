@@ -37,6 +37,8 @@ type Props = {
   setElasticModulus: (v: number) => void;
   elasticModulusUnit: string;
   setElasticModulusUnit: (u: string) => void;
+  yieldStrength: number;
+  setYieldStrength: (v: number) => void;
 
   // End condition
   endCondition: EndCondition;
@@ -76,6 +78,8 @@ export default function BucklingInputs({
   setElasticModulus,
   elasticModulusUnit,
   setElasticModulusUnit,
+  yieldStrength,
+  setYieldStrength,
   endCondition,
   setEndCondition,
   onCalculate,
@@ -234,6 +238,28 @@ export default function BucklingInputs({
               onChange={setElasticModulusUnit}
             />
           </div>
+        </div>
+
+        <div className="mb-3">
+          <label className="block text-sm text-gray-600 mb-1">Yield Strength (Fy)</label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              step="1e6"
+              className="flex-1 border p-2 rounded"
+              value={yieldStrength}
+              onChange={(e) => setYieldStrength(+e.target.value)}
+            />
+            <ModuleUnitSelect
+              moduleId="columns"
+              fieldKey="stress"
+              value={elasticModulusUnit}
+              onChange={setElasticModulusUnit}
+            />
+          </div>
+          <p className="mt-1 text-xs text-slate-500">
+            Used by AISC 360 §E3 / EN 1993-1-1 §6.3 compression checks.
+          </p>
         </div>
       </div>
 

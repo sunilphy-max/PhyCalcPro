@@ -23,13 +23,23 @@ export function attachGearCalculationSpec(
             designCode
           ),
           makeSafetyFactorCheck(
-            "micropitting",
-            "Micropitting safety factor (ISO 6336-22 screening)",
-            result.micropittingSafetyFactor,
+            "bending_fatigue",
+            "Bending fatigue safety factor (0.45·Su endurance screening)",
+            result.bendingFatigueSafetyFactor,
+            designCode
+          ),
+          makeSafetyFactorCheck(
+            "contact_fatigue",
+            "Contact fatigue safety factor (hardness-based screening)",
+            result.contactFatigueSafetyFactor,
             designCode
           ),
         ]
-      : buildGearCodeChecks(result, designCode);
+      : buildGearCodeChecks(result, designCode, {
+          ePa: result.material?.E,
+          poisson: result.material?.poisson,
+          ultimatePa: result.material ? result.material.yieldStress * 1.5 : undefined,
+        });
 
   const calculationSpec = buildCalculationSpec({
     moduleId: "gears",

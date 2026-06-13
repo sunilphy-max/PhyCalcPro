@@ -16,7 +16,7 @@ import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
 import { displayFieldValue, normalizeFieldValue } from "@/components/shared/ModuleUnitField";
 import { solveFatigueEngine } from "@/lib/materials/fatigue/engine";
-import type { FatigueConfig, FatigueResult } from "@/lib/materials/fatigue/types";
+import type { FatigueConfig, FatigueResult, FatigueLoadType, SurfaceFinish } from "@/lib/materials/fatigue/types";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 
 const defaults = moduleUnitProfiles.fatigue;
@@ -41,6 +41,8 @@ export default function Page() {
   const [enduranceLimit, setEnduranceLimit] = useState(240);
   const [enduranceUnit, setEnduranceUnit] = useState(defaults.enduranceLimit.defaultUnit);
   const [meanStressMethod, setMeanStressMethod] = useState<"goodman" | "gerber" | "morrow">("goodman");
+  const [surfaceFinish, setSurfaceFinish] = useState<SurfaceFinish>("machined");
+  const [loadType, setLoadType] = useState<FatigueLoadType>("bending");
   const [result, setResult] = useState<WithCalculationSpec<FatigueResult> | null>(null);
 
   const toStressPa = (value: number, unit: string) =>
@@ -53,6 +55,8 @@ export default function Page() {
       ultimateStrength: toStressPa(ultimateStrength, ultimateUnit),
       enduranceLimit: toStressPa(enduranceLimit, enduranceUnit),
       meanStressMethod,
+      surfaceFinish,
+      loadType,
     };
     const raw = solveFatigueEngine(config);
     setResult(
@@ -112,9 +116,13 @@ export default function Page() {
             setEnduranceUnit={setEnduranceUnit}
             meanStressMethod={meanStressMethod}
             setMeanStressMethod={setMeanStressMethod}
+            surfaceFinish={surfaceFinish}
+            setSurfaceFinish={setSurfaceFinish}
+            loadType={loadType}
+            setLoadType={setLoadType}
             onCalculate={calculate}
           />
-        }
+        }
         results={<FatigueResults result={result} alternatingUnit={alternatingUnit} />}
       />
   );

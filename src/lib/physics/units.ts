@@ -19,7 +19,9 @@ export type PhysicsDimension =
   | "mass"
   | "velocity"
   | "energy"
-  | "volumeFlow";
+  | "volumeFlow"
+  | "temperature"
+  | "inverseTemperature";
 
 export type UnitTable = Record<PhysicsDimension, Record<string, number>>;
 
@@ -74,12 +76,6 @@ export const unitFactors: UnitTable = {
     "%": 0.01,
     deg: Math.PI / 180,
     rad: 1,
-    C: 1,
-    K: 1,
-    F: 1,
-    "1/C": 1,
-    "1/K": 1,
-    "1/F": 1,
     "kg\u00b7m2": 1,
     "lb\u00b7ft2": 0.04214011,
   },
@@ -87,6 +83,25 @@ export const unitFactors: UnitTable = {
   velocity: { "m/s": 1, "ft/s": 0.3048, "km/h": 1 / 3.6, "mm/s": 0.001 },
   energy: { J: 1, kJ: 1000, "ft\u00b7lbf": 1.35582 },
   volumeFlow: { "m3/s": 1, "L/min": 1 / 60000, gpm: 6.30902e-5 },
+  // Temperature is affine, not multiplicative; factors here are placeholders so
+  // unit enumeration works, while to/fromBaseUnit special-case the conversion.
+  temperature: { C: 1, K: 1, F: 1 },
+  // Per-degree coefficients (e.g. thermal expansion). Intervals: 1 K = 1 °C,
+  // 1 °F = 5/9 °C, so a 1/°F coefficient is 1.8× larger when expressed per °C.
+  inverseTemperature: { "1/C": 1, "1/K": 1, "1/F": 1.8 },
+};
+
+// Affine temperature conversion relative to the base unit (°C)
+const temperatureToCelsius: Record<string, (value: number) => number> = {
+  C: (v) => v,
+  K: (v) => v - 273.15,
+  F: (v) => ((v - 32) * 5) / 9,
+};
+
+const temperatureFromCelsius: Record<string, (value: number) => number> = {
+  C: (v) => v,
+  K: (v) => v + 273.15,
+  F: (v) => (v * 9) / 5 + 32,
 };
 
 export const dimensionByPhysicsDimension: Record<PhysicsDimension, DimensionVector> = {
@@ -109,9 +124,18 @@ export const dimensionByPhysicsDimension: Record<PhysicsDimension, DimensionVect
   velocity: { mass: 0, length: 1, time: -1, current: 0, temperature: 0, amount: 0, luminousIntensity: 0 },
   energy: { mass: 1, length: 2, time: -2, current: 0, temperature: 0, amount: 0, luminousIntensity: 0 },
   volumeFlow: { mass: 0, length: 3, time: -1, current: 0, temperature: 0, amount: 0, luminousIntensity: 0 },
+  temperature: dimensions.temperature,
+  inverseTemperature: dimensions.inverseTemperature,
 };
 
 export function toBaseUnit(value: number, dimension: PhysicsDimension, unit: string): number {
+  if (dimension === "temperature") {
+    const convert = temperatureToCelsius[unit];
+    if (!convert) {
+      throw new Error(`Unsupported unit "${unit}" for dimension "${dimension}"`);
+    }
+    return convert(value);
+  }
   const factor = unitFactors[dimension]?.[unit];
   if (typeof factor !== "number") {
     throw new Error(`Unsupported unit "${unit}" for dimension "${dimension}"`);
@@ -120,6 +144,13 @@ export function toBaseUnit(value: number, dimension: PhysicsDimension, unit: str
 }
 
 export function fromBaseUnit(value: number, dimension: PhysicsDimension, unit: string): number {
+  if (dimension === "temperature") {
+    const convert = temperatureFromCelsius[unit];
+    if (!convert) {
+      throw new Error(`Unsupported unit "${unit}" for dimension "${dimension}"`);
+    }
+    return convert(value);
+  }
   const factor = unitFactors[dimension]?.[unit];
   if (typeof factor !== "number") {
     throw new Error(`Unsupported unit "${unit}" for dimension "${dimension}"`);

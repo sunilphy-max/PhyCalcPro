@@ -12,6 +12,7 @@ export function attachBeamCalculationSpec(
     deflectionLimit?: number;
     c?: number;
     I?: number;
+    E?: number;
     spanLength?: number;
     unbracedLength?: number;
   }
@@ -29,7 +30,8 @@ export function attachBeamCalculationSpec(
   const Lb = options?.unbracedLength ?? options?.spanLength ?? 1;
   const Sx = I / Math.max(c, 1e-9);
   const r = Math.sqrt(I / areaEstimate);
-  const Fe = (Math.PI ** 2 * 210e9) / Math.pow(Lb / Math.max(r, 1e-9), 2);
+  const E = options?.E ?? 210e9;
+  const Fe = (Math.PI ** 2 * E) / Math.pow(Lb / Math.max(r, 1e-9), 2);
   const Mn =
     Fe >= 0.7 * stressLimit
       ? 0.9 * stressLimit * Sx
@@ -80,6 +82,7 @@ export function attachBeamCalculationSpec(
           deflectionLimit,
           c: options?.c,
           I: options?.I,
+          E: options?.E,
           spanLength: options?.spanLength,
           unbracedLength: options?.unbracedLength,
         });

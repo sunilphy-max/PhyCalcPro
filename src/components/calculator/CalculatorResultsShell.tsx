@@ -5,6 +5,7 @@ import ExportableReport from "@/components/shared/ExportableReport";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { CsvRow } from "@/lib/export/csvRows";
+import type { ReportMeta } from "@/lib/export/structuredReport";
 import CalculatorEmptyResults from "./CalculatorEmptyResults";
 import CalculatorResultsPanel from "./CalculatorResultsPanel";
 
@@ -18,6 +19,8 @@ type Props = {
   csvRows?: CsvRow[];
   qualityOverrides?: Partial<ModuleQualityChecklist>;
   showQualityChecklist?: boolean;
+  /** Title block metadata (project, engineer) for the structured PDF report */
+  reportMeta?: ReportMeta;
   children: ReactNode;
   showControlsWhenEmpty?: boolean;
   /** Panel heading when results are present */

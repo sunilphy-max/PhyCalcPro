@@ -1,13 +1,13 @@
 import type { DesignCodeId } from "../types";
 
-/** US mechanical allowable-stress factors (simplified Phase 1). */
+/** AISC 360 ASD safety factors (Ωb §F1, Ωv §G1, Ωc §E1). */
 export const AISC_ASD = {
   omegaFlexure: 1.67,
   omegaShear: 1.67,
   omegaCompression: 1.67,
 } as const;
 
-/** EU/ISO industrial screening partial factors (defaults for Phase 1). */
+/** EN 1993-1-1 §6.1 recommended partial factors (national annexes may differ). */
 export const EN_PARTIAL = {
   gammaM0: 1.0,
   gammaM1: 1.0,
