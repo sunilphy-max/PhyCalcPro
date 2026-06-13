@@ -35,7 +35,7 @@ export default function DesignModeToggle({ workflow, compact = false }: Props) {
             </p>
           ) : null}
         </div>
-        <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cyan-800 shadow-sm">
+        <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cyan-800 shadow-sm dark:bg-slate-800 dark:text-cyan-300">
           {mode}
         </span>
       </div>

@@ -36,35 +36,41 @@ export default function FEAColorStrip({
 
   const normalized = normalize(values);
   const max = Math.max(...values.map((v) => Math.abs(v)));
+  const min = Math.min(...values.map((v) => Math.abs(v)));
   const xMin = x[0];
   const xMax = x[x.length - 1];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+      data-export-diagram="true"
+      data-export-caption={title}
+      role="img"
+      aria-label={`${title}. Peak ${formatEngineeringValue(max, unit, { useExponential: true })}.`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold text-slate-900">{title}</h4>
-        <span className="text-xs font-medium text-slate-600">
+        <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h4>
+        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
           Peak: {formatEngineeringValue(max, unit, { useExponential: true })}
         </span>
       </div>
-      <div className="mt-3 flex h-8 overflow-hidden rounded-lg border border-slate-200">
+      <div className="mt-3 flex h-8 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-600">
         {normalized.map((value, index) => (
           <div
             key={`${index}-${x[index]}`}
-            className="h-full flex-1 min-w-0"
+            className="h-full min-w-0 flex-1"
             style={{ backgroundColor: colorFromScale(value) }}
             title={`Position: ${formatEngineeringValue(x[index], xUnit, { digits: 3 })} | ${formatEngineeringValue(values[index], unit, { useExponential: true })}`}
           />
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+        <span>{formatEngineeringValue(xMin, xUnit, { digits: 2 })}</span>
         <span>
-          {formatEngineeringValue(xMin, xUnit, { digits: 2 })}
+          Min {formatEngineeringValue(min, unit, { useExponential: true })} · Max{" "}
+          {formatEngineeringValue(max, unit, { useExponential: true })}
         </span>
-        <span>Relative intensity (0 → 1)</span>
-        <span>
-          {formatEngineeringValue(xMax, xUnit, { digits: 2 })}
-        </span>
+        <span>{formatEngineeringValue(xMax, xUnit, { digits: 2 })}</span>
       </div>
     </div>
   );

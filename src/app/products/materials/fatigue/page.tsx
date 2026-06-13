@@ -11,6 +11,7 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 
 import FatigueInputs from "@/components/materials/fatigue/FatigueInputs";
 import FatigueResults from "@/components/materials/fatigue/FatigueResults";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
@@ -97,7 +98,23 @@ export default function Page() {
         moduleId="fatigue"
         title="Fatigue Life Calculator"
         inputs={
-          <FatigueInputs
+          <>
+            <CrossCalcHandoffBanner
+              moduleId="fatigue"
+              onApply={(params) => {
+                if (params.alternatingStress != null) {
+                  setAlternatingStress(
+                    displayFieldValue("fatigue", "alternatingStress", params.alternatingStress, alternatingUnit)
+                  );
+                }
+                if (params.meanStress != null) {
+                  setMeanStress(
+                    displayFieldValue("fatigue", "meanStress", params.meanStress, meanUnit)
+                  );
+                }
+              }}
+            />
+            <FatigueInputs
             alternatingStress={alternatingStress}
             setAlternatingStress={setAlternatingStress}
             alternatingUnit={alternatingUnit}
@@ -122,8 +139,24 @@ export default function Page() {
             setLoadType={setLoadType}
             onCalculate={calculate}
           />
+          </>
         }
-        results={<FatigueResults result={result} alternatingUnit={alternatingUnit} />}
+        results={
+          <FatigueResults
+            result={result}
+            alternatingUnit={alternatingUnit}
+            chartInputs={
+              result
+                ? {
+                    meanStress,
+                    alternatingStress,
+                    ultimateStrength,
+                    stressUnit: alternatingUnit,
+                  }
+                : undefined
+            }
+          />
+        }
       />
   );
 }

@@ -13,6 +13,7 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<PressureVesselResult> | null;
@@ -85,6 +86,7 @@ export default function PressureVesselResults({ result }: Props) {
       empty={!result}
       emptyMessage="Run the pressure vessel model to see hoop stress and radial deflection."
       heading="Pressure Vessel Results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [

@@ -9,6 +9,8 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import ProfileCrossSectionPreview from "./ProfileCrossSectionPreview";
+import type { ShapeProperties } from "@/lib/profiles/types";
 
 type Props = {
   result: AreaPropertiesResult;
@@ -35,16 +37,13 @@ export default function ProfilesDashboard({ result }: Props) {
       {
         id: "visualization",
         label: "Cross-section",
-        content: (
-          <div className="flex h-48 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
-            <div className="text-center text-slate-500 dark:text-slate-400">
-              <div className="mb-2 text-4xl">📐</div>
-              <div className="text-sm">
-                {result.shapeData?.shape ? `${result.shapeData.shape} cross-section` : "Shape visualization"}
-              </div>
-              <div className="mt-1 text-xs">Area: {formatEngineeringValue(result.area, "m²")}</div>
-            </div>
-          </div>
+        content: result.shapeData?.shape ? (
+          <ProfileCrossSectionPreview
+            shape={result.shapeData as ShapeProperties}
+            area={result.area}
+          />
+        ) : (
+          <p className="text-sm text-slate-500 dark:text-slate-400">No shape outline available.</p>
         ),
       },
       {

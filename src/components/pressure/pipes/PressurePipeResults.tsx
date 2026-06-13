@@ -12,6 +12,8 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<PressurePipeResult> | null;
@@ -76,6 +78,7 @@ export default function PressurePipeResults({ result }: Props) {
       empty={!result}
       emptyMessage="Run the pipe model to see hoop stress and radial displacement around the circumference."
       heading="Pipe Results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -91,13 +94,13 @@ export default function PressurePipeResults({ result }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Max radial displacement"
-              value={`${result.maxRadialDisplacement.toExponential(3)} m`}
+              value={formatEngineeringValue(result.maxRadialDisplacement, "m")}
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max hoop stress"
-              value={`${result.maxHoopStress.toExponential(3)} Pa`}
+              value={formatEngineeringValue(result.maxHoopStress, "Pa")}
               tone="orange"
               size="lg"
             />

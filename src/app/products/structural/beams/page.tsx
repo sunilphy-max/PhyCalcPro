@@ -16,6 +16,7 @@ import { searchBeamSections } from "@/lib/design-workflows/solvers/beamDesign";
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import { materials } from "@/data/materials";
 import {
   getBeamApplicationPreset,
@@ -389,6 +390,17 @@ const handleLoadDrag = (
         deflectionUtilization,
         calculationNotes: applicationPreset.calculationNotes,
         limitations: applicationPreset.limitations,
+      },
+    });
+
+    publishHandoff("columns", {
+      fromModuleId: "beams",
+      fromTitle: "Beam Analysis",
+      summary: `Carry section I=${normalized.I.toExponential(2)} m⁴, area ${normalized.c.toExponential(2)} m², peak stress ${raw.maxStress.toExponential(2)} Pa`,
+      params: {
+        inertia: normalized.I,
+        area: normalized.c,
+        axialLoad: raw.maxStress * normalized.c,
       },
     });
   };

@@ -39,22 +39,55 @@ export type CapturedChart = {
 };
 
 /**
+ * Temporarily show all plot-picker tab panels so hidden Plotly charts can be captured.
+ */
+function expandPickerTabs(container: HTMLElement): () => void {
+  const restores: Array<() => void> = [];
+
+  container.querySelectorAll<HTMLElement>("[data-export-picker]").forEach((picker) => {
+    picker.querySelectorAll<HTMLElement>('[role="tabpanel"]').forEach((panel) => {
+      const prevClass = panel.className;
+      const prevHidden = panel.getAttribute("aria-hidden");
+      const prevStyle = panel.style.cssText;
+      panel.classList.remove("hidden");
+      panel.setAttribute("aria-hidden", "false");
+      panel.style.cssText = `${prevStyle};position:relative;width:100%;min-height:280px;`;
+      restores.push(() => {
+        panel.className = prevClass;
+        if (prevHidden != null) panel.setAttribute("aria-hidden", prevHidden);
+        else panel.removeAttribute("aria-hidden");
+        panel.style.cssText = prevStyle;
+      });
+    });
+  });
+
+  return () => restores.forEach((restore) => restore());
+}
+
+/**
  * Collect high-resolution snapshots of every plot ([data-export-plot]) and
  * diagram ([data-export-diagram]) inside the report for the structured PDF.
  * Plotly charts render via Plotly.toImage at 2x scale; other diagram nodes
  * (SVG previews etc.) fall back to html2canvas.
  */
 export async function collectChartImages(container: HTMLElement): Promise<CapturedChart[]> {
-  const images: CapturedChart[] = [];
-  const nodes = Array.from(
-    container.querySelectorAll<HTMLElement>("[data-export-plot], [data-export-diagram]")
-  );
-  if (nodes.length === 0) return images;
+  const restorePickers = expandPickerTabs(container);
+  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-  const plotly = await getPlotly();
+  try {
+    const images: CapturedChart[] = [];
+    const nodes = Array.from(
+      container.querySelectorAll<HTMLElement>("[data-export-plot], [data-export-diagram]")
+    );
+    if (nodes.length === 0) return images;
 
-  for (const node of nodes) {
-    const caption = node.getAttribute("data-export-caption") ?? undefined;
+    const plotly = await getPlotly();
+
+    for (const node of nodes) {
+      const caption =
+        node.getAttribute("data-export-caption") ??
+        node.closest<HTMLElement>('[data-export-caption]')?.getAttribute("data-export-caption") ??
+        undefined;
     const plotDiv =
       node.querySelector<HTMLElement>(".js-plotly-plot") ??
       (node.classList.contains("js-plotly-plot") ? node : null);
@@ -87,9 +120,12 @@ export async function collectChartImages(container: HTMLElement): Promise<Captur
     } catch {
       // Skip nodes that cannot be captured.
     }
-  }
+    }
 
-  return images;
+    return images;
+  } finally {
+    restorePickers();
+  }
 }
 
 export async function preparePlotsForCapture(container: HTMLElement): Promise<() => void> {

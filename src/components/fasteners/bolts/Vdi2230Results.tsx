@@ -1,22 +1,53 @@
+"use client";
+
+import { useMemo } from "react";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
-import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
+} from "@/components/calculator/results";
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { Vdi2230Result } from "@/lib/fasteners/bolts/vdi2230";
+import type { CalculationSpec } from "@/lib/standards/types";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import VdiJointDiagram from "./VdiJointDiagram";
 
 type Props = {
-  result: Vdi2230Result | null;
+  result: (Vdi2230Result & { calculationSpec?: CalculationSpec }) | null;
+  clampLengthM: number;
 };
 
-export default function Vdi2230Results({ result }: Props) {
+export default function Vdi2230Results({ result, clampLengthM }: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    return [
+      {
+        id: "joint",
+        label: "Joint schematic",
+        content: (
+          <VdiJointDiagram
+            clampLengthM={clampLengthM}
+            boltDiameterMm={result.size.d * 1000}
+            preloadKn={result.assemblyPreloadMax / 1000}
+          />
+        ),
+      },
+    ];
+  }, [clampLengthM, result]);
+
   return (
     <CalculatorResultsShell
       moduleId="bolts"
       fileName="vdi2230-bolt-joint"
       title="Export VDI 2230 results"
       description="Export preload, torque, slip, fatigue and bearing-pressure summary."
+      calculationSpec={result?.calculationSpec}
       empty={!result}
       emptyMessage="Define the joint and run the VDI 2230 check."
       heading="VDI 2230 single-bolt results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -50,11 +81,7 @@ export default function Vdi2230Results({ result }: Props) {
               value={formatEngineeringValue(result.tighteningTorque, "N·m")}
               tone="purple"
             />
-            <CalculatorMetricCard
-              label="Load factor Φ"
-              numericValue={result.loadFactor}
-              tone="blue"
-            />
+            <CalculatorMetricCard label="Load factor Φ" numericValue={result.loadFactor} tone="blue" />
             <CalculatorMetricCard
               label="Embedding loss FZ"
               value={formatEngineeringValue(result.embeddingLoss / 1000, "kN")}
@@ -70,16 +97,19 @@ export default function Vdi2230Results({ result }: Props) {
             <CalculatorMetricCard
               label="Slip safety (FKR · μT / FQ)"
               numericValue={result.slipSafetyFactor}
-              tone={result.slipSafetyFactor >= 1.2 ? "green" : result.slipSafetyFactor >= 1 ? "orange" : "red"}
+              status={
+                result.slipSafetyFactor >= 1.2 ? "safe" : result.slipSafetyFactor >= 1 ? "warning" : "danger"
+              }
               size="lg"
             />
           ) : null}
           <CalculatorMetricCard
             label="Working stress utilization σred,B / Rp0.2"
             numericValue={result.workingStressUtilization}
-            tone={result.workingStressUtilization <= 1 ? "green" : "red"}
+            status={result.workingStressUtilization <= 1 ? "safe" : "danger"}
             size="lg"
           />
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="joint" label="Result view" />
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Thread stress amplitude σa"

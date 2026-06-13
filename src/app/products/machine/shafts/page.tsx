@@ -311,6 +311,7 @@ export default function Page() {
           key={result ? JSON.stringify(result) : "empty"}
           result={result}
           projectName={projectName}
+          layout={{ length, diameter, loads, lengthUnit }}
         />
       }
     />

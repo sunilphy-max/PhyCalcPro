@@ -31,9 +31,15 @@ export default function TrussDiagram({ result }: Props) {
   const maxForce = Math.max(...result.memberForces.map((m) => Math.abs(m.force)), 1);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-4">
-      <div className="font-semibold text-sm mb-3">Truss geometry & deformation</div>
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+    <div
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+      data-export-diagram="true"
+      data-export-caption="Truss geometry and deformation"
+      role="img"
+      aria-label="Truss geometry and deformation diagram"
+    >
+      <div className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">Truss geometry & deformation</div>
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full" aria-hidden="true">
         {result.elements.map((element) => {
           const start = normalized[element.start];
           const end = normalized[element.end];

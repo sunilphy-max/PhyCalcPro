@@ -85,10 +85,12 @@ export default function ResultExportControls({
     setStatusMessage(null);
 
     try {
-      const { collectChartImages } = await import("@/lib/export/plotCapture");
+      const { collectChartImages, preparePlotsForCapture } = await import("@/lib/export/plotCapture");
       const { generateStructuredReportPdf } = await import("@/lib/export/structuredReport");
 
+      const restorePlots = await preparePlotsForCapture(reportRef.current);
       const chartImages = await collectChartImages(reportRef.current);
+      restorePlots();
 
       await generateStructuredReportPdf({
         fileName: sanitizeFileName(fileName),

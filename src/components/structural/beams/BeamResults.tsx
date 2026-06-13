@@ -9,6 +9,7 @@ import type {
 import BeamDashboard from "./BeamDashboard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type DisplayUnits = {
   length: string;
@@ -46,6 +47,7 @@ export default function BeamResults({
       title="Export Beam results"
       description="Export the current summary and charts for review."
       empty={!result}
+      emptyMessage="Define beam geometry, supports, and loads, then run the analysis."
       heading="Beam Results"
       calculationSpec={result?.calculationSpec}
       result={result ?? undefined}
@@ -59,13 +61,9 @@ export default function BeamResults({
             ]
           : undefined
       }
-      qualityOverrides={{
-        unitIntegrity: true,
+      qualityOverrides={chartModuleQuality({
         physicsValidation: Boolean(result?.solverMeta),
-        chartConformance: true,
-        pictorialCoverage: true,
-        exportConsistency: true,
-      }}
+      })}
     >
       {result ? (
         <BeamDashboard

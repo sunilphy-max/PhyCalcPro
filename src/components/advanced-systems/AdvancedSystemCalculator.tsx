@@ -12,6 +12,7 @@ import {
 import { calculatorPanelClass, calculatorPrimaryButtonClass } from "@/components/calculator/styles";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { metricsModuleQuality } from "@/lib/calculator/qualityOverrides";
 import {
   getAdvancedSystemCalculator,
   type AdvancedCalculatorId,
@@ -176,13 +177,7 @@ export default function AdvancedSystemCalculator({ calculatorId }: Props) {
           calculationSpec={result?.calculationSpec}
           result={result ?? undefined}
           csvRows={csvRows}
-          qualityOverrides={{
-            unitIntegrity: true,
-            physicsValidation: true,
-            chartConformance: true,
-            pictorialCoverage: true,
-            exportConsistency: true,
-          }}
+          qualityOverrides={metricsModuleQuality()}
         >
           {result ? (
             <div className="space-y-4">

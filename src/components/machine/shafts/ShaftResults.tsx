@@ -2,15 +2,24 @@
 
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import ShaftDashboard from "./ShaftDashboard";
-import type { ShaftResult } from "@/lib/machine/shafts/types";
+import type { LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+
+type LayoutPreview = {
+  length: number;
+  diameter: number;
+  loads: LoadCase[];
+  lengthUnit?: string;
+};
 
 type Props = {
   result: WithCalculationSpec<ShaftResult> | null;
   projectName: string;
+  layout?: LayoutPreview;
 };
 
-export default function ShaftResults({ result, projectName }: Props) {
+export default function ShaftResults({ result, projectName, layout }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="shafts"
@@ -20,14 +29,9 @@ export default function ShaftResults({ result, projectName }: Props) {
       title="Export Shaft results"
       description="Export the current summary and charts for review."
       empty={!result}
+      emptyMessage="Enter shaft geometry, bearings, and loads, then calculate."
       heading="Shaft Results"
-      qualityOverrides={{
-        unitIntegrity: true,
-        physicsValidation: true,
-        chartConformance: true,
-        pictorialCoverage: true,
-        exportConsistency: true,
-      }}
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -38,7 +42,7 @@ export default function ShaftResults({ result, projectName }: Props) {
           : undefined
       }
     >
-      {result ? <ShaftDashboard result={result} /> : null}
+      {result ? <ShaftDashboard result={result} layout={layout} /> : null}
     </CalculatorResultsShell>
   );
 }

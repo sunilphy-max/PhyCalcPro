@@ -24,6 +24,7 @@ import {
   type TighteningMethod,
   type Vdi2230Result,
 } from "@/lib/fasteners/bolts/vdi2230";
+import type { CalculationSpec } from "@/lib/standards/types";
 import type { ScrewConfig, ScrewResult } from "@/lib/fasteners/bolts/types";
 import type { BoltPatternResult } from "@/lib/fasteners/bolts/boltPatternTypes";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
@@ -73,7 +74,7 @@ export default function Page() {
 
   const [result, setResult] = useState<ScrewResult | null>(null);
   const [patternResult, setPatternResult] = useState<BoltPatternResult | null>(null);
-  const [vdiResult, setVdiResult] = useState<Vdi2230Result | null>(null);
+  const [vdiResult, setVdiResult] = useState<(Vdi2230Result & { calculationSpec?: CalculationSpec }) | null>(null);
   const [projectName, setProjectName] = useState("Bolt Design Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<ScrewProject[]>(() =>
@@ -98,18 +99,20 @@ export default function Page() {
     }
     if (mode === "vdi2230") {
       setVdiResult(
-        solveVdi2230({
-          size: jointSize,
-          propertyClass,
-          tighteningMethod,
-          clampLength: toBase(clampLength, "length", lengthUnit),
-          jointModulus: 205e9,
-          axialLoad: toBase(jointAxialLoad, "force", forceUnit),
-          transverseLoad: toBase(jointTransverseLoad, "force", forceUnit),
-          threadFriction,
-          headFriction: threadFriction,
-          interfaceFriction,
-        })
+        wrapResult(
+          solveVdi2230({
+            size: jointSize,
+            propertyClass,
+            tighteningMethod,
+            clampLength: toBase(clampLength, "length", lengthUnit),
+            jointModulus: 205e9,
+            axialLoad: toBase(jointAxialLoad, "force", forceUnit),
+            transverseLoad: toBase(jointTransverseLoad, "force", forceUnit),
+            threadFriction,
+            headFriction: threadFriction,
+            interfaceFriction,
+          })
+        )
       );
       setResult(null);
       setPatternResult(null);
@@ -264,7 +267,7 @@ export default function Page() {
         mode === "power_screw" ? (
           <ScrewsResults key={result ? JSON.stringify(result) : "empty"} result={result} projectName={projectName} />
         ) : mode === "vdi2230" ? (
-          <Vdi2230Results result={vdiResult} />
+          <Vdi2230Results result={vdiResult} clampLengthM={toBase(clampLength, "length", lengthUnit)} />
         ) : (
           <BoltPatternResults result={patternResult} forceUnit={forceUnit} />
         )

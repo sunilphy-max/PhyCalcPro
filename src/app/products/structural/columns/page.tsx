@@ -10,6 +10,7 @@ import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BucklingInputs from "@/components/structural/columns/BucklingInputs";
 import BucklingResults from "@/components/structural/columns/BucklingResults";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveBucklingEngine } from "@/lib/structural/columns/engine";
 import type { BucklingConfig, BucklingResult, EndCondition } from "@/lib/structural/columns/types";
@@ -225,7 +226,22 @@ export default function Page() {
         />
       }
       inputs={
-        <BucklingInputs
+        <>
+          <CrossCalcHandoffBanner
+            moduleId="columns"
+            onApply={(params) => {
+              if (params.inertia != null) {
+                setInertia(fromBase(params.inertia, "inertia", inertiaUnit));
+              }
+              if (params.area != null) {
+                setArea(fromBase(params.area, "area", lengthUnit));
+              }
+              if (params.axialLoad != null) {
+                setLoad(fromBase(params.axialLoad, "force", loadUnit));
+              }
+            }}
+          />
+          <BucklingInputs
           projectName={projectName}
           setProjectName={setProjectName}
           length={length}
@@ -260,6 +276,7 @@ export default function Page() {
           targetSafetyFactor={targetSafetyFactor}
           setTargetSafetyFactor={setTargetSafetyFactor}
         />
+        </>
       }
       results={<BucklingResults result={result} projectName={projectName} />}
     />

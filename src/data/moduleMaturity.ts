@@ -139,6 +139,13 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
     maturityBand: "formula",
     notes: "Geometric property equations with many shape variants.",
   },
+  profiles: {
+    numericalDepth: 2,
+    validationQuality: 2,
+    refactorRisk: "low",
+    maturityBand: "formula",
+    notes: "Cross-section property FEA with SVG outline previews in results picker.",
+  },
   composites: {
     numericalDepth: 4,
     validationQuality: 2,

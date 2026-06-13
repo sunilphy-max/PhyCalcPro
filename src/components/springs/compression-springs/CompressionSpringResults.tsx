@@ -1,17 +1,26 @@
+"use client";
+
+import { useMemo } from "react";
 import { fromBase } from "@/lib/units/conversions";
+import EngineeringPlot from "@/components/EngineeringPlot";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
-import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
+} from "@/components/calculator/results";
 import type { CompressionSpringResult } from "@/lib/springs/compression-springs/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import SpringOutlinePreview from "@/components/shared/geometry/SpringOutlinePreview";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: (CompressionSpringResult & { calculationSpec?: CalculationSpec }) | null;
   lengthUnit: string;
   stressUnit: string;
   projectName?: string;
-  /** Display-unit geometry for the outline preview */
   geometry?: {
     wireDiameter: number;
     meanDiameter: number;
@@ -20,7 +29,57 @@ type Props = {
   };
 };
 
-export default function CompressionSpringResults({ result, lengthUnit, stressUnit, projectName, geometry }: Props) {
+export default function CompressionSpringResults({
+  result,
+  lengthUnit,
+  stressUnit,
+  projectName,
+  geometry,
+}: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    const tabs: PlotPickerTab[] = [];
+
+    if (geometry) {
+      tabs.push({
+        id: "outline",
+        label: "Spring outline",
+        content: (
+          <SpringOutlinePreview
+            wireDiameter={geometry.wireDiameter}
+            meanDiameter={geometry.meanDiameter}
+            activeCoils={geometry.activeCoils}
+            freeLength={geometry.freeLength}
+            unit={lengthUnit}
+          />
+        ),
+      });
+    }
+
+    const maxDeflection = result.maxLoad / Math.max(result.springRate, 1e-12);
+    const steps = 25;
+    const deflections = Array.from({ length: steps }, (_, i) => (maxDeflection * i) / (steps - 1));
+    const loads = deflections.map((d) => result.springRate * d);
+
+    tabs.push({
+      id: "load-deflection",
+      label: "Load–deflection",
+      content: (
+        <EngineeringPlot
+          title="Spring load vs deflection"
+          x={deflections}
+          y={loads}
+          yLabel="Force"
+          xLabel="Deflection"
+          xUnit={lengthUnit}
+          unitLabel="N"
+        />
+      ),
+    });
+
+    return tabs;
+  }, [geometry, lengthUnit, result]);
+
   return (
     <CalculatorResultsShell
       moduleId="compression-springs"
@@ -32,6 +91,7 @@ export default function CompressionSpringResults({ result, lengthUnit, stressUni
       emptyMessage="Enter spring geometry and calculate."
       heading="Compression spring results"
       reportMeta={projectName ? { project: projectName } : undefined}
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -77,20 +137,11 @@ export default function CompressionSpringResults({ result, lengthUnit, stressUni
             <CalculatorMetricCard label="Wahl factor Kw" numericValue={result.wahlFactor} tone="blue" />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
-            label="Corrected shear stress"
-            value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
-            tone={result.safetyFactor < 1.2 ? "red" : "orange"}
-            size="lg"
-          />
-          <CalculatorMetricCard
-            label="Allowable shear stress (0.56·Rm, EN 13906-1)"
-            value={formatEngineeringValue(fromBase(result.allowableShearStress, "stress", stressUnit), stressUnit)}
-            tone="blue"
-          />
-          <CalculatorMetricCard
             label="Static safety factor (τ_zul / τ)"
             numericValue={result.safetyFactor}
-            tone={result.safetyFactor >= 1.5 ? "green" : result.safetyFactor >= 1.0 ? "orange" : "red"}
+            status={
+              result.safetyFactor >= 1.5 ? "safe" : result.safetyFactor >= 1 ? "warning" : "danger"
+            }
             size="lg"
           />
           <CalculatorMetricCard
@@ -98,17 +149,11 @@ export default function CompressionSpringResults({ result, lengthUnit, stressUni
             value={result.bucklingRisk ? "Check buckling — guide the spring" : "Buckle-proof (EN 13906-1)"}
             tone={result.bucklingRisk ? "orange" : "green"}
           />
-          {geometry ? (
-            <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-              <SpringOutlinePreview
-                wireDiameter={geometry.wireDiameter}
-                meanDiameter={geometry.meanDiameter}
-                activeCoils={geometry.activeCoils}
-                freeLength={geometry.freeLength}
-                unit={lengthUnit}
-              />
-            </div>
-          ) : null}
+          <EngineeringPlotPicker
+            tabs={plotTabs}
+            defaultTabId={geometry ? "outline" : "load-deflection"}
+            label="Result view"
+          />
         </>
       ) : null}
     </CalculatorResultsShell>

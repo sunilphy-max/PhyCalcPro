@@ -240,7 +240,13 @@ export default function Page() {
               when wrap angle on the small pulley drops below about 120°.
             </p>
           </CalculatorGuidancePanel>
-          <VBeltsResults result={result} lengthUnit={lengthUnit} />
+          <VBeltsResults
+            result={result}
+            lengthUnit={lengthUnit}
+            centerDistance={centerDistance}
+            diameterDriver={diameterDriver}
+            diameterDriven={diameterDriven}
+          />
         </>
       }
     />

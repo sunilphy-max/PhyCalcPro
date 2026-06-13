@@ -82,6 +82,14 @@
     }
   }
 
+  html.dark .calculator-panel :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea),
+  html.dark .calculator-workspace :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea) {
+    border-color: rgb(51 65 85);
+    background-color: rgb(2 6 23);
+    color: #f8fafc;
+    -webkit-text-fill-color: #f8fafc;
+  }
+
   .calculator-panel select option,
   .calculator-workspace select option {
     background-color: #fff;
@@ -94,6 +102,12 @@
       background-color: rgb(2 6 23);
       color: #f8fafc;
     }
+  }
+
+  html.dark .calculator-panel select option,
+  html.dark .calculator-workspace select option {
+    background-color: rgb(2 6 23);
+    color: #f8fafc;
   }
 
   /* Documentation — KaTeX display & inline math */

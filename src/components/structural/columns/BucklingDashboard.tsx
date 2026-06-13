@@ -2,9 +2,13 @@
 
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
+import FEAColorStrip from "@/components/shared/FEAColorStrip";
+import ColumnEndSchematic from "./ColumnEndSchematic";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { BucklingResult } from "@/lib/structural/columns/types";
@@ -18,6 +22,44 @@ export default function BucklingDashboard({ result }: Props) {
     () => (result.isSafe ? "safe" : "danger"),
     [result.isSafe]
   );
+
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    return [
+      {
+        id: "schematic",
+        label: "End conditions",
+        content: <ColumnEndSchematic k={result.k} />,
+      },
+      {
+        id: "mode-shape",
+        label: "Mode shape",
+        content: (
+          <EngineeringPlot
+            title="Buckling mode shape"
+            x={result.x}
+            y={result.deflection}
+            yLabel="Deflection"
+            xLabel="Position along column"
+            xUnit="m"
+            unitLabel="m"
+            showPeak={false}
+          />
+        ),
+      },
+      {
+        id: "intensity",
+        label: "Deflection intensity",
+        content: (
+          <FEAColorStrip
+            title="Buckling mode intensity"
+            x={result.x}
+            values={result.deflection}
+            unit="m"
+          />
+        ),
+      },
+    ];
+  }, [result]);
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -57,18 +99,7 @@ export default function BucklingDashboard({ result }: Props) {
         />
       </CalculatorMetricGrid>
 
-      <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-        <EngineeringPlot
-          title="Buckling mode shape"
-          x={result.x}
-          y={result.deflection}
-          yLabel="Deflection"
-          xLabel="Position along column"
-          xUnit="m"
-          unitLabel="m"
-          showPeak={false}
-        />
-      </div>
+      <EngineeringPlotPicker tabs={plotTabs} defaultTabId="mode-shape" label="Result chart" />
 
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard label="Effective length" value={formatEngineeringValue(result.Le, "m")} />

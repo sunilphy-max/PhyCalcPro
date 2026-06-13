@@ -33,10 +33,16 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
         aria-expanded={open}
+        aria-controls="module-design-advisor-panel"
       >
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-900 dark:text-white">
             Sizing candidates & standards reference
+            {computedDesign?.candidates?.length ? (
+              <span className="ml-2 rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-cyan-800 dark:bg-cyan-950/60 dark:text-cyan-200">
+                {computedDesign.candidates.length} sizing options
+              </span>
+            ) : null}
           </p>
           <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
             {mode === "select"
@@ -48,11 +54,12 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
         </div>
         <ChevronDown
           className={`h-5 w-5 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`}
+          aria-hidden="true"
         />
       </button>
 
       {open ? (
-        <div className="space-y-5 border-t border-slate-200 p-4 dark:border-slate-700">
+        <div id="module-design-advisor-panel" className="space-y-5 border-t border-slate-200 p-4 dark:border-slate-700">
           {computedDesign ? (
             <div className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-4 dark:border-cyan-900/50 dark:bg-cyan-950/20">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">
@@ -88,10 +95,10 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
                               item.status === "pass"
-                                ? "bg-emerald-100 text-emerald-700"
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
                                 : item.status === "review"
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-red-100 text-red-700"
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                                  : "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"
                             }`}
                           >
                             {item.status}
@@ -122,6 +129,11 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
                 Recommendation: {computedDesign.recommendation}
               </p>
             </div>
+          ) : (mode === "design" || mode === "select") && workflow.maturity === "workflow" ? (
+            <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-300">
+              Design and Select show reference strategy only for this module — run Check to verify your inputs.
+              Auto-sizing candidates appear when a solver-backed workflow is registered.
+            </p>
           ) : null}
 
           <div>

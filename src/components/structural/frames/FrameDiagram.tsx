@@ -47,9 +47,15 @@ export default function FrameDiagram({ result }: Props) {
   const maxAxial = Math.max(...result.memberAxial.map((v) => Math.abs(v)), 1);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+      data-export-diagram="true"
+      data-export-caption="Frame deformation and axial force"
+      role="img"
+      aria-label="Frame deformation and axial force diagram"
+    >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="text-sm font-semibold text-slate-900">
+        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">
           Frame deformation &amp; axial force
         </div>
         <span className="text-xs text-slate-500">

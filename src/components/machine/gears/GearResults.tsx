@@ -1,10 +1,19 @@
+"use client";
+
+import { useMemo } from "react";
 import { fromBase } from "@/lib/units/conversions";
 import type { GearResult } from "@/lib/machine/gears/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
-import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
+} from "@/components/calculator/results";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import type { CalculationSpec } from "@/lib/standards/types";
 import GearMeshPreview from "@/components/shared/geometry/GearMeshPreview";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: (GearResult & { calculationSpec?: CalculationSpec }) | null;
@@ -13,6 +22,24 @@ type Props = {
 };
 
 export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    return [
+      {
+        id: "mesh",
+        label: "Gear mesh",
+        content: (
+          <GearMeshPreview
+            moduleMm={result.module * 1000}
+            pinionTeeth={result.pinionTeeth}
+            gearTeeth={result.gearTeeth}
+            faceWidthMm={result.faceWidth * 1000}
+          />
+        ),
+      },
+    ];
+  }, [result]);
+
   return (
     <CalculatorResultsShell
       moduleId="gears"
@@ -23,6 +50,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
       empty={!result}
       emptyMessage="Run the analysis to review gear geometry and root bending stress."
       heading="Gear results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -47,11 +75,7 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
               value={`${formatDisplayNumber(fromBase(result.pitchDiameterGear, "length", lengthUnit))} ${lengthUnit}`}
               tone="blue"
             />
-            <CalculatorMetricCard
-              label="Actual ratio"
-              numericValue={result.actualRatio}
-              tone="purple"
-            />
+            <CalculatorMetricCard label="Actual ratio" numericValue={result.actualRatio} tone="purple" />
             <CalculatorMetricCard label="Lewis factor" numericValue={result.lewisY} tone="purple" />
             <CalculatorMetricCard
               label="Torque"
@@ -77,17 +101,10 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
           <CalculatorMetricCard
             label="Bending safety factor"
             numericValue={result.safetyFactor}
-            tone={result.safetyFactor >= 1.5 ? "green" : "red"}
+            status={result.safetyFactor >= 1.5 ? "safe" : "danger"}
             size="lg"
           />
-          <div className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-            <GearMeshPreview
-              moduleMm={result.module * 1000}
-              pinionTeeth={result.pinionTeeth}
-              gearTeeth={result.gearTeeth}
-              faceWidthMm={result.faceWidth * 1000}
-            />
-          </div>
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="mesh" label="Result view" />
         </>
       ) : null}
     </CalculatorResultsShell>

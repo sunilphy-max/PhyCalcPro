@@ -4,6 +4,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import ProfilesDashboard from "./ProfilesDashboard";
 import type { AreaPropertiesResult } from "@/lib/profiles/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<AreaPropertiesResult> | null;
@@ -19,7 +20,9 @@ export default function ProfilesResults({ result, projectName }: Props) {
       title="Export Area Properties results"
       description="Export a detailed report of the current analysis."
       empty={!result}
+      emptyMessage="Define the cross-section shape and dimensions to compute area properties."
       heading="Area Properties Results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [

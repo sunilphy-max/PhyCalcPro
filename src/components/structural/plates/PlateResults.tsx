@@ -12,6 +12,8 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<PlateResult> | null;
@@ -79,6 +81,7 @@ export default function PlateResults({ result }: Props) {
       empty={!result}
       emptyMessage="Run the plate analysis to display deflection and moment results."
       heading="Plate Results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -93,13 +96,13 @@ export default function PlateResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Max deflection"
-              value={`${result.maxDeflection.toExponential(3)} m`}
+              value={formatEngineeringValue(result.maxDeflection, "m")}
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Peak bending moment"
-              value={`${result.maxMoment.toExponential(3)} N·m`}
+              value={formatEngineeringValue(result.maxMoment, "N·m")}
               tone="orange"
               size="lg"
             />

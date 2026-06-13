@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useMemo } from "react";
-import { plotTheme } from "@/components/shared/plotTheme";
+import { usePlotTheme } from "@/hooks/usePlotTheme";
 import {
   formatAxisTitle,
   formatEngineeringValue,
@@ -66,6 +66,7 @@ export default function EngineeringPlot({
   secondaryYLabel,
   secondaryUnitLabel,
 }: Props) {
+  const plotTheme = usePlotTheme();
   const cleanY = y.map((v) => (Number.isFinite(v) ? v : 0));
 
   const peakIndex = useMemo(() => {
@@ -113,13 +114,14 @@ export default function EngineeringPlot({
 
   return (
     <div
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
       data-export-plot="true"
+      data-export-caption={title}
     >
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-        <div className="text-sm font-semibold text-slate-900">{title}</div>
+        <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</div>
         {peakValue !== null ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-800">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
             Peak: {formatEngineeringValue(peakValue, unitLabel ?? "", {
               useExponential:
                 Math.abs(peakValue) < 1e-3 || Math.abs(peakValue) >= 1e5,
@@ -274,8 +276,8 @@ export default function EngineeringPlot({
                 xanchor: "left",
                 y: 1.14,
                 yanchor: "bottom",
-                bgcolor: "rgba(255,255,255,0.92)",
-                bordercolor: "#e2e8f0",
+                bgcolor: plotTheme.paperBg.replace("1)", "0.92)"),
+                bordercolor: plotTheme.gridColor,
                 borderwidth: 1,
                 font: { size: 11 },
               }

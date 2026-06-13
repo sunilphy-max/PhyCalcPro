@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
+import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
@@ -9,20 +10,45 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
-import type { ShaftResult } from "@/lib/machine/shafts/types";
+import type { LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
+
+type LayoutPreview = {
+  length: number;
+  diameter: number;
+  loads: LoadCase[];
+  lengthUnit?: string;
+};
 
 type Props = {
   result: ShaftResult;
+  layout?: LayoutPreview;
 };
 
-export default function ShaftDashboard({ result }: Props) {
+export default function ShaftDashboard({ result, layout }: Props) {
   const status = useMemo<"safe" | "danger">(
     () => (result.isSafe ? "safe" : "danger"),
     [result.isSafe]
   );
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
-    return [
+    const tabs: PlotPickerTab[] = [];
+
+    if (layout) {
+      tabs.push({
+        id: "layout",
+        label: "Shaft layout",
+        content: (
+          <ShaftLayoutPreview
+            length={layout.length}
+            diameter={layout.diameter}
+            loads={layout.loads}
+            lengthUnit={layout.lengthUnit}
+          />
+        ),
+      });
+    }
+
+    tabs.push(
       {
         id: "von-mises",
         label: "Combined stress (von Mises)",
@@ -101,9 +127,11 @@ export default function ShaftDashboard({ result }: Props) {
             unitLabel="rad"
           />
         ),
-      },
-    ];
-  }, [result]);
+      }
+    );
+
+    return tabs;
+  }, [layout, result]);
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -147,7 +175,11 @@ export default function ShaftDashboard({ result }: Props) {
         />
       </CalculatorMetricGrid>
 
-      <EngineeringPlotPicker tabs={plotTabs} defaultTabId="von-mises" label="Result chart" />
+      <EngineeringPlotPicker
+        tabs={plotTabs}
+        defaultTabId={layout ? "layout" : "von-mises"}
+        label="Result chart"
+      />
 
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard

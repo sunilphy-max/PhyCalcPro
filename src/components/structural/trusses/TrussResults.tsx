@@ -12,21 +12,26 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<TrussResult> | null;
 };
 
 export default function TrussResults({ result }: Props) {
-  const highestTension = result?.memberForces.reduce((best, member) => {
-    if (member.force > best.force) return member;
-    return best;
-  }, result.memberForces[0]);
-
-  const highestCompression = result?.memberForces.reduce((best, member) => {
-    if (member.force < best.force) return member;
-    return best;
-  }, result.memberForces[0]);
+  const { highestTension, highestCompression } = useMemo(() => {
+    if (!result?.memberForces.length) {
+      return { highestTension: null, highestCompression: null };
+    }
+    const highestTension = result.memberForces.reduce((best, member) =>
+      member.force > best.force ? member : best
+    );
+    const highestCompression = result.memberForces.reduce((best, member) =>
+      member.force < best.force ? member : best
+    );
+    return { highestTension, highestCompression };
+  }, [result]);
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result) return [];
@@ -64,6 +69,7 @@ export default function TrussResults({ result }: Props) {
       empty={!result}
       emptyMessage="Run the truss analysis to see node displacements and member forces."
       heading="Truss Results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -78,13 +84,13 @@ export default function TrussResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Peak displacement"
-              value={`${result.maxDisplacement.toExponential(3)} m`}
+              value={formatEngineeringValue(result.maxDisplacement, "m")}
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max axial force"
-              value={`${result.maxForce.toExponential(3)} N`}
+              value={formatEngineeringValue(result.maxForce, "N")}
               tone="orange"
               size="lg"
             />
@@ -92,13 +98,13 @@ export default function TrussResults({ result }: Props) {
           {highestTension && highestCompression ? (
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
-                label="Highest tension member"
-                value={`${highestTension.force.toExponential(3)} N`}
+                label={`Highest tension (${highestTension.id})`}
+                value={formatEngineeringValue(highestTension.force, "N")}
                 tone="green"
               />
               <CalculatorMetricCard
-                label="Highest compression member"
-                value={`${highestCompression.force.toExponential(3)} N`}
+                label={`Highest compression (${highestCompression.id})`}
+                value={formatEngineeringValue(highestCompression.force, "N")}
                 tone="red"
               />
             </CalculatorMetricGrid>

@@ -13,6 +13,8 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
+import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<FrameResult> | null;
@@ -67,6 +69,7 @@ export default function FrameResults({ result }: Props) {
       empty={!result}
       emptyMessage="Run the frame analysis to visualize deflection and internal action."
       heading="Frame Results"
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [
@@ -82,19 +85,19 @@ export default function FrameResults({ result }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Max displacement"
-              value={`${result.maxDisplacement.toExponential(3)} m`}
+              value={formatEngineeringValue(result.maxDisplacement, "m")}
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max axial"
-              value={`${result.maxAxial.toExponential(3)} N`}
+              value={formatEngineeringValue(result.maxAxial, "N")}
               tone="purple"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max moment"
-              value={`${result.maxMoment.toExponential(3)} N·m`}
+              value={formatEngineeringValue(result.maxMoment, "N·m")}
               tone="orange"
               size="lg"
             />

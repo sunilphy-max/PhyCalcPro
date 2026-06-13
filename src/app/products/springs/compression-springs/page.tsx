@@ -13,6 +13,7 @@ import { solveCompressionSpringEngine } from "@/lib/springs/compression-springs/
 import type { CompressionSpringResult, SpringWireType } from "@/lib/springs/compression-springs/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
@@ -109,20 +110,26 @@ export default function Page() {
   useSyncDesignInputs("compression-springs", designUserInputs);
 
   const runCheck = () => {
-    setResult(
-      wrapResult(
-        solveCompressionSpringEngine({
-          wireDiameter: toBase(wireDiameter, "length", lengthUnit),
-          meanDiameter: toBase(meanDiameter, "length", lengthUnit),
-          activeCoils,
-          freeLength: toBase(freeLength, "length", lengthUnit),
-          deflection: toBase(deflection, "length", lengthUnit),
-          modulus: toBase(modulus, "stress", modulusUnit),
-          ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
-          wireType,
-        })
-      )
-    );
+    const raw = solveCompressionSpringEngine({
+      wireDiameter: toBase(wireDiameter, "length", lengthUnit),
+      meanDiameter: toBase(meanDiameter, "length", lengthUnit),
+      activeCoils,
+      freeLength: toBase(freeLength, "length", lengthUnit),
+      deflection: toBase(deflection, "length", lengthUnit),
+      modulus: toBase(modulus, "stress", modulusUnit),
+      ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
+      wireType,
+    });
+    setResult(wrapResult(raw));
+    publishHandoff("fatigue", {
+      fromModuleId: "compression-springs",
+      fromTitle: "Compression Spring",
+      summary: `Carry corrected shear stress ${raw.shearStress.toExponential(2)} Pa as alternating stress input`,
+      params: {
+        alternatingStress: raw.shearStress,
+        meanStress: 0,
+      },
+    });
   };
 
   const calculate = () => {

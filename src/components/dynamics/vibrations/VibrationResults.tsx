@@ -15,6 +15,7 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<VibrationResult> | null;
@@ -110,13 +111,9 @@ export default function VibrationResults({ result }: Props) {
       emptyMessage="Run the vibration model to view natural frequencies and mode shapes."
       heading="Vibration Results"
       csvRows={csvRows}
-      qualityOverrides={{
-        unitIntegrity: true,
+      qualityOverrides={chartModuleQuality({
         physicsValidation: Boolean(result?.solverMeta),
-        chartConformance: true,
-        pictorialCoverage: true,
-        exportConsistency: true,
-      }}
+      })}
     >
       {result ? (
         <>
