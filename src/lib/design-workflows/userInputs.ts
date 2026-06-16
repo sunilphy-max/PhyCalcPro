@@ -53,6 +53,7 @@ export type ModuleUserInputs = {
   power?: number;
   powerUnit?: string;
   speedDriver?: number;
+  speedDriven?: number;
   rpm?: number;
   diameterDriver?: number;
   diameterDriven?: number;

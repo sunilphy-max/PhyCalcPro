@@ -1,76 +1,26 @@
 /**
- * Audit docs/Modules-Technical-Reference.md module headings and math coverage.
+ * Audit module documentation in docs/modules/*.md and compiled reference.
  * Run: node scripts/audit-module-docs.mjs
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import path from "node:path";
 
+const MODULES_DIR = path.join(process.cwd(), "docs", "modules");
 const REF = path.join(process.cwd(), "docs", "Modules-Technical-Reference.md");
-const raw = readFileSync(REF, "utf8");
 
-const MODULE_HEADING_RE = /^### .+? \(`([^`]+)`\)/gm;
-const ids = [];
-let m;
-while ((m = MODULE_HEADING_RE.exec(raw)) !== null) {
-  ids.push({ id: m[1], index: m.index });
-}
+const MODULE_HEADING_RE = /^### .+? \(`([^`]+)`\)/;
 
-const counts = new Map();
-for (const entry of ids) {
-  counts.set(entry.id, (counts.get(entry.id) ?? 0) + 1);
-}
-const dupes = [...counts.entries()].filter(([, c]) => c > 1).map(([id]) => id);
-
-/** Longest chunk wins (matches parseModuleSections in loadReference.ts). */
-function resolveModuleSections(markdown) {
-  const chunks = markdown.split(/\n(?=### )/);
-  const map = new Map();
-  for (const chunk of chunks) {
-    const idMatch = chunk.match(/^### .+? \(`([^`]+)`\)/);
-    if (!idMatch) continue;
-    const moduleId = idMatch[1];
-    const section = { moduleId, length: chunk.trim().length, title: chunk.split("\n")[0] };
-    const existing = map.get(moduleId);
-    if (!existing || section.length > existing.length) {
-      map.set(moduleId, section);
-    }
-  }
-  return map;
-}
-
-const resolved = resolveModuleSections(raw);
-
-console.log("headings found:", ids.length);
-console.log("unique module ids (raw):", new Set(ids.map((e) => e.id)).size);
-console.log("unique module ids (resolved, longest wins):", resolved.size);
-console.log("duplicate ids:", dupes.join(", ") || "none");
-
-for (const id of dupes) {
-  const entries = ids.filter((e) => e.id === id);
-  const winner = resolved.get(id);
-  console.log(`\n  ${id} — ${entries.length} headings; winner (${winner.length} chars):`);
-  console.log(`    ${winner.title}`);
-  for (const e of entries) {
-    const line = raw.slice(0, e.index).split("\n").length;
-    const chunkStart = raw.lastIndexOf("\n### ", e.index) + 1;
-    const chunkEnd = raw.indexOf("\n### ", e.index + 1);
-    const chunk = raw.slice(chunkStart, chunkEnd < 0 ? undefined : chunkEnd).trim();
-    const marker = chunk.length === winner.length ? " ← kept" : "";
-    console.log(`    line ${line} (${chunk.length} chars)${marker}`);
-  }
-}
-
-const plainFormula = /^[^$\n]*(?:\\sigma|\\tau|k = |P_\{?cr|\\\\dot )[^$\n]*$/gm;
-const plain = [];
-let pm;
-while ((pm = plainFormula.exec(raw)) !== null) {
-  const line = raw.slice(0, pm.index).split("\n").length;
-  if (!pm[0].includes("\\(") && !pm[0].includes("\\[") && !pm[0].includes("$")) {
-    plain.push({ line, text: pm[0].slice(0, 80) });
-  }
-}
-console.log("\nplain formula-ish lines:", plain.length);
-plain.slice(0, 10).forEach((p) => console.log(`  L${p.line}: ${p.text}`));
+const REQUIRED_SECTIONS = [
+  "**Purpose**",
+  "**Physics & theory**",
+  "**Governing equations**",
+  "**Numerical method**",
+  "**Inputs**",
+  "**Outputs**",
+  "**Design codes & checks**",
+  "**Assumptions & limitations**",
+  "**References**",
+];
 
 const allModuleIds = [
   "beams", "frames", "trusses", "columns", "plates", "combined-loading", "load-case-manager", "circular-plates",
@@ -78,28 +28,68 @@ const allModuleIds = [
   "shafts", "gears", "bearings", "cams", "flywheels", "bevel-gears", "worm-gears", "planetary-gears", "gear-ratio-design", "plain-bearings", "brakes-clutches",
   "compression-springs", "extension-springs", "torsion-springs",
   "bolts", "welds", "rivets", "safety-factor", "keys-splines", "shaft-hubs", "pins",
-  "material-db", "sections", "rolled-sections", "composites", "temperature-properties", "fatigue", "corrosion",
+  "material-db", "sections", "rolled-sections", "profiles", "composites", "temperature-properties", "fatigue", "corrosion",
   "pipes", "vessels", "hydraulics", "heat-exchangers",
   "vibrations", "rotation", "impact", "suspension",
   "tolerance", "fits", "cost-estimator", "cam-toolpaths",
   "vacuum-engineering", "cryogenic-engineering", "magnetic-fields", "superconducting-systems", "thermal-management", "battery-ev-systems", "hydrogen-systems", "precision-motion",
-  "formula-reference", "unit-converter", "profiles",
+  "formula-reference", "unit-converter",
 ];
 
-const missing = allModuleIds.filter((id) => !resolved.has(id));
-console.log("\nmissing module headings (resolved):", missing.join(", ") || "none");
+function auditModuleFile(filePath) {
+  const content = readFileSync(filePath, "utf8");
+  const idMatch = content.match(MODULE_HEADING_RE);
+  if (!idMatch) return { ok: false, error: "missing heading" };
+  const missing = REQUIRED_SECTIONS.filter((s) => !content.includes(s));
+  const hasDisplayMath = /\\\[/.test(content) || /\n\$\$/.test(content);
+  return {
+    ok: missing.length === 0 && hasDisplayMath,
+    moduleId: idMatch[1],
+    missing,
+    hasDisplayMath,
+    length: content.length,
+  };
+}
 
-const harmfulDupes = dupes.filter((id) => {
-  const entries = ids.filter((e) => e.id === id);
-  const lengths = entries.map((e) => {
-    const chunkStart = raw.lastIndexOf("\n### ", e.index) + 1;
-    const chunkEnd = raw.indexOf("\n### ", e.index + 1);
-    return raw.slice(chunkStart, chunkEnd < 0 ? undefined : chunkEnd).trim().length;
-  });
-  return Math.max(...lengths) !== Math.min(...lengths);
-});
-console.log("harmful dupes (unequal length):", harmfulDupes.join(", ") || "none");
+const files = existsSync(MODULES_DIR)
+  ? readdirSync(MODULES_DIR).filter((f) => f.endsWith(".md"))
+  : [];
 
-if (missing.length > 0) {
+const byId = new Map();
+for (const file of files) {
+  const result = auditModuleFile(path.join(MODULES_DIR, file));
+  if (result.moduleId) byId.set(result.moduleId, { ...result, file });
+}
+
+console.log("module files:", files.length);
+console.log("unique module ids:", byId.size);
+
+const missing = allModuleIds.filter((id) => !byId.has(id));
+console.log("missing module files:", missing.join(", ") || "none");
+
+const incomplete = [...byId.values()].filter((r) => !r.ok);
+if (incomplete.length) {
+  console.log("\nincomplete files:");
+  for (const r of incomplete) {
+    console.log(`  ${r.file}: missing=${r.missing.join(", ") || "none"} math=${r.hasDisplayMath}`);
+  }
+}
+
+const dupes = files
+  .map((f) => f.replace(/\.md$/, ""))
+  .filter((id, i, arr) => arr.indexOf(id) !== i);
+console.log("duplicate filenames:", dupes.join(", ") || "none");
+
+// Legacy monolith should not contain inline module headings beyond stub
+const monolith = readFileSync(REF, "utf8");
+const inlineIds = [];
+let m;
+const inlineRe = /^### .+? \(`([^`]+)`\)/gm;
+while ((m = inlineRe.exec(monolith)) !== null) {
+  inlineIds.push(m[1]);
+}
+console.log("inline module headings in monolith:", inlineIds.length, inlineIds.length ? "(should be 0)" : "(ok)");
+
+if (missing.length > 0 || incomplete.length > 0 || inlineIds.length > 0) {
   process.exitCode = 1;
 }

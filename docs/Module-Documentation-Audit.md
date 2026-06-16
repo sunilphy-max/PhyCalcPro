@@ -1,11 +1,11 @@
 # Module Documentation Audit
 
-**Date:** 2026-06-12 (updated after gap remediation)  
-**Scope:** `docs/Modules-Technical-Reference.md`, math rendering pipeline, module doc pages, formula-reference UI
+**Date:** 2026-06-13 (full module rewrite)  
+**Scope:** `docs/modules/*.md` (63 per-module files), `docs/Modules-Technical-Reference.md` (platform + maturity), math rendering pipeline, module doc pages
 
 ## Math rendering pipeline
 
-1. **Source authoring** — `docs/Modules-Technical-Reference.md` uses `\( … \)` inline and `\[ … \]` display equations (or `$` / `$$`). Use `\frac{\partial^2 w}{\partial x^2}` for partial derivatives — slash shorthand is auto-fixed but explicit fractions are preferred.
+1. **Source authoring** — Each module has `docs/modules/{moduleId}.md` with required sections (Purpose, Physics & theory, Governing equations, Numerical method, Inputs, Outputs, Design codes & checks, Assumptions & limitations, References). Use `\( … \)` inline and `\[ … \]` display equations. Platform architecture lives in `docs/Modules-Technical-Reference.md` (sections 1–2, 12–13).
 2. **`normalizeDocumentationMath`** (`src/lib/documentation/normalizeMath.ts`):
    - `fixPartialDerivativeShorthand` — `\partial^2 w/\partial x` → `\frac{\partial^2 w}{\partial x}`
    - `convertPlainTextFormulas` — `Label: k = G d^4 / …` → labeled `\[ … \]` blocks
@@ -16,26 +16,22 @@
 3. **Web render** — `loadTechnicalReference()` → React Markdown + remark-math + rehype-katex on module doc pages.
 4. **Formula reference tool** — `MathExpression` + `expressionToLatex` render Unicode expressions (σ, ½, ·) with KaTeX in `FormulaReferenceInputs` / `FormulaReferenceResults`.
 
-## Duplicate heading fix
+## Architecture (2026-06-13)
 
-**Root cause:** Section 15 brief stubs shared module IDs with Section 10 detailed advanced-system docs. `parseModuleSections` keeps the **longest** markdown chunk per `moduleId`.
+- **Per-module files:** `docs/modules/{moduleId}.md` — canonical source for physics, formulas, and references.
+- **Platform monolith:** `docs/Modules-Technical-Reference.md` — architecture, inventory, maturity matrix, roadmap only.
+- **Compilation:** `loadReference.ts` concatenates platform + all module files for `/documentation/reference`; `/documentation/modules/[moduleId]` loads a single file.
 
-**Fix:** Section 15 advanced-system stubs were **deleted**; Section 10 remains canonical.
+## Content refresh (2026-06-13)
 
-## Content refresh (2026-06-12)
+Complete rewrite of all 63 module docs with:
 
-Updated technical reference for gap remediation:
-
-| Area | Documentation change |
-|------|----------------------|
-| Export | Structured PDF reports (not screenshot capture) |
-| Beams / columns | AISC/EC3 shear, LTB, inelastic column curves |
-| Gears / bearings | ISO 6336 worksheet; ISO 281 catalog life |
-| Bolts | VDI 2230-1 worksheet mode |
-| Springs | EN 13906-1, direct G input |
-| Fatigue | Basquin + Marin + mean-stress selector |
-| Materials | ~58 graded catalog entries |
-| Platform | Vitest benchmarks, `/projects`, cross-calc handoff |
+| Section | Content |
+|---------|---------|
+| Physics & theory | 2–4 paragraphs per module, aligned to solver code |
+| Governing equations | LaTeX display blocks with variable definitions |
+| References | Numbered textbooks and standards (Shigley, Roark, AISC, EN, ISO, VDI, etc.) |
+| Design codes | Maps to PhyCalcPro check templates and beta modules |
 
 ## Verification
 

@@ -4,19 +4,21 @@
   "designCode": "INDICATIVE",
   "description": "V-belt drive — 15 kW @ 1450 rpm, 150/300 mm pulleys, 500 mm center",
   "inputs": {
-    "power": 15000,
+    "power": 15,
     "speedDriver": 1450,
+    "speedDriven": 725,
     "diameterDriver": 0.15,
     "diameterDriven": 0.3,
     "centerDistance": 0.5,
     "serviceFactor": 1.2,
     "beltFactor": 0.18,
-    "frictionCoeff": 0.3
+    "frictionCoeff": 0.5,
+    "beltSection": "B"
   },
   "expected": {
     "ratio": 2,
     "drivenSpeed": 725
   },
   "tolerancePercent": 2,
-  "source": "PhyCalcPro regression — v-belt drive solver v1"
+  "source": "PhyCalcPro regression — v-belt drive solver v2"
 }

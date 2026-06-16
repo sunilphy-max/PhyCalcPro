@@ -1,11 +1,11 @@
+import {
+  VBELT_SECTION_CATALOG,
+  resolveBeltSections,
+  type VBeltSection,
+} from "@/lib/powerTransmission/v-belts/catalog";
 import { solveVBeltDrive } from "@/lib/powerTransmission/v-belts/engine";
 
-export const VBELT_SECTION_CATALOG = [
-  { section: "A", beltFactor: 0.12 },
-  { section: "B", beltFactor: 0.18 },
-  { section: "SPA", beltFactor: 0.22 },
-  { section: "SPB", beltFactor: 0.32 },
-] as const;
+export { VBELT_SECTION_CATALOG };
 
 export type VBeltDesignCandidate = {
   section: string;
@@ -14,6 +14,9 @@ export type VBeltDesignCandidate = {
   centerDistance: number;
   powerUtilization: number;
   wrapAngleDriver: number;
+  numberOfBelts: number;
+  beltLength: number;
+  standardBeltLengthMm: number;
 };
 
 export type VBeltDesignResult = {
@@ -21,44 +24,83 @@ export type VBeltDesignResult = {
   ranked: VBeltDesignCandidate[];
 };
 
+function candidateFromSolve(
+  belt: VBeltSection,
+  diameterDriver: number,
+  ratio: number,
+  centerDistance: number,
+  params: {
+    powerKw: number;
+    speedDriver: number;
+    speedDriven: number;
+    serviceFactor: number;
+    frictionCoeff: number;
+  }
+): VBeltDesignCandidate {
+  const diameterDriven = diameterDriver * ratio;
+  const result = solveVBeltDrive({
+    power: params.powerKw,
+    speedDriver: params.speedDriver,
+    speedDriven: params.speedDriven,
+    diameterDriver,
+    diameterDriven,
+    centerDistance,
+    serviceFactor: params.serviceFactor,
+    beltFactor: belt.beltFactor,
+    frictionCoeff: params.frictionCoeff,
+    beltSection: belt.section,
+  });
+
+  return {
+    section: belt.section,
+    diameterDriver,
+    diameterDriven,
+    centerDistance,
+    powerUtilization: result.powerUtilization,
+    wrapAngleDriver: result.wrapAngleDriver,
+    numberOfBelts: result.numberOfBelts,
+    beltLength: result.beltLength,
+    standardBeltLengthMm: result.standardBeltLengthMm,
+  };
+}
+
 export function designVBeltDrive(params: {
   powerKw: number;
   speedDriver: number;
-  ratio: number;
+  speedDriven: number;
   serviceFactor: number;
   frictionCoeff?: number;
+  beltSection?: string;
+  centerDistance?: number;
+  maxPulleyDiameter?: number;
 }): VBeltDesignResult {
   const frictionCoeff = params.frictionCoeff ?? 0.5;
+  const ratio = params.speedDriver / Math.max(params.speedDriven, 1e-6);
+  const sections = resolveBeltSections(params.beltSection ?? "auto");
   const ranked: VBeltDesignCandidate[] = [];
-  const driverDiameters = [0.1, 0.125, 0.15, 0.18, 0.2, 0.25, 0.3, 0.355];
 
-  for (const belt of VBELT_SECTION_CATALOG) {
+  const driverDiameters = [0.08, 0.1, 0.125, 0.15, 0.18, 0.2, 0.25, 0.3, 0.355, 0.4, 0.45, 0.5];
+
+  for (const belt of sections) {
+    const minD = belt.minPulleyMm / 1000;
     for (const diameterDriver of driverDiameters) {
-      const diameterDriven = diameterDriver * params.ratio;
-      const centerDistance = Math.max(
-        (diameterDriver + diameterDriven) * 0.75,
-        (diameterDriver + diameterDriven) / 2 + 0.05
+      if (diameterDriver < minD) continue;
+      const diameterDriven = diameterDriver * ratio;
+      if (params.maxPulleyDiameter != null && diameterDriven > params.maxPulleyDiameter) continue;
+
+      const centerDistance =
+        params.centerDistance ??
+        Math.max((diameterDriver + diameterDriven) * 0.75, (diameterDriver + diameterDriven) / 2 + 0.05);
+
+      ranked.push(
+        candidateFromSolve(belt, diameterDriver, ratio, centerDistance, {
+          powerKw: params.powerKw,
+          speedDriver: params.speedDriver,
+          speedDriven: params.speedDriven,
+          serviceFactor: params.serviceFactor,
+          frictionCoeff,
+        })
       );
-
-      const result = solveVBeltDrive({
-        power: params.powerKw,
-        speedDriver: params.speedDriver,
-        diameterDriver,
-        diameterDriven,
-        centerDistance,
-        serviceFactor: params.serviceFactor,
-        beltFactor: belt.beltFactor,
-        frictionCoeff,
-      });
-
-      ranked.push({
-        section: belt.section,
-        diameterDriver,
-        diameterDriven,
-        centerDistance,
-        powerUtilization: result.powerUtilization,
-        wrapAngleDriver: result.wrapAngleDriver,
-      });
     }
   }
 
@@ -66,6 +108,7 @@ export function designVBeltDrive(params: {
     const aPass = a.powerUtilization <= 1 && a.wrapAngleDriver >= 120;
     const bPass = b.powerUtilization <= 1 && b.wrapAngleDriver >= 120;
     if (aPass !== bPass) return aPass ? -1 : 1;
+    if (a.numberOfBelts !== b.numberOfBelts) return a.numberOfBelts - b.numberOfBelts;
     return a.powerUtilization - b.powerUtilization;
   });
 

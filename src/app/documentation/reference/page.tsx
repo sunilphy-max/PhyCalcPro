@@ -25,9 +25,13 @@ export default function DocumentationReferencePage() {
         Modules technical reference
       </h1>
       <p className="mt-3 max-w-3xl text-slate-600 dark:text-slate-300">
-        Sourced from <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">docs/Modules-Technical-Reference.md</code>
-        . Display equations render with KaTeX (centered); design-standard references appear as footnotes on
-        keyed equations. Edit the markdown file to change published content.
+        Platform sections from{" "}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
+          docs/Modules-Technical-Reference.md
+        </code>
+        ; per-module physics and formulas from{" "}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">docs/modules/*.md</code>
+        . Display equations render with KaTeX; design-standard references appear as footnotes on keyed equations.
       </p>
 
       <nav className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/50">

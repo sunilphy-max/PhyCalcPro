@@ -107,12 +107,25 @@ export function designMultiPulley(userInputs: ModuleUserInputs): ModuleDesignMod
 
 export function designVBeltFromInputs(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const powerKw =
-    userInputs.powerUnit === "W" ? (userInputs.power ?? 15000) / 1000 : (userInputs.power ?? 15);
+    userInputs.powerUnit === "W"
+      ? (userInputs.power ?? 15000) / 1000
+      : userInputs.powerUnit === "hp"
+        ? (userInputs.power ?? 15) * 0.7457
+        : (userInputs.power ?? 15);
+  const speedDriver = userInputs.speedDriver ?? 1450;
+  const speedDriven =
+    userInputs.speedDriven ??
+    (userInputs.ratio ? speedDriver / userInputs.ratio : speedDriver / 2);
+  const centerDistance =
+    userInputs.centerDistance != null ? userInputs.centerDistance / 1000 : undefined;
+
   const design = designVBeltDrive({
     powerKw,
-    speedDriver: userInputs.speedDriver ?? 1450,
-    ratio: userInputs.ratio ?? 2,
+    speedDriver,
+    speedDriven,
     serviceFactor: userInputs.serviceFactor ?? 1.2,
+    beltSection: userInputs.beltSection != null ? String(userInputs.beltSection) : "auto",
+    centerDistance,
   });
   return {
     method: "V-belt section and pulley sizing from power and ratio.",

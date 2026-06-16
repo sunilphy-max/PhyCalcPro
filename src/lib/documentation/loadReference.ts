@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { cache } from "react";
 import { categories, allModules } from "@/data/modules";
@@ -7,6 +7,7 @@ import { getModuleMaturity } from "@/data/moduleMaturity";
 import { normalizeDocumentationMath } from "@/lib/documentation/normalizeMath";
 
 const REFERENCE_PATH = path.join(process.cwd(), "docs", "Modules-Technical-Reference.md");
+const MODULES_DIR = path.join(process.cwd(), "docs", "modules");
 
 export type ModuleDocSection = {
   moduleId: string;
@@ -21,18 +22,136 @@ export type DocSection = {
   level: 2;
 };
 
-/** Read and lightly normalize the technical reference for web rendering. */
-export const loadTechnicalReference = cache((): string => {
-  const raw = readFileSync(REFERENCE_PATH, "utf8");
-  const linked = raw
-    .replace(/^# PhyCalcPro — Modules Technical Reference\n\n/m, "# ")
-    .replace(/\[([^\]]+)\]\(\.\/[^)]+\.md\)/g, "$1");
-  return normalizeDocumentationMath(linked);
-});
-
 const MODULE_HEADING_RE = /^### .+? \(`([^`]+)`\)/;
 
-/** Split per-module sections (### … (`moduleId`)). */
+/** Category groupings for the compiled full reference (matches product sidebar). */
+const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
+  {
+    heading: "Structural engineering",
+    moduleIds: [
+      "beams",
+      "frames",
+      "trusses",
+      "columns",
+      "plates",
+      "combined-loading",
+      "load-case-manager",
+      "circular-plates",
+    ],
+  },
+  {
+    heading: "Power transmission",
+    moduleIds: ["v-belts", "timing-belts", "roller-chains", "multi-pulley"],
+  },
+  {
+    heading: "Machine design",
+    moduleIds: [
+      "shafts",
+      "gears",
+      "bearings",
+      "cams",
+      "flywheels",
+      "bevel-gears",
+      "worm-gears",
+      "planetary-gears",
+      "gear-ratio-design",
+      "plain-bearings",
+      "brakes-clutches",
+    ],
+  },
+  {
+    heading: "Springs",
+    moduleIds: ["compression-springs", "extension-springs", "torsion-springs"],
+  },
+  {
+    heading: "Fasteners & connections",
+    moduleIds: [
+      "bolts",
+      "welds",
+      "rivets",
+      "safety-factor",
+      "keys-splines",
+      "shaft-hubs",
+      "pins",
+    ],
+  },
+  {
+    heading: "Materials & sections",
+    moduleIds: [
+      "material-db",
+      "sections",
+      "rolled-sections",
+      "profiles",
+      "composites",
+      "temperature-properties",
+      "fatigue",
+      "corrosion",
+    ],
+  },
+  {
+    heading: "Pressure systems",
+    moduleIds: ["pipes", "vessels", "hydraulics", "heat-exchangers"],
+  },
+  {
+    heading: "Dynamics & vibrations",
+    moduleIds: ["vibrations", "rotation", "impact", "suspension"],
+  },
+  {
+    heading: "Manufacturing",
+    moduleIds: ["tolerance", "fits", "cost-estimator", "cam-toolpaths"],
+  },
+  {
+    heading: "Advanced systems",
+    moduleIds: [
+      "vacuum-engineering",
+      "cryogenic-engineering",
+      "magnetic-fields",
+      "superconducting-systems",
+      "thermal-management",
+      "battery-ev-systems",
+      "hydrogen-systems",
+      "precision-motion",
+    ],
+  },
+  {
+    heading: "Tools",
+    moduleIds: ["formula-reference", "unit-converter"],
+  },
+];
+
+function readModuleFile(filePath: string): ModuleDocSection | null {
+  const content = readFileSync(filePath, "utf8").trim();
+  const idMatch = content.match(MODULE_HEADING_RE);
+  if (!idMatch) return null;
+  const moduleId = idMatch[1];
+  const titleLine = content.split("\n")[0]?.replace(/^### /, "") ?? moduleId;
+  return {
+    moduleId,
+    title: titleLine.replace(/\s*—\s*\*\*[^*]+\*\*\s*$/, "").trim(),
+    markdown: content,
+  };
+}
+
+/** Platform markdown: sections 1–2 plus maturity/roadmap (legacy inline module sections stripped). */
+function loadPlatformParts(): { intro: string; maturity: string } {
+  const raw = readFileSync(REFERENCE_PATH, "utf8");
+  const moduleSectionStart = raw.search(/\n## 3\. /);
+  const maturityStart = raw.search(/\n## 12\. Maturity/);
+  const intro =
+    moduleSectionStart >= 0 ? raw.slice(0, moduleSectionStart).trimEnd() : raw.trimEnd();
+  const maturity = maturityStart >= 0 ? raw.slice(maturityStart).trim() : "";
+  return { intro, maturity };
+}
+
+function normalizeReferenceMarkdown(markdown: string): string {
+  return normalizeDocumentationMath(
+    markdown
+      .replace(/^# PhyCalcPro — Modules Technical Reference\n\n/m, "# ")
+      .replace(/\[([^\]]+)\]\(\.\/[^)]+\.md\)/g, "$1")
+  );
+}
+
+/** Split per-module sections from legacy monolith (### … (`moduleId`)). */
 export function parseModuleSections(markdown: string): Map<string, ModuleDocSection> {
   const chunks = markdown.split(/\n(?=### )/);
   const map = new Map<string, ModuleDocSection>();
@@ -56,13 +175,59 @@ export function parseModuleSections(markdown: string): Map<string, ModuleDocSect
   return map;
 }
 
+function loadModuleFilesFromDisk(): Map<string, ModuleDocSection> {
+  const map = new Map<string, ModuleDocSection>();
+  if (!existsSync(MODULES_DIR)) return map;
+
+  for (const file of readdirSync(MODULES_DIR).filter((f) => f.endsWith(".md"))) {
+    const section = readModuleFile(path.join(MODULES_DIR, file));
+    if (section) map.set(section.moduleId, section);
+  }
+  return map;
+}
+
 export const getModuleDocSections = cache((): Map<string, ModuleDocSection> => {
-  return parseModuleSections(loadTechnicalReference());
+  const map = loadModuleFilesFromDisk();
+
+  // Legacy fallback: inline sections in monolith (longest wins)
+  if (map.size === 0) {
+    return parseModuleSections(readFileSync(REFERENCE_PATH, "utf8"));
+  }
+
+  return map;
 });
 
 export function getModuleDoc(moduleId: string): ModuleDocSection | undefined {
   return getModuleDocSections().get(moduleId);
 }
+
+function compileModuleReference(markdownById: Map<string, ModuleDocSection>): string {
+  const parts: string[] = [
+    "## 3. Module reference",
+    "",
+    "Per-module write-ups live in `docs/modules/{moduleId}.md`. Each entry covers **purpose**, **physics & theory**, **governing equations**, **numerical method**, **inputs**, **outputs**, **design codes & checks**, **assumptions & limitations**, and **references**. Browse individually at `/documentation/modules/{moduleId}`.",
+    "",
+  ];
+
+  for (const { heading, moduleIds } of MODULE_REFERENCE_SECTIONS) {
+    const blocks = moduleIds
+      .map((id) => markdownById.get(id)?.markdown)
+      .filter((block): block is string => Boolean(block));
+    if (!blocks.length) continue;
+    parts.push(`## ${heading}`, "", blocks.join("\n\n---\n\n"), "");
+  }
+
+  return parts.join("\n");
+}
+
+/** Read platform + all module docs for web rendering. */
+export const loadTechnicalReference = cache((): string => {
+  const { intro, maturity } = loadPlatformParts();
+  const moduleMap = getModuleDocSections();
+  const compiled = moduleMap.size > 0 ? compileModuleReference(moduleMap) : "";
+  const combined = [intro, compiled, maturity].filter(Boolean).join("\n\n");
+  return normalizeReferenceMarkdown(combined);
+});
 
 /** Major ## sections for in-page navigation (reference view). */
 export function parseMajorSections(markdown: string): DocSection[] {
