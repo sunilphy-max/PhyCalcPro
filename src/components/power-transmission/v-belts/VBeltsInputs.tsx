@@ -112,7 +112,7 @@ export default function VBeltsInputs({
     >
       {setProjectName ? (
         <input
-          className="mb-4 w-full rounded border p-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+          className="mb-4 w-full rounded border p-2 text-sm dark:border-slate-700"
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           placeholder="Project name"
