@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
@@ -17,6 +17,13 @@ import {
   beltFactorForSection,
   normalizePowerKw,
 } from "@/lib/powerTransmission/v-belts/catalog";
+import {
+  buildApplicationInsights,
+  getApplicationProfile,
+  resolveApplicationServiceFactor,
+  type VBeltApplicationId,
+  type VBeltApplicationOptions,
+} from "@/lib/powerTransmission/v-belts/applications";
 import type { VBeltResult } from "@/lib/powerTransmission/v-belts/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -36,9 +43,14 @@ type VBeltProjectData = {
   servicePreset: string;
   beltSection: string;
   useManualGeometry: boolean;
+  applicationId: VBeltApplicationId;
+  applicationOptions: VBeltApplicationOptions;
+  useManualServiceFactor: boolean;
 };
 
 type VBeltProject = LocalProject<VBeltProjectData>;
+
+const DEFAULT_APPLICATION: VBeltApplicationId = "pump";
 
 export default function Page() {
   const { wrapResult } = useStandardCalculation("v-belts", (units) =>
@@ -50,6 +62,15 @@ export default function Page() {
   );
   const { mode } = useDesignWorkflow();
 
+  const [applicationId, setApplicationId] = useState<VBeltApplicationId>(DEFAULT_APPLICATION);
+  const [applicationOptions, setApplicationOptions] = useState<VBeltApplicationOptions>(() => ({
+    applicationId: DEFAULT_APPLICATION,
+    subTypeId: "centrifugal",
+    operatingHoursPerDay: 24,
+    dutyCycle: "continuous",
+  }));
+  const [useManualServiceFactor, setUseManualServiceFactor] = useState(false);
+
   const [power, setPower] = useState(15);
   const [powerUnit, setPowerUnit] = useState("hp");
   const [speedDriver, setSpeedDriver] = useState(1750);
@@ -58,16 +79,34 @@ export default function Page() {
   const [diameterDriven, setDiameterDriven] = useState(200);
   const [centerDistance, setCenterDistance] = useState(500);
   const [lengthUnit, setLengthUnit] = useState("mm");
-  const [serviceFactor, setServiceFactor] = useState(1.2);
-  const [servicePreset, setServicePreset] = useState("normal");
+  const [serviceFactor, setServiceFactor] = useState(1.15);
+  const [servicePreset, setServicePreset] = useState("app-pump");
   const [beltSection, setBeltSection] = useState("auto");
   const [useManualGeometry, setUseManualGeometry] = useState(false);
   const [result, setResult] = useState<(VBeltResult & { calculationSpec?: CalculationSpec }) | null>(null);
-  const [projectName, setProjectName] = useState("V-Belt Drive Project");
+  const [projectName, setProjectName] = useState("Pump drive");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<VBeltProject[]>(() =>
     loadLocalProjects<VBeltProjectData>("v-belts")
   );
+
+  useEffect(() => {
+    const profile = getApplicationProfile(applicationId);
+    setApplicationOptions((current) => ({
+      ...current,
+      applicationId,
+      operatingHoursPerDay: profile.defaultOperatingHoursPerDay,
+      subTypeId: profile.subTypes?.[0]?.id ?? current.subTypeId,
+    }));
+    setProjectName(`${profile.label} drive`);
+  }, [applicationId]);
+
+  useEffect(() => {
+    if (useManualServiceFactor) return;
+    const resolved = resolveApplicationServiceFactor(applicationOptions, serviceFactor, false);
+    setServiceFactor(resolved.factor);
+    setServicePreset(`app-${applicationOptions.applicationId}`);
+  }, [applicationOptions, useManualServiceFactor]);
 
   useSyncDesignInputs(
     "v-belts",
@@ -124,6 +163,8 @@ export default function Page() {
       section: string;
     }) => {
       const powerKw = normalizePowerKw(power, powerUnit);
+      const sf = resolveApplicationServiceFactor(applicationOptions, serviceFactor, useManualServiceFactor);
+
       const raw = solveVBeltDrive({
         power: powerKw,
         speedDriver,
@@ -131,17 +172,24 @@ export default function Page() {
         diameterDriver: geometry.diameterDriver,
         diameterDriven: geometry.diameterDriven,
         centerDistance: geometry.centerDistance,
-        serviceFactor,
+        serviceFactor: sf.factor,
         beltFactor: beltFactorForSection(geometry.section),
         frictionCoeff: 0.5,
         beltSection: geometry.section,
       });
 
+      raw.applicationInsights = buildApplicationInsights(
+        raw,
+        { ...applicationOptions, applicationId },
+        sf.factor,
+        sf.source
+      );
+
       setResult(wrapResult(raw));
 
       publishHandoff("shafts", {
         fromModuleId: "v-belts",
-        fromTitle: "V-Belt Drive",
+        fromTitle: `${raw.applicationInsights?.applicationLabel ?? "V-Belt"} Drive`,
         summary: `Driver torque ${raw.driverTorque.toFixed(0)} N·m at ${speedDriver} rpm; radial belt load ≈ ${(raw.radialLoadDriver / 1000).toFixed(2)} kN on driver pulley.`,
         params: {
           torque: raw.driverTorque,
@@ -151,7 +199,7 @@ export default function Page() {
       });
       publishHandoff("bearings", {
         fromModuleId: "v-belts",
-        fromTitle: "V-Belt Drive",
+        fromTitle: `${raw.applicationInsights?.applicationLabel ?? "V-Belt"} Drive`,
         summary: `Estimated pulley reaction ≈ ${(raw.radialLoadDriver / 1000).toFixed(2)} kN at ${speedDriver} rpm (driver shaft).`,
         params: {
           radialLoad: raw.radialLoadDriver,
@@ -159,12 +207,23 @@ export default function Page() {
         },
       });
     },
-    [power, powerUnit, serviceFactor, speedDriver, speedDriven, wrapResult]
+    [
+      applicationId,
+      applicationOptions,
+      power,
+      powerUnit,
+      serviceFactor,
+      speedDriver,
+      speedDriven,
+      useManualServiceFactor,
+      wrapResult,
+    ]
   );
 
   const calculate = () => {
     const powerKw = normalizePowerKw(power, powerUnit);
     const centerM = toBase(centerDistance, "length", lengthUnit);
+    const sf = resolveApplicationServiceFactor(applicationOptions, serviceFactor, useManualServiceFactor);
     const shouldSize = mode === "design" || !useManualGeometry;
 
     if (shouldSize) {
@@ -172,7 +231,7 @@ export default function Page() {
         powerKw,
         speedDriver,
         speedDriven,
-        serviceFactor,
+        serviceFactor: sf.factor,
         centerDistance: centerM,
         beltSection,
       });
@@ -215,6 +274,9 @@ export default function Page() {
       servicePreset,
       beltSection,
       useManualGeometry,
+      applicationId,
+      applicationOptions,
+      useManualServiceFactor,
     });
     setSavedProjects(projects);
     setSaving(false);
@@ -233,6 +295,9 @@ export default function Page() {
     setServicePreset(project.servicePreset ?? "normal");
     setBeltSection(project.beltSection ?? "auto");
     setUseManualGeometry(project.useManualGeometry ?? false);
+    setApplicationId(project.applicationId ?? DEFAULT_APPLICATION);
+    setApplicationOptions(project.applicationOptions ?? { applicationId: DEFAULT_APPLICATION, operatingHoursPerDay: 16 });
+    setUseManualServiceFactor(project.useManualServiceFactor ?? false);
   };
 
   return (
@@ -248,6 +313,12 @@ export default function Page() {
       inputs={
         <div className="space-y-4">
           <VBeltsInputs
+            applicationId={applicationId}
+            setApplicationId={setApplicationId}
+            applicationOptions={applicationOptions}
+            setApplicationOptions={setApplicationOptions}
+            useManualServiceFactor={useManualServiceFactor}
+            setUseManualServiceFactor={setUseManualServiceFactor}
             power={power}
             setPower={setPower}
             powerUnit={powerUnit}
@@ -283,14 +354,15 @@ export default function Page() {
       }
       results={
         <>
-          <CalculatorGuidancePanel title="V-belt drives">
+          <CalculatorGuidancePanel title="Application-aware V-belt sizing">
             <p>
-              Enter motor power and shaft speeds to size pulleys, belt section, and belt count. Classical (A–E) and
-              narrow (3V/5V/8V) sections are screened against wrap angle and power capacity. Confirm final selection
-              with manufacturer catalogs (Gates, Conti, RMA/ISO).
+              Select your application type to auto-tune service factor, warnings, and recommendations. The same core
+              solver sizes pulleys, belt count, tensions, and shaft loads for pumps, compressors, fans, conveyors, and
+              more.
             </p>
             <p className="mt-2">
-              Driver shaft loads can be sent to the Shaft and Bearing modules after calculate.
+              Results are grouped as MVP step 1 (sizing), step 2 (verification), and step 3 (life &amp; workflow
+              handoff). Confirm final belt selection with manufacturer catalogs.
             </p>
           </CalculatorGuidancePanel>
           <VBeltsResults result={result} lengthUnit={lengthUnit} serviceFactor={serviceFactor} />

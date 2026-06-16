@@ -13,6 +13,8 @@ export type VBeltConfig = {
   beltSection: string;
 };
 
+export type VBeltApplicationInsights = import("./applications").VBeltApplicationInsights;
+
 export type VBeltResult = {
   beltSection: string;
   ratio: number;
@@ -36,4 +38,5 @@ export type VBeltResult = {
   driverTorque: number;
   drivenSpeed: number;
   speedRatioFromRpm: number | null;
+  applicationInsights?: VBeltApplicationInsights;
 };

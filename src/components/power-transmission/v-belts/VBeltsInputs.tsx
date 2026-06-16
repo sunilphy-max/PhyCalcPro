@@ -11,8 +11,20 @@ import {
   VBELT_SECTION_CATALOG,
   VBELT_SERVICE_FACTOR_PRESETS,
 } from "@/lib/powerTransmission/v-belts/catalog";
+import {
+  VBELT_APPLICATIONS,
+  getApplicationProfile,
+  type VBeltApplicationId,
+  type VBeltApplicationOptions,
+} from "@/lib/powerTransmission/v-belts/applications";
 
 type Props = {
+  applicationId: VBeltApplicationId;
+  setApplicationId: Dispatch<SetStateAction<VBeltApplicationId>>;
+  applicationOptions: VBeltApplicationOptions;
+  setApplicationOptions: Dispatch<SetStateAction<VBeltApplicationOptions>>;
+  useManualServiceFactor: boolean;
+  setUseManualServiceFactor: Dispatch<SetStateAction<boolean>>;
   power: number;
   setPower: Dispatch<SetStateAction<number>>;
   powerUnit: string;
@@ -54,6 +66,12 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 }
 
 export default function VBeltsInputs({
+  applicationId,
+  setApplicationId,
+  applicationOptions,
+  setApplicationOptions,
+  useManualServiceFactor,
+  setUseManualServiceFactor,
   power,
   setPower,
   powerUnit,
@@ -86,11 +104,16 @@ export default function VBeltsInputs({
   setProjectName,
 }: Props) {
   const isDesignMode = workflowMode === "design";
+  const profile = getApplicationProfile(applicationId);
+
+  const patchOptions = (patch: Partial<VBeltApplicationOptions>) => {
+    setApplicationOptions((current) => ({ ...current, ...patch }));
+  };
 
   return (
     <CalculatorInputPanel
       title="V-belt drive"
-      description="Size classical or narrow V-belt drives from motor power and shaft speeds — pulley diameters, belt count, tensions, and shaft loads."
+      description={profile.summary}
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton
@@ -110,18 +133,39 @@ export default function VBeltsInputs({
         </div>
       }
     >
-      {setProjectName ? (
-        <input
-          className="mb-4 w-full rounded border p-2 text-sm dark:border-slate-700"
-          value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
-          placeholder="Project name"
-        />
-      ) : null}
+      <section className="mb-6 space-y-3">
+        <SectionHeading>Application</SectionHeading>
+        <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+          <span>Application type</span>
+          <select
+            value={applicationId}
+            onChange={(e) => setApplicationId(e.target.value as VBeltApplicationId)}
+            className={calculatorNumberInputClass}
+          >
+            {VBELT_APPLICATIONS.map((app) => (
+              <option key={app.id} value={app.id}>
+                {app.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          Typical service factor {profile.serviceFactorMin.toFixed(1)}–{profile.serviceFactorMax.toFixed(1)} · default{" "}
+          {profile.defaultServiceFactor.toFixed(2)}
+        </p>
+        {setProjectName ? (
+          <input
+            className="w-full rounded border p-2 text-sm dark:border-slate-700"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            placeholder="Project name (optional)"
+          />
+        ) : null}
+      </section>
 
       <div className="space-y-6">
         <section className="space-y-3">
-          <SectionHeading>1 — Power source</SectionHeading>
+          <SectionHeading>Core inputs</SectionHeading>
           <div className="grid gap-4 sm:grid-cols-2">
             <CalculatorUnitField
               label="Motor power"
@@ -152,53 +196,8 @@ export default function VBeltsInputs({
             <div className="flex items-end text-sm text-slate-600 dark:text-slate-400">
               Speed ratio ≈ {(speedDriver / Math.max(speedDriven, 1)).toFixed(2)} : 1
             </div>
-          </div>
-        </section>
-
-        <section className="space-y-3">
-          <SectionHeading>2 — Duty conditions</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-              <span>Service factor preset</span>
-              <select
-                value={servicePreset}
-                onChange={(e) => {
-                  setServicePreset(e.target.value);
-                  const preset = VBELT_SERVICE_FACTOR_PRESETS.find((p) => p.id === e.target.value);
-                  if (preset) setServiceFactor(preset.factor);
-                }}
-                className={calculatorNumberInputClass}
-              >
-                {VBELT_SERVICE_FACTOR_PRESETS.map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.label} ({preset.factor.toFixed(1)})
-                  </option>
-                ))}
-                <option value="custom">Custom value</option>
-              </select>
-            </label>
-            <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-              <span>Service factor</span>
-              <input
-                type="number"
-                step="0.05"
-                min={1}
-                value={serviceFactor}
-                onChange={(e) => {
-                  setServiceFactor(Number(e.target.value));
-                  setServicePreset("custom");
-                }}
-                className={calculatorNumberInputClass}
-              />
-            </label>
-          </div>
-        </section>
-
-        <section className="space-y-3">
-          <SectionHeading>3 — Geometry</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
             <CalculatorUnitField
-              label="Preferred center distance"
+              label="Center distance"
               value={centerDistance}
               onChange={setCenterDistance}
               unit={
@@ -210,6 +209,227 @@ export default function VBeltsInputs({
                 />
               }
             />
+            <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+              <span>Operating hours / day</span>
+              <select
+                value={applicationOptions.operatingHoursPerDay}
+                onChange={(e) => patchOptions({ operatingHoursPerDay: Number(e.target.value) })}
+                className={calculatorNumberInputClass}
+              >
+                <option value={8}>8 hr/day</option>
+                <option value={16}>16 hr/day</option>
+                <option value={24}>24 hr/day</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <SectionHeading>Application details</SectionHeading>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {profile.subTypes ? (
+              <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                <span>{profile.label} type</span>
+                <select
+                  value={applicationOptions.subTypeId ?? profile.subTypes[0]?.id ?? ""}
+                  onChange={(e) => patchOptions({ subTypeId: e.target.value })}
+                  className={calculatorNumberInputClass}
+                >
+                  {profile.subTypes.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
+
+            {(applicationId === "pump" || applicationId === "machine-tool") && (
+              <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                <span>Duty cycle</span>
+                <select
+                  value={applicationOptions.dutyCycle ?? "continuous"}
+                  onChange={(e) =>
+                    patchOptions({ dutyCycle: e.target.value as VBeltApplicationOptions["dutyCycle"] })
+                  }
+                  className={calculatorNumberInputClass}
+                >
+                  <option value="continuous">Continuous</option>
+                  <option value="intermittent">Intermittent</option>
+                  <option value="batch">Batch / cyclic</option>
+                </select>
+              </label>
+            )}
+
+            {applicationId === "agricultural" && (
+              <>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Shock severity</span>
+                  <select
+                    value={applicationOptions.shockSeverity ?? "medium"}
+                    onChange={(e) =>
+                      patchOptions({ shockSeverity: e.target.value as VBeltApplicationOptions["shockSeverity"] })
+                    }
+                    className={calculatorNumberInputClass}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </label>
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+                  <input
+                    type="checkbox"
+                    checked={applicationOptions.outdoorEnvironment ?? true}
+                    onChange={(e) => patchOptions({ outdoorEnvironment: e.target.checked })}
+                    className="rounded border-slate-300"
+                  />
+                  Outdoor / dusty environment
+                </label>
+              </>
+            )}
+
+            {applicationId === "conveyor" && (
+              <>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Conveyor length (m)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={applicationOptions.conveyorLengthM ?? 20}
+                    onChange={(e) => patchOptions({ conveyorLengthM: Number(e.target.value) })}
+                    className={calculatorNumberInputClass}
+                  />
+                </label>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Material weight (kg)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={applicationOptions.materialWeightKg ?? 500}
+                    onChange={(e) => patchOptions({ materialWeightKg: Number(e.target.value) })}
+                    className={calculatorNumberInputClass}
+                  />
+                </label>
+              </>
+            )}
+
+            {applicationId === "packaging" && (
+              <>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Cycles per minute</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={applicationOptions.cyclesPerMinute ?? 20}
+                    onChange={(e) => patchOptions({ cyclesPerMinute: Number(e.target.value) })}
+                    className={calculatorNumberInputClass}
+                  />
+                </label>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Start/stop frequency</span>
+                  <select
+                    value={applicationOptions.startStopFrequency ?? "medium"}
+                    onChange={(e) =>
+                      patchOptions({
+                        startStopFrequency: e.target.value as VBeltApplicationOptions["startStopFrequency"],
+                      })
+                    }
+                    className={calculatorNumberInputClass}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </label>
+              </>
+            )}
+
+            {applicationId === "machine-tool" && (
+              <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                <span>Speed accuracy</span>
+                <select
+                  value={applicationOptions.speedAccuracy ?? "standard"}
+                  onChange={(e) =>
+                    patchOptions({ speedAccuracy: e.target.value as VBeltApplicationOptions["speedAccuracy"] })
+                  }
+                  className={calculatorNumberInputClass}
+                >
+                  <option value="standard">Standard</option>
+                  <option value="high">High precision</option>
+                </select>
+              </label>
+            )}
+
+            {applicationId === "fan" && (
+              <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                <span>Speed adjustment</span>
+                <select
+                  value={applicationOptions.subTypeId ?? "fixed-speed"}
+                  onChange={(e) => patchOptions({ subTypeId: e.target.value })}
+                  className={calculatorNumberInputClass}
+                >
+                  <option value="fixed-speed">Fixed ratio</option>
+                  <option value="variable-speed">Variable pulley / speed</option>
+                </select>
+              </label>
+            )}
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <SectionHeading>Duty & belt selection</SectionHeading>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={useManualServiceFactor}
+                onChange={(e) => setUseManualServiceFactor(e.target.checked)}
+                className="rounded border-slate-300"
+              />
+              Override application service factor manually
+            </label>
+            {!useManualServiceFactor ? (
+              <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+                Using application service factor: <strong>{serviceFactor.toFixed(2)}</strong>
+              </div>
+            ) : (
+              <>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Service factor preset</span>
+                  <select
+                    value={servicePreset}
+                    onChange={(e) => {
+                      setServicePreset(e.target.value);
+                      const preset = VBELT_SERVICE_FACTOR_PRESETS.find((p) => p.id === e.target.value);
+                      if (preset) setServiceFactor(preset.factor);
+                    }}
+                    className={calculatorNumberInputClass}
+                  >
+                    {VBELT_SERVICE_FACTOR_PRESETS.map((preset) => (
+                      <option key={preset.id} value={preset.id}>
+                        {preset.label} ({preset.factor.toFixed(1)})
+                      </option>
+                    ))}
+                    <option value="custom">Custom value</option>
+                  </select>
+                </label>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                  <span>Service factor</span>
+                  <input
+                    type="number"
+                    step="0.05"
+                    min={1}
+                    value={serviceFactor}
+                    onChange={(e) => {
+                      setServiceFactor(Number(e.target.value));
+                      setServicePreset("custom");
+                    }}
+                    className={calculatorNumberInputClass}
+                  />
+                </label>
+              </>
+            )}
             {!isDesignMode ? (
               <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
                 <input
@@ -251,26 +471,22 @@ export default function VBeltsInputs({
                 />
               </>
             ) : null}
+            <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+              <span>Belt section</span>
+              <select
+                value={beltSection}
+                onChange={(e) => setBeltSection(e.target.value)}
+                className={calculatorNumberInputClass}
+              >
+                <option value="auto">Auto select (A–E, 3V/5V/8V)</option>
+                {VBELT_SECTION_CATALOG.map((item) => (
+                  <option key={item.section} value={item.section}>
+                    {item.section} ({item.family})
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-        </section>
-
-        <section className="space-y-3">
-          <SectionHeading>4 — Belt family</SectionHeading>
-          <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-            <span>Belt section</span>
-            <select
-              value={beltSection}
-              onChange={(e) => setBeltSection(e.target.value)}
-              className={calculatorNumberInputClass}
-            >
-              <option value="auto">Auto select (A–E, 3V/5V/8V)</option>
-              {VBELT_SECTION_CATALOG.map((item) => (
-                <option key={item.section} value={item.section}>
-                  {item.section} ({item.family})
-                </option>
-              ))}
-            </select>
-          </label>
         </section>
       </div>
     </CalculatorInputPanel>
