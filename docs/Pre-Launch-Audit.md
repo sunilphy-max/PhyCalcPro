@@ -1,7 +1,7 @@
 # PhyCalcPro — Pre-Launch Audit
 
 **Date:** 2026-06-07  
-**Scope:** UI/theme consistency, formatting, physics/solvers, Design/Check/Select, clutter, launch readiness  
+**Scope:** UI/theme consistency, formatting, physics/solvers, Auto-design/Validate/Compare, clutter, launch readiness  
 **Environment tested:** `NEXT_PUBLIC_FREE_LAUNCH=true` (`.env.local`), Windows, Node build pipeline  
 **Full module audit:** [`docs/Website-Module-Audit.md`](Website-Module-Audit.md) — 62 modules, homogenization complete (2026-06-07)
 
@@ -13,7 +13,7 @@ Post-improvement pass (2026-06-07): complete website module audit and homogeniza
 
 ## Previous verdict: **Launch with caveats**
 
-PhyCalcPro is **deployable today** for a free early-access launch: production build passes, layout validation passes, and automated verification benchmarks are green (13/13). Monetization UI is correctly gated under free launch. Design/Check/Select is wired on all calculator pages; machine solvers (gear tooth sweep, expanded bearing catalog, live shaft loads) and cross-module advisor links are complete. Remaining work is **homogenization polish** on workflow-scaffold modules—not launch blockers for an indicative engineering workspace.
+PhyCalcPro is **deployable today** for a free early-access launch: production build passes, layout validation passes, and automated verification benchmarks are green (13/13). Monetization UI is correctly gated under free launch. Auto-design / Validate / Compare is wired on all calculator pages; machine solvers (gear tooth sweep, expanded bearing catalog, live shaft loads) and cross-module advisor links are complete. Remaining work is **homogenization polish** on workflow-scaffold modules—not launch blockers for an indicative engineering workspace.
 
 ---
 
@@ -85,13 +85,13 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 | Profiles layout | **Done** | `inputs` prop wired; legacy three-column layout removed |
 | Remaining raw inputs | **Done** | `ProfilesInputs` shape dimension fields use `CalculatorUnitField` |
 
-### P2 — Design mode depth
+### P2 — Auto-design depth
 
 | Issue | Modules | Notes |
 |-------|---------|-------|
 | Workflow scaffold only | ~40 modules with `maturity: "workflow"` | Mode toggle + advisor visible; Calculate label changes; **solver not invoked** on Design — expected until solver integration |
 | Inline vs panel design targets | beams, columns, compression-springs, v-belts use inline fields; others use `DesignTargetFields` | Documented in `designInputFieldRegistry.ts`; no bug |
-| Select mode apply | `useApplyDesignFields` on 34+ pages | Remaining pages use registry fields matching local state names |
+| Compare Apply | `useApplyDesignFields` on 34+ pages | Remaining pages use registry fields matching local state names |
 
 ### P3 — Physics & verification
 
@@ -112,7 +112,7 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 
 ## Sample module audit (15 modules)
 
-| Module | Layout | Inputs widget | Results shell | Metric formatting | Design mode |
+| Module | Layout | Inputs widget | Results shell | Metric formatting | Auto-design |
 |--------|--------|---------------|---------------|-------------------|-------------|
 | beams | `inputs`/`results` | CalculatorUnitField | CalculatorResultsShell | Dashboard plots | Solver-backed ✓ |
 | columns | `inputs`/`results` | CalculatorUnitField | CalculatorResultsShell | Dashboard | Solver-backed ✓ |
@@ -133,7 +133,7 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 
 ---
 
-## Design/Check/Select trace
+## Auto-design / Validate / Compare trace
 
 ```
 CalculatorLayout (moduleId)
@@ -147,7 +147,7 @@ Page calculate():
   → runCheck() / solver engine
 ```
 
-**Verified behavior (manual code trace):** beams, columns, gears, v-belts, bearings — mode changes button label; design targets visible in Design mode; apply candidate updates form fields.
+**Verified behavior (manual code trace):** beams, columns, gears, v-belts, bearings — mode changes button label; design targets visible in Auto-design and Compare; Apply candidate updates form fields.
 
 ---
 
@@ -173,9 +173,9 @@ Before announcing launch, spot-check in browser with `NEXT_PUBLIC_FREE_LAUNCH=tr
 
 - [ ] Home loads; hero shows module count; no Pricing in nav
 - [ ] `/products` sidebar — open beams, gears, v-belts, columns
-- [ ] Toggle Design mode — design target fields appear (except inline modules: beams, columns, v-belts, compression-springs)
-- [ ] Design → Calculate on gears — module/face width updates; results show metric cards with units
-- [ ] Select mode on beams — Apply candidate loads section designation
+- [ ] Toggle Auto-design — design target fields appear (except inline modules: beams, columns, v-belts, compression-springs)
+- [ ] Auto-design → Calculate on gears — module/face width updates; results show metric cards with units
+- [ ] Compare mode on beams — Apply candidate loads section designation
 - [ ] Design standard selector — US/EU/ISO all selectable; units reset on change
 - [ ] Export PDF + CSV on beams and gears results
 - [ ] `/documentation/modules/gears` — equations render (KaTeX)

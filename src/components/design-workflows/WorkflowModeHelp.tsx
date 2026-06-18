@@ -2,52 +2,23 @@
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import type { ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
+import { WORKFLOW_MODE_META } from "@/lib/design-workflows/workflowModeLabels";
 
 type Props = {
   workflow: ModuleDesignWorkflow;
 };
 
-const MODE_STEPS: Record<
-  ModuleDesignWorkflow["modes"][number]["id"],
-  { headline: string; steps: string[] }
-> = {
-  check: {
-    headline: "Check — verify what you entered",
-    steps: [
-      "Enter geometry, loads, and material in the inputs panel.",
-      "Click Calculate to run the forward solver.",
-      "Review numeric results, charts, and engineering checks for your design standard.",
-    ],
-  },
-  design: {
-    headline: "Design — auto-size from your targets",
-    steps: [
-      "Set design targets (limits, safety factor, life, etc.) in the inputs panel.",
-      "Click Calculate — the module searches catalog or reverse-sizes, applies the best candidate, then runs the check.",
-      "Review the updated geometry and utilization in the results.",
-    ],
-  },
-  select: {
-    headline: "Select — compare options before committing",
-    steps: [
-      "Open “Sizing candidates & reference” below to see ranked catalog options.",
-      "Click Apply on a row to load that size into the form (switches to Check mode).",
-      "Run Calculate again to verify the chosen option in detail.",
-    ],
-  },
-};
-
 export default function WorkflowModeHelp({ workflow }: Props) {
   const { mode } = useDesignWorkflow();
   const active = workflow.modes.find((m) => m.id === mode) ?? workflow.modes[0];
-  const copy = MODE_STEPS[active?.id ?? "check"];
+  const copy = WORKFLOW_MODE_META[active?.id ?? "check"];
 
   const maturityNote =
     workflow.maturity === "workflow"
-      ? "This module shows workflow UI only — Design/Select change the button label but do not auto-size yet. Use Check for analysis."
+      ? "This module shows workflow UI only — Auto-design and Compare change the button label but do not auto-size yet. Use Validate for analysis."
       : workflow.maturity === "catalog-backed"
-        ? "Design mode ranks catalog entries; Select lets you apply a row before checking."
-        : "Design mode runs a solver-backed sizing search before the detailed check.";
+        ? "Auto-design ranks catalog entries; Compare lets you Apply a row, then Validate in detail."
+        : "Auto-design runs a solver-backed sizing search, applies the best candidate, then runs the full validation check.";
 
   return (
     <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-3 text-sm dark:border-slate-700 dark:bg-slate-800/50">

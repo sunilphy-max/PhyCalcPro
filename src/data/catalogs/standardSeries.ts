@@ -1,5 +1,5 @@
 /**
- * Standard size series for catalog sweeps in Design mode.
+ * Standard size series for catalog sweeps in Auto-design mode.
  */
 
 /** Standard spring wire diameters (mm) per EN 10270 stock sizes */

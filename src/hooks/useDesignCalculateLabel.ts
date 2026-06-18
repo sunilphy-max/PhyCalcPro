@@ -1,14 +1,16 @@
 "use client";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
+import {
+  getDesignCalculateLabel as getLabel,
+  type DesignWorkflowMode,
+} from "@/lib/design-workflows/workflowModeLabels";
 
 export function getDesignCalculateLabel(
-  mode: "check" | "design" | "select",
+  mode: DesignWorkflowMode,
   fallback = "Calculate"
 ): string {
-  if (mode === "design") return "Run design";
-  if (mode === "select") return "Compare options";
-  return fallback;
+  return getLabel(mode, fallback);
 }
 
 /** Label for the primary action button based on workflow mode. */

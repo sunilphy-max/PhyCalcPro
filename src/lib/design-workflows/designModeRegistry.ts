@@ -119,7 +119,7 @@ export function runModuleDesignMode(
 
   if (category === "tools") {
     return {
-      method: "Reference tools use Check mode; advisor shows formula/unit context from live inputs.",
+      method: "Reference tools use Validate mode; advisor shows formula/unit context from live inputs.",
       best: null,
       ranked: [],
     };

@@ -3,6 +3,7 @@
 import { CheckCircle2, GitCompare, Ruler } from "lucide-react";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import type { ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
+import { getWorkflowModeLabel } from "@/lib/design-workflows/workflowModeLabels";
 
 type Props = {
   workflow: ModuleDesignWorkflow;
@@ -10,8 +11,8 @@ type Props = {
 };
 
 const modeIcons = {
-  check: CheckCircle2,
   design: Ruler,
+  check: CheckCircle2,
   select: GitCompare,
 } as const;
 
@@ -30,13 +31,14 @@ export default function DesignModeToggle({ workflow, compact = false }: Props) {
             Workflow mode
           </p>
           {!compact ? (
-            <p className="mt-1 text-sm text-slate-600">
-              Choose how this module sizes and verifies your design.
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
+              Auto-design sizes from targets; Validate checks your inputs; Compare lets you pick
+              from ranked options.
             </p>
           ) : null}
         </div>
         <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cyan-800 shadow-sm dark:bg-slate-800 dark:text-cyan-300">
-          {mode}
+          {getWorkflowModeLabel(mode)}
         </span>
       </div>
 

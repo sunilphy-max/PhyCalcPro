@@ -123,7 +123,7 @@
 | hydraulics | F = P × A | Pressure converted to Pa, areas in m² — OK |
 | heat-exchangers | Q = ṁ·cp·ΔT | Indicative screening; no unit bug found |
 | cam-toolpaths | MRR = feed × ae × ap | mm-based inputs; consistent internally |
-| material-db | Stress ranking | Design mode uses Pa via toBase — OK |
+| material-db | Stress ranking | Auto-design uses Pa via toBase — OK |
 | advanced-systems (8) | Shared calculator bridge | Unified via AdvancedSystemCalculator |
 
 No clear MPa/Pa or mm/m formula errors requiring engine rewrites were found in spot-checks.

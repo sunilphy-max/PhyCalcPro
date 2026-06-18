@@ -53,7 +53,7 @@ function writeFieldValue(
   return value;
 }
 
-/** Editable design-target fields for Design / Select workflow modes. */
+/** Editable design-target fields for Auto-design / Compare workflow modes. */
 export default function DesignTargetFields({ moduleId }: Props) {
   const { mode, userInputs, designTargets, patchDesignTarget } = useDesignWorkflow();
   const fields = useMemo(() => getDesignInputFieldDefs(moduleId), [moduleId]);
@@ -82,7 +82,7 @@ export default function DesignTargetFields({ moduleId }: Props) {
   return (
     <div className="rounded-xl border border-cyan-300 bg-cyan-50/80 p-4 shadow-sm">
       <p className="text-xs font-semibold uppercase tracking-wide text-cyan-900">
-        {mode === "select" ? "Select mode — design targets" : "Design mode — design targets"}
+        {mode === "select" ? "Compare — design targets" : "Auto-design — design targets"}
       </p>
       <p className="mt-1 text-sm text-slate-600">
         Enter the loads, limits, and safety factors you want the sizing run to meet.

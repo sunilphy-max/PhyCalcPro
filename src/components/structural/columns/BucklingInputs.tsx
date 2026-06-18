@@ -142,7 +142,7 @@ export default function BucklingInputs({
             unit={<span className="inline-flex min-w-[5.5rem] items-center px-2 text-sm text-slate-500">—</span>}
           />
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Design mode selects the lightest catalog section with Pcr/P at or above this target.
+            Auto-design selects the lightest catalog section with Pcr/P at or above this target.
           </p>
         </CalculatorFormSection>
       ) : null}

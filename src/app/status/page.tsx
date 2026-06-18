@@ -77,7 +77,7 @@ export default function StatusPage() {
           Design-tool workflow coverage
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-          Every active calculator now has a Design / Check / Select workflow scaffold: design inputs,
+          Every active calculator now has an Auto-design / Validate / Compare workflow scaffold: design inputs,
           automatic sizing targets, candidate comparison, catalog tables, linked downstream checks,
           expert notes, and remaining gaps. Solver-backed means the current calculator already
           computes at least part of the worksheet; workflow scaffold means the MITCalc-style

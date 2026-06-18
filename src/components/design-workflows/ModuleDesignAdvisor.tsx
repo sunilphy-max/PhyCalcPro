@@ -13,9 +13,9 @@ type Props = {
 };
 
 const maturityLabel: Record<ModuleDesignWorkflow["maturity"], string> = {
-  workflow: "UI only — Check runs the solver",
-  "solver-backed": "Design auto-sizes before check",
-  "catalog-backed": "Design ranks catalog entries",
+  workflow: "UI only — Validate runs the solver",
+  "solver-backed": "Auto-design sizes before validation",
+  "catalog-backed": "Auto-design ranks catalog entries",
 };
 
 export default function ModuleDesignAdvisor({ workflow }: Props) {
@@ -46,7 +46,7 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
           </p>
           <p className="mt-0.5 truncate text-xs text-slate-500 dark:text-slate-400">
             {mode === "select"
-              ? "Compare options and Apply a candidate to the form"
+              ? "Compare ranked options and Apply a candidate to the form"
               : "Catalog tables, workflow strategy, linked modules — optional detail"}
             {" · "}
             <span className="text-cyan-700 dark:text-cyan-400">{maturityLabel[workflow.maturity]}</span>
@@ -131,8 +131,9 @@ export default function ModuleDesignAdvisor({ workflow }: Props) {
             </div>
           ) : (mode === "design" || mode === "select") && workflow.maturity === "workflow" ? (
             <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800/40 dark:text-slate-300">
-              Design and Select show reference strategy only for this module — run Check to verify your inputs.
-              Auto-sizing candidates appear when a solver-backed workflow is registered.
+              Auto-design and Compare show reference strategy only for this module — run Validate to
+              verify your inputs. Live sizing candidates appear when a solver-backed workflow is
+              registered.
             </p>
           ) : null}
 

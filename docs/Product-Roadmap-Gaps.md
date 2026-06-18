@@ -18,7 +18,7 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Benchmarks | compression-springs, timing-belts, bevel-gears, keys-splines, circular-plates |
 | Code checks | Specialized templates for compression springs, v-belts, timing belts, keys-splines |
 | UI depth | Shafts Kt, fatigue methods, tolerance 2D/MC, fits ISO lookup (prior session) |
-| Design workflow | Design/Check/Select context wired to pilot solvers (beams, columns, compression-springs, v-belts) |
+| Design workflow | Auto-design / Validate / Compare context wired to pilot solvers (beams, columns, compression-springs, v-belts) |
 | Design workflow | Live computed candidates from module user inputs (not demo constants) |
 | Design workflow | Rolled-section picker + catalog auto-search on beams and columns |
 | Design workflow | Homepage repositioned as engineering design workspace |
@@ -27,7 +27,7 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Design workflow | Shared sweepCatalogForUtilization + materialCatalogService infrastructure |
 | Design workflow | Page Calculate branches on workflow mode (50+ modules via scaffold + pilots) |
 | Design workflow | **Live userInputs sync** on 55 calculator pages via `useSyncDesignInputs` (fleet-wide; replaces empty `{}` scaffold placeholders) |
-| Design workflow | **Select-mode Apply** in advisor panel — loads ranked candidate fields into form and switches to Check mode |
+| Design workflow | **Compare Apply** in advisor panel — loads ranked candidate fields into form and switches to Validate mode |
 | Design workflow | Shared hooks: `useSyncDesignInputs`, `useRegisterApplyDesignCandidate`, `useModuleDesignCalculate` |
 | Design workflow | `DesignTargetFields` component for design/select mode target checklist on high-traffic modules |
 | Local projects | saveLocalProject extended to gears, v-belts, compression-springs |

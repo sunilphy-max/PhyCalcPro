@@ -1,6 +1,10 @@
 import { allModules } from "@/data/modules";
+import {
+  DEFAULT_WORKFLOW_MODES,
+  type DesignWorkflowMode,
+} from "@/lib/design-workflows/workflowModeLabels";
 
-export type DesignWorkflowMode = "check" | "design" | "select";
+export type { DesignWorkflowMode };
 
 export type CandidateRow = {
   option: string;
@@ -29,23 +33,7 @@ export type ModuleDesignWorkflow = {
   gaps: string[];
 };
 
-const DEFAULT_MODES: ModuleDesignWorkflow["modes"] = [
-  {
-    id: "check",
-    label: "Check",
-    description: "Calculate with current inputs; show results and code checks.",
-  },
-  {
-    id: "design",
-    label: "Design",
-    description: "Auto-size from targets, apply best candidate, then calculate.",
-  },
-  {
-    id: "select",
-    label: "Select",
-    description: "Compare catalog options; Apply loads one into the form.",
-  },
-];
+const DEFAULT_MODES: ModuleDesignWorkflow["modes"] = DEFAULT_WORKFLOW_MODES;
 
 const CATEGORY_TEMPLATES: Record<
   string,
@@ -75,7 +63,7 @@ const CATEGORY_TEMPLATES: Record<
     catalogTables: ["Material allowable table", "Section property table", "Deflection limit presets"],
     linkedWorkflowModuleIds: ["combined-loading", "fatigue", "welds", "bolts"],
     expertNotes: [
-      "Design mode should compare at least three candidate sizes, not only report a single pass/fail result.",
+      "Auto-design should compare at least three candidate sizes, not only report a single pass/fail result.",
       "Deflection and local connection details often govern before peak stress.",
     ],
     gaps: ["Full code-specific member design remains module-dependent.", "No automatic procurement catalog is connected yet."],
@@ -248,7 +236,9 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     designInputs: ["Target load case", "Application preset", "Material", "Span/supports", "Allowable deflection"],
     autoSizingTargets: ["Required section modulus", "Required second moment of area", "Nearest section candidate", "Stress and deflection utilization"],
     linkedWorkflowModuleIds: ["combined-loading", "fatigue", "welds", "bolts", "rolled-sections"],
-    expertNotes: ["Use Design mode to compare section candidates; Check mode verifies the currently entered geometry."],
+    expertNotes: [
+      "Use Compare to review section candidates; Validate verifies the geometry currently in the form.",
+    ],
     gaps: ["Connection and lateral-torsional buckling checks remain module-dependent."],
   },
   columns: {
@@ -256,7 +246,7 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     designInputs: ["Axial load", "Column length", "End condition", "Target buckling safety factor"],
     autoSizingTargets: ["Critical load", "Effective length", "Lightest passing catalog section", "Slenderness ratio"],
     linkedWorkflowModuleIds: ["combined-loading", "rolled-sections", "safety-factor"],
-    expertNotes: ["Design mode searches rolled sections for minimum weight at the target safety factor."],
+    expertNotes: ["Auto-design searches rolled sections for minimum weight at the target safety factor."],
     gaps: ["Inelastic buckling and code-specific column curves are not fully embedded."],
   },
   "compression-springs": {
@@ -264,7 +254,7 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     designInputs: ["Target rate", "Maximum force", "Maximum OD", "Material", "Free length"],
     autoSizingTargets: ["Wire diameter", "Mean coil diameter", "Active coils", "Stress margin"],
     linkedWorkflowModuleIds: ["fatigue", "materials/database", "safety-factor"],
-    expertNotes: ["Design mode iterates wire diameter and active coils within the OD envelope."],
+    expertNotes: ["Auto-design iterates wire diameter and active coils within the OD envelope."],
     gaps: ["Full wire-stock catalog and fatigue standards need deeper integration."],
   },
   "v-belts": {
@@ -272,7 +262,7 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     designInputs: ["Power", "Speed ratio", "Driver speed", "Service factor"],
     autoSizingTargets: ["Belt section", "Driver/driven diameters", "Center distance", "Power utilization"],
     linkedWorkflowModuleIds: ["shafts", "bearings", "multi-pulley", "safety-factor"],
-    expertNotes: ["Design mode screens A/B/SPA/SPB sections with indicative power factors."],
+    expertNotes: ["Auto-design screens belt sections and pulley sizes from power, speed ratio, and service factor."],
     gaps: ["Manufacturer-specific rating tables are not fully embedded."],
   },
   shafts: {
@@ -290,7 +280,7 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     autoSizingTargets: ["Module/DP", "Tooth counts", "Face width", "Bending/contact safety", "Center distance"],
     catalogTables: ["AGMA/ISO gear factors", "Standard modules", "Material hardness", "Lubrication factors"],
     linkedWorkflowModuleIds: ["gear-ratio-design", "shafts", "bearings", "keys-splines"],
-    expertNotes: ["Design mode should generate tooth-count candidates before strength checking."],
+    expertNotes: ["Auto-design should generate tooth-count candidates before strength checking."],
   },
   bearings: {
     maturity: "catalog-backed",
@@ -339,7 +329,9 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     designInputs: ["Required allowable stress", "Application temperature", "Environment"],
     autoSizingTargets: ["Nearest passing material", "Yield margin", "Elastic modulus"],
     linkedWorkflowModuleIds: ["fatigue", "corrosion", "temperature-properties", "beams", "shafts"],
-    expertNotes: ["Design mode ranks catalog materials by required allowable stress; Select applies material and E to the browse view."],
+    expertNotes: [
+      "Auto-design ranks catalog materials by required allowable stress; Compare lets you Apply material and E to the browse view.",
+    ],
     gaps: ["Full temperature derating and corrosion screening in one workflow are planned."],
   },
   "battery-ev-systems": {

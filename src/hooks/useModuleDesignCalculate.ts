@@ -15,7 +15,7 @@ type Options = {
 };
 
 /**
- * Syncs live inputs to the design advisor and branches Calculate on Check vs Design mode.
+ * Syncs live inputs to the design advisor and branches Calculate on Validate vs Auto-design mode.
  * Registers applyDesign for Select-mode candidate loading in the advisor panel.
  */
 export function useModuleDesignCalculate({

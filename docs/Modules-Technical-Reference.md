@@ -89,10 +89,13 @@ Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUn
 
 ### 1.8 Design workflow layer
 
-Every calculator page now receives a shared **Design / Check / Select** advisor through `CalculatorLayout`.
+Every calculator page receives a shared **Auto-design / Validate / Compare** toolbar through `CalculatorLayout`.
+Tab order is fixed: **Auto-design** (size from targets) → **Validate** (forward check) → **Compare** (ranked alternatives with Apply).
+User-facing names and button labels live in `src/lib/design-workflows/workflowModeLabels.ts`; internal IDs remain `design`, `check`, and `select`.
+
 The workflow registry (`src/lib/design-workflows/moduleDesignWorkflows.ts`) provides:
 
-- required design inputs to define before solving,
+- required design inputs to define before sizing,
 - automatic sizing targets,
 - computed reference-design candidate comparisons,
 - standard/catalog tables to consult,
@@ -109,16 +112,17 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 
 - **`designModeRegistry.ts`** maps every module ID to a category design solver (catalog sweep, reverse sizing, or optimization screen).
 - **`computedCandidates.ts`** calls the registry so the advisor shows live ranked candidates from page `userInputs`.
-- **Calculate** on product pages branches on workflow mode: **Check** runs the forward solver; **Design** applies the best registry candidate then re-runs the check.
+- **Calculate** branches on workflow mode: **Validate** runs the forward solver only; **Auto-design** applies the best registry candidate then re-runs validation; **Compare** ranks options without auto-apply (Apply in the advisor loads a row and switches to Validate).
 - Shared helpers: `sweepCatalogForUtilization`, `materialCatalogService`, `scripts/scaffold-design-mode.mjs`.
+- Full mode behavior: see [`docs/Design-Workflow-Reference.md`](Design-Workflow-Reference.md).
 
-| Coverage type | Meaning |
-|---------------|---------|
-| **Solver-backed** | Design mode runs a real reverse/catalog solver and applies fields before check (beams, columns, gears, shafts, pipes, …). |
-| **Catalog-backed** | Design mode ranks catalog entries (material-db, rolled-sections, bearings, tools reference). |
-| **Check-only** | formula-reference, unit-converter — advisor registered; Design mode does not resize (by design). |
+| Coverage type | Auto-design behavior |
+|---------------|----------------------|
+| **Solver-backed** | Real reverse/catalog solver; best candidate applied before validation (beams, columns, gears, shafts, pipes, …). |
+| **Catalog-backed** | Ranks catalog entries (material-db, rolled-sections, bearings). |
+| **Validate-only** | formula-reference, unit-converter — advisor registered; Auto-design does not resize (by design). |
 
-**Count:** 61 modules with real design paths · 2 check-only tools · 1 profiles page (section-from-required-I).
+**Count:** 61 modules with real design paths · 2 validate-only tools · 1 profiles page (section-from-required-I).
 
 ### 1.9 Persistence & cross-calculator handoff
 
