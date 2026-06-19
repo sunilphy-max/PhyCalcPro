@@ -5,6 +5,7 @@ import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MaterialDatabase from "@/components/materials/MaterialDatabase";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorExportButton from "@/components/calculator/CalculatorExportButton";
 import { calculatorPanelClass, calculatorPrimaryButtonClass } from "@/components/calculator/styles";
 import { useModuleDesignCalculate } from "@/hooks/useModuleDesignCalculate";
 import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
@@ -79,9 +80,12 @@ export default function Page() {
             }
           />
 
-          <button type="button" onClick={calculate} className={calculatorPrimaryButtonClass}>
-            Screen materials
-          </button>
+          <div className="flex flex-wrap items-start gap-2">
+            <button type="button" onClick={calculate} className={`${calculatorPrimaryButtonClass} min-w-0 flex-1`}>
+              Screen materials
+            </button>
+            <CalculatorExportButton />
+          </div>
 
           {selectedMaterial ? (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">

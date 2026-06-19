@@ -10,7 +10,7 @@ type Props = {
   footer?: ReactNode;
 };
 
-/** Standard left column: module inputs + calculate action. Design targets render via CalculatorLayout. */
+/** Standard input column: module inputs + calculate/export actions. Design targets render via CalculatorLayout. */
 export default function CalculatorInputPanel({ title, description, children, footer }: Props) {
   return (
     <div className={calculatorPanelClass}>

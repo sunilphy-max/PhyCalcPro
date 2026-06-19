@@ -1,16 +1,13 @@
 "use client";
 
-import { useRef, type ReactNode } from "react";
-import ResultExportControls from "@/components/ResultExportControls";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
 import EngineeringChecksPanel from "@/components/shared/EngineeringChecksPanel";
 import CalculationBasisPanel from "@/components/shared/CalculationBasisPanel";
-import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
-import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaults";
 import { buildCsvRowsFromResult, mergeCsvRows, type CsvRow } from "@/lib/export/csvRows";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { ReportMeta } from "@/lib/export/structuredReport";
-import { allModules } from "@/data/modules";
 
 type Props = {
   fileName: string;
@@ -27,7 +24,6 @@ type Props = {
   reportMeta?: ReportMeta;
   children: ReactNode;
   className?: string;
-  showControlsWhenEmpty?: boolean;
 };
 
 export default function ExportableReport({
@@ -43,38 +39,51 @@ export default function ExportableReport({
   reportMeta,
   children,
   className = "space-y-6",
-  showControlsWhenEmpty = true,
 }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
-  const mergedCsv = mergeCsvRows(buildCsvRowsFromResult(result ?? undefined), csvRows);
-  const checklist = moduleId ? getModuleQualityChecklist(moduleId, qualityOverrides) : null;
-  const moduleTitle = moduleId
-    ? allModules.find((m) => m.id === moduleId)?.title
-    : undefined;
+  const reportContext = useCalculatorReportOptional();
+  const mergedCsv = useMemo(
+    () => mergeCsvRows(buildCsvRowsFromResult(result ?? undefined), csvRows),
+    [result, csvRows]
+  );
+
+  useEffect(() => {
+    if (!reportContext || !moduleId) return;
+
+    reportContext.registerReport({
+      reportRef,
+      fileName,
+      title,
+      description,
+      csvRows: mergedCsv,
+      calculationSpec,
+      reportMeta,
+      qualityOverrides,
+      showQualityChecklist,
+    });
+
+    return () => reportContext.unregisterReport();
+  }, [
+    reportContext,
+    moduleId,
+    fileName,
+    title,
+    description,
+    mergedCsv,
+    calculationSpec,
+    reportMeta,
+    qualityOverrides,
+    showQualityChecklist,
+  ]);
 
   return (
     <div className={className}>
-      {showControlsWhenEmpty ? (
-        <ResultExportControls
-          reportRef={reportRef}
-          fileName={fileName}
-          title={title}
-          description={description}
-          csvRows={mergedCsv}
-          moduleTitle={moduleTitle}
-          calculationSpec={calculationSpec}
-          reportMeta={reportMeta}
-        />
-      ) : null}
       <div ref={reportRef} className="space-y-6 export-report-content">
         {calculationSpec ? (
           <>
             <EngineeringChecksPanel spec={calculationSpec} />
             <CalculationBasisPanel spec={calculationSpec} />
           </>
-        ) : null}
-        {moduleId && showQualityChecklist && checklist ? (
-          <CalculationQualityChecklist title="Module quality" checklist={checklist} />
         ) : null}
         {children}
       </div>

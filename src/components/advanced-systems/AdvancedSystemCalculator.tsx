@@ -9,6 +9,7 @@ import {
   CalculatorMetricGrid,
   CalculatorResultsPanel,
 } from "@/components/calculator/results";
+import CalculatorExportButton from "@/components/calculator/CalculatorExportButton";
 import { calculatorPanelClass, calculatorPrimaryButtonClass } from "@/components/calculator/styles";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
@@ -152,10 +153,13 @@ export default function AdvancedSystemCalculator({ calculatorId }: Props) {
             ))}
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2">
-            <button type="button" onClick={calculate} className={calculatorPrimaryButtonClass}>
-              Solve
-            </button>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-start gap-2">
+              <button type="button" onClick={calculate} className={`${calculatorPrimaryButtonClass} min-w-0 flex-1`}>
+                Solve
+              </button>
+              <CalculatorExportButton />
+            </div>
             <button
               type="button"
               onClick={resetDefaults}

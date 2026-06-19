@@ -22,7 +22,6 @@ type Props = {
   /** Title block metadata (project, engineer) for the structured PDF report */
   reportMeta?: ReportMeta;
   children: ReactNode;
-  showControlsWhenEmpty?: boolean;
   /** Panel heading when results are present */
   heading?: string;
   /** Shown when `empty` is true */
@@ -31,7 +30,7 @@ type Props = {
   empty?: boolean;
 };
 
-/** Standard right column — export wrapper + buckling-style results panel. */
+/** Standard results column — export registration + buckling-style results panel. */
 export default function CalculatorResultsShell({
   moduleId,
   children,
