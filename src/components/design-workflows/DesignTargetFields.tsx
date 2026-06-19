@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import {
@@ -87,7 +88,7 @@ export default function DesignTargetFields({ moduleId }: Props) {
       <p className="mt-1 text-sm text-slate-600">
         Enter the loads, limits, and safety factors you want the sizing run to meet.
       </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className={`mt-4 ${calculatorInputGridClass}`}>
         {fields.map((field) => (
           <CalculatorUnitField
             key={field.inputKey}

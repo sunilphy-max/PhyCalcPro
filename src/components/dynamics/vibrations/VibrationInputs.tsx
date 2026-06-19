@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
@@ -71,7 +72,7 @@ export default function VibrationInputs({
       description="Natural frequency and resonance screening."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vibration analysis" designAware />}
     >
-<div className="grid gap-4 sm:grid-cols-2">
+<div className={`${calculatorInputGridClass}`}>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700">Beam length</label>
           <div className="flex gap-2">

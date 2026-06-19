@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
@@ -65,7 +66,7 @@ export default function Vdi2230Inputs({
       description="Single-bolt worksheet: resiliences, load factor, assembly preload, tightening torque, slip, fatigue and bearing pressure."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run VDI 2230 check" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Bolt size (ISO coarse)</span>
           <select value={size} onChange={(e) => setSize(e.target.value)} className={selectClass}>

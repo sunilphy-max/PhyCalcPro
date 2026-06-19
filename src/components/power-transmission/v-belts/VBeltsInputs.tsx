@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 import {
   VBELT_SECTION_CATALOG,
@@ -166,7 +166,7 @@ export default function VBeltsInputs({
       <div className="space-y-6">
         <section className="space-y-3">
           <SectionHeading>Core inputs</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className={`${calculatorInputGridClass}`}>
             <CalculatorUnitField
               label="Motor power"
               value={power}
@@ -226,7 +226,7 @@ export default function VBeltsInputs({
 
         <section className="space-y-3">
           <SectionHeading>Application details</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className={`${calculatorInputGridClass}`}>
             {profile.subTypes ? (
               <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                 <span>{profile.label} type</span>
@@ -379,7 +379,7 @@ export default function VBeltsInputs({
 
         <section className="space-y-3">
           <SectionHeading>Duty & belt selection</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className={`${calculatorInputGridClass}`}>
             <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
               <input
                 type="checkbox"

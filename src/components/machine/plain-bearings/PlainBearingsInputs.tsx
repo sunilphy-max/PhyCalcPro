@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   load: number;
@@ -52,7 +52,7 @@ export default function PlainBearingsInputs({
       description="Screen Sommerfeld number, eccentricity and minimum film thickness for hydrodynamic lubrication."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Radial load"
           value={load}

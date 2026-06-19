@@ -15,15 +15,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
-import {
-  calculatorDangerLinkClass,
-  calculatorFieldLabelClass,
-  calculatorLoadCardClass,
-  calculatorNumberInputClass,
-  calculatorSecondaryButtonClass,
-  calculatorSelectClass,
-  calculatorTextInputClass,
-} from "@/components/calculator/styles";
+import { calculatorDangerLinkClass, calculatorFieldLabelClass, calculatorInputGridCompactClass, calculatorInputGridTightClass, calculatorLoadCardClass, calculatorNumberInputClass, calculatorSecondaryButtonClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
@@ -325,7 +317,7 @@ export default function BeamInputs(props: Props) {
                 />
               </label>
             ) : load.type === "udl" ? (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className={`${calculatorInputGridCompactClass}`}>
                 <label className={calculatorFieldLabelClass}>
                   Start position
                   <input
@@ -372,7 +364,7 @@ export default function BeamInputs(props: Props) {
       </CalculatorFormSection>
 
       <CalculatorFormSection title="Result units">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className={`${calculatorInputGridTightClass}`}>
           <label className={calculatorFieldLabelClass}>
             Moment units
             <div className="mt-2">

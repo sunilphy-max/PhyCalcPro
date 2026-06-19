@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
@@ -63,7 +64,7 @@ export default function FlywheelInputs({
       description="Energy storage and inertia design for rotating systems."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate flywheel" designAware />}
     >
-<div className="grid gap-4 sm:grid-cols-2">
+<div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Outer diameter</span>
           <div className="flex gap-2">

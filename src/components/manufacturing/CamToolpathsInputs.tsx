@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
@@ -52,7 +53,7 @@ export default function CamToolpathsInputs({
       description="Estimate a basic roughing toolpath with feed, material removal rate, and cut time guidance."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate toolpath" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Tool diameter</span>
           <div className="flex items-center gap-3">

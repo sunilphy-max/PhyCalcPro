@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
@@ -88,7 +89,7 @@ export default function GearInputs({
           placeholder="Project name"
         />
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Power</span>
           <div className="flex gap-2">

@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   power: number;
@@ -36,7 +36,7 @@ export default function RollerChainsInputs(props: Props) {
       description="Size sprockets, estimate chain tension and life."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate drive" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField label="Power" value={props.power} onChange={props.setPower} unit={<ModuleUnitSelect moduleId="roller-chains" fieldKey="power" value={props.powerUnit} onChange={props.setPowerUnit} />} />
         <label className="space-y-2 text-sm text-slate-700">
           <span>Driver speed (rpm)</span>

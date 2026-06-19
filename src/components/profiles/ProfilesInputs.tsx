@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridTightClass } from "@/components/calculator/styles";
 import { useState } from "react";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
@@ -135,7 +136,7 @@ export default function ProfilesInputs({
         <h4 className="font-semibold mb-2">Shape Parameters</h4>
 
         {shapeType === "rectangle" && shape.rectangle && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={`${calculatorInputGridTightClass}`}>
             <CalculatorUnitField
               label="Width"
               value={shape.rectangle.width}
@@ -168,7 +169,7 @@ export default function ProfilesInputs({
         )}
 
         {shapeType === "hollow_circle" && shape.hollowCircle && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={`${calculatorInputGridTightClass}`}>
             <CalculatorUnitField
               label="Outer diameter"
               value={shape.hollowCircle.outerDiameter}
@@ -198,7 +199,7 @@ export default function ProfilesInputs({
 
         {(shapeType === "i_beam" || shapeType === "t_beam" || shapeType === "c_channel") &&
           (shape.iBeam || shape.tBeam || shape.cChannel) && (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className={`${calculatorInputGridTightClass}`}>
               <CalculatorUnitField
                 label="Height"
                 value={sectionHeight}
@@ -231,7 +232,7 @@ export default function ProfilesInputs({
           )}
 
         {shapeType === "angle" && shape.angle && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={`${calculatorInputGridTightClass}`}>
             <CalculatorUnitField
               label="Leg 1 length"
               value={shape.angle.leg1}
@@ -273,7 +274,7 @@ export default function ProfilesInputs({
               unit={areaUnit}
               step={1e-6}
             />
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className={`${calculatorInputGridTightClass}`}>
               <CalculatorUnitField
                 label="Centroid X"
                 value={shape.custom.centroidX}
@@ -293,7 +294,7 @@ export default function ProfilesInputs({
                 step={0.001}
               />
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className={`${calculatorInputGridTightClass}`}>
               <CalculatorUnitField
                 label="Ixx"
                 value={shape.custom.ixx}

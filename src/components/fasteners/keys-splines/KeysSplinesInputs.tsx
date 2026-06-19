@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   torque: number;
@@ -64,7 +64,7 @@ export default function KeysSplinesInputs({
       description="Check parallel key or spline torque transfer via shear and bearing stress."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate key" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Applied torque"
           value={torque}

@@ -1,9 +1,16 @@
 /** Shared calculator UI tokens — use across all product modules. */
 
 export const calculatorPanelClass =
-  "calculator-panel space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900";
+  "calculator-panel min-w-0 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900";
 
-export const calculatorWorkspaceClass = "calculator-workspace space-y-4";
+export const calculatorWorkspaceClass = "calculator-workspace min-w-0 space-y-4";
+
+/** Single-column field grid for the narrow module input sidebar (280–340px). */
+export const calculatorInputGridClass = "grid min-w-0 grid-cols-1 gap-4";
+
+export const calculatorInputGridTightClass = "grid min-w-0 grid-cols-1 gap-3";
+
+export const calculatorInputGridCompactClass = "grid min-w-0 grid-cols-1 gap-2";
 
 export const calculatorGuidanceClass =
   "rounded-2xl border border-slate-200 bg-slate-50 p-6 text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-300";

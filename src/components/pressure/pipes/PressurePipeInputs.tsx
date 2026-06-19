@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
@@ -62,7 +63,7 @@ export default function PressurePipeInputs({
       description="Internal pressure and stress analysis for piping."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run pipe analysis" designAware />}
     >
-<div className="grid gap-4 sm:grid-cols-2">
+<div className={`${calculatorInputGridClass}`}>
         <div className="space-y-2">
           <label className="block text-sm font-medium text-slate-700">Radius</label>
           <div className="flex gap-2">

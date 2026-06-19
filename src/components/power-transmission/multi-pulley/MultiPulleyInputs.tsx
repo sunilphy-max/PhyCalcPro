@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridTightClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 export type PulleyRow = { diameter: number; centerDistance: number };
 
@@ -63,7 +63,7 @@ export default function MultiPulleyInputs({
                 </button>
               ) : null}
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className={`${calculatorInputGridTightClass}`}>
               <CalculatorUnitField
                 label="Diameter"
                 value={p.diameter}

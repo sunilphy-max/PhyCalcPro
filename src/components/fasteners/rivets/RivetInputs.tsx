@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
@@ -64,7 +65,7 @@ export default function RivetInputs({
       description="Specify rivet geometry, plate thickness, and load cases for shear and axial service."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Evaluate rivet" designAware />}
     >
-<div className="grid gap-4 sm:grid-cols-2">
+<div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Rivet diameter</span>
           <div className="flex gap-2">

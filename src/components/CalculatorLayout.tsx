@@ -131,7 +131,7 @@ function CalculatorLayoutBody({
           }`}
         >
           {inputColumn ? (
-            <aside className={calculatorWorkspaceClass}>
+            <aside className={`${calculatorWorkspaceClass} max-w-full`}>
               {moduleId ? <DesignTargetFields moduleId={moduleId} /> : null}
               {inputColumn}
             </aside>

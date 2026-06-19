@@ -6,7 +6,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MathExpression from "@/components/shared/MathExpression";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorInputGridTightClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import {
   FORMULA_CATEGORIES,
   FORMULA_INPUTS,
@@ -56,7 +56,7 @@ export default function FormulaReferenceInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Evaluate formula" designAware />}
     >
       <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`${calculatorInputGridTightClass}`}>
           <label className="space-y-2 text-sm text-slate-700">
             <span>Category</span>
             <select
@@ -102,7 +102,7 @@ export default function FormulaReferenceInputs({
           <MathExpression expression={formulaMeta.expression} display />
         </p>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className={`${calculatorInputGridClass}`}>
           {fields.map((field) => {
             const profile = field.moduleFieldKey
               ? getModuleFieldProfile("formula-reference", field.moduleFieldKey)

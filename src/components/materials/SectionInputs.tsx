@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import { useMemo } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
@@ -68,7 +69,7 @@ export default function SectionInputs({
         <CalculatorCalculateButton onClick={onCalculate} label={`Calculate ${shapeLabel.toLowerCase()}`} designAware />
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-1 text-sm text-slate-600">
           Section type
           <select

@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import { getModuleFieldProfile } from "@/lib/units/moduleProfiles";
 
 export const UNIT_CONVERTER_DIMENSIONS = ["length", "force", "stress"] as const;
@@ -48,7 +48,7 @@ export default function UnitConverterInputs({
       description="Convert a numeric value between units on the same physical dimension."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Convert" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">
           <span>Physical dimension</span>
           <select

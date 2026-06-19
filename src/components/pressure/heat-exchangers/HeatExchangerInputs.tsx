@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import type { Dispatch, SetStateAction } from "react";
@@ -58,7 +59,7 @@ export default function HeatExchangerInputs({
       description="Estimate heat transfer and pressure drops."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate heat exchanger" designAware />}
     >
-<div className="grid gap-4 sm:grid-cols-2">
+<div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Hot flow rate</span>
           <div className="flex items-center gap-3">

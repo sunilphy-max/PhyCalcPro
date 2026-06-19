@@ -3,7 +3,7 @@
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridTightClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   nominalSize: number;
@@ -67,7 +67,7 @@ export default function FitInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate fit" designAware />}
     >
       <div className="grid gap-4">
-        <div className="grid grid-cols-2 gap-3">
+        <div className={`${calculatorInputGridTightClass}`}>
           <label className="space-y-1 text-sm text-slate-600">
             Nominal size
             <input
@@ -86,7 +86,7 @@ export default function FitInputs({
         </label>
 
         {useIsoLookup ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={`${calculatorInputGridTightClass}`}>
             <div className="space-y-2 rounded-xl border border-slate-200 p-4 bg-slate-50">
               <div className="font-semibold text-slate-900">Hole (e.g. H7)</div>
               <label className="text-sm text-slate-600 block">
@@ -141,7 +141,7 @@ export default function FitInputs({
             </div>
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={`${calculatorInputGridTightClass}`}>
             <div className="space-y-2 rounded-xl border border-slate-200 p-4 bg-slate-50">
               <div className="font-semibold text-slate-900">Hole tolerance</div>
               <label className="text-sm text-slate-600 block">

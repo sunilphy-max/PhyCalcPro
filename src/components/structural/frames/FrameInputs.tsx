@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import UnitSelector from "@/components/shared/UnitSelector";
 import MeshControls from "@/components/shared/MeshControls";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
@@ -85,7 +86,7 @@ export default function FrameInputs({
         onSectionApplied={onSectionApplied}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Span"
           value={span}
@@ -156,7 +157,6 @@ export default function FrameInputs({
           onChange={setE}
           min={1e8}
           step="any"
-          colSpan
           unit={
             <UnitSelector
               dimension="stress"
@@ -173,7 +173,6 @@ export default function FrameInputs({
           onChange={setLoad}
           min={0}
           step={100}
-          colSpan
           unit={
             <UnitSelector
               dimension="force"

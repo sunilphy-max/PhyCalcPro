@@ -3,7 +3,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { BearingType, BearingReliability } from "@/lib/machine/bearings/types";
 import { bearingsOfType } from "@/data/catalogs/bearingCatalog";
 
@@ -94,7 +94,7 @@ export default function BearingInputs({
           />
         </label>
       ) : null}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Radial load"
           value={radialLoad}

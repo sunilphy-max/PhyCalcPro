@@ -5,7 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { CircularPlateConfig } from "@/lib/structural/circular-plates/types";
 
 type Boundary = CircularPlateConfig["boundary"];
@@ -63,7 +63,7 @@ export default function CircularPlatesInputs({
       description="Uniform pressure on a solid disk — axisymmetric FDM with Roark closed-form validation."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate plate" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Plate radius"
           value={radius}

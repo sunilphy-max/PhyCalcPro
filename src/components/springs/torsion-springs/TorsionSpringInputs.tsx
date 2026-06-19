@@ -4,8 +4,9 @@ import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   wireDiameter: number;
@@ -56,7 +57,7 @@ export default function TorsionSpringInputs({
       description="Helical torsion spring — rate from bending, stress in wire."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate spring" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={calculatorInputGridClass}>
         <CalculatorUnitField
           label="Wire diameter (d)"
           value={wireDiameter}
@@ -81,27 +82,19 @@ export default function TorsionSpringInputs({
             <ModuleUnitSelect moduleId="torsion-springs" fieldKey="legLength" value={lengthUnit} onChange={setLengthUnit} />
           }
         />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Deflection angle (deg)</span>
-          <input
-            type="number"
-            min={0}
-            value={deflectionAngleDeg}
-            onChange={(e) => setDeflectionAngleDeg(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
-        </label>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Active coils (n)</span>
-          <input
-            type="number"
-            min={1}
-            step={0.5}
-            value={activeCoils}
-            onChange={(e) => setActiveCoils(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
-        </label>
+        <CalculatorNumberField
+          label="Deflection angle (deg)"
+          value={deflectionAngleDeg}
+          onChange={setDeflectionAngleDeg}
+          min={0}
+        />
+        <CalculatorNumberField
+          label="Active coils (n)"
+          value={activeCoils}
+          onChange={setActiveCoils}
+          min={1}
+          step={0.5}
+        />
         <CalculatorUnitField
           label="Elastic modulus (E)"
           value={modulus}

@@ -1,5 +1,6 @@
 "use client";
 
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 
@@ -72,7 +73,7 @@ export default function WeldInputs({
       description="Define weld throat size, group geometry, and applied shear/axial forces."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Evaluate weld" designAware />}
     >
-<div className="grid gap-4 sm:grid-cols-2">
+<div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Weld type</span>
           <select

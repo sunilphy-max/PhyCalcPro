@@ -4,8 +4,9 @@ import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   wireDiameter: number;
@@ -36,7 +37,7 @@ export default function ExtensionSpringInputs(props: Props) {
       description="Helical extension spring with initial tension estimate."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate spring" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={calculatorInputGridClass}>
         <CalculatorUnitField
           label="Wire diameter (d)"
           value={props.wireDiameter}
@@ -69,17 +70,13 @@ export default function ExtensionSpringInputs(props: Props) {
             <ModuleUnitSelect moduleId="extension-springs" fieldKey="deflection" value={props.lengthUnit} onChange={props.setLengthUnit} />
           }
         />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Active coils (n)</span>
-          <input
-            type="number"
-            min={1}
-            step={0.5}
-            value={props.activeCoils}
-            onChange={(e) => props.setActiveCoils(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
-        </label>
+        <CalculatorNumberField
+          label="Active coils (n)"
+          value={props.activeCoils}
+          onChange={props.setActiveCoils}
+          min={1}
+          step={0.5}
+        />
         <CalculatorUnitField
           label="Shear modulus (G)"
           value={props.modulus}

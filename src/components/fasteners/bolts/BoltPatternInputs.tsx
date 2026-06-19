@@ -4,7 +4,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   boltCount: number;
@@ -51,7 +51,7 @@ export default function BoltPatternInputs({
       description="Elastic distribution of shear and eccentric moment across N bolts on a bolt circle."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate pattern" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Bolt count</span>
           <input

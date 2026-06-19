@@ -4,8 +4,10 @@ import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import CalculatorSelectField from "@/components/calculator/CalculatorSelectField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorTextInputClass } from "@/components/calculator/styles";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 import type { SpringWireType } from "@/lib/springs/compression-springs/types";
 
@@ -113,7 +115,7 @@ export default function CompressionSpringInputs({
     >
       {setProjectName ? (
         <input
-          className="mb-4 w-full rounded border p-2 text-sm"
+          className={`mb-4 ${calculatorTextInputClass}`}
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           placeholder="Project name"
@@ -121,7 +123,7 @@ export default function CompressionSpringInputs({
       ) : null}
 
       {isDesignMode ? (
-        <div className="mb-4 grid gap-4 rounded-xl border border-cyan-200 bg-cyan-50/70 p-4 sm:grid-cols-2">
+        <div className={`mb-4 ${calculatorInputGridClass} rounded-xl border border-cyan-200 bg-cyan-50/70 p-4`}>
           <CalculatorUnitField
             label="Target spring rate"
             value={targetRate}
@@ -145,7 +147,7 @@ export default function CompressionSpringInputs({
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={calculatorInputGridClass}>
         {!isDesignMode ? (
         <>
         <CalculatorUnitField
@@ -184,17 +186,13 @@ export default function CompressionSpringInputs({
             <ModuleUnitSelect moduleId="compression-springs" fieldKey="deflection" value={lengthUnit} onChange={setLengthUnit} />
           }
         />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Active coils (n)</span>
-          <input
-            type="number"
-            min={1}
-            step={0.5}
-            value={activeCoils}
-            onChange={(e) => setActiveCoils(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
-        </label>
+        <CalculatorNumberField
+          label="Active coils (n)"
+          value={activeCoils}
+          onChange={setActiveCoils}
+          min={1}
+          step={0.5}
+        />
         </>
         ) : null}
         <CalculatorUnitField
@@ -205,21 +203,18 @@ export default function CompressionSpringInputs({
             <ModuleUnitSelect moduleId="compression-springs" fieldKey="modulus" value={modulusUnit} onChange={setModulusUnit} />
           }
         />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Wire grade (EN 10270 / ASTM)</span>
-          <select
-            value={wireType}
-            onChange={(e) => setWireType(e.target.value as SpringWireType)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="music">Music wire (A228 / EN 10270-1 SH)</option>
-            <option value="hard-drawn">Hard-drawn (A227)</option>
-            <option value="oil-tempered">Oil-tempered (A229)</option>
-            <option value="chrome-vanadium">Chrome-vanadium (A232)</option>
-            <option value="chrome-silicon">Chrome-silicon (A401)</option>
-            <option value="custom">Custom (enter Rm below)</option>
-          </select>
-        </label>
+        <CalculatorSelectField
+          label="Wire grade (EN 10270 / ASTM)"
+          value={wireType}
+          onChange={(value) => setWireType(value as SpringWireType)}
+        >
+          <option value="music">Music wire (A228 / EN 10270-1 SH)</option>
+          <option value="hard-drawn">Hard-drawn (A227)</option>
+          <option value="oil-tempered">Oil-tempered (A229)</option>
+          <option value="chrome-vanadium">Chrome-vanadium (A232)</option>
+          <option value="chrome-silicon">Chrome-silicon (A401)</option>
+          <option value="custom">Custom (enter Rm below)</option>
+        </CalculatorSelectField>
         {wireType === "custom" ? (
           <CalculatorUnitField
             label="Ultimate tensile strength Rm"

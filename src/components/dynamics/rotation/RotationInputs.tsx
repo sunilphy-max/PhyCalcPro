@@ -3,7 +3,7 @@
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridTightClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   mass: number;
@@ -43,7 +43,7 @@ export default function RotationInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate rotation" designAware />}
     >
       <div className="grid gap-4">
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`${calculatorInputGridTightClass}`}>
           <label className="space-y-1 text-sm text-slate-600">
             Mass (kg)
             <input
@@ -64,7 +64,7 @@ export default function RotationInputs({
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`${calculatorInputGridTightClass}`}>
           <label className="space-y-1 text-sm text-slate-600">
             Radius
             <input
@@ -82,7 +82,7 @@ export default function RotationInputs({
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`${calculatorInputGridTightClass}`}>
           <label className="space-y-1 text-sm text-slate-600">
             Speed (RPM)
             <input
@@ -94,7 +94,7 @@ export default function RotationInputs({
           </label>
           <div className="space-y-1 text-sm text-slate-600">
             Power
-            <div className="grid gap-3 sm:grid-cols-[1fr_120px]">
+            <div className={`${calculatorInputGridTightClass}`}>
               <input
                 type="number"
                 value={power}

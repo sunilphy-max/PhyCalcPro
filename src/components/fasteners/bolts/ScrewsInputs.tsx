@@ -4,12 +4,7 @@ import { useState } from "react";
 import type { ScrewConfig, ScrewType, ThreadType } from "@/lib/fasteners/bolts/types";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import {
-  calculatorFieldLabelClass,
-  calculatorNumberInputClass,
-  calculatorSelectClass,
-  calculatorTextInputClass,
-} from "@/components/calculator/styles";
+import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorInputGridCompactClass, calculatorNumberInputClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
@@ -95,7 +90,7 @@ export default function ScrewsInputs({
       {/* Screw Type Selection */}
       <div className="border-t pt-3 mt-3">
         <h4 className="font-semibold mb-2">Screw Type</h4>
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`${calculatorInputGridCompactClass}`}>
           <button
             onClick={() => handleScrewTypeChange("power_screw")}
             className={`px-4 py-2 rounded font-medium transition ${
@@ -139,7 +134,7 @@ export default function ScrewsInputs({
           </div>
 
           {/* Dimensions */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Major Diameter (mm)</label>
               <input
@@ -162,7 +157,7 @@ export default function ScrewsInputs({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Lead (mm)</label>
               <input
@@ -186,7 +181,7 @@ export default function ScrewsInputs({
           </div>
 
           {/* Forces and Properties */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Axial Force (N)</label>
               <input
@@ -219,7 +214,7 @@ export default function ScrewsInputs({
           <h4 className="font-semibold">Ball Screw Parameters</h4>
 
           {/* Dimensions */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Major Diameter (mm)</label>
               <input
@@ -242,7 +237,7 @@ export default function ScrewsInputs({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Ball Diameter (mm)</label>
               <input
@@ -268,7 +263,7 @@ export default function ScrewsInputs({
           </div>
 
           {/* Forces and Operating Conditions */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Axial Force (N)</label>
               <input
@@ -291,7 +286,7 @@ export default function ScrewsInputs({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className={`${calculatorInputGridClass}`}>
             <div>
               <label className="block text-sm text-gray-600 mb-1">Friction Coefficient</label>
               <input

@@ -3,7 +3,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import { calculatorNumberInputClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
   targetRatio: number;
@@ -30,7 +30,7 @@ export default function GearRatioDesignInputs({
       description="Search integer tooth pairs for the closest match to a target speed ratio."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Find tooth counts" designAware />}
     >
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Target ratio</span>
           <input
