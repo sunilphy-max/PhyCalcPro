@@ -83,7 +83,7 @@ function CalculatorLayoutBody({
 
   return (
     <>
-      <div className="min-h-full bg-slate-50 p-4 md:p-6 dark:bg-slate-950">
+      <div className="min-h-full bg-slate-50 p-4 pb-28 md:p-6 md:pb-28 dark:bg-slate-950">
         <div className="mx-auto max-w-[1600px] space-y-4">
           {/* Header: title + design standard + workflow modes */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5 dark:border-slate-800 dark:bg-slate-900">
@@ -152,10 +152,10 @@ function CalculatorLayoutBody({
           {designWorkflow ? <ModuleCandidateStrategy workflow={designWorkflow} /> : null}
 
           <ModuleDocumentStatus moduleId={moduleId} />
-
-          {designWorkflow ? <ModuleContinueWorkflowBar workflow={designWorkflow} /> : null}
         </div>
       </div>
+
+      {designWorkflow ? <ModuleContinueWorkflowBar workflow={designWorkflow} /> : null}
     </>
   );
 }
