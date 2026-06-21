@@ -19,17 +19,19 @@ function resolveLinkedModules(workflow: ModuleDesignWorkflow) {
     .filter((catalogModule): catalogModule is NonNullable<typeof catalogModule> => Boolean(catalogModule));
 }
 
-/** Sticky bottom bar — suggested next calculators in the design chain. */
+/**
+ * Sticky bottom bar in the main column only — never overlaps the app sidebar (w-72).
+ */
 export default function ModuleContinueWorkflowBar({ workflow }: Props) {
   const linkedModules = resolveLinkedModules(workflow);
   if (!linkedModules.length) return null;
 
   return (
     <div
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 lg:left-72"
+      className="sticky bottom-0 z-30 -mx-4 mt-4 md:-mx-6"
       aria-label="Continue workflow"
     >
-      <div className="pointer-events-auto border-t border-emerald-300/80 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 py-3 shadow-[0_-8px_30px_rgba(16,185,129,0.25)] backdrop-blur-sm dark:border-emerald-500/40 dark:from-emerald-800 dark:via-teal-800 dark:to-cyan-900">
+      <div className="border-t border-emerald-300/80 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-4 py-3 shadow-[0_-8px_30px_rgba(16,185,129,0.25)] backdrop-blur-sm dark:border-emerald-500/40 dark:from-emerald-800 dark:via-teal-800 dark:to-cyan-900">
         <div className="mx-auto flex max-w-[1600px] flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-2 text-white">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/15">
