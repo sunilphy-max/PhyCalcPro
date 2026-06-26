@@ -1,7 +1,8 @@
 "use client";
 
-import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
+import { useMergedDesignInputs } from "@/hooks/useMergedDesignInputs";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState, useMemo, useCallback } from "react";
@@ -227,6 +228,8 @@ export default function Page() {
 
   useSyncDesignInputs("shafts", designUserInputs);
 
+  const mergedDesignInputs = useMergedDesignInputs(designUserInputs);
+
   const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
     if (fields.diameter != null) setDiameter(fields.diameter as never);
   }, []);
@@ -235,7 +238,7 @@ export default function Page() {
 
   const calculate = () => {
     if (workflowMode === "design") {
-      const design = runModuleDesignMode("shafts", designUserInputs);
+      const design = runModuleDesignMode("shafts", mergedDesignInputs);
       if (design?.best?.fields) applyDesignFields(design.best.fields);
     }
     runCheck();

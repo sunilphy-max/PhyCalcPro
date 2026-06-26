@@ -6,6 +6,7 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useMergedDesignInputs } from "@/hooks/useMergedDesignInputs";
 
 type Options = {
   moduleId: string;
@@ -25,19 +26,20 @@ export function useModuleDesignCalculate({
   applyDesign,
 }: Options) {
   const { mode: workflowMode } = useDesignWorkflow();
+  const mergedInputs = useMergedDesignInputs(userInputs);
 
   useSyncDesignInputs(moduleId, userInputs);
   useRegisterApplyDesignCandidate(applyDesign);
 
   const calculate = useCallback(() => {
     if (workflowMode === "design" && applyDesign) {
-      const design = runModuleDesignMode(moduleId, userInputs);
+      const design = runModuleDesignMode(moduleId, mergedInputs);
       if (design?.best?.fields) {
         applyDesign(design.best.fields);
       }
     }
     runCheck();
-  }, [workflowMode, moduleId, userInputs, runCheck, applyDesign]);
+  }, [workflowMode, moduleId, mergedInputs, runCheck, applyDesign]);
 
   return { calculate, workflowMode };
 }

@@ -60,7 +60,7 @@ export const unitFactors: UnitTable = {
     bar: 100000,
   },
   power: { W: 1, kW: 1000, hp: 745.7 },
-  torque: { "N\u00b7m": 1, "lbf\u00b7ft": 1.35582 },
+  torque: { "N\u00b7m": 1, "kN\u00b7m": 1000, "lbf\u00b7ft": 1.35582 },
   density: { "kg/m3": 1, "g/cm3": 1000, "lb/ft3": 16.0185 },
   area: { m2: 1, mm2: 1e-6, cm2: 1e-4, in2: 0.00064516, ft2: 0.092903 },
   time: { s: 1, min: 60, hr: 3600, year: YEAR_SECONDS },

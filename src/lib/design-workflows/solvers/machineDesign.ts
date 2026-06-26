@@ -62,9 +62,15 @@ function resolveShaftLoads(userInputs: ModuleUserInputs, length: number): ShaftL
   if (userInputs.shaftLoads?.length) {
     return userInputs.shaftLoads;
   }
-  const torque = userInputs.torque ?? 420;
+  let torque = userInputs.torque;
+  if ((torque == null || torque === 0) && userInputs.power != null) {
+    const rpm = userInputs.rpm ?? userInputs.speedDriver ?? 1200;
+    const omega = (rpm * 2 * Math.PI) / 60;
+    torque = omega > 0 ? userInputs.power / omega : 0;
+  }
+  const resolvedTorque = torque ?? 420;
   const moment = userInputs.bendingMoment ?? 650;
-  return [{ position: length / 2, torque, bendingMoment: moment }];
+  return [{ position: length / 2, torque: resolvedTorque, bendingMoment: moment }];
 }
 
 function fromSweep(

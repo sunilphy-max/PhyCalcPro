@@ -52,6 +52,16 @@ export type ModuleUserInputs = {
   // Power transmission
   power?: number;
   powerUnit?: string;
+  forceUnit?: string;
+  torqueUnit?: string;
+  momentUnit?: string;
+  pressureUnit?: string;
+  frequencyUnit?: string;
+  timeUnit?: string;
+  temperatureUnit?: string;
+  energyUnit?: string;
+  massUnit?: string;
+  velocityUnit?: string;
   speedDriver?: number;
   speedDriven?: number;
   rpm?: number;

@@ -10,9 +10,9 @@ export default function ProductsLayout({
 }) {
   return (
     <DesignCodeProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex w-full min-w-0 items-start">
         <Sidebar />
-        <div className="min-w-0 flex-1 overflow-x-hidden bg-slate-50">{children}</div>
+        <div className="relative z-0 min-w-0 flex-1 overflow-x-clip bg-slate-50">{children}</div>
       </div>
     </DesignCodeProvider>
   );

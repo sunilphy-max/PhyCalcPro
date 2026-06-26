@@ -54,7 +54,7 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
   );
 
   return (
-    <aside className="h-screen w-72 shrink-0 overflow-y-auto border-r border-slate-200 bg-white text-slate-950 shadow-sm">
+    <aside className="sticky top-0 z-[60] isolate h-[100dvh] w-72 shrink-0 self-start overflow-y-auto border-r border-slate-200 bg-white text-slate-950 shadow-sm">
       {/* Header */}
       <div className="px-5 py-6 border-b border-slate-200 bg-slate-50">
         <h1 className="text-lg font-semibold text-slate-950">PhyCalcPro</h1>
