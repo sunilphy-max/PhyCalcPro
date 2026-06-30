@@ -3,7 +3,6 @@
 @layer base {
   :root {
     color-scheme: light;
-    --products-sidebar-width: 18rem;
   }
 
   html {
@@ -40,11 +39,6 @@
 
   html.dark ::selection {
     background: rgba(148, 163, 184, 0.24);
-  }
-
-  /* Continue workflow bar: fixed in main column only (never over sidebar) */
-  .products-continue-workflow-anchor {
-    left: var(--products-sidebar-width);
   }
 
   /* Prevent Plotly / wide tables from painting over the sidebar */

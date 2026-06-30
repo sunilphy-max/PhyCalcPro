@@ -81,14 +81,9 @@ function CalculatorLayoutBody({
 
   const resultColumn = results ?? right;
 
-  const hasContinueWorkflow =
-    Boolean(designWorkflow?.linkedWorkflowModuleIds.length);
-
   return (
     <div className="min-h-full bg-slate-50 p-4 md:p-6 dark:bg-slate-950">
-      <div
-        className={`mx-auto max-w-[1600px] min-w-0 space-y-4${hasContinueWorkflow ? " pb-32" : ""}`}
-      >
+      <div className="mx-auto max-w-[1600px] min-w-0 space-y-4">
           {/* Header: title + design standard + workflow modes */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-5 dark:border-slate-800 dark:bg-slate-900">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
