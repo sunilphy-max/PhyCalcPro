@@ -10,9 +10,10 @@ export default function ProductsLayout({
 }) {
   return (
     <DesignCodeProvider>
-      <div className="flex w-full min-w-0 items-start">
+      {/* Grid keeps sidebar and module content in separate columns — no flex overlap. */}
+      <div className="products-shell grid w-full min-w-0 grid-cols-[18rem_minmax(0,1fr)]">
         <Sidebar />
-        <div className="relative z-0 min-w-0 flex-1 overflow-x-clip bg-slate-50">{children}</div>
+        <div className="products-module-main min-w-0">{children}</div>
       </div>
     </DesignCodeProvider>
   );

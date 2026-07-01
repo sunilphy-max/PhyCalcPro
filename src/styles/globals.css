@@ -41,11 +41,41 @@
     background: rgba(148, 163, 184, 0.24);
   }
 
-  /* Prevent Plotly / wide tables from painting over the sidebar */
+  /*
+   * Products shell: grid columns must not overlap; module column clips wide charts/tables
+   * so they cannot intercept clicks on the sidebar.
+   */
+  .products-shell {
+    align-items: start;
+  }
+
+  .products-sidebar {
+    position: relative;
+    z-index: 2;
+  }
+
+  .products-module-main {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    overflow-x: clip;
+    background-color: #f8fafc;
+  }
+
+  html.dark .products-module-main {
+    background-color: #020617;
+  }
+
   [data-export-plot="true"],
-  .js-plotly-plot {
+  .js-plotly-plot,
+  .js-plotly-plot .plot-container,
+  .js-plotly-plot .svg-container {
     max-width: 100%;
+  }
+
+  [data-export-plot="true"] {
     overflow: hidden;
+    contain: layout paint;
   }
 }
 

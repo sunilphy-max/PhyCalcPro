@@ -114,7 +114,7 @@ export default function EngineeringPlot({
 
   return (
     <div
-      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+      className="relative max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
       data-export-plot="true"
       data-export-caption={title}
     >

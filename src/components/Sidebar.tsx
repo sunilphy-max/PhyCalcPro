@@ -16,9 +16,6 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
     categoryId: string | null;
   } | null>(null);
 
-  // -----------------------------
-  // Scope categories based on page
-  // -----------------------------
   const visibleCategories = useMemo(
     () =>
       activeCategoryId
@@ -54,34 +51,33 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
   );
 
   return (
-    <aside className="sticky top-0 z-[60] isolate h-[100dvh] w-72 shrink-0 self-start overflow-y-auto border-r border-slate-200 bg-white text-slate-950 shadow-sm">
-      {/* Header */}
-      <div className="px-5 py-6 border-b border-slate-200 bg-slate-50">
+    <aside className="products-sidebar sticky top-0 max-h-screen w-full overflow-y-auto border-r border-slate-200 bg-white text-slate-950 shadow-sm">
+      <div className="border-b border-slate-200 bg-slate-50 px-5 py-6">
         <h1 className="text-lg font-semibold text-slate-950">PhyCalcPro</h1>
         <p className="mt-1 text-xs text-slate-500">Engineering Modules</p>
       </div>
 
-      {/* Navigation */}
-      <div className="p-4 space-y-3">
+      <nav className="space-y-3 p-4" aria-label="Engineering modules">
         {visibleCategories.map((cat) => {
           const isOpen = openCategory === cat.id;
 
           return (
-            <div key={cat.id} className="rounded-3xl border border-slate-200 bg-slate-50 shadow-sm overflow-hidden">
+            <div key={cat.id} className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm">
               <button
+                type="button"
                 onClick={() =>
                   setManualOpenCategory({
                     pathname,
                     categoryId: isOpen ? null : cat.id,
                   })
                 }
-                className="w-full text-left px-4 py-3 transition hover:bg-slate-100"
+                className="w-full px-4 py-3 text-left transition hover:bg-slate-100"
               >
-                <div className="font-semibold text-sm text-slate-950">{cat.title}</div>
+                <div className="text-sm font-semibold text-slate-950">{cat.title}</div>
                 <div className="mt-1 text-xs text-slate-500">{cat.description}</div>
               </button>
 
-              {isOpen && (
+              {isOpen ? (
                 <div className="space-y-1 border-t border-slate-200 bg-white px-4 py-3">
                   {cat.modules.map((mod) =>
                     mod.comingSoon ? (
@@ -110,12 +106,11 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
                     )
                   )}
                 </div>
-              )}
-
+              ) : null}
             </div>
           );
         })}
-      </div>
+      </nav>
     </aside>
   );
 }

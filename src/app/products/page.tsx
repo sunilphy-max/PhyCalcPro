@@ -34,7 +34,7 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <section className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(56,189,248,0.08),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.06),_transparent_35%)]" />
-        <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-slate-100 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-slate-100 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="space-y-8">
