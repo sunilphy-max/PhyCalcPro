@@ -42,23 +42,21 @@
   }
 
   /*
-   * Products shell: grid columns must not overlap; module column clips wide charts/tables
-   * so they cannot intercept clicks on the sidebar.
+   * Products shell: grid columns must not overlap. The module column uses isolation so
+   * Plotly/modebar z-index cannot paint above the sidebar; overflow-x clips wide SVGs.
    */
-  .products-shell {
-    align-items: start;
-  }
-
   .products-sidebar {
-    position: relative;
-    z-index: 2;
+    position: sticky;
+    z-index: 60;
+    isolation: isolate;
   }
 
   .products-module-main {
     position: relative;
-    z-index: 1;
+    z-index: 0;
     min-width: 0;
     overflow-x: clip;
+    isolation: isolate;
     background-color: #f8fafc;
   }
 
@@ -66,14 +64,14 @@
     background-color: #020617;
   }
 
-  [data-export-plot="true"],
-  .js-plotly-plot,
-  .js-plotly-plot .plot-container,
-  .js-plotly-plot .svg-container {
+  .products-module-main [data-export-plot="true"],
+  .products-module-main .js-plotly-plot,
+  .products-module-main .js-plotly-plot .plot-container,
+  .products-module-main .js-plotly-plot .svg-container {
     max-width: 100%;
   }
 
-  [data-export-plot="true"] {
+  .products-module-main [data-export-plot="true"] {
     overflow: hidden;
     contain: layout paint;
   }

@@ -51,7 +51,7 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
   );
 
   return (
-    <aside className="products-sidebar sticky top-0 max-h-screen w-full overflow-y-auto border-r border-slate-200 bg-white text-slate-950 shadow-sm">
+    <aside className="products-sidebar sticky top-0 z-[60] isolate h-[100dvh] max-h-[100dvh] w-full shrink-0 overflow-y-auto border-r border-slate-200 bg-white text-slate-950 shadow-sm">
       <div className="border-b border-slate-200 bg-slate-50 px-5 py-6">
         <h1 className="text-lg font-semibold text-slate-950">PhyCalcPro</h1>
         <p className="mt-1 text-xs text-slate-500">Engineering Modules</p>
