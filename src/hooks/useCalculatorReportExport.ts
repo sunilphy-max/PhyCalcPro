@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { RefObject } from "react";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import type { CalculationSpec } from "@/lib/standards/types";
@@ -124,14 +124,26 @@ export function useCalculatorReportExport(config: CalculatorReportExportConfig |
 
   const clearStatus = useCallback(() => setStatusMessage(null), []);
 
-  return {
-    pdfEnabled,
-    exporting,
-    downloading,
-    statusMessage,
-    statusTone,
-    exportPdf,
-    exportCsv,
-    clearStatus,
-  };
+  return useMemo(
+    () => ({
+      pdfEnabled,
+      exporting,
+      downloading,
+      statusMessage,
+      statusTone,
+      exportPdf,
+      exportCsv,
+      clearStatus,
+    }),
+    [
+      pdfEnabled,
+      exporting,
+      downloading,
+      statusMessage,
+      statusTone,
+      exportPdf,
+      exportCsv,
+      clearStatus,
+    ]
+  );
 }

@@ -42,15 +42,30 @@ export default function ExportableReport({
 }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
   const reportContext = useCalculatorReportOptional();
+  const registerReport = reportContext?.registerReport;
+  const unregisterReport = reportContext?.unregisterReport;
   const mergedCsv = useMemo(
     () => mergeCsvRows(buildCsvRowsFromResult(result ?? undefined), csvRows),
     [result, csvRows]
   );
+  const mergedCsvKey = useMemo(() => JSON.stringify(mergedCsv), [mergedCsv]);
+  const calculationSpecKey = useMemo(
+    () => JSON.stringify(calculationSpec ?? null),
+    [calculationSpec]
+  );
+  const qualityOverridesKey = useMemo(
+    () => JSON.stringify(qualityOverrides ?? null),
+    [qualityOverrides]
+  );
+  const reportMetaKey = useMemo(
+    () => JSON.stringify(reportMeta ?? null),
+    [reportMeta]
+  );
 
   useEffect(() => {
-    if (!reportContext || !moduleId) return;
+    if (!registerReport || !moduleId) return;
 
-    reportContext.registerReport({
+    registerReport({
       reportRef,
       fileName,
       title,
@@ -62,17 +77,18 @@ export default function ExportableReport({
       showQualityChecklist,
     });
 
-    return () => reportContext.unregisterReport();
+    return () => unregisterReport?.();
   }, [
-    reportContext,
+    registerReport,
+    unregisterReport,
     moduleId,
     fileName,
     title,
     description,
-    mergedCsv,
-    calculationSpec,
-    reportMeta,
-    qualityOverrides,
+    mergedCsvKey,
+    calculationSpecKey,
+    reportMetaKey,
+    qualityOverridesKey,
     showQualityChecklist,
   ]);
 

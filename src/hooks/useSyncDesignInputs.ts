@@ -17,6 +17,9 @@ export function useSyncDesignInputs(_moduleId: string | undefined, userInputs: M
   const inputsKey = useMemo(() => JSON.stringify(mergedInputs), [mergedInputs]);
 
   useEffect(() => {
-    setUserInputs(mergedInputs);
+    setUserInputs((prev) => {
+      if (JSON.stringify(prev) === inputsKey) return prev;
+      return mergedInputs;
+    });
   }, [setUserInputs, inputsKey, mergedInputs]);
 }

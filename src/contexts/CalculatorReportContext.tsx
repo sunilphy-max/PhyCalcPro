@@ -86,9 +86,9 @@ export function CalculatorReportProvider({
         prev.reportRef === next.reportRef &&
         prev.title === next.title &&
         prev.description === next.description &&
-        prev.calculationSpec === next.calculationSpec &&
-        prev.reportMeta === next.reportMeta &&
         prev.showQualityChecklist === next.showQualityChecklist &&
+        JSON.stringify(prev.calculationSpec) === JSON.stringify(next.calculationSpec) &&
+        JSON.stringify(prev.reportMeta) === JSON.stringify(next.reportMeta) &&
         JSON.stringify(prev.qualityOverrides) === JSON.stringify(next.qualityOverrides) &&
         JSON.stringify(prev.csvRows) === JSON.stringify(next.csvRows)
       ) {
@@ -117,7 +117,7 @@ export function CalculatorReportProvider({
       registerReport,
       unregisterReport,
     }),
-    [exportState, qualityChecklist, registerReport, registration, unregisterReport]
+    [exportState, qualityChecklist, registerReport, unregisterReport, registration != null]
   );
 
   return (
