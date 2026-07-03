@@ -38,8 +38,6 @@ TR = \sqrt{\frac{1 + (2\zeta r)^2}{(1-r^2)^2 + (2\zeta r)^2}}
 
 Closed-form flexure, thermal, and SDOF transmissibility (`advanced-systems/calculators`). Resonance warning when \( 0.8 < r < 1.2 \).
 
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
-
 **Inputs**
 
 | Parameter | Description |
@@ -58,20 +56,6 @@ Closed-form flexure, thermal, and SDOF transmissibility (`advanced-systems/calcu
 - **Indicative:** Stiffness, natural frequency, transmissibility screening
 - **ISO:** ISO 230 machine tool accuracy; ISO 20816 vibration context
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
-
-**Design practice note**
-
-Screening results from this module inform preliminary sizing and design reviews. Final designs subject to applicable regulations, customer specifications, and qualified engineering approval should use full code-compliant methods, manufacturer data, and test validation beyond the indicative checks shown in PhyCalcPro.
 
 **Assumptions & limitations**
 

@@ -36,8 +36,6 @@ f_{\mathrm{surge}} = \frac{1}{2}\sqrt{\frac{k}{m_{\mathrm{active}}}}
 
 Closed-form EN 13906-1 / Shigley equations. Wire ultimate from Shigley Table 10-4 fits (music, hard-drawn, oil-tempered, chrome-vanadium, chrome-silicon). Active coil mass computed for surge frequency. Buckling flag for slenderness \( L_0/D \).
 
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
-
 **Inputs**
 
 | Parameter | Description |
@@ -59,20 +57,6 @@ Closed-form EN 13906-1 / Shigley equations. Wire ultimate from Shigley Table 10-
 - **EU:** EN 13906-1 cold-coiled helical compression springs
 - **US:** SAE AMS spring wire specifications (reference)
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
-
-**Design practice note**
-
-Screening results from this module inform preliminary sizing and design reviews. Final designs subject to applicable regulations, customer specifications, and qualified engineering approval should use full code-compliant methods, manufacturer data, and test validation beyond the indicative checks shown in PhyCalcPro.
 
 **Assumptions & limitations**
 

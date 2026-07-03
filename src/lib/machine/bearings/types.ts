@@ -1,3 +1,7 @@
+/**
+ * Bearing Design Module Types
+ */
+
 export type BearingType = "deep_groove" | "angular_contact" | "cylindrical_roller";
 
 export type BearingMaterial = {
@@ -9,6 +13,9 @@ export type BearingMaterial = {
 
 export type BearingReliability = 90 | 95 | 96 | 97 | 98 | 99;
 
+/** Simplified ISO 281 modified-life lubrication screening (a_ISO). */
+export type LubricationClass = "poor" | "average" | "good";
+
 export type BearingConfig = {
   radialLoad: number;
   axialLoad: number;
@@ -16,34 +23,51 @@ export type BearingConfig = {
   lifeHours: number;
   safetyFactor: number;
   bearingType: BearingType;
-  /** Basic dynamic load rating C (N). Overrides material.dynamicRatingFactor. */
   dynamicLoadRatingN?: number;
-  /** Catalog designation when a standard bearing is selected */
+  staticLoadRatingN?: number;
+  limitingSpeedRpm?: number;
   designation?: string;
-  /** ISO 281 reliability level for the a1 factor (default 90 → a1 = 1) */
   reliabilityPercent?: BearingReliability;
-  /** Legacy material entry; dynamicRatingFactor is used as C when set */
+  lubricationClass?: LubricationClass;
+  /** Target static safety factor s₀ = C₀/P₀ (default 1.0) */
+  targetStaticSafetyFactor?: number;
+  /** Minimum speed margin n_lim / n (default 1.0) */
+  targetSpeedMargin?: number;
   material: BearingMaterial;
+};
+
+export type BearingGeometry = {
+  boreMm: number;
+  outerDiameterMm: number;
+  widthMm: number;
 };
 
 export type BearingResult = {
   radialLoad: number;
   axialLoad: number;
   equivalentLoad: number;
-  /** Required C to reach lifeHours at the given speed and reliability (N) */
+  staticEquivalentLoad: number;
   requiredDynamicRating: number;
-  /** L10(mr) adjusted rating life in hours at the given reliability */
+  requiredStaticRating: number;
   expectedLife: number;
-  /** Basic dynamic rating used for the life estimate (N) */
+  modifiedLife: number;
+  expectedLifeRevolutions: number;
   dynamicLoadRatingN: number;
-  /** ISO 281 life exponent (3 ball, 10/3 roller) */
+  staticLoadRatingN: number;
+  limitingSpeedRpm: number | null;
   lifeExponent: number;
-  /** ISO 281 a1 reliability factor */
   a1: number;
-  /** Life utilization: required life / expected life */
+  aIso: number;
+  dynamicUtilization: number;
+  staticSafetyFactor: number;
+  speedMargin: number | null;
   lifeUtilization: number;
   safetyFactor: number;
   bearingType: BearingType;
   designation?: string;
+  geometry: BearingGeometry | null;
+  designStatus: "safe" | "warning" | "critical";
+  isSafe: boolean;
+  governingFailureMode: string;
   material: BearingMaterial;
 };

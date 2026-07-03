@@ -17,7 +17,13 @@ import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { fromBase } from "@/lib/units/conversions";
 import { toBase } from "@/lib/units/conversions";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
-import type { BearingResult, BearingMaterial, BearingType, BearingReliability } from "@/lib/machine/bearings/types";
+import type {
+  BearingResult,
+  BearingMaterial,
+  BearingType,
+  BearingReliability,
+  LubricationClass,
+} from "@/lib/machine/bearings/types";
 import { bearingsOfType, findBearing } from "@/data/catalogs/bearingCatalog";
 
 type BearingProjectData = {
@@ -29,6 +35,8 @@ type BearingProjectData = {
   bearingType: BearingType;
   designation: string;
   reliability: BearingReliability;
+  lubricationClass: LubricationClass | "";
+  maxBoreMm: number | "";
 };
 
 const LEGACY_MATERIAL: BearingMaterial = {
@@ -51,6 +59,8 @@ export default function Page() {
   const [bearingType, setBearingType] = useState<BearingType>("deep_groove");
   const [designation, setDesignation] = useState("6205");
   const [reliability, setReliability] = useState<BearingReliability>(90);
+  const [lubricationClass, setLubricationClass] = useState<LubricationClass | "">("");
+  const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
   const [result, setResult] = useState<BearingResult | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
     useSavedProjects<BearingProjectData>("bearings", "Bearing Project");
@@ -66,26 +76,30 @@ export default function Page() {
       bearingType,
       designation: catalogEntry?.designation,
       dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
+      staticLoadRatingN: catalogEntry?.staticRatingN,
+      limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
       reliabilityPercent: reliability,
+      lubricationClass: lubricationClass || undefined,
       material: LEGACY_MATERIAL,
     };
 
     setResult(wrapResult(solveBearingEngine(config)));
   };
 
-
   const designUserInputs = useMemo((): ModuleUserInputs => ({
-      maxForce: toBase(radialLoad, "force", radialUnit),
-      axialLoad: toBase(axialLoad, "force", axialUnit),
-      speedDriver: speed,
-      requiredLife: lifeHours,
-      targetSafetyFactor: safetyFactor,
-    }), [radialLoad, radialUnit, axialLoad, axialUnit, speed, lifeHours, safetyFactor]);
+    maxForce: toBase(radialLoad, "force", radialUnit),
+    axialLoad: toBase(axialLoad, "force", axialUnit),
+    speedDriver: speed,
+    requiredLife: lifeHours,
+    targetSafetyFactor: safetyFactor,
+    bearingType,
+    shaftDiameterMm: maxBoreMm === "" ? undefined : maxBoreMm,
+  }), [radialLoad, radialUnit, axialLoad, axialUnit, speed, lifeHours, safetyFactor, bearingType, maxBoreMm]);
 
   useSyncDesignInputs("bearings", designUserInputs);
 
   const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
-    if (fields.bearingSeries != null) setBearingType(fields.bearingSeries as never);
+    if (fields.bearingType != null) setBearingType(fields.bearingType as BearingType);
     if (fields.designation != null && findBearing(String(fields.designation))) {
       setDesignation(String(fields.designation));
     }
@@ -111,6 +125,8 @@ export default function Page() {
     setBearingType(p.bearingType);
     setDesignation(p.designation);
     setReliability(p.reliability);
+    setLubricationClass(p.lubricationClass ?? "");
+    setMaxBoreMm(p.maxBoreMm ?? "");
   };
 
   return (
@@ -131,53 +147,62 @@ export default function Page() {
               if (params.radialLoad != null) {
                 setRadialLoad(fromBase(params.radialLoad, "force", radialUnit));
               }
+              if (params.axialLoad != null) {
+                setAxialLoad(fromBase(params.axialLoad, "force", axialUnit));
+              }
               if (params.speed != null) setSpeed(params.speed);
             }}
           />
-        <BearingInputs
-          radialLoad={radialLoad}
-          setRadialLoad={setRadialLoad}
-          radialUnit={radialUnit}
-          setRadialUnit={setRadialUnit}
-          axialLoad={axialLoad}
-          setAxialLoad={setAxialLoad}
-          axialUnit={axialUnit}
-          setAxialUnit={setAxialUnit}
-          speed={speed}
-          setSpeed={setSpeed}
-          lifeHours={lifeHours}
-          setLifeHours={setLifeHours}
-          safetyFactor={safetyFactor}
-          setSafetyFactor={setSafetyFactor}
-          bearingType={bearingType}
-          setBearingType={(type) => {
-            setBearingType(type);
-            const candidates = bearingsOfType(type as never);
-            if (candidates.length && !candidates.some((b) => b.designation === designation)) {
-              setDesignation(candidates[0].designation);
+          <BearingInputs
+            radialLoad={radialLoad}
+            setRadialLoad={setRadialLoad}
+            radialUnit={radialUnit}
+            setRadialUnit={setRadialUnit}
+            axialLoad={axialLoad}
+            setAxialLoad={setAxialLoad}
+            axialUnit={axialUnit}
+            setAxialUnit={setAxialUnit}
+            speed={speed}
+            setSpeed={setSpeed}
+            lifeHours={lifeHours}
+            setLifeHours={setLifeHours}
+            safetyFactor={safetyFactor}
+            setSafetyFactor={setSafetyFactor}
+            bearingType={bearingType}
+            setBearingType={(type) => {
+              setBearingType(type);
+              const candidates = bearingsOfType(type as never);
+              if (candidates.length && !candidates.some((b) => b.designation === designation)) {
+                setDesignation(candidates[0]!.designation);
+              }
+            }}
+            designation={designation}
+            setDesignation={setDesignation}
+            reliability={reliability}
+            setReliability={setReliability}
+            lubricationClass={lubricationClass}
+            setLubricationClass={setLubricationClass}
+            maxBoreMm={maxBoreMm}
+            setMaxBoreMm={setMaxBoreMm}
+            onCalculate={calculate}
+            onSave={() =>
+              saveProject({
+                radialLoad,
+                axialLoad,
+                speed,
+                lifeHours,
+                safetyFactor,
+                bearingType,
+                designation,
+                reliability,
+                lubricationClass,
+                maxBoreMm,
+              })
             }
-          }}
-          designation={designation}
-          setDesignation={setDesignation}
-          reliability={reliability}
-          setReliability={setReliability}
-          onCalculate={calculate}
-          onSave={() =>
-            saveProject({
-              radialLoad,
-              axialLoad,
-              speed,
-              lifeHours,
-              safetyFactor,
-              bearingType,
-              designation,
-              reliability,
-            })
-          }
-          saving={saving}
-          projectName={projectName}
-          setProjectName={setProjectName}
-        />
+            saving={saving}
+            projectName={projectName}
+            setProjectName={setProjectName}
+          />
         </div>
       }
       results={<BearingResults result={result} loadUnit={radialUnit} speedRpm={speed} />}

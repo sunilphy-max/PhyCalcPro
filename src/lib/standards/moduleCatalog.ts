@@ -158,6 +158,8 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   bearings: withCodeChecks("bearings", "Bearing Selection", [
     genericIndicativeCheck("dynamic_capacity", "Dynamic load rating utilization", "utilization"),
     genericIndicativeCheck("life_l10", "Basic rating life L10", "life"),
+    genericIndicativeCheck("static_capacity", "Static load rating C₀/P₀", "safety_factor"),
+    genericIndicativeCheck("speed_limit", "Limiting speed margin", "safety_factor"),
   ], {
     standardsByCode: { ISO: [{ body: "ISO", document: "281", clause: "Rating life" }] },
   }),

@@ -10,10 +10,6 @@ A flywheel stores kinetic energy \( E = \frac{1}{2} I \omega^2 \). For a rim-dom
 
 Coefficient of speed fluctuation \( C_s = (\omega_{\max} - \omega_{\min})/\omega \) links inertia to cyclic energy input/output. Rim stress from centrifugal loading approximates hoop tension \( \sigma = \rho r^2 \omega^2 \) for thin rings; solid disk models use radial and tangential stress distributions.
 
-Machine design modules apply classical strength-of-materials and gear/bearing rating methods validated against textbook benchmarks where available. Material allowables should be adjusted for temperature, surface finish, and reliability requirements before comparing utilization ratios to unity.
-
-Operating conditions — speed, duty cycle, lubrication, and load spectrum — strongly influence real-world capacity beyond the indicative screening calculations performed here. Results should be confirmed with manufacturer catalogs or detailed standards calculations for production releases.
-
 **Governing equations**
 
 \[
@@ -32,8 +28,6 @@ C_s = \frac{\omega_{\max} - \omega_{\min}}{\omega_{\mathrm{mean}}}
 
 Closed-form energy–inertia relations. Required \( I \) computed from specified \( \Delta E \) and speed limits. Geometry (rim thickness, width, hub bore) iterated to achieve target inertia while checking rim stress utilization against material allowable.
 
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
-
 **Inputs**
 
 | Parameter | Description |
@@ -51,20 +45,6 @@ Closed-form energy–inertia relations. Required \( I \) computed from specified
 
 - **Indicative:** Rim stress utilization, energy storage capacity
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

@@ -12,9 +12,9 @@ Axial stress is \( \sigma = N/A \). Tension members are limited by yield or net-
 
 Indeterminate trusses are solved by the same matrix approach; degree of indeterminacy must be matched by sufficient supports and member connectivity.
 
-Boundary conditions define the kinematic constraints at supports. Fixed ends restrain both translation and rotation; pinned supports restrain translation only; roller supports allow horizontal movement. The choice of support model directly affects moment distribution — a fixed–fixed beam carries less mid-span moment than a simply supported beam under the same UDL but develops significant hogging moments at supports.
+External supports restrain selected nodal translations; internal joints are ideal pins with no moment capacity. Loads apply only at nodes as concentrated forces — member self-weight and distributed loads must be converted to equivalent nodal forces by the user.
 
-Load types include concentrated forces, uniformly distributed segments, and applied couples. Multiple loads superpose linearly in elastic analysis. The module validates positive geometry (length, stiffness, section properties) before invoking the solver and rejects empty load lists.
+The solver validates connectivity, positive member areas, and sufficient boundary restraints before assembling the stiffness matrix.
 
 **Governing equations**
 
@@ -29,8 +29,6 @@ Load types include concentrated forces, uniformly distributed segments, and appl
 **Numerical method**
 
 Bar-element FEM: each member contributes axial stiffness in global coordinates after direction-cosine transformation. The assembled system is solved for nodal displacements; member forces \( N = (EA/L)(u_j - u_i) \) are recovered. Zero-area or disconnected members produce singular systems and are rejected at validation.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -51,20 +49,6 @@ Bar-element FEM: each member contributes axial stiffness in global coordinates a
 - **US:** AISC 360 tension/compression member context (screening only)
 - **EU:** EN 1993-1-1 member rules (screening)
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

@@ -19,6 +19,10 @@ const RESULT_TO_CHECK: Record<string, { checkId: string; kind: "safety_factor" |
   criticalLoadFactor: { checkId: "euler_critical", kind: "safety_factor" },
   criticalSpeedMargin: { checkId: "critical_speed", kind: "safety_factor" },
   deflectionUtilization: { checkId: "deflection", kind: "utilization" },
+  lifeUtilization: { checkId: "life_l10", kind: "utilization" },
+  dynamicUtilization: { checkId: "dynamic_capacity", kind: "utilization" },
+  staticSafetyFactor: { checkId: "static_capacity", kind: "safety_factor" },
+  speedMargin: { checkId: "speed_limit", kind: "safety_factor" },
   fatigueSafetyFactor: { checkId: "fatigue", kind: "safety_factor" },
 };
 
@@ -39,6 +43,12 @@ const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
     criticalSpeedMargin: "critical_speed",
     deflectionUtilization: "deflection",
     fatigueSafetyFactor: "fatigue",
+  },
+  bearings: {
+    lifeUtilization: "life_l10",
+    dynamicUtilization: "dynamic_capacity",
+    staticSafetyFactor: "static_capacity",
+    speedMargin: "speed_limit",
   },
   fatigue: {
     safetyFactor: "goodman",

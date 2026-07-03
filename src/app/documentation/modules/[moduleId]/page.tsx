@@ -6,6 +6,7 @@ import {
   getAllModuleIdsForDocs,
   getModuleCatalogExtras,
   getModuleDoc,
+  getModuleDocForDisplay,
   getModuleRoute,
 } from "@/lib/documentation/loadReference";
 import { allModules } from "@/data/modules";
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ModuleDocumentationPage({ params }: Props) {
   const { moduleId } = await params;
-  const doc = getModuleDoc(moduleId);
+  const doc = getModuleDocForDisplay(moduleId);
   const { profile, maturity } = getModuleCatalogExtras(moduleId);
   const calculatorRoute = getModuleRoute(moduleId);
   const mod = allModules.find((m) => m.id === moduleId);

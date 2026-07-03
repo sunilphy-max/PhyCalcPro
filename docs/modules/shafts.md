@@ -40,7 +40,7 @@ Fatigue (Indicative/US): modified Goodman on von Mises alternating/mean componen
 
 **Outputs**
 
-- T(x), M(x), V(x), σ_vm(x), deflection, slope, critical speed, fatigue SF
+- T(x), M(x), V(x), \( \sigma_{\mathrm{vm}}(x) \), deflection, slope, critical speed, fatigue SF
 - Bearing reactions and slope utilization
 - Governing failure mode (static / fatigue / deflection / slope / whirling)
 

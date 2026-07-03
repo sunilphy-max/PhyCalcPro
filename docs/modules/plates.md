@@ -8,13 +8,13 @@ Analyze bending of thin rectangular plates under uniform pressure or point loads
 
 Kirchhoff–Love plate theory extends beam bending to two dimensions. For a thin plate of thickness \( t \), flexural rigidity is \( D = Et^3/[12(1-\nu^2)] \). The biharmonic equation \( D \nabla^4 w = p \) governs out-of-plane deflection \( w(x,y) \) under transverse pressure \( p \).
 
-Bending moments relate to curvature: \( M_x = -D(\partial^2 w/\partial x^2 + \nu \partial^2 w/\partial y^2) \). Maximum stress at the surface is \( \sigma = 6M/t^2 \) for pure bending. Edge conditions — simply supported (SS), clamped (C), or free — strongly influence peak deflection and stress concentration at corners.
+Bending moments relate to curvature: \( M_x = -D\left(\frac{\partial^2 w}{\partial x^2} + \nu \frac{\partial^2 w}{\partial y^2}\right) \). Maximum stress at the surface is \( \sigma = 6M/t^2 \) for pure bending. Edge conditions — simply supported (SS), clamped (C), or free — strongly influence peak deflection and stress concentration at corners.
 
 For rectangular plates, Navier or Levy series solutions exist for simply supported edges; the solver uses a finite-element discretization on a rectangular mesh for general boundary mixes.
 
-Boundary conditions define the kinematic constraints at supports. Fixed ends restrain both translation and rotation; pinned supports restrain translation only; roller supports allow horizontal movement. The choice of support model directly affects moment distribution — a fixed–fixed beam carries less mid-span moment than a simply supported beam under the same UDL but develops significant hogging moments at supports.
+Each edge can be simply supported (SS), clamped (C), or free, independently on all four sides. Mixed edge conditions change moment distribution and peak deflection significantly compared with fully simply supported plates.
 
-Load types include concentrated forces, uniformly distributed segments, and applied couples. Multiple loads superpose linearly in elastic analysis. The module validates positive geometry (length, stiffness, section properties) before invoking the solver and rejects empty load lists.
+Transverse pressure and point loads superpose linearly in elastic analysis. The solver validates positive plate dimensions and flexural rigidity before meshing.
 
 **Governing equations**
 
@@ -33,8 +33,6 @@ w_{\max} \leq w_{\mathrm{allow}}
 **Numerical method**
 
 2D plate FEM on a structured rectangular mesh (`femSolver`). Mindlin–Reissner or Kirchhoff plate elements assemble stiffness from \( D \) and mesh geometry. Transverse loads are applied as consistent nodal forces. The linear system yields nodal deflections; moments and stresses are recovered by differentiation of shape functions.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -58,20 +56,6 @@ w_{\max} \leq w_{\mathrm{allow}}
 - **US:** ASME BPVC Section VIII, Div. 1 flat plate context (screening)
 - **EU:** EN 13445 flat ends and plates (screening)
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
-
-**Design practice note**
-
-Screening results from this module inform preliminary sizing and design reviews. Final designs subject to applicable regulations, customer specifications, and qualified engineering approval should use full code-compliant methods, manufacturer data, and test validation beyond the indicative checks shown in PhyCalcPro.
 
 **Assumptions & limitations**
 

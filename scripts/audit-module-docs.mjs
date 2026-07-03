@@ -42,11 +42,22 @@ function auditModuleFile(filePath) {
   if (!idMatch) return { ok: false, error: "missing heading" };
   const missing = REQUIRED_SECTIONS.filter((s) => !content.includes(s));
   const hasDisplayMath = /\\\[/.test(content) || /\n\$\$/.test(content);
+  const mathIssues = [];
+  if (/\\mathrm\{[^}]*\\ /.test(content)) {
+    mathIssues.push("invalid \\mathrm{...\\ ...} (backslash-space inside \\mathrm)");
+  }
+  if (/\\(?:\(|\[)[\s\S]*?[→←][\s\S]*?\\(?:\)|\])/.test(content)) {
+    mathIssues.push("unicode arrow inside math delimiters");
+  }
+  if (/\\mathrm\{[^}]*→/.test(content)) {
+    mathIssues.push("unicode arrow inside \\mathrm{}");
+  }
   return {
-    ok: missing.length === 0 && hasDisplayMath,
+    ok: missing.length === 0 && hasDisplayMath && mathIssues.length === 0,
     moduleId: idMatch[1],
     missing,
     hasDisplayMath,
+    mathIssues,
     length: content.length,
   };
 }
@@ -71,7 +82,10 @@ const incomplete = [...byId.values()].filter((r) => !r.ok);
 if (incomplete.length) {
   console.log("\nincomplete files:");
   for (const r of incomplete) {
-    console.log(`  ${r.file}: missing=${r.missing.join(", ") || "none"} math=${r.hasDisplayMath}`);
+    console.log(
+      `  ${r.file}: missing=${r.missing.join(", ") || "none"} math=${r.hasDisplayMath}` +
+        (r.mathIssues?.length ? ` mathIssues=${r.mathIssues.join("; ")}` : "")
+    );
   }
 }
 

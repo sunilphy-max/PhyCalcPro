@@ -88,7 +88,9 @@ export type ModuleUserInputs = {
   module?: number;
   faceWidth?: number;
   bearingSeries?: string;
+  bearingType?: "deep_groove" | "angular_contact" | "cylindrical_roller";
   bore?: number;
+  shaftDiameterMm?: number;
   energy?: number;
   requiredLife?: number;
 

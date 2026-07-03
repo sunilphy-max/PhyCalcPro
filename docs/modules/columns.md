@@ -10,9 +10,9 @@ When a straight column is compressed, lateral deflection grows once the axial lo
 
 Real columns fail below \( P_{\mathrm{cr}} \) due to residual stresses, initial curvature, and material yield interaction. Design codes replace pure Euler buckling with column curves relating normalized slenderness \( \lambda \) to buckling reduction factor \( \chi \). The FEM solver assembles a geometric stiffness matrix \( \mathbf{K}_g \) proportional to axial load and solves the eigenvalue problem \( (\mathbf{K} + \lambda \mathbf{K}_g)\mathbf{v} = 0 \) for buckling modes.
 
-Boundary conditions define the kinematic constraints at supports. Fixed ends restrain both translation and rotation; pinned supports restrain translation only; roller supports allow horizontal movement. The choice of support model directly affects moment distribution — a fixed–fixed beam carries less mid-span moment than a simply supported beam under the same UDL but develops significant hogging moments at supports.
+End restraint sets the effective length factor \( K \): pinned–pinned (\( K=1 \)), fixed–fixed (\( K=0.5 \)), and cantilever (\( K=2 \)) bracket most practical cases. Initial imperfection amplifies lateral deflection below \( P_{\mathrm{cr}} \) and reduces the usable capacity in code column curves.
 
-Load types include concentrated forces, uniformly distributed segments, and applied couples. Multiple loads superpose linearly in elastic analysis. The module validates positive geometry (length, stiffness, section properties) before invoking the solver and rejects empty load lists.
+The solver validates positive length, area, and stiffness before eigenvalue extraction and rejects disconnected or unrestrained models.
 
 **Governing equations**
 
@@ -31,8 +31,6 @@ P_{\mathrm{cr}} = \frac{\pi^2 EI}{L_{\mathrm{eff}}^2}
 **Numerical method**
 
 Linear buckling FEM (`femSolver`): the column is meshed along its length. Elastic stiffness \( \mathbf{K} \) and geometric stiffness \( \mathbf{K}_g(P) \) are assembled for the selected end conditions. The lowest positive eigenvalue yields critical load and buckling mode shape. Post-processing compares \( P/P_{\mathrm{cr}} \) to AISC 360 §E3 and EN 1993-1-1 §6.3 curve checks.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -57,16 +55,6 @@ Linear buckling FEM (`femSolver`): the column is meshed along its length. Elasti
 - **EU:** EN 1993-1-1 §6.3 buckling curves
 - **ISO:** ISO 10721 compression member context
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

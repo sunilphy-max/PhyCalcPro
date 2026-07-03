@@ -201,6 +201,13 @@ export function getModuleDoc(moduleId: string): ModuleDocSection | undefined {
   return getModuleDocSections().get(moduleId);
 }
 
+/** Raw module markdown prepared for KaTeX (delimiter conversion, equation promotion). */
+export function getModuleDocForDisplay(moduleId: string): ModuleDocSection | undefined {
+  const doc = getModuleDoc(moduleId);
+  if (!doc) return undefined;
+  return { ...doc, markdown: normalizeDocumentationMath(doc.markdown) };
+}
+
 function compileModuleReference(markdownById: Map<string, ModuleDocSection>): string {
   const parts: string[] = [
     "## 3. Module reference",

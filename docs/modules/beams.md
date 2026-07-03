@@ -6,9 +6,9 @@ Analyze one-dimensional prismatic beams under point loads, uniformly distributed
 
 **Physics & theory**
 
-Euler–Bernoulli beam theory relates curvature to bending moment through \( \kappa = M/(EI) \), where \( E \) is Young's modulus and \( I \) is the second moment of area about the bending axis. For small deflections, the governing differential equation is \( EI\, d^4w/dx^4 = q(x) \), with boundary conditions set by the support type (simply supported, cantilever, or fixed–fixed).
+Euler–Bernoulli beam theory relates curvature to bending moment through \( \kappa = M/(EI) \), where \( E \) is Young's modulus and \( I \) is the second moment of area about the bending axis. For small deflections, the governing differential equation is \( EI\, \frac{d^4 w}{dx^4} = q(x) \), with boundary conditions set by the support type (simply supported, cantilever, or fixed–fixed).
 
-Shear force \( V \) and bending moment \( M \) are obtained by equilibrium: \( V = dM/dx \) and \( q = dV/dx \). Bending stress at distance \( c \) from the neutral axis follows \( \sigma = Mc/I \). The solver uses a finite-element discretization of the beam with Hermite shape functions, enforcing displacement and slope continuity at nodes while applying concentrated and distributed loads through equivalent nodal forces.
+Shear force \( V \) and bending moment \( M \) are obtained by equilibrium: \( V = \frac{dM}{dx} \) and \( q = \frac{dV}{dx} \). Bending stress at distance \( c \) from the neutral axis follows \( \sigma = \frac{Mc}{I} \). The solver uses a finite-element discretization of the beam with Hermite shape functions, enforcing displacement and slope continuity at nodes while applying concentrated and distributed loads through equivalent nodal forces.
 
 Static equilibrium is verified by comparing the sum of vertical reactions to applied vertical load. Mesh density (`meshSegments`) controls spatial resolution; low segment counts may underpredict peak stress near concentrated loads.
 

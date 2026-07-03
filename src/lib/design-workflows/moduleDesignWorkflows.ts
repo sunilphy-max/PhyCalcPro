@@ -283,11 +283,13 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     expertNotes: ["Auto-design should generate tooth-count candidates before strength checking."],
   },
   bearings: {
-    maturity: "catalog-backed",
-    designInputs: ["Radial/axial load", "Speed", "Required life", "Reliability", "Bore/space limits"],
-    autoSizingTargets: ["Required dynamic rating", "Bearing series", "L10 life", "Speed margin"],
-    catalogTables: ["ISO 281 life factors", "ABMA bearing series", "Lubrication/service factors"],
+    maturity: "solver-backed",
+    designInputs: ["Radial/axial load", "Speed", "Required life", "Reliability", "Bore/space limits", "Lubrication class"],
+    autoSizingTargets: ["Required dynamic rating", "Catalog designation", "L10/Lnm life", "Static C₀/P₀", "Speed margin"],
+    catalogTables: ["ISO 281 life factors", "ISO 76 static ratings", "Deep groove / angular / NU catalog", "Lubrication a_ISO screening"],
     linkedWorkflowModuleIds: ["shafts", "plain-bearings", "fatigue"],
+    expertNotes: ["Shaft FEM handoff imports Fr, Fa, and speed. Design mode ranks full catalog by C, C₀, and n_lim."],
+    gaps: ["Full SKF/INA database, paired bearing arrangements, and ISO 281 a_ISO from κ/ηc still need integration."],
   },
   bolts: {
     maturity: "solver-backed",

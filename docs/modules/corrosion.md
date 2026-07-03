@@ -10,14 +10,12 @@ Corrosion progressively removes material from exposed surfaces at rate \( r \) (
 
 Remaining life from inspection measurement: \( t_{\mathrm{remaining}} = (t_{\mathrm{measured}} - t_{\mathrm{min}})/r \). Allowable stress uses reduced thickness in hoop or general membrane formulas. Galvanic, pitting, and crevice corrosion require higher allowances than uniform general corrosion models.
 
-Material and section data underpin all stress and deflection calculations in PhyCalcPro. Consistent unit conversion to SI base quantities occurs at the solver boundary via the shared units layer. Temperature-dependent properties should be evaluated when operating temperature differs significantly from room temperature.
-
-Cross-section properties assume homogeneous isotropic material unless the Composites module is used for laminated sections.
+Inspection thickness readings anchor remaining-life estimates; localized pitting may require a higher allowance than the uniform-rate model predicts.
 
 **Governing equations**
 
 \[
-CA = r \cdot t_{\mathrm{design\ life}}
+CA = r \cdot t_{\mathrm{design\_life}}
 \]
 
 \[
@@ -25,14 +23,12 @@ t_{\mathrm{required}} = t_{\mathrm{pressure}} + CA
 \]
 
 \[
-t_{\mathrm{remaining\ life}} = \frac{t_{\mathrm{now}} - t_{\mathrm{min}}}{r}
+t_{\mathrm{remaining\_life}} = \frac{t_{\mathrm{now}} - t_{\mathrm{min}}}{r}
 \]
 
 **Numerical method**
 
 Closed-form allowance and life equations (`engine`). User supplies corrosion rate, design life, minimum structural thickness, and optional measured thickness for remaining life.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -54,20 +50,6 @@ Closed-form allowance and life equations (`engine`). User supplies corrosion rat
 - **US:** ASME B31.3 corrosion allowance guidance
 - **US:** ASME VIII-1 UG-25 corrosion allowance
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

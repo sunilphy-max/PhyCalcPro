@@ -10,9 +10,7 @@ Material strength and stiffness decrease with temperature for most metals; cryog
 
 Derating factors \( f_T = \sigma_y(T)/\sigma_y(T_{\mathrm{room}}) \) from code tables (ASME B31, ASME VIII, EN 10028) adjust allowable stress at temperature. Modulus reduction affects stiffness and buckling capacity at high temperature.
 
-Material and section data underpin all stress and deflection calculations in PhyCalcPro. Consistent unit conversion to SI base quantities occurs at the solver boundary via the shared units layer. Temperature-dependent properties should be evaluated when operating temperature differs significantly from room temperature.
-
-Cross-section properties assume homogeneous isotropic material unless the Composites module is used for laminated sections.
+Property values interpolate between catalog temperature points; extrapolation beyond the tabulated range is flagged as indicative only.
 
 **Governing equations**
 
@@ -27,8 +25,6 @@ Cross-section properties assume homogeneous isotropic material unless the Compos
 **Numerical method**
 
 Interpolation over tabulated property curves (`engine`): user selects material and temperature; linear or piecewise interpolation returns \( E(T), \sigma_y(T), \alpha(T) \) and derating factor.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -49,20 +45,6 @@ Interpolation over tabulated property curves (`engine`): user selects material a
 - **US:** ASME B31.3/ VIII allowable stress tables vs temperature
 - **EU:** EN 10028 / EN 1993-1-2 elevated temperature (reference)
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

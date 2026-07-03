@@ -10,10 +10,6 @@ Bevel gears transmit power between intersecting axes, typically at 90°. Pitch c
 
 Tangential force acts at the mean pitch circle on the pitch cone. Bending and contact stresses use ISO 6336–style factors applied to the virtual cylindrical gear dimensions. Face width is limited by cone length and should not exceed \( R_m/3 \) without detailed analysis.
 
-Machine design modules apply classical strength-of-materials and gear/bearing rating methods validated against textbook benchmarks where available. Material allowables should be adjusted for temperature, surface finish, and reliability requirements before comparing utilization ratios to unity.
-
-Operating conditions — speed, duty cycle, lubrication, and load spectrum — strongly influence real-world capacity beyond the indicative screening calculations performed here. Results should be confirmed with manufacturer catalogs or detailed standards calculations for production releases.
-
 **Governing equations**
 
 \[
@@ -31,8 +27,6 @@ d_{m1} = m_m N_1, \quad R_m = \frac{d_{m1}}{2\sin\delta_1}
 **Numerical method**
 
 Virtual spur gear transformation followed by gear rating checks shared with the spur gear module. Cone geometry computed from tooth counts and shaft angle; strength factors applied at mean section.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -54,20 +48,6 @@ Virtual spur gear transformation followed by gear rating checks shared with the 
 - **ISO:** ISO 10300 bevel gear load capacity (reference)
 - **US:** AGMA 2003 bevel gear rating (reference)
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

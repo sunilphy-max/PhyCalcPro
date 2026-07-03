@@ -13,14 +13,14 @@
    - `convertMathDelimiters` — `\[ \]` / `\( \)` → `$$` / `$` for remark-math
    - `promoteListItemEquations` — list items with inline math → labeled display blocks
    - `attachEquationCitations` — footnotes on equations before **Design codes:**
-3. **Web render** — `loadTechnicalReference()` → React Markdown + remark-math + rehype-katex on module doc pages.
+3. **Web render** — `loadTechnicalReference()` and `getModuleDocForDisplay()` both call `normalizeDocumentationMath()` before React Markdown + remark-math + rehype-katex. Per-module pages at `/documentation/modules/[moduleId]` use `getModuleDocForDisplay()`; the compiled reference at `/documentation/reference` normalizes the concatenated document once.
 4. **Formula reference tool** — `MathExpression` + `expressionToLatex` render Unicode expressions (σ, ½, ·) with KaTeX in `FormulaReferenceInputs` / `FormulaReferenceResults`.
 
 ## Architecture (2026-06-13)
 
 - **Per-module files:** `docs/modules/{moduleId}.md` — canonical source for physics, formulas, and references.
 - **Platform monolith:** `docs/Modules-Technical-Reference.md` — architecture, inventory, maturity matrix, roadmap only.
-- **Compilation:** `loadReference.ts` concatenates platform + all module files for `/documentation/reference`; `/documentation/modules/[moduleId]` loads a single file.
+- **Compilation:** `loadReference.ts` concatenates platform + all module files for `/documentation/reference`; `/documentation/modules/[moduleId]` loads a single file via `getModuleDocForDisplay()` (normalized markdown for KaTeX).
 
 ## Content refresh (2026-06-13)
 

@@ -10,9 +10,7 @@ Each ply has orthotropic properties referenced to fiber direction: \( E_1, E_2, 
 
 Lamination theory sums ply contributions through thickness: extensional stiffness \( \mathbf{A} \), coupling \( \mathbf{B} \), and bending \( \mathbf{D} \). Midplane strains \( \boldsymbol{\epsilon}^0 \) and curvatures \( \boldsymbol{\kappa} \) from applied loads yield ply stresses in each layer. Failure criteria (max stress, Tsai–Hill, Tsai–Wu) screen ply-by-ply.
 
-Material and section data underpin all stress and deflection calculations in PhyCalcPro. Consistent unit conversion to SI base quantities occurs at the solver boundary via the shared units layer. Temperature-dependent properties should be evaluated when operating temperature differs significantly from room temperature.
-
-Cross-section properties assume homogeneous isotropic material unless the Composites module is used for laminated sections.
+Symmetric layups eliminate extension–bending coupling (\( \mathbf{B}=\mathbf{0} \)); asymmetric stacks require full \( \mathbf{ABD} \) inversion.
 
 **Governing equations**
 
@@ -31,8 +29,6 @@ F_{\mathrm{Tsai-Hill}} = \frac{\sigma_1^2}{X^2} - \frac{\sigma_1 \sigma_2}{X^2} 
 **Numerical method**
 
 CLT matrix assembly (`engine`): ply stack input builds \( \mathbf{ABD} \) matrices; load vector solved for midplane response; ply stresses and failure indices computed layer by layer.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -53,20 +49,6 @@ CLT matrix assembly (`engine`): ply stack input builds \( \mathbf{ABD} \) matric
 - **US:** MIL-HDBK-17-3F composite guidance (reference)
 - **EU:** EN 1999-1-3 aluminium structures with bonded panels (context)
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

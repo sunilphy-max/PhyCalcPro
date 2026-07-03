@@ -228,12 +228,17 @@ export default function Page() {
       0
     );
     if (maxReaction > 0) {
+      const maxAxial = raw.bearingReactions.reduce(
+        (max, r) => Math.max(max, Math.abs(r.forceZ)),
+        0
+      );
       publishHandoff("bearings", {
         fromModuleId: "shafts",
         fromTitle: "Shaft Analysis",
-        summary: `Bearing radial load ≈ ${(maxReaction / 1000).toFixed(2)} kN from shaft FEM reactions.`,
+        summary: `Bearing load from shaft FEM: Fr ≈ ${(maxReaction / 1000).toFixed(2)} kN${maxAxial > 0 ? `, Fa ≈ ${(maxAxial / 1000).toFixed(2)} kN` : ""}.`,
         params: {
           radialLoad: maxReaction,
+          ...(maxAxial > 0 ? { axialLoad: maxAxial } : {}),
           ...(operatingRpm > 0 ? { speed: operatingRpm } : {}),
         },
       });

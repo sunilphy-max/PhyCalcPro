@@ -12,9 +12,9 @@ Equilibrium requires \( \mathbf{K}\mathbf{u} = \mathbf{F} \), where \( \mathbf{u
 
 The solver assumes small displacements and linear elastic material behavior. P–Δ effects, plastic hinges, and semi-rigid connection stiffness are not modeled unless explicitly added in future releases.
 
-Boundary conditions define the kinematic constraints at supports. Fixed ends restrain both translation and rotation; pinned supports restrain translation only; roller supports allow horizontal movement. The choice of support model directly affects moment distribution — a fixed–fixed beam carries less mid-span moment than a simply supported beam under the same UDL but develops significant hogging moments at supports.
+Support conditions are applied at nodes: fixed (restrained translation and rotation), pinned (translation restrained, rotation free), or roller (one translation free). Member end releases and semi-rigid connections are not modeled — all joints are treated as rigid unless a member is flagged as pinned.
 
-Load types include concentrated forces, uniformly distributed segments, and applied couples. Multiple loads superpose linearly in elastic analysis. The module validates positive geometry (length, stiffness, section properties) before invoking the solver and rejects empty load lists.
+Nodal loads and member distributed loads superpose linearly. The solver rejects structures with insufficient restraints or zero-stiffness members.
 
 **Governing equations**
 
@@ -33,8 +33,6 @@ U = \frac{\sigma_{\mathrm{combined}}}{\sigma_{\mathrm{allow}}}
 **Numerical method**
 
 Direct stiffness method: nodes and members define the mesh. Element stiffness matrices are transformed and assembled; boundary conditions eliminate constrained DOFs. The reduced linear system is solved via Gaussian elimination or equivalent sparse solver. Member end forces are back-calculated from nodal displacements.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -58,20 +56,6 @@ Direct stiffness method: nodes and members define the mesh. Element stiffness ma
 - **Indicative:** Member stress utilization, joint reaction equilibrium
 - **US/EU/ISO:** Application-dependent; presets reference industrial equipment standards
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
-
-**Design practice note**
-
-Screening results from this module inform preliminary sizing and design reviews. Final designs subject to applicable regulations, customer specifications, and qualified engineering approval should use full code-compliant methods, manufacturer data, and test validation beyond the indicative checks shown in PhyCalcPro.
 
 **Assumptions & limitations**
 

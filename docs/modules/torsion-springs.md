@@ -6,7 +6,7 @@ Design helical torsion springs loaded by bending in the coil wire (typically via
 
 **Physics & theory**
 
-Torsion springs store energy through wire bending rather than torsion shear along the coil axis. Spring rate in terms of angle \( \theta \) is \( k = Ed^4/(64D n_a) \) for \( n_a \) active coils (formulas vary with end-leg configuration). Bending stress in the coil is \( \sigma = 32M/(\pi d^3) \) with moment from leg force and radius.
+Torsion springs store energy through wire bending rather than torsion shear along the coil axis. Spring rate in terms of angle \( \theta \) is \( k = \frac{Ed^4}{64 D n_a} \) for \( n_a \) active coils (formulas vary with end-leg configuration). Bending stress in the coil is \( \sigma = \frac{32M}{\pi d^3} \) with moment from leg force and radius.
 
 Legs act as cantilever beams adding deflection and stress concentration at the coil–leg junction. Inside vs outside coil stress differs due to curvature — mean-diameter stress is commonly used for screening.
 
@@ -32,8 +32,6 @@ k = \frac{E d^4}{64 D n_a}
 
 Closed-form bending-based rate and stress. Leg contribution added to total angular deflection. Safety factor vs material allowable bending stress at full wind angle.
 
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
-
 **Inputs**
 
 | Parameter | Description |
@@ -53,20 +51,6 @@ Closed-form bending-based rate and stress. Leg contribution added to total angul
 - **Indicative:** Bending stress utilization
 - **EU:** EN 13906-3 torsion springs (reference)
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

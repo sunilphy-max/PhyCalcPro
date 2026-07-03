@@ -2,6 +2,7 @@ import { solveGearEngine } from "@/lib/machine/gears/engine";
 import { GEAR_MODULE_SERIES_1_MM } from "@/data/catalogs/standardSeries";
 import { solveShaftEngine } from "@/lib/machine/shafts/engine";
 import { ISO_PREFERRED_SHAFT_DIAMETERS_MM } from "@/lib/machine/shafts/standardDiameters";
+import { rankCatalogBearings } from "@/lib/machine/bearings/catalogSelection";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
 import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
 import { solveBevelGearEngine } from "@/lib/machine/bevel-gears/engine";
@@ -198,24 +199,39 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
   const radial = userInputs.maxForce ?? 6200;
   const speed = userInputs.speedDriver ?? 1500;
   const lifeHours = userInputs.requiredLife ?? 20000;
+  const bearingType = (userInputs.bearingType as "deep_groove" | "angular_contact" | "cylindrical_roller") ?? "deep_groove";
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+
   try {
     const req = solveBearingEngine({
       radialLoad: radial,
       axialLoad: userInputs.axialLoad ?? 0,
       speed,
       lifeHours,
-      safetyFactor: userInputs.targetSafetyFactor ?? 1.5,
-      bearingType: "deep_groove",
+      safetyFactor: targetSf,
+      bearingType,
       material: BEARING_MATERIAL,
     });
-    const bearings = DEEP_GROOVE_BEARING_CATALOG;
-    const items = bearings.map((b) => ({
-      label: b.name,
-      utilization: req.requiredDynamicRating / b.C,
-      fields: { bearingSeries: b.name },
-      detail: `need ${(req.requiredDynamicRating / 1000).toFixed(1)} kN`,
+
+    const ranked = rankCatalogBearings({
+      bearingType,
+      requiredDynamicRatingN: req.requiredDynamicRating,
+      requiredStaticRatingN: req.requiredStaticRating,
+      speedRpm: speed,
+      boreMaxMm: userInputs.shaftDiameterMm as number | undefined,
+    });
+
+    const items = ranked.slice(0, 12).map((r) => ({
+      label: r.entry.designation,
+      utilization: r.dynamicUtilization,
+      fields: { designation: r.entry.designation, bearingType },
+      detail: `C ${(r.entry.dynamicRatingN / 1000).toFixed(1)} kN · s₀ ${r.staticUtilization > 0 ? (1 / r.staticUtilization).toFixed(1) : "—"} · n_lim/n ${r.speedMargin.toFixed(2)}`,
     }));
-    return fromSweep(sweepCatalogForUtilization(items), "Rolling bearing selection from required dynamic rating C.");
+
+    return fromSweep(
+      sweepCatalogForUtilization(items),
+      "Rolling bearing ranked from ISO 281 required C, static C₀, and catalog speed limit."
+    );
   } catch {
     return fromSweep(sweepCatalogForUtilization([]), "Bearing design requires valid load and life inputs.");
   }

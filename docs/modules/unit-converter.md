@@ -10,12 +10,10 @@ Physical quantities are expressed as value × unit within a dimension (e.g., len
 
 Multi-system support (US customary, SI, mixed engineering units) aligns with `useDesignCodeUnits` and `ModuleUnitSelect` profiles across product modules. Temperature conversions may use offset scales (°C, °F, K) per dimension registry.
 
-Technical tools integrate with the shared unit conversion and formula evaluation infrastructure used across product modules. Formula results should be verified against module solvers when both are available for the same physical quantity.
-
 **Governing equations**
 
 \[
-Q_{\mathrm{target}} = Q_{\mathrm{source}} \cdot \frac{u_{\mathrm{source→base}}}{u_{\mathrm{target→base}}}
+Q_{\mathrm{target}} = Q_{\mathrm{source}} \cdot \frac{u_{\mathrm{source\_to\_base}}}{u_{\mathrm{target\_to\_base}}}
 \]
 
 For affine temperature: \( T_K = T_C + 273.15 \), \( T_F = 1.8\, T_C + 32 \).
@@ -44,24 +42,6 @@ Supported dimensions include length, mass, force, pressure, stress, energy, powe
 
 - **Indicative:** Unit conversion (utility tool)
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
-
-**Design practice note**
-
-Screening results from this module inform preliminary sizing and design reviews. Final designs subject to applicable regulations, customer specifications, and qualified engineering approval should use full code-compliant methods, manufacturer data, and test validation beyond the indicative checks shown in PhyCalcPro.
 
 **Assumptions & limitations**
 

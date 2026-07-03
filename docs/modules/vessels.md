@@ -32,8 +32,6 @@ t = \frac{p R}{S E - 0.6 p} \quad \text{(cylindrical, ASME UG-27)}
 
 Thin/thick-wall closed-form with optional FEM mesh for nozzle or head transitions (`engine`, `mesh`). Required thickness and hoop utilization computed per selected code. Joint efficiency and corrosion allowance user-specified.
 
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
-
 **Inputs**
 
 | Parameter | Description |
@@ -55,20 +53,6 @@ Thin/thick-wall closed-form with optional FEM mesh for nozzle or head transition
 - **US:** ASME VIII-1 UG-27
 - **EU:** EN 13445-3 design rules
 
-**Related modules**
-
-See adjacent entries in the same product category (`src/data/modules.ts`) for complementary checks — e.g., combine structural results with `load-case-manager`, material data from `material-db`, or hand off section properties from `rolled-sections` and `sections`.
-
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 

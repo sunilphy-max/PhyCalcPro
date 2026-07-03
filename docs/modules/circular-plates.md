@@ -12,9 +12,9 @@ Roark's tabulated coefficients provide quick screening: clamped plate \( w_{\max
 
 The axisymmetric FDM solver discretizes the biharmonic operator on a radial grid, iterating until convergence between applied pressure and plate curvature.
 
-Boundary conditions define the kinematic constraints at supports. Fixed ends restrain both translation and rotation; pinned supports restrain translation only; roller supports allow horizontal movement. The choice of support model directly affects moment distribution — a fixed–fixed beam carries less mid-span moment than a simply supported beam under the same UDL but develops significant hogging moments at supports.
+Outer-edge support is modeled as either clamped (\( w=0 \), \( dw/dr=0 \) at \( r=a \)) or simply supported (\( w=0 \), \( M_r=0 \) at \( r=a \)). Switching between these edge conditions changes center deflection by an order of magnitude and shifts the location of peak bending stress from center to edge.
 
-Load types include concentrated forces, uniformly distributed segments, and applied couples. Multiple loads superpose linearly in elastic analysis. The module validates positive geometry (length, stiffness, section properties) before invoking the solver and rejects empty load lists.
+The solver requires positive radius, thickness, and flexural rigidity; non-axisymmetric loading and annular plates are outside scope.
 
 **Governing equations**
 
@@ -33,8 +33,6 @@ D = \frac{E t^3}{12(1-\nu^2)}
 **Numerical method**
 
 Dual approach: (1) Roark closed-form coefficients for benchmark comparison; (2) axisymmetric Kirchhoff FDM on a radial line with `meshSegments` (4–64). Jacobi-style iteration (~800 steps) enforces boundary conditions. FEM deflection error vs Roark is reported as `femDeflectionErrorPercent`.
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -59,20 +57,6 @@ Dual approach: (1) Roark closed-form coefficients for benchmark comparison; (2) 
 - **US:** ASME BPVC UG-34 flat head context (screening)
 - **EU:** EN 13445 flat ends (screening)
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
-
-**Design practice note**
-
-Screening results from this module inform preliminary sizing and design reviews. Final designs subject to applicable regulations, customer specifications, and qualified engineering approval should use full code-compliant methods, manufacturer data, and test validation beyond the indicative checks shown in PhyCalcPro.
 
 **Assumptions & limitations**
 

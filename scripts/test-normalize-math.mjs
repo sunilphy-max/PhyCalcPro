@@ -119,6 +119,11 @@ const partialOut = fixPartialDerivativeShorthand(partial);
 assertIncludes("partial derivative fix", partialOut, "\\frac{\\partial^2 w}{\\partial x^2}");
 assertIncludes("partial derivative y", partialOut, "\\frac{\\partial^2 w}{\\partial y^2}");
 
+const inlineDelim = String.raw`Euler: \( \sigma = M/(EI) \) and display \[E = mc^2\]`;
+const delimOut = convertMathDelimiters(inlineDelim);
+assertIncludes("inline delimiter conversion", delimOut, "$\\sigma = M/(EI)$");
+assertIncludes("display delimiter conversion", delimOut, "$$\nE = mc^2\n$$");
+
 if (failed > 0) {
   console.error(`\n${failed} assertion(s) failed`);
   process.exit(1);

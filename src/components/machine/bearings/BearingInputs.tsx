@@ -4,8 +4,8 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
-import type { BearingType, BearingReliability } from "@/lib/machine/bearings/types";
-import { bearingsOfType } from "@/data/catalogs/bearingCatalog";
+import type { BearingType, BearingReliability, LubricationClass } from "@/lib/machine/bearings/types";
+import { bearingsOfType, findBearing } from "@/data/catalogs/bearingCatalog";
 
 type Props = {
   radialLoad: number;
@@ -28,6 +28,10 @@ type Props = {
   setDesignation: (designation: string) => void;
   reliability: BearingReliability;
   setReliability: (reliability: BearingReliability) => void;
+  lubricationClass: LubricationClass | "";
+  setLubricationClass: (v: LubricationClass | "") => void;
+  maxBoreMm: number | "";
+  setMaxBoreMm: (v: number | "") => void;
   onCalculate: () => void;
   onSave?: () => void;
   saving?: boolean;
@@ -56,6 +60,10 @@ export default function BearingInputs({
   setDesignation,
   reliability,
   setReliability,
+  lubricationClass,
+  setLubricationClass,
+  maxBoreMm,
+  setMaxBoreMm,
   onCalculate,
   onSave,
   saving = false,
@@ -63,10 +71,12 @@ export default function BearingInputs({
   setProjectName,
 }: Props) {
   const catalogOptions = bearingsOfType(bearingType);
+  const selected = findBearing(designation);
+
   return (
     <CalculatorInputPanel
       title="Bearing calculator"
-      description="Estimate equivalent load, dynamic rating, and life for rolling bearings."
+      description="ISO 281 basic and modified rating life, ISO 76 static check, and catalog speed margin."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing life" designAware />
@@ -94,53 +104,40 @@ export default function BearingInputs({
           />
         </label>
       ) : null}
+
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
-          label="Radial load"
+          label="Radial load Fr"
           value={radialLoad}
           onChange={setRadialLoad}
           unit={
-            <ModuleUnitSelect
-              moduleId="bearings"
-              fieldKey="load"
-              value={radialUnit}
-              onChange={setRadialUnit}
-            />
+            <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={radialUnit} onChange={setRadialUnit} />
           }
         />
-
         <CalculatorUnitField
-          label="Axial load"
+          label="Axial load Fa"
           value={axialLoad}
           onChange={setAxialLoad}
           unit={
-            <ModuleUnitSelect
-              moduleId="bearings"
-              fieldKey="load"
-              value={axialUnit}
-              onChange={setAxialUnit}
-            />
+            <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={axialUnit} onChange={setAxialUnit} />
           }
         />
-
         <CalculatorUnitField
-          label="Speed"
+          label="Speed n"
           value={speed}
           onChange={setSpeed}
           min={0}
           unit={<span className="text-sm text-slate-500">RPM</span>}
         />
-
         <CalculatorUnitField
-          label="Desired life"
+          label="Required rating life L10h"
           value={lifeHours}
           onChange={setLifeHours}
           min={0}
           unit={<span className="text-sm text-slate-500">h</span>}
         />
-
         <label className="space-y-2 text-sm text-slate-700">
-          <span>Safety factor</span>
+          <span>Life safety factor on C</span>
           <input
             type="number"
             step="0.1"
@@ -149,7 +146,6 @@ export default function BearingInputs({
             className={calculatorNumberInputClass}
           />
         </label>
-
         <label className="space-y-2 text-sm text-slate-700">
           <span>Bearing type</span>
           <select
@@ -173,27 +169,62 @@ export default function BearingInputs({
         >
           {catalogOptions.map((entry) => (
             <option key={entry.designation} value={entry.designation}>
-              {entry.designation} — d {entry.boreMm} mm, C {(entry.dynamicRatingN / 1000).toFixed(1)} kN
+              {entry.designation} — d {entry.boreMm} mm, C {(entry.dynamicRatingN / 1000).toFixed(1)} kN, C₀{" "}
+              {(entry.staticRatingN / 1000).toFixed(1)} kN
             </option>
           ))}
         </select>
       </label>
 
-      <label className="block space-y-2 text-sm text-slate-700">
-        <span>Reliability (ISO 281 a1)</span>
-        <select
-          value={reliability}
-          onChange={(event) => setReliability(Number(event.target.value) as BearingReliability)}
-          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-        >
-          <option value={90}>90% (a1 = 1.00)</option>
-          <option value={95}>95% (a1 = 0.64)</option>
-          <option value={96}>96% (a1 = 0.55)</option>
-          <option value={97}>97% (a1 = 0.47)</option>
-          <option value={98}>98% (a1 = 0.37)</option>
-          <option value={99}>99% (a1 = 0.25)</option>
-        </select>
-      </label>
+      {selected && (
+        <p className="text-xs text-slate-500">
+          {selected.designation}: d={selected.boreMm} D={selected.outerDiameterMm} B={selected.widthMm} mm · n_lim=
+          {selected.limitingSpeedRpm} RPM
+        </p>
+      )}
+
+      <div className={`${calculatorInputGridClass}`}>
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Reliability (ISO 281 a1)</span>
+          <select
+            value={reliability}
+            onChange={(event) => setReliability(Number(event.target.value) as BearingReliability)}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            <option value={90}>90% (a1 = 1.00)</option>
+            <option value={95}>95% (a1 = 0.64)</option>
+            <option value={96}>96% (a1 = 0.55)</option>
+            <option value={97}>97% (a1 = 0.47)</option>
+            <option value={98}>98% (a1 = 0.37)</option>
+            <option value={99}>99% (a1 = 0.25)</option>
+          </select>
+        </label>
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Modified life lubrication (a_ISO screening)</span>
+          <select
+            value={lubricationClass}
+            onChange={(event) => setLubricationClass(event.target.value as LubricationClass | "")}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            <option value="">Basic L10 only (a_ISO = 1)</option>
+            <option value="poor">Poor (a_ISO ≈ 0.15)</option>
+            <option value="average">Average (a_ISO ≈ 0.5)</option>
+            <option value="good">Good (a_ISO ≈ 1.0)</option>
+          </select>
+        </label>
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Max bore from shaft (design mode hint, mm)</span>
+          <input
+            type="number"
+            value={maxBoreMm}
+            onChange={(event) =>
+              setMaxBoreMm(event.target.value === "" ? "" : Number(event.target.value))
+            }
+            placeholder="Optional"
+            className={calculatorNumberInputClass}
+          />
+        </label>
+      </div>
     </CalculatorInputPanel>
   );
 }

@@ -10,9 +10,9 @@ Real components rarely experience a single stress mode. Axial force \( F \) prod
 
 Normal stresses from axial and bending load superpose: \( \sigma = \sigma_a + \sigma_b \). For ductile materials under combined normal and shear stress, the von Mises (distortion energy) criterion gives equivalent stress \( \sigma_{\mathrm{vm}} = \sqrt{\sigma^2 + 3\tau^2} \). Safety factor is \( SF = \sigma_y / \sigma_{\mathrm{vm}} \).
 
-Boundary conditions define the kinematic constraints at supports. Fixed ends restrain both translation and rotation; pinned supports restrain translation only; roller supports allow horizontal movement. The choice of support model directly affects moment distribution — a fixed–fixed beam carries less mid-span moment than a simply supported beam under the same UDL but develops significant hogging moments at supports.
+Stress components are evaluated at the section centroid for a prismatic rectangular cross-section. The module assumes elastic behavior and does not model local buckling, stress concentrations, or warping restraint — use dedicated beam or shell analysis when those effects govern.
 
-Load types include concentrated forces, uniformly distributed segments, and applied couples. Multiple loads superpose linearly in elastic analysis. The module validates positive geometry (length, stiffness, section properties) before invoking the solver and rejects empty load lists.
+Inputs must specify positive width, height, and material yield strength; zero-area sections are rejected at validation.
 
 **Governing equations**
 
@@ -31,8 +31,6 @@ SF = \frac{\sigma_y}{\sigma_{\mathrm{vm}}}
 **Numerical method**
 
 Closed-form evaluation: section properties \( A \), \( I_{xx} \), and \( J \) are computed from rectangular width and height. Individual stress components are calculated algebraically; von Mises stress and safety factor follow directly. Design status flags `safe`, `warning`, or `critical` based on threshold ratios (SF ≥ 2 safe, ≥ 1.25 warning).
-
-**Solver pipeline:** Inputs are validated for positive geometry and material values. The core engine in `src/lib/` executes the numerical model, then post-processes peak values, utilizations, and physics checks. Results are returned in SI base units for consistent handoff to charts (`EngineeringPlot`) and export.
 
 **Inputs**
 
@@ -60,16 +58,6 @@ Closed-form evaluation: section properties \( A \), \( I_{xx} \), and \( J \) ar
 - **EU:** EN 1993-1-1 Clause 6.2.1 equivalent stress
 - **ISO:** ISO 10828 equivalent stress methods
 
-**Example workflow**
-
-1. Select design code (Indicative, US, EU, or ISO) and confirm unit profile defaults.
-2. Enter geometry, material properties, and operating loads from the module input panel.
-3. Review peak utilizations, code checks, and solver warnings in `CalculatorResultsShell`.
-4. Export results or hand off key outputs (forces, stresses, dimensions) to related modules via design workflows where supported.
-
-**Implementation notes**
-
-Solver source: `src/lib/` — see module engine and types for exact input field names. Design code checks are orchestrated through `moduleStandardCatalog` with validation status per module. Export and saved projects preserve inputs for reproducibility.
 
 **Assumptions & limitations**
 
