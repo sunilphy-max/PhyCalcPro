@@ -272,7 +272,7 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     catalogTables: ["Standard shaft diameters", "DIN 743 factors", "AGMA/ASME shaft factors", "Keyway dimensions", "Bearing series"],
     linkedWorkflowModuleIds: ["keys-splines", "bearings", "gears", "fatigue", "shaft-hubs"],
     expertNotes: ["MITCalc-like shaft design must link torque, bending, Kt/Kf, fatigue, bearings, keys and critical speed."],
-    gaps: ["Full DIN 743/AGMA fatigue worksheet and automatic standard-diameter search still need solver integration."],
+    gaps: ["Full DIN 743 EU worksheet (K_sigma, K_tau, gamma_F) and AGMA 6001 load templates still need integration."],
   },
   gears: {
     maturity: "solver-backed",

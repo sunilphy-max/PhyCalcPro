@@ -17,6 +17,9 @@ const RESULT_TO_CHECK: Record<string, { checkId: string; kind: "safety_factor" |
   safetyFactorBearing: { checkId: "bearing", kind: "safety_factor" },
   bucklingSafetyFactor: { checkId: "buckling_utilization", kind: "safety_factor" },
   criticalLoadFactor: { checkId: "euler_critical", kind: "safety_factor" },
+  criticalSpeedMargin: { checkId: "critical_speed", kind: "safety_factor" },
+  deflectionUtilization: { checkId: "deflection", kind: "utilization" },
+  fatigueSafetyFactor: { checkId: "fatigue", kind: "safety_factor" },
 };
 
 const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
@@ -30,6 +33,12 @@ const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
     safetyFactorShear: "shear",
     safetyFactorAxial: "tensile",
     safetyFactorBearing: "bearing",
+  },
+  shafts: {
+    safetyFactor: "von_mises",
+    criticalSpeedMargin: "critical_speed",
+    deflectionUtilization: "deflection",
+    fatigueSafetyFactor: "fatigue",
   },
   fatigue: {
     safetyFactor: "goodman",

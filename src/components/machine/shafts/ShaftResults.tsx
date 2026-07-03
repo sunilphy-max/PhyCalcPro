@@ -10,6 +10,7 @@ type LayoutPreview = {
   length: number;
   diameter: number;
   loads: LoadCase[];
+  supports?: import("@/lib/machine/shafts/types").BearingSupport[];
   lengthUnit?: string;
 };
 
@@ -17,9 +18,10 @@ type Props = {
   result: WithCalculationSpec<ShaftResult> | null;
   projectName: string;
   layout?: LayoutPreview;
+  lengthUnit?: string;
 };
 
-export default function ShaftResults({ result, projectName, layout }: Props) {
+export default function ShaftResults({ result, projectName, layout, lengthUnit = "m" }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="shafts"
@@ -29,7 +31,7 @@ export default function ShaftResults({ result, projectName, layout }: Props) {
       title="Export Shaft results"
       description="Export the current summary and charts for review."
       empty={!result}
-      emptyMessage="Enter shaft geometry, bearings, and loads, then calculate."
+      emptyMessage="Enter shaft geometry, supports, and loads, then calculate."
       heading="Shaft Results"
       qualityOverrides={chartModuleQuality()}
       csvRows={
@@ -37,12 +39,15 @@ export default function ShaftResults({ result, projectName, layout }: Props) {
           ? [
               { metric: "maxStress", value: result.maxStress },
               { metric: "maxDeflection", value: result.maxDeflection },
+              { metric: "safetyFactor", value: result.safetyFactor },
               { metric: "criticalSpeed", value: result.criticalSpeed },
+              { metric: "criticalSpeedMargin", value: result.criticalSpeedMargin ?? 0 },
+              { metric: "fatigueSafetyFactor", value: result.fatigueSafetyFactor ?? 0 },
             ]
           : undefined
       }
     >
-      {result ? <ShaftDashboard result={result} layout={layout} /> : null}
+      {result ? <ShaftDashboard result={result} layout={layout} lengthUnit={lengthUnit} /> : null}
     </CalculatorResultsShell>
   );
 }

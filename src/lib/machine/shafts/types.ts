@@ -1,77 +1,150 @@
 /**
  * Shaft Design Module Types
- * Shaft stress and deflection analysis
  */
+
+import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
 
 export type ShaftMaterial = {
   name: string;
-  E: number; // Elastic modulus (Pa)
-  G: number; // Shear modulus (Pa)
-  density: number; // Density (kg/m³)
-  yieldStress: number; // Yield stress (Pa)
+  E: number;
+  G: number;
+  density: number;
+  yieldStress: number;
+  /** Ultimate tensile strength — required for fatigue screening */
+  ultimateStrength: number;
+};
+
+export type ShaftSegment = {
+  length: number;
+  outerDiameter: number;
+  innerDiameter?: number;
 };
 
 export type ShaftGeometry = {
-  diameter: number; // Shaft diameter (m)
-  length: number; // Shaft length (m)
+  /** Total span (m); when segments are set, should equal sum of segment lengths */
+  length: number;
+  /** Uniform diameter (m) — used when segments is empty */
+  diameter: number;
+  /** Stepped or hollow sections along the shaft */
+  segments?: ShaftSegment[];
+};
+
+export type BearingSupportType = "fixed" | "pin";
+
+export type BearingSupport = {
+  position: number;
+  type: BearingSupportType;
 };
 
 export type LoadCase = {
-  position: number; // Position along shaft (m)
-  torque?: number; // Torque (N·m)
-  bendingMoment?: number; // Bending moment (N·m)
-  axialForce?: number; // Axial force (N)
+  position: number;
+  torque?: number;
+  bendingMoment?: number;
+  axialForce?: number;
+  /** Transverse force in the lateral (Y) direction (N) */
+  transverseForce?: number;
+};
+
+export type StressFeatureType = "shoulder_fillet" | "keyway" | "custom";
+
+export type StressFeature = {
+  position: number;
+  type: StressFeatureType;
+  /** Larger diameter (m) for shoulder fillet */
+  largerDiameter?: number;
+  /** Smaller diameter (m) for shoulder fillet */
+  smallerDiameter?: number;
+  /** Fillet radius (m) */
+  filletRadius?: number;
+  customKt?: number;
+};
+
+export type ShaftFatigueOptions = {
+  enabled: boolean;
+  surfaceFinish?: SurfaceFinish;
+  /** Alternating torque fraction (0–1) for pulsating torsion */
+  alternatingTorqueFraction?: number;
+};
+
+export type ShaftAnalysisLimits = {
+  /** Max deflection as span / ratio (default 1000) */
+  deflectionLimitRatio?: number;
+  /** Max slope at bearings (rad, default 0.001) */
+  slopeLimitRad?: number;
+  /** Minimum critical speed margin ω_cr / ω_op (default 1.25) */
+  criticalSpeedMarginMin?: number;
+  /** Target static safety factor (default 1.5) */
+  targetStaticSafetyFactor?: number;
+  /** Target fatigue safety factor (default 1.5) */
+  targetFatigueSafetyFactor?: number;
 };
 
 export type ShaftConfig = {
   geometry: ShaftGeometry;
   material: ShaftMaterial;
   loads: LoadCase[];
+  supports?: BearingSupport[];
+  stressFeatures?: StressFeature[];
   meshSegments?: number;
-  /** Stress concentration factor applied to peak von Mises stress (steps, fillets). */
+  /** Global Kt fallback when no feature is defined at a section */
   stressConcentrationFactor?: number;
+  operatingRpm?: number;
+  includeSelfWeight?: boolean;
+  fatigue?: ShaftFatigueOptions;
+  limits?: ShaftAnalysisLimits;
+};
+
+export type BearingReaction = {
+  position: number;
+  forceY: number;
+  forceZ: number;
+  momentY: number;
+  momentZ: number;
 };
 
 export type ShaftResult = {
-  // Position data
   x: number[];
-
-  // Load distributions
   torqueDistribution: number[];
   bendingMomentDistribution: number[];
+  shearForce: number[];
+  shearStress: number[];
+  bendingStress: number[];
+  vonMisesStress: number[];
+  deflection: number[];
+  slope: number[];
+  rotation: number[];
+  stressConcentrationFactor: number[];
 
-  // Stress components (FEA-based)
-  shearStress: number[]; // Torsional shear (Pa)
-  bendingStress: number[]; // Bending stress (Pa)
-  vonMisesStress: number[]; // Combined Von Mises stress (Pa)
-
-  // Deflection/rotation
-  deflection: number[]; // Bending deflection (m)
-  rotation: number[]; // Torsional rotation (rad)
-
-  // Summary metrics
-  maxStress: number; // Max Von Mises stress (Pa)
+  maxStress: number;
   maxShearStress: number;
   maxBendingStress: number;
   maxDeflection: number;
+  maxSlope: number;
   maxTorque: number;
   maxBendingMoment: number;
+  maxShearForce: number;
   safetyFactor: number;
 
-  // Design evaluation
   designStatus: "safe" | "warning" | "critical";
   isSafe: boolean;
+  governingFailureMode: string;
 
-  // Critical locations
-  criticalSection: number; // Position of max stress (m)
+  criticalSection: number;
+  criticalSpeed: number;
+  criticalSpeedModes: number[];
+  criticalSpeedMargin: number | null;
 
-  // Dynamic analysis
-  criticalSpeed: number; // First critical speed (RPM)
+  fatigueSafetyFactor: number | null;
+  fatigueStatus: "safe" | "warning" | "critical" | "n/a";
 
-  // Analysis metadata
+  deflectionUtilization: number;
+  slopeUtilization: number;
+
+  bearingReactions: BearingReaction[];
+  bearingSlopes: { position: number; slopeRad: number }[];
+
   analysisType: "FEA";
 
-  // Geometry (for display)
   diameter?: number;
   radius?: number;
   polarMoment?: number;

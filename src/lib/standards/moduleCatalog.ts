@@ -141,6 +141,7 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("von_mises", "Combined stress utilization", "utilization"),
     genericIndicativeCheck("deflection", "Shaft deflection", "deflection"),
     genericIndicativeCheck("critical_speed", "Critical speed margin", "safety_factor"),
+    genericIndicativeCheck("fatigue", "Fatigue safety (Goodman)", "safety_factor"),
   ], {
     standardsByCode: {
       US: [{ body: "AGMA", document: "6001", note: "Interface loads" }],

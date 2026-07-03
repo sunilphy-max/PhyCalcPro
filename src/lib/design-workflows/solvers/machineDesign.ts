@@ -1,6 +1,7 @@
 import { solveGearEngine } from "@/lib/machine/gears/engine";
 import { GEAR_MODULE_SERIES_1_MM } from "@/data/catalogs/standardSeries";
 import { solveShaftEngine } from "@/lib/machine/shafts/engine";
+import { ISO_PREFERRED_SHAFT_DIAMETERS_MM } from "@/lib/machine/shafts/standardDiameters";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
 import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
 import { solveBevelGearEngine } from "@/lib/machine/bevel-gears/engine";
@@ -27,6 +28,7 @@ const SHAFT_MATERIAL = {
   G: 80e9,
   density: 7850,
   yieldStress: 250e6,
+  ultimateStrength: 690e6,
 };
 
 const BEARING_MATERIAL = {
@@ -159,7 +161,7 @@ export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignM
   const targetSf = userInputs.targetSafetyFactor ?? 2;
   const length = userInputs.length ?? 0.6;
   const loads = resolveShaftLoads(userInputs, length);
-  const diametersMm = [20, 25, 30, 35, 40, 45, 50, 60, 70];
+  const diametersMm = ISO_PREFERRED_SHAFT_DIAMETERS_MM.filter((d) => d >= 20 && d <= 120);
 
   const items = diametersMm.map((dMm) => {
     const d = dMm / 1000;

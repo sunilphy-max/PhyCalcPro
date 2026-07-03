@@ -13,7 +13,8 @@
       "E": 210000000000,
       "G": 80000000000,
       "density": 7850,
-      "yieldStress": 250000000
+      "yieldStress": 250000000,
+      "ultimateStrength": 690000000
     },
     "loads": [
       {

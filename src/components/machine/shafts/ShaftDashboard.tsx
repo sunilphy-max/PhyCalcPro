@@ -10,21 +10,23 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
-import type { LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
+import type { BearingSupport, LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
 
 type LayoutPreview = {
   length: number;
   diameter: number;
   loads: LoadCase[];
+  supports?: BearingSupport[];
   lengthUnit?: string;
 };
 
 type Props = {
   result: ShaftResult;
   layout?: LayoutPreview;
+  lengthUnit?: string;
 };
 
-export default function ShaftDashboard({ result, layout }: Props) {
+export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Props) {
   const status = useMemo<"safe" | "danger">(
     () => (result.isSafe ? "safe" : "danger"),
     [result.isSafe]
@@ -32,6 +34,7 @@ export default function ShaftDashboard({ result, layout }: Props) {
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     const tabs: PlotPickerTab[] = [];
+    const xUnit = lengthUnit;
 
     if (layout) {
       tabs.push({
@@ -51,7 +54,7 @@ export default function ShaftDashboard({ result, layout }: Props) {
     tabs.push(
       {
         id: "von-mises",
-        label: "Combined stress (von Mises)",
+        label: "Combined stress",
         content: (
           <EngineeringPlot
             title="Combined Stress"
@@ -59,7 +62,7 @@ export default function ShaftDashboard({ result, layout }: Props) {
             y={result.vonMisesStress}
             yLabel="Von Mises stress"
             xLabel="Position along shaft"
-            xUnit="m"
+            xUnit={xUnit}
             unitLabel="Pa"
             series={[
               { y: result.bendingStress, label: "Bending stress" },
@@ -69,32 +72,47 @@ export default function ShaftDashboard({ result, layout }: Props) {
         ),
       },
       {
-        id: "shear",
-        label: "Torsional shear",
+        id: "moment",
+        label: "Bending moment",
         content: (
           <EngineeringPlot
-            title="Torsional Shear Stress"
+            title="Bending Moment"
             x={result.x}
-            y={result.shearStress}
-            yLabel="Shear stress"
+            y={result.bendingMomentDistribution}
+            yLabel="Bending moment"
             xLabel="Position along shaft"
-            xUnit="m"
-            unitLabel="Pa"
+            xUnit={xUnit}
+            unitLabel="N·m"
           />
         ),
       },
       {
-        id: "bending",
-        label: "Bending stress",
+        id: "torque",
+        label: "Torque",
         content: (
           <EngineeringPlot
-            title="Bending Stress"
+            title="Torque Distribution"
             x={result.x}
-            y={result.bendingStress}
-            yLabel="Bending stress"
+            y={result.torqueDistribution}
+            yLabel="Torque"
             xLabel="Position along shaft"
-            xUnit="m"
-            unitLabel="Pa"
+            xUnit={xUnit}
+            unitLabel="N·m"
+          />
+        ),
+      },
+      {
+        id: "shear-force",
+        label: "Shear force",
+        content: (
+          <EngineeringPlot
+            title="Shear Force"
+            x={result.x}
+            y={result.shearForce}
+            yLabel="Shear force"
+            xLabel="Position along shaft"
+            xUnit={xUnit}
+            unitLabel="N"
           />
         ),
       },
@@ -103,13 +121,28 @@ export default function ShaftDashboard({ result, layout }: Props) {
         label: "Deflection",
         content: (
           <EngineeringPlot
-            title="Bending Deflection"
+            title="Lateral Deflection"
             x={result.x}
             y={result.deflection}
             yLabel="Deflection"
             xLabel="Position along shaft"
-            xUnit="m"
-            unitLabel="m"
+            xUnit={xUnit}
+            unitLabel={xUnit}
+          />
+        ),
+      },
+      {
+        id: "slope",
+        label: "Slope",
+        content: (
+          <EngineeringPlot
+            title="Shaft Slope"
+            x={result.x}
+            y={result.slope}
+            yLabel="Slope"
+            xLabel="Position along shaft"
+            xUnit={xUnit}
+            unitLabel="rad"
           />
         ),
       },
@@ -118,60 +151,89 @@ export default function ShaftDashboard({ result, layout }: Props) {
         label: "Torsional rotation",
         content: (
           <EngineeringPlot
-            title="Rotation"
+            title="Torsional Rotation"
             x={result.x}
             y={result.rotation}
             yLabel="Rotation"
             xLabel="Position along shaft"
-            xUnit="m"
+            xUnit={xUnit}
             unitLabel="rad"
+          />
+        ),
+      },
+      {
+        id: "kt",
+        label: "Stress concentration",
+        content: (
+          <EngineeringPlot
+            title="Kt Profile"
+            x={result.x}
+            y={result.stressConcentrationFactor}
+            yLabel="Kt"
+            xLabel="Position along shaft"
+            xUnit={xUnit}
+            unitLabel="—"
           />
         ),
       }
     );
 
     return tabs;
-  }, [layout, result]);
+  }, [layout, result, lengthUnit]);
 
   return (
     <div className="grid grid-cols-1 gap-4">
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Status"
-          value={result.isSafe ? "Safe" : "Unsafe"}
+          value={result.isSafe ? "Safe" : "Check required"}
           status={status}
         />
-        <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} tone="blue" />
+        <CalculatorMetricCard label="Static safety factor" numericValue={result.safetyFactor} tone="blue" />
         <CalculatorMetricCard
-          label="Diameter"
-          value={result.diameter ? formatEngineeringValue(result.diameter, "m") : "—"}
-          tone="purple"
+          label="Governing check"
+          value={result.governingFailureMode}
+          tone="orange"
         />
         <CalculatorMetricCard
           label="Critical section"
-          value={`@ ${formatEngineeringValue(result.criticalSection, "m")}`}
-          tone="orange"
+          value={`@ ${formatEngineeringValue(result.criticalSection, lengthUnit)}`}
+          tone="purple"
         />
       </CalculatorMetricGrid>
 
-      <CalculatorMetricGrid cols={3}>
+      <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Max von Mises stress"
           value={formatEngineeringValue(result.maxStress, "Pa")}
           tone="red"
-          size="lg"
         />
         <CalculatorMetricCard
-          label="Max shear stress"
-          value={formatEngineeringValue(result.maxShearStress, "Pa")}
-          tone="orange"
-          size="lg"
+          label="Fatigue safety factor"
+          value={
+            result.fatigueSafetyFactor != null
+              ? result.fatigueSafetyFactor.toFixed(2)
+              : "N/A (set RPM)"
+          }
+          tone={result.fatigueStatus === "safe" ? "blue" : "amber"}
         />
         <CalculatorMetricCard
-          label="Max bending stress"
-          value={formatEngineeringValue(result.maxBendingStress, "Pa")}
-          tone="amber"
-          size="lg"
+          label="1st critical speed"
+          value={`${result.criticalSpeed.toFixed(0)} RPM`}
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Critical speed margin"
+          value={
+            result.criticalSpeedMargin != null
+              ? `${result.criticalSpeedMargin.toFixed(2)}×`
+              : "N/A (set RPM)"
+          }
+          tone={
+            result.criticalSpeedMargin != null && result.criticalSpeedMargin >= 1.25
+              ? "blue"
+              : "amber"
+          }
         />
       </CalculatorMetricGrid>
 
@@ -183,25 +245,42 @@ export default function ShaftDashboard({ result, layout }: Props) {
 
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
-          label="Polar moment"
-          value={result.polarMoment ? formatEngineeringValue(result.polarMoment, "m⁴") : "—"}
-        />
-        <CalculatorMetricCard
-          label="Second moment"
-          value={result.secondMoment ? formatEngineeringValue(result.secondMoment, "m⁴") : "—"}
-        />
-        <CalculatorMetricCard
           label="Max deflection"
-          value={formatEngineeringValue(result.maxDeflection, "m")}
+          value={formatEngineeringValue(result.maxDeflection, lengthUnit)}
         />
         <CalculatorMetricCard
-          label="Max rotation"
-          value={formatEngineeringValue(
-            ((Math.max(...result.rotation) || 0) * 180) / Math.PI,
-            "°"
-          )}
+          label="Deflection utilization"
+          value={`${(result.deflectionUtilization * 100).toFixed(0)}%`}
+        />
+        <CalculatorMetricCard
+          label="Max bearing slope"
+          value={`${((result.maxSlope || 0) * 1000).toFixed(2)} mrad`}
+        />
+        <CalculatorMetricCard
+          label="Slope utilization"
+          value={`${(result.slopeUtilization * 100).toFixed(0)}%`}
         />
       </CalculatorMetricGrid>
+
+      {result.bearingReactions.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 className="text-sm font-semibold text-slate-900">Bearing reactions</h3>
+          <ul className="mt-2 space-y-1 text-sm text-slate-700">
+            {result.bearingReactions.map((r, i) => (
+              <li key={i}>
+                @ {formatEngineeringValue(r.position, lengthUnit)}: Fy ={" "}
+                {formatEngineeringValue(r.forceY, "N")}, Fz = {formatEngineeringValue(r.forceZ, "N")}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {result.criticalSpeedModes.length > 1 && (
+        <p className="text-xs text-slate-500">
+          Higher modes: {result.criticalSpeedModes.slice(1).map((s) => `${s.toFixed(0)} RPM`).join(", ")}
+        </p>
+      )}
     </div>
   );
 }

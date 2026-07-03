@@ -15,10 +15,12 @@ export type ShaftElement = {
   E: number;
   G: number;
   diameter: number;
+  innerDiameter?: number;
   length: number;
   polarMoment: number;
   secondMoment: number;
   area: number;
+  density: number;
 };
 
 export type ShaftFEMModel = {

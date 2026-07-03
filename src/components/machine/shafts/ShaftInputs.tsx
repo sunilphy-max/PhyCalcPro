@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import type { LoadCase } from "@/lib/machine/shafts/types";
+import type {
+  BearingSupport,
+  LoadCase,
+  ShaftSegment,
+  StressFeature,
+} from "@/lib/machine/shafts/types";
+import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+
+export type SupportPreset = "fixed_left" | "simply_supported" | "custom";
 
 type Props = {
   projectName: string;
@@ -34,6 +42,22 @@ type Props = {
   setForceUnit: (u: string) => void;
   loads: LoadCase[];
   setLoads: (loads: LoadCase[]) => void;
+  supports: BearingSupport[];
+  setSupports: (s: BearingSupport[]) => void;
+  supportPreset: SupportPreset;
+  setSupportPreset: (p: SupportPreset) => void;
+  segments: ShaftSegment[];
+  setSegments: (s: ShaftSegment[]) => void;
+  useSteppedGeometry: boolean;
+  setUseSteppedGeometry: (v: boolean) => void;
+  stressFeatures: StressFeature[];
+  setStressFeatures: (f: StressFeature[]) => void;
+  operatingRpm: number;
+  setOperatingRpm: (v: number) => void;
+  includeSelfWeight: boolean;
+  setIncludeSelfWeight: (v: boolean) => void;
+  surfaceFinish: SurfaceFinish;
+  setSurfaceFinish: (f: SurfaceFinish) => void;
   meshSegments: number;
   setMeshSegments: (value: number) => void;
   stressConcentrationFactor: number;
@@ -68,6 +92,22 @@ export default function ShaftInputs({
   setForceUnit,
   loads,
   setLoads,
+  supports,
+  setSupports,
+  supportPreset,
+  setSupportPreset,
+  segments,
+  setSegments,
+  useSteppedGeometry,
+  setUseSteppedGeometry,
+  stressFeatures,
+  setStressFeatures,
+  operatingRpm,
+  setOperatingRpm,
+  includeSelfWeight,
+  setIncludeSelfWeight,
+  surfaceFinish,
+  setSurfaceFinish,
   meshSegments,
   setMeshSegments,
   stressConcentrationFactor,
@@ -79,24 +119,28 @@ export default function ShaftInputs({
   const [torqueInput, setTorqueInput] = useState(0);
   const [bendingMomentInput, setBendingMomentInput] = useState(0);
   const [axialInput, setAxialInput] = useState(0);
+  const [transverseInput, setTransverseInput] = useState(0);
   const [positionInput, setPositionInput] = useState(length / 2);
 
   const addLoad = () => {
     const hasTorque = Math.abs(torqueInput) > 0;
     const hasMoment = Math.abs(bendingMomentInput) > 0;
     const hasAxial = Math.abs(axialInput) > 0;
-    if (!hasTorque && !hasMoment && !hasAxial) return;
+    const hasTransverse = Math.abs(transverseInput) > 0;
+    if (!hasTorque && !hasMoment && !hasAxial && !hasTransverse) return;
 
     const newLoad: LoadCase = {
       position: Math.min(Math.max(0, positionInput), length),
       ...(hasTorque ? { torque: torqueInput } : {}),
       ...(hasMoment ? { bendingMoment: bendingMomentInput } : {}),
       ...(hasAxial ? { axialForce: axialInput } : {}),
+      ...(hasTransverse ? { transverseForce: transverseInput } : {}),
     };
     setLoads([...loads, newLoad]);
     setTorqueInput(0);
     setBendingMomentInput(0);
     setAxialInput(0);
+    setTransverseInput(0);
     setPositionInput(length / 2);
   };
 
@@ -106,22 +150,49 @@ export default function ShaftInputs({
 
   const formatLoadSummary = (load: LoadCase) => {
     const parts: string[] = [];
-    if (load.torque) {
-      parts.push(`T = ${formatEngineeringValue(load.torque, torqueUnit)}`);
-    }
-    if (load.bendingMoment) {
-      parts.push(`M = ${formatEngineeringValue(load.bendingMoment, momentUnit)}`);
-    }
-    if (load.axialForce) {
-      parts.push(`P = ${formatEngineeringValue(load.axialForce, forceUnit)}`);
-    }
+    if (load.torque) parts.push(`T = ${formatEngineeringValue(load.torque, torqueUnit)}`);
+    if (load.bendingMoment) parts.push(`M = ${formatEngineeringValue(load.bendingMoment, momentUnit)}`);
+    if (load.axialForce) parts.push(`P = ${formatEngineeringValue(load.axialForce, forceUnit)}`);
+    if (load.transverseForce) parts.push(`F = ${formatEngineeringValue(load.transverseForce, forceUnit)}`);
     return parts.join(" · ");
+  };
+
+  const applySupportPreset = (preset: SupportPreset) => {
+    setSupportPreset(preset);
+    if (preset === "fixed_left") {
+      setSupports([{ position: 0, type: "fixed" }]);
+    } else if (preset === "simply_supported") {
+      setSupports([
+        { position: 0, type: "pin" },
+        { position: length, type: "pin" },
+      ]);
+    }
+  };
+
+  const addSegment = () => {
+    setSegments([
+      ...segments,
+      { length: length / Math.max(segments.length + 1, 1), outerDiameter: diameter, innerDiameter: 0 },
+    ]);
+  };
+
+  const addShoulderFeature = () => {
+    setStressFeatures([
+      ...stressFeatures,
+      {
+        position: length / 2,
+        type: "shoulder_fillet",
+        largerDiameter: diameter * 1.2,
+        smallerDiameter: diameter,
+        filletRadius: diameter * 0.02,
+      },
+    ]);
   };
 
   return (
     <CalculatorInputPanel
       title="Shaft design"
-      description="Torsion, bending, and fatigue analysis with live load cases and FEA mesh."
+      description="FEA shaft analysis: stepped geometry, bearings, transverse loads, fatigue, and critical speed."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton onClick={onCalculate} label="Solve shaft" designAware />
@@ -146,51 +217,159 @@ export default function ShaftInputs({
       <section className="space-y-3 border-t border-slate-200 pt-4">
         <h3 className="text-sm font-semibold text-slate-900">Shaft geometry</h3>
         <CalculatorUnitField
-          label="Diameter"
+          label="Diameter (uniform shaft)"
           value={diameter}
           onChange={setDiameter}
           step="any"
           unit={
-            <ModuleUnitSelect
-              moduleId="shafts"
-              fieldKey="diameter"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-            />
+            <ModuleUnitSelect moduleId="shafts" fieldKey="diameter" value={lengthUnit} onChange={setLengthUnit} />
           }
         />
         <CalculatorUnitField
-          label="Length"
+          label="Total length"
           value={length}
           onChange={setLength}
           step="any"
           unit={
-            <ModuleUnitSelect
-              moduleId="shafts"
-              fieldKey="length"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-            />
+            <ModuleUnitSelect moduleId="shafts" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
           }
         />
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={useSteppedGeometry}
+            onChange={(e) => setUseSteppedGeometry(e.target.checked)}
+          />
+          Stepped / hollow segments
+        </label>
+        {useSteppedGeometry && (
+          <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3">
+            {segments.map((seg, i) => (
+              <div key={i} className="grid grid-cols-3 gap-2 text-xs">
+                <input
+                  className="rounded border px-2 py-1"
+                  type="number"
+                  value={seg.length}
+                  onChange={(e) => {
+                    const next = [...segments];
+                    next[i] = { ...seg, length: Number(e.target.value) };
+                    setSegments(next);
+                  }}
+                  placeholder="Length"
+                />
+                <input
+                  className="rounded border px-2 py-1"
+                  type="number"
+                  value={seg.outerDiameter}
+                  onChange={(e) => {
+                    const next = [...segments];
+                    next[i] = { ...seg, outerDiameter: Number(e.target.value) };
+                    setSegments(next);
+                  }}
+                  placeholder="OD"
+                />
+                <input
+                  className="rounded border px-2 py-1"
+                  type="number"
+                  value={seg.innerDiameter ?? 0}
+                  onChange={(e) => {
+                    const next = [...segments];
+                    next[i] = { ...seg, innerDiameter: Number(e.target.value) };
+                    setSegments(next);
+                  }}
+                  placeholder="ID (0=solid)"
+                />
+              </div>
+            ))}
+            <button type="button" onClick={addSegment} className="text-xs font-medium text-blue-600">
+              + Add segment
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3 border-t border-slate-200 pt-4">
+        <h3 className="text-sm font-semibold text-slate-900">Bearings / supports</h3>
+        <select
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          value={supportPreset}
+          onChange={(e) => applySupportPreset(e.target.value as SupportPreset)}
+        >
+          <option value="fixed_left">Fixed at left (cantilever-style)</option>
+          <option value="simply_supported">Simply supported (pin both ends)</option>
+          <option value="custom">Custom positions</option>
+        </select>
+        {supportPreset === "custom" && (
+          <div className="space-y-2 text-sm">
+            {supports.map((s, i) => (
+              <div key={i} className="flex gap-2">
+                <input
+                  type="number"
+                  className="w-24 rounded border px-2 py-1"
+                  value={s.position}
+                  onChange={(e) => {
+                    const next = [...supports];
+                    next[i] = { ...s, position: Number(e.target.value) };
+                    setSupports(next);
+                  }}
+                />
+                <select
+                  className="flex-1 rounded border px-2 py-1"
+                  value={s.type}
+                  onChange={(e) => {
+                    const next = [...supports];
+                    next[i] = { ...s, type: e.target.value as BearingSupport["type"] };
+                    setSupports(next);
+                  }}
+                >
+                  <option value="pin">Pin (journal)</option>
+                  <option value="fixed">Fixed</option>
+                </select>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="text-xs text-blue-600"
+              onClick={() => setSupports([...supports, { position: length / 2, type: "pin" }])}
+            >
+              + Add support
+            </button>
+          </div>
+        )}
+      </section>
+
+      <section className="space-y-3 border-t border-slate-200 pt-4">
+        <h3 className="text-sm font-semibold text-slate-900">Operating conditions</h3>
+        <CalculatorUnitField
+          label="Operating speed (RPM) — for fatigue & critical speed margin"
+          value={operatingRpm}
+          onChange={setOperatingRpm}
+          min={0}
+          step="any"
+          unit={<span className="text-sm text-slate-500">RPM</span>}
+        />
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={includeSelfWeight}
+            onChange={(e) => setIncludeSelfWeight(e.target.checked)}
+          />
+          Include shaft self-weight
+        </label>
       </section>
 
       <section className="space-y-3 border-t border-slate-200 pt-4">
         <h3 className="text-sm font-semibold text-slate-900">Material</h3>
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Preset</label>
-          <select
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            value={material}
-            onChange={(e) => setMaterial(e.target.value)}
-          >
-            <option value="Steel">Steel</option>
-            <option value="Aluminum">Aluminum</option>
-            <option value="Titanium">Titanium</option>
-            <option value="custom">Custom</option>
-          </select>
-        </div>
-
+        <select
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          value={material}
+          onChange={(e) => setMaterial(e.target.value)}
+        >
+          <option value="Steel">Steel</option>
+          <option value="Aluminum">Aluminum</option>
+          <option value="Titanium">Titanium</option>
+          <option value="custom">Custom</option>
+        </select>
         {material === "custom" && (
           <>
             <CalculatorUnitField
@@ -199,12 +378,7 @@ export default function ShaftInputs({
               onChange={setElasticModulus}
               step="any"
               unit={
-                <ModuleUnitSelect
-                  moduleId="shafts"
-                  fieldKey="stress"
-                  value={modulusUnit}
-                  onChange={setModulusUnit}
-                />
+                <ModuleUnitSelect moduleId="shafts" fieldKey="stress" value={modulusUnit} onChange={setModulusUnit} />
               }
             />
             <CalculatorUnitField
@@ -213,90 +387,65 @@ export default function ShaftInputs({
               onChange={setShearModulus}
               step="any"
               unit={
-                <ModuleUnitSelect
-                  moduleId="shafts"
-                  fieldKey="stress"
-                  value={modulusUnit}
-                  onChange={setModulusUnit}
-                />
+                <ModuleUnitSelect moduleId="shafts" fieldKey="stress" value={modulusUnit} onChange={setModulusUnit} />
               }
             />
           </>
         )}
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-slate-700">Surface finish (fatigue)</label>
+          <select
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={surfaceFinish}
+            onChange={(e) => setSurfaceFinish(e.target.value as SurfaceFinish)}
+          >
+            <option value="ground">Ground</option>
+            <option value="machined">Machined</option>
+            <option value="hot-rolled">Hot rolled</option>
+            <option value="as-forged">As forged</option>
+          </select>
+        </div>
       </section>
 
       <section className="space-y-3 border-t border-slate-200 pt-4">
-        <div>
-          <h3 className="text-sm font-semibold text-slate-900">Load cases along the shaft</h3>
-          <p className="mt-1 text-xs leading-relaxed text-slate-500">
-            Each entry is a <strong>station</strong> at a distance from the left end. Enter the
-            torsion, bending, and/or axial load acting at that station. Leave a magnitude at zero if
-            that load type does not apply there, then click <strong>Add load case</strong>. You can
-            add multiple stations (e.g. gear torque at mid-span and a bearing reaction near an end).
-          </p>
-        </div>
-
+        <h3 className="text-sm font-semibold text-slate-900">Load cases</h3>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-            New load case at one station
-          </p>
           <CalculatorUnitField
-            label="Torque (T) — torsion about shaft axis"
+            label="Torque (T)"
             value={torqueInput}
             onChange={setTorqueInput}
             step="any"
-            unit={
-              <ModuleUnitSelect
-                moduleId="shafts"
-                fieldKey="torque"
-                value={torqueUnit}
-                onChange={setTorqueUnit}
-              />
-            }
+            unit={<ModuleUnitSelect moduleId="shafts" fieldKey="torque" value={torqueUnit} onChange={setTorqueUnit} />}
           />
           <CalculatorUnitField
-            label="Bending moment (M) — about horizontal axis"
+            label="Bending moment (M)"
             value={bendingMomentInput}
             onChange={setBendingMomentInput}
             step="any"
-            unit={
-              <ModuleUnitSelect
-                moduleId="shafts"
-                fieldKey="moment"
-                value={momentUnit}
-                onChange={setMomentUnit}
-              />
-            }
+            unit={<ModuleUnitSelect moduleId="shafts" fieldKey="moment" value={momentUnit} onChange={setMomentUnit} />}
           />
           <CalculatorUnitField
-            label="Axial force (P) — tension (+) / compression (−)"
+            label="Transverse force (F)"
+            value={transverseInput}
+            onChange={setTransverseInput}
+            step="any"
+            unit={<ModuleUnitSelect moduleId="shafts" fieldKey="force" value={forceUnit} onChange={setForceUnit} />}
+          />
+          <CalculatorUnitField
+            label="Axial force (P)"
             value={axialInput}
             onChange={setAxialInput}
             step="any"
-            unit={
-              <ModuleUnitSelect
-                moduleId="shafts"
-                fieldKey="force"
-                value={forceUnit}
-                onChange={setForceUnit}
-              />
-            }
+            unit={<ModuleUnitSelect moduleId="shafts" fieldKey="force" value={forceUnit} onChange={setForceUnit} />}
           />
           <CalculatorUnitField
-            label="Position along shaft (from left end)"
+            label="Position from left end"
             value={positionInput}
             onChange={setPositionInput}
             min={0}
             max={length}
             step="any"
-            unit={
-              <ModuleUnitSelect
-                moduleId="shafts"
-                fieldKey="length"
-                value={lengthUnit}
-                onChange={setLengthUnit}
-              />
-            }
+            unit={<ModuleUnitSelect moduleId="shafts" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />}
           />
           <button
             type="button"
@@ -306,7 +455,6 @@ export default function ShaftInputs({
             Add load case
           </button>
         </div>
-
         {loads.length > 0 ? (
           <ul className="space-y-2">
             {loads.map((load, index) => (
@@ -316,16 +464,11 @@ export default function ShaftInputs({
               >
                 <div>
                   <div className="font-medium text-slate-900">
-                    Station {index + 1} @{" "}
-                    {formatEngineeringValue(load.position, lengthUnit, { digits: 3 })}
+                    Station {index + 1} @ {formatEngineeringValue(load.position, lengthUnit, { digits: 3 })}
                   </div>
                   <div className="mt-1 text-slate-600">{formatLoadSummary(load)}</div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeLoad(index)}
-                  className="shrink-0 text-xs font-medium text-red-600 hover:text-red-800"
-                >
+                <button type="button" onClick={() => removeLoad(index)} className="shrink-0 text-xs font-medium text-red-600">
                   Remove
                 </button>
               </li>
@@ -336,35 +479,37 @@ export default function ShaftInputs({
         )}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 border-t-0">
-        <h3 className="text-sm font-semibold text-slate-900">Stress concentration</h3>
-        <p className="text-xs text-slate-500">
-          Kt multiplies peak von Mises stress for fillets, keyways, or shoulder steps (1.0 = none).
-        </p>
+      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
+        <h3 className="text-sm font-semibold text-slate-900">Stress concentrations</h3>
         <CalculatorUnitField
-          label="Stress concentration factor (Kt)"
+          label="Global Kt (fallback)"
           value={stressConcentrationFactor}
           onChange={setStressConcentrationFactor}
           min={1}
           step="any"
           unit={<span className="text-sm text-slate-500">—</span>}
         />
+        <button type="button" onClick={addShoulderFeature} className="text-xs font-medium text-blue-600">
+          + Add shoulder fillet feature
+        </button>
+        {stressFeatures.map((f, i) => (
+          <div key={i} className="text-xs text-slate-600">
+            {f.type} @ {formatEngineeringValue(f.position, lengthUnit)}
+            <button
+              type="button"
+              className="ml-2 text-red-600"
+              onClick={() => setStressFeatures(stressFeatures.filter((_, j) => j !== i))}
+            >
+              remove
+            </button>
+          </div>
+        ))}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 border-t-0">
+      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
         <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
-        <p className="text-xs text-slate-500">
-          More elements along the shaft length give smoother stress and deflection curves in the
-          FEA mesh.
-        </p>
-        <MeshControls
-          elements={meshSegments}
-          onChangeElements={setMeshSegments}
-          minElements={10}
-          maxElements={500}
-        />
+        <MeshControls elements={meshSegments} onChangeElements={setMeshSegments} minElements={10} maxElements={500} />
       </section>
-
     </CalculatorInputPanel>
   );
 }
