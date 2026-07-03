@@ -76,16 +76,33 @@ for (const file of walk(resultsRoot)) {
 for (const file of walk(resultsRoot)) {
   if (!file.endsWith("Inputs.tsx")) continue;
   const content = fs.readFileSync(file, "utf8");
+  const rel = path.relative(process.cwd(), file).replace(/\\/g, "/");
+
   if (/bg-slate-900|bg-black text-white/.test(content)) {
-    const rel = path.relative(process.cwd(), file).replace(/\\/g, "/");
     errors.push(
       `${rel}: replace legacy calculate button with CalculatorCalculateButton (see PinInputs.tsx).`
     );
   }
   if (!content.includes("CalculatorCalculateButton") && !content.includes("calculatorPrimaryButtonClass")) {
+    errors.push(`${rel}: missing CalculatorCalculateButton in inputs panel footer.`);
+  }
+  if (/\bModuleUnitField\b/.test(content)) {
+    errors.push(`${rel}: use CalculatorUnitField + ModuleUnitSelect instead of ModuleUnitField.`);
+  }
+  if (/type="number"[\s\S]{0,240}border-slate-300|border-slate-300[\s\S]{0,240}type="number"/.test(content)) {
+    errors.push(`${rel}: use CalculatorUnitField + calculatorNumberInputClass for numeric inputs.`);
+  }
+}
+
+// Dashboards should not use one-off slate summary panels.
+const dashboardMetricPattern = /rounded-xl border border-slate-200 bg-slate-50|rounded-xl bg-slate-900/;
+for (const file of walk(resultsRoot)) {
+  if (!file.endsWith("Results.tsx") && !file.endsWith("Dashboard.tsx")) continue;
+  const content = fs.readFileSync(file, "utf8");
+  if (dashboardMetricPattern.test(content)) {
     const rel = path.relative(process.cwd(), file).replace(/\\/g, "/");
     errors.push(
-      `${rel}: missing CalculatorCalculateButton in inputs panel footer.`
+      `${rel}: use CalculatorMetricCard / CalculatorResultsPanel instead of one-off slate summary blocks.`
     );
   }
 }

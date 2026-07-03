@@ -54,9 +54,20 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 - No duplex/paired angular-contact or tapered-roller arrangements
 - Fits, clearance, and temperature derating not modeled
 
+**Verification**
+
+- CI: `bearings-indicative-01.json`
+- Vitest: `src/lib/machine/bearings/engine.test.ts`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md) (Machine → bearings)
+
+**Design workflow**
+
+- **Validate:** ISO 281/76 forward check on selected designation.
+- **Auto-design:** Ranks catalog entries by life utilization, static SF, and speed margin within bore limit.
+- **Handoff:** Receives Fr, Fa, speed from **shafts** module (manual apply today).
+
 **References**
 
 1. ISO 281:2007 — Dynamic load ratings and rating life
 2. ISO 76 — Static load ratings
 3. Shigley, Ch. 11; SKF Rolling Bearings Catalogue
-4. PhyCalcPro: `src/lib/machine/bearings/engine.test.ts`, `src/data/verification/bearings-indicative-01.json`

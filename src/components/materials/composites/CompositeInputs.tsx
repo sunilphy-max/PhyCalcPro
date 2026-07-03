@@ -1,11 +1,12 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
+import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-
-import type { Dispatch, SetStateAction } from "react";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorFieldLabelClass, calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   fiberVolumeFraction: number;
@@ -64,9 +65,9 @@ export default function CompositeInputs({
       description="Design laminate layups and composite section behavior."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Compute composite" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700 col-span-full">
-          <span>Fiber volume fraction</span>
+      <div className={`${calculatorInputGridClass}`}>
+        <label className="col-span-full space-y-2">
+          <span className={calculatorFieldLabelClass}>Fiber volume fraction</span>
           <div className="flex items-center gap-3">
             <input
               type="range"
@@ -80,142 +81,63 @@ export default function CompositeInputs({
             <span className="w-20 text-right text-sm text-slate-700">{(fiberVolumeFraction * 100).toFixed(0)}%</span>
           </div>
         </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Fiber modulus</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={fiberModulus}
-              onChange={(event) => setFiberModulus(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="composites"
-              fieldKey="stress"
-              value={stressUnit}
-              onChange={setStressUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Matrix modulus</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={matrixModulus}
-              onChange={(event) => setMatrixModulus(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="composites"
-              fieldKey="stress"
-              value={stressUnit}
-              onChange={setStressUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Fiber strength</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={fiberStrength}
-              onChange={(event) => setFiberStrength(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="composites"
-              fieldKey="stress"
-              value={stressUnit}
-              onChange={setStressUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Matrix strength</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={matrixStrength}
-              onChange={(event) => setMatrixStrength(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="composites"
-              fieldKey="stress"
-              value={stressUnit}
-              onChange={setStressUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Fiber density</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={fiberDensity}
-              onChange={(event) => setFiberDensity(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="composites"
-              fieldKey="density"
-              value={densityUnit}
-              onChange={setDensityUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Matrix density</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={matrixDensity}
-              onChange={(event) => setMatrixDensity(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="composites"
-              fieldKey="density"
-              value={densityUnit}
-              onChange={setDensityUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Fiber Poisson's ratio</span>
-          <input
-            type="number"
-            step={0.01}
-            min={0}
-            max={0.5}
-            value={fiberPoisson}
-            onChange={(event) => setFiberPoisson(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Matrix Poisson's ratio</span>
-          <input
-            type="number"
-            step={0.01}
-            min={0}
-            max={0.5}
-            value={matrixPoisson}
-            onChange={(event) => setMatrixPoisson(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
+        <CalculatorUnitField
+          label="Fiber modulus"
+          value={fiberModulus}
+          onChange={setFiberModulus}
+          unit={<ModuleUnitSelect moduleId="composites" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />}
+        />
+        <CalculatorUnitField
+          label="Matrix modulus"
+          value={matrixModulus}
+          onChange={setMatrixModulus}
+          unit={<ModuleUnitSelect moduleId="composites" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />}
+        />
+        <CalculatorUnitField
+          label="Fiber strength"
+          value={fiberStrength}
+          onChange={setFiberStrength}
+          unit={<ModuleUnitSelect moduleId="composites" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />}
+        />
+        <CalculatorUnitField
+          label="Matrix strength"
+          value={matrixStrength}
+          onChange={setMatrixStrength}
+          unit={<ModuleUnitSelect moduleId="composites" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />}
+        />
+        <CalculatorUnitField
+          label="Fiber density"
+          value={fiberDensity}
+          onChange={setFiberDensity}
+          unit={
+            <ModuleUnitSelect moduleId="composites" fieldKey="density" value={densityUnit} onChange={setDensityUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Matrix density"
+          value={matrixDensity}
+          onChange={setMatrixDensity}
+          unit={
+            <ModuleUnitSelect moduleId="composites" fieldKey="density" value={densityUnit} onChange={setDensityUnit} />
+          }
+        />
+        <CalculatorNumberField
+          label="Fiber Poisson's ratio"
+          value={fiberPoisson}
+          onChange={setFiberPoisson}
+          step={0.01}
+          min={0}
+          max={0.5}
+        />
+        <CalculatorNumberField
+          label="Matrix Poisson's ratio"
+          value={matrixPoisson}
+          onChange={setMatrixPoisson}
+          step={0.01}
+          min={0}
+          max={0.5}
+        />
       </div>
     </CalculatorInputPanel>
   );
 }
-

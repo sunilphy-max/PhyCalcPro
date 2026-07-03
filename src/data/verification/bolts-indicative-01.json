@@ -1,0 +1,23 @@
+{
+  "id": "bolts-indicative-01",
+  "moduleId": "bolts",
+  "designCode": "INDICATIVE",
+  "description": "Four-bolt pattern — elastic load sharing",
+  "inputs": {
+    "boltCount": 4,
+    "patternRadius": 0.05,
+    "shearForce": 40000,
+    "axialForce": 5000,
+    "positions": [
+      { "x": 0.05, "y": 0 },
+      { "x": -0.05, "y": 0 },
+      { "x": 0, "y": 0.05 },
+      { "x": 0, "y": -0.05 }
+    ]
+  },
+  "expected": {
+    "maxBoltForce": 10077.822185373187
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bolt pattern elastic v1"
+}

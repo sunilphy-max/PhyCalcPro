@@ -1,8 +1,10 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
+import { calculatorInputGridClass, calculatorSelectClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import type { Dispatch, SetStateAction } from "react";
 import type { HeatExchangerFlowType } from "@/lib/pressure/heat-exchangers/types";
 
@@ -59,143 +61,70 @@ export default function HeatExchangerInputs({
       description="Estimate heat transfer and pressure drops."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate heat exchanger" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Hot flow rate</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={hotFlowRate}
-              min={0}
-              step={0.1}
-              onChange={(e) => setHotFlowRate(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">kg/s</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Cold flow rate</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={coldFlowRate}
-              min={0}
-              step={0.1}
-              onChange={(e) => setColdFlowRate(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">kg/s</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Hot stream Cp</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={hotCp}
-              min={0}
-              step={10}
-              onChange={(e) => setHotCp(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">J/kg·K</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Cold stream Cp</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={coldCp}
-              min={0}
-              step={10}
-              onChange={(e) => setColdCp(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">J/kg·K</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Hot inlet temp</span>
-          <input
-            type="number"
-            value={hotInletTemp}
-            step={1}
-            onChange={(e) => setHotInletTemp(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Cold inlet temp</span>
-          <input
-            type="number"
-            value={coldInletTemp}
-            step={1}
-            onChange={(e) => setColdInletTemp(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Hot outlet temp</span>
-          <input
-            type="number"
-            value={hotOutletTemp}
-            step={1}
-            onChange={(e) => setHotOutletTemp(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Overall U-value</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={U}
-              min={1}
-              step={10}
-              onChange={(e) => setU(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">W/m²·K</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Heat transfer area</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={area}
-              min={0}
-              step={0.1}
-              onChange={(e) => setArea(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">m²</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700 col-span-full">
-          <span>Flow arrangement</span>
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Hot flow rate"
+          value={hotFlowRate}
+          onChange={setHotFlowRate}
+          min={0}
+          step={0.1}
+          unit={<span className="text-sm text-slate-500">kg/s</span>}
+        />
+        <CalculatorUnitField
+          label="Cold flow rate"
+          value={coldFlowRate}
+          onChange={setColdFlowRate}
+          min={0}
+          step={0.1}
+          unit={<span className="text-sm text-slate-500">kg/s</span>}
+        />
+        <CalculatorUnitField
+          label="Hot stream Cp"
+          value={hotCp}
+          onChange={setHotCp}
+          min={0}
+          step={10}
+          unit={<span className="text-sm text-slate-500">J/kg·K</span>}
+        />
+        <CalculatorUnitField
+          label="Cold stream Cp"
+          value={coldCp}
+          onChange={setColdCp}
+          min={0}
+          step={10}
+          unit={<span className="text-sm text-slate-500">J/kg·K</span>}
+        />
+        <CalculatorNumberField label="Hot inlet temp" value={hotInletTemp} onChange={setHotInletTemp} step={1} />
+        <CalculatorNumberField label="Cold inlet temp" value={coldInletTemp} onChange={setColdInletTemp} step={1} />
+        <CalculatorNumberField label="Hot outlet temp" value={hotOutletTemp} onChange={setHotOutletTemp} step={1} />
+        <CalculatorUnitField
+          label="Overall U-value"
+          value={U}
+          onChange={setU}
+          min={1}
+          step={10}
+          unit={<span className="text-sm text-slate-500">W/m²·K</span>}
+        />
+        <CalculatorUnitField
+          label="Heat transfer area"
+          value={area}
+          onChange={setArea}
+          min={0}
+          step={0.1}
+          unit={<span className="text-sm text-slate-500">m²</span>}
+        />
+        <div className="col-span-full min-w-0 space-y-2">
+          <label className="block text-sm font-medium text-slate-700">Flow arrangement</label>
           <select
             value={flowType}
             onChange={(e) => setFlowType(e.target.value as HeatExchangerFlowType)}
-            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            className={calculatorSelectClass}
           >
             <option value="counterflow">Counterflow</option>
             <option value="parallel">Parallel flow</option>
           </select>
-        </label>
+        </div>
       </div>
     </CalculatorInputPanel>
   );
 }
-

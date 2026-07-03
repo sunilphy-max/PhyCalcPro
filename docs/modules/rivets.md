@@ -60,11 +60,15 @@ Closed-form failure mode screening (`solver`). Each limit state computed indepen
 - Corrosion and galvanic effects not included.
 - Not for blind pop rivets in aerospace primary structure without additional factors.
 
+**Verification**
+
+- CI: `rivets-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed.
 2. EN 1993-1-8:2005. *Design of joints — Riveted connections*.
 3. AISC. *Steel Construction Manual*, rivet specifications (historical reference).
 4. Kulak, G. L., et al. *Structural Joint Connections*. Prentice Hall.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

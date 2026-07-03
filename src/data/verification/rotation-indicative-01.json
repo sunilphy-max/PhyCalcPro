@@ -1,0 +1,19 @@
+{
+  "id": "rotation-indicative-01",
+  "moduleId": "rotation",
+  "designCode": "INDICATIVE",
+  "description": "Rotating mass — 10 kg, 0.2 m radius, 1500 rpm, 5 kW",
+  "inputs": {
+    "mass": 10,
+    "radius": 0.2,
+    "speedRPM": 1500,
+    "power": 5000
+  },
+  "expected": {
+    "inertia": 0.4,
+    "kineticEnergy": 4934.80220054468,
+    "torque": 31.830988618379067
+  },
+  "tolerancePercent": 5,
+  "source": "E = ½Iω², T = P/ω"
+}

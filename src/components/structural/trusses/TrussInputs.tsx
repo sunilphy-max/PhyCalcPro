@@ -1,12 +1,12 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
-import UnitSelector from "@/components/shared/UnitSelector";
-import MeshControls from "@/components/shared/MeshControls";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MeshControls from "@/components/shared/MeshControls";
 import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
@@ -85,9 +85,7 @@ export default function TrussInputs({
           onChange={setSpan}
           min={0.1}
           step={0.1}
-          unit={
-            <UnitSelector dimension="length" value={spanUnit} onChange={setSpanUnit} label="" />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="length" value={spanUnit} onChange={setSpanUnit} />}
         />
         <CalculatorUnitField
           label="Height"
@@ -95,9 +93,7 @@ export default function TrussInputs({
           onChange={setHeight}
           min={0.1}
           step={0.05}
-          unit={
-            <UnitSelector dimension="length" value={heightUnit} onChange={setHeightUnit} label="" />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="length" value={heightUnit} onChange={setHeightUnit} />}
         />
         <CalculatorUnitField
           label="Axial area"
@@ -105,9 +101,7 @@ export default function TrussInputs({
           onChange={setArea}
           min={1e-6}
           step="any"
-          unit={
-            <UnitSelector dimension="area" value={areaUnit} onChange={setAreaUnit} label="" />
-          }
+          unit={<ModuleUnitSelect moduleId="sections" fieldKey="area" value={areaUnit} onChange={setAreaUnit} />}
         />
         <CalculatorUnitField
           label="Young's modulus"
@@ -115,9 +109,7 @@ export default function TrussInputs({
           onChange={setE}
           min={1e6}
           step="any"
-          unit={
-            <UnitSelector dimension="stress" value={EUnit} onChange={setEUnit} label="" />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="stress" value={EUnit} onChange={setEUnit} />}
         />
         <CalculatorUnitField
           label="Midspan downward load"
@@ -125,9 +117,7 @@ export default function TrussInputs({
           onChange={setLoad}
           min={0}
           step={100}
-          unit={
-            <UnitSelector dimension="force" value={loadUnit} onChange={setLoadUnit} label="" />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="force" value={loadUnit} onChange={setLoadUnit} />}
         />
       </div>
 

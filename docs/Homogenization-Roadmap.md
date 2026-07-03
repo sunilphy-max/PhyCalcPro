@@ -9,38 +9,40 @@ Every product module should follow:
 ```
 page.tsx
   useStandardCalculation(moduleId, onRegionUnits?)  // or useCalculatorModule
-  CalculatorLayout(moduleId, left, center, right)
-  left   → CalculatorInputPanel + inputs
-  center → CalculatorGuidancePanel / diagrams
-  right  → *Results → ExportableReport(moduleId=…)
+  CalculatorLayout(moduleId, inputs, results)
+  inputs  → CalculatorInputPanel + *Inputs.tsx
+  results → *Results.tsx → CalculatorResultsShell → ExportableReport(moduleId=…)
   calculate → solver → wrapResult(output)
 ```
 
-Shared components live in `src/components/calculator/`.
+Shared components live in `src/components/calculator/`. See [AGENTS.md](../AGENTS.md) for the authoritative contract.
 
 ## Layout
 
-- **left** — inputs
-- **center** — guidance / schematics
-- **right** — results + export
+- **Single sidebar** — only `src/app/products/layout.tsx` renders `Sidebar`.
+- **Category layouts** — passthrough wrappers only (no duplicate chrome).
+- **inputs / results** — two-column module chrome via `CalculatorLayout`; legacy `left/center/right` props are forbidden on product pages.
 
 ## Units
 
 - Field definitions: `src/lib/units/moduleProfiles.ts`
-- UI: `ModuleUnitField`
-- Region sync: pass `applyUnitMap` as second arg to `useStandardCalculation`
-- Wired on: fits, impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties, columns, gears, pipes, shafts (+ auto-sync for all profiled modules via hook)
+- UI: `CalculatorUnitField` + `ModuleUnitSelect` (show all units unless `restrictToProfile`)
+- Region sync: pass `applyUnitMap` as second arg to `useStandardCalculation` (runs on `designCode` change)
+- Numeric inputs: `calculatorNumberInputClass` (spin buttons hidden, `flex-1 min-w-0`)
 
-## Extracted monolith modules (complete)
+## Results
 
-- impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties
+- `CalculatorResultsShell`, `CalculatorMetricGrid`, `CalculatorMetricCard`, `CalculatorResultsPanel`
+- Metric values: `numericValue` or `formatEngineeringValue` / `formatDisplayNumber`
+- Charts: `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUnit`
 
 ## Outputs
 
 - `ExportableReport` with `moduleId` adds quality checklist + default CSV rows
 - US/EU/ISO checks: specialized evaluators + generic mapper in `evaluators/generic.ts`
+- Governing equations: `src/lib/standards/equations/` registries → `CalculationSpec.equations` → `CalculationBasisPanel`
 
-## Plots
+## Validation
 
-- Use `EngineeringPlot` (`data-export-plot`) for structured PDF chart capture via `collectChartImages`
-- SVG diagrams: wrap with `data-export-diagram`
+- `npm run validate:layout` — registry sync, sidebar contract, input/results patterns
+- Gold standard reference: `PinInputs.tsx` + `PinResults.tsx`

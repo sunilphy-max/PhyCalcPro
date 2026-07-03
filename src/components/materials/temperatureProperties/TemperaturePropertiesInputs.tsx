@@ -2,7 +2,9 @@
 
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import ModuleUnitField from "@/components/shared/ModuleUnitField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   baseYield: number;
@@ -31,10 +33,61 @@ export default function TemperaturePropertiesInputs(props: Props) {
       description="Estimate property reductions with temperature exposure."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate properties" designAware />}
     >
-      <ModuleUnitField moduleId="temperature-properties" fieldKey="baseYield" value={props.baseYield} unit={props.yieldUnit} onValueChange={props.setBaseYield} onUnitChange={props.setYieldUnit} />
-      <ModuleUnitField moduleId="temperature-properties" fieldKey="baseModulus" value={props.baseModulus} unit={props.modulusUnit} onValueChange={props.setBaseModulus} onUnitChange={props.setModulusUnit} />
-      <ModuleUnitField moduleId="temperature-properties" fieldKey="coefficient" value={props.coefficient} unit={props.coeffUnit} onValueChange={props.setCoefficient} onUnitChange={props.setCoeffUnit} step="0.000000001" />
-      <ModuleUnitField moduleId="temperature-properties" fieldKey="temperature" value={props.temperature} unit={props.tempUnit} onValueChange={props.setTemperature} onUnitChange={props.setTempUnit} />
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Yield strength"
+          value={props.baseYield}
+          onChange={props.setBaseYield}
+          unit={
+            <ModuleUnitSelect
+              moduleId="temperature-properties"
+              fieldKey="baseYield"
+              value={props.yieldUnit}
+              onChange={props.setYieldUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Young's modulus"
+          value={props.baseModulus}
+          onChange={props.setBaseModulus}
+          unit={
+            <ModuleUnitSelect
+              moduleId="temperature-properties"
+              fieldKey="baseModulus"
+              value={props.modulusUnit}
+              onChange={props.setModulusUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Thermal expansion coeff."
+          value={props.coefficient}
+          onChange={props.setCoefficient}
+          step="0.000000001"
+          unit={
+            <ModuleUnitSelect
+              moduleId="temperature-properties"
+              fieldKey="coefficient"
+              value={props.coeffUnit}
+              onChange={props.setCoeffUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Operating temperature"
+          value={props.temperature}
+          onChange={props.setTemperature}
+          unit={
+            <ModuleUnitSelect
+              moduleId="temperature-properties"
+              fieldKey="temperature"
+              value={props.tempUnit}
+              onChange={props.setTempUnit}
+            />
+          }
+        />
+      </div>
     </CalculatorInputPanel>
   );
 }

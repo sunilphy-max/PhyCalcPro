@@ -25,6 +25,8 @@ export type VibrationResult = {
   length: number;
   modalMass: number[];
   modalStiffness: number[];
+  /** First mode natural frequency (Hz) — scalar for benchmarks. */
+  fundamentalFrequency: number;
   physicsChecks?: {
     positiveFrequencies: boolean;
     monotonicFrequencyOrder: boolean;

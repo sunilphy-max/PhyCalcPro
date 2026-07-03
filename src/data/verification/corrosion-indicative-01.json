@@ -1,0 +1,18 @@
+{
+  "id": "corrosion-indicative-01",
+  "moduleId": "corrosion",
+  "designCode": "INDICATIVE",
+  "description": "Corrosion allowance — 0.1 mm/yr, 20 yr life, 10 mm plate",
+  "inputs": {
+    "corrosionRate": 0.0001,
+    "designLife": 20,
+    "initialThickness": 0.01,
+    "safetyMargin": 20
+  },
+  "expected": {
+    "corrosionAllowance": 0.002,
+    "requiredThickness": 0.0124
+  },
+  "tolerancePercent": 5,
+  "source": "Corrosion allowance = rate × life"
+}

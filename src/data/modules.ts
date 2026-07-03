@@ -471,6 +471,7 @@ export const categories: EngineeringCategory[] = [
         icon: LayoutGrid,
       },
       {
+        // Route exception: lives at /products/profiles (not /products/materials/profiles) for stable URL.
         id: "profiles",
         title: "Area Properties",
         description: "Centroid, inertia and moduli for common profile shapes",

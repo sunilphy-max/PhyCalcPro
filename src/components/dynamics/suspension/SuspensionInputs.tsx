@@ -2,7 +2,10 @@
 
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import ModuleUnitField from "@/components/shared/ModuleUnitField";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   sprungMass: number;
@@ -37,21 +40,82 @@ export default function SuspensionInputs(props: Props) {
       description="Evaluate roll response and lateral load transfer."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Run suspension check" designAware />}
     >
-      <ModuleUnitField moduleId="suspension" fieldKey="sprungMass" value={props.sprungMass} unit={props.massUnit} onValueChange={props.setSprungMass} onUnitChange={props.setMassUnit} />
-      <ModuleUnitField moduleId="suspension" fieldKey="trackWidth" value={props.trackWidth} unit={props.trackUnit} onValueChange={props.setTrackWidth} onUnitChange={props.setTrackUnit} step="0.01" />
-      <ModuleUnitField moduleId="suspension" fieldKey="rollStiffness" value={props.rollStiffness} unit={props.stiffnessUnit} onValueChange={props.setRollStiffness} onUnitChange={props.setStiffnessUnit} />
-      <ModuleUnitField moduleId="suspension" fieldKey="wheelbase" value={props.wheelbase} unit={props.wheelbaseUnit} onValueChange={props.setWheelbase} onUnitChange={props.setWheelbaseUnit} step="0.01" />
-      <label className="block text-sm text-slate-700">
-        Lateral acceleration (g)
-        <input
-          type="number"
-          step="0.01"
-          value={props.lateralAcceleration}
-          onChange={(e) => props.setLateralAcceleration(Number(e.target.value))}
-          className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 shadow-sm"
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Sprung mass"
+          value={props.sprungMass}
+          onChange={props.setSprungMass}
+          unit={
+            <ModuleUnitSelect
+              moduleId="suspension"
+              fieldKey="sprungMass"
+              value={props.massUnit}
+              onChange={props.setMassUnit}
+            />
+          }
         />
-      </label>
-      <ModuleUnitField moduleId="suspension" fieldKey="cgHeight" value={props.cgHeight} unit={props.heightUnit} onValueChange={props.setCgHeight} onUnitChange={props.setHeightUnit} step="0.01" />
+        <CalculatorUnitField
+          label="Track width"
+          value={props.trackWidth}
+          onChange={props.setTrackWidth}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect
+              moduleId="suspension"
+              fieldKey="trackWidth"
+              value={props.trackUnit}
+              onChange={props.setTrackUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Roll stiffness"
+          value={props.rollStiffness}
+          onChange={props.setRollStiffness}
+          unit={
+            <ModuleUnitSelect
+              moduleId="suspension"
+              fieldKey="rollStiffness"
+              value={props.stiffnessUnit}
+              onChange={props.setStiffnessUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Wheelbase"
+          value={props.wheelbase}
+          onChange={props.setWheelbase}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect
+              moduleId="suspension"
+              fieldKey="wheelbase"
+              value={props.wheelbaseUnit}
+              onChange={props.setWheelbaseUnit}
+            />
+          }
+        />
+        <CalculatorNumberField
+          label="Lateral acceleration (g)"
+          value={props.lateralAcceleration}
+          onChange={props.setLateralAcceleration}
+          step={0.01}
+        />
+        <CalculatorUnitField
+          label="CG height"
+          value={props.cgHeight}
+          onChange={props.setCgHeight}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect
+              moduleId="suspension"
+              fieldKey="cgHeight"
+              value={props.heightUnit}
+              onChange={props.setHeightUnit}
+            />
+          }
+        />
+      </div>
     </CalculatorInputPanel>
   );
 }

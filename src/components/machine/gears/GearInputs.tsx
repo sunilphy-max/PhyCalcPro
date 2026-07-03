@@ -1,10 +1,12 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
 import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
 
 type Props = {
   power: number;
@@ -83,113 +85,46 @@ export default function GearInputs({
     >
       {setProjectName ? (
         <input
-          className="w-full rounded border p-2 text-sm"
+          className={calculatorTextInputClass}
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           placeholder="Project name"
         />
       ) : null}
       <div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Power</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={power}
-              onChange={(event) => setPower(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="gears"
-              fieldKey="power"
-              value={powerUnit}
-              onChange={setPowerUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Speed</span>
-          <input
-            type="number"
-            value={rpm}
-            onChange={(event) => setRpm(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-          <p className="text-xs text-slate-400">Revolutions per minute</p>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Pinion teeth</span>
-          <input
-            type="number"
-            value={pinionTeeth}
-            onChange={(event) => setPinionTeeth(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Gear ratio</span>
-          <input
-            type="number"
-            value={gearRatio}
-            step="0.1"
-            onChange={(event) => setGearRatio(Number(event.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Module</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={module}
-              onChange={(event) => setModule(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="gears"
-              fieldKey="module"
-              value={moduleUnit}
-              onChange={setModuleUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Face width</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={faceWidth}
-              onChange={(event) => setFaceWidth(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="gears"
-              fieldKey="faceWidth"
-              value={faceWidthUnit}
-              onChange={setFaceWidthUnit}
-            />
-          </div>
-        </label>
+        <CalculatorUnitField
+          label="Power"
+          value={power}
+          onChange={setPower}
+          unit={<ModuleUnitSelect moduleId="gears" fieldKey="power" value={powerUnit} onChange={setPowerUnit} />}
+        />
+        <CalculatorNumberField label="Speed (rpm)" value={rpm} onChange={setRpm} />
+        <CalculatorNumberField label="Pinion teeth" value={pinionTeeth} onChange={setPinionTeeth} min={1} />
+        <CalculatorNumberField label="Gear ratio" value={gearRatio} onChange={setGearRatio} step={0.1} />
+        <CalculatorUnitField
+          label="Module"
+          value={module}
+          onChange={setModule}
+          unit={<ModuleUnitSelect moduleId="gears" fieldKey="module" value={moduleUnit} onChange={setModuleUnit} />}
+        />
+        <CalculatorUnitField
+          label="Face width"
+          value={faceWidth}
+          onChange={setFaceWidth}
+          unit={
+            <ModuleUnitSelect moduleId="gears" fieldKey="faceWidth" value={faceWidthUnit} onChange={setFaceWidthUnit} />
+          }
+        />
       </div>
 
-      <div className="space-y-2 text-sm text-slate-700">
-        <label className="block">Material</label>
-        <select
-          value={material}
-          onChange={(event) => setMaterial(event.target.value)}
-          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-        >
+      <label className="space-y-2">
+        <span className={calculatorFieldLabelClass}>Material</span>
+        <select value={material} onChange={(event) => setMaterial(event.target.value)} className={calculatorSelectClass}>
           <option value="Steel">Steel</option>
           <option value="Aluminum">Aluminum</option>
           <option value="Bronze">Bronze</option>
         </select>
-      </div>
-
+      </label>
     </CalculatorInputPanel>
   );
 }

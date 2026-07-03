@@ -1,0 +1,20 @@
+{
+  "id": "vessels-indicative-01",
+  "moduleId": "vessels",
+  "designCode": "INDICATIVE",
+  "description": "Cylindrical vessel — 2 MPa internal pressure",
+  "inputs": {
+    "radius": 0.5,
+    "thickness": 0.01,
+    "length": 2,
+    "pressure": 2000000,
+    "E": 210000000000,
+    "A": 0.01,
+    "segments": 8
+  },
+  "expected": {
+    "maxHoopStress": 125978931.95814683
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — vessel axisymmetric FEM v1"
+}

@@ -1,11 +1,11 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
+import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-
-import type { Dispatch, SetStateAction } from "react";
-import UnitSelector from "@/components/shared/UnitSelector";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   diameter: number;
@@ -72,136 +72,64 @@ export default function SafetyFactorInputs({
       description="Define geometry, forces, and material strength for the safety factor assessment."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate safety factor" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Diameter</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={diameter}
-              min={0}
-              step={0.001}
-              onChange={(event) => setDiameter(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="length"
-              value={diameterUnit}
-              onChange={setDiameterUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Bending moment</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={bendingMoment}
-              onChange={(event) => setBendingMoment(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="moment"
-              value={bendingMomentUnit}
-              onChange={setBendingMomentUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Axial force</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={axialForce}
-              onChange={(event) => setAxialForce(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="force"
-              value={axialForceUnit}
-              onChange={setAxialForceUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Shear force</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={shearForce}
-              onChange={(event) => setShearForce(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="force"
-              value={shearForceUnit}
-              onChange={setShearForceUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Torsion</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={torque}
-              onChange={(event) => setTorque(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="torque"
-              value={torqueUnit}
-              onChange={setTorqueUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Yield strength</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={yieldStrength}
-              onChange={(event) => setYieldStrength(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="stress"
-              value={stressUnit}
-              onChange={setStressUnit}
-            />
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Ultimate strength</span>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={ultimateStrength}
-              onChange={(event) => setUltimateStrength(Number(event.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="stress"
-              value={stressUnit}
-              onChange={setStressUnit}
-            />
-          </div>
-        </label>
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Diameter"
+          value={diameter}
+          onChange={setDiameter}
+          min={0}
+          step={0.001}
+          unit={
+            <ModuleUnitSelect moduleId="shafts" fieldKey="diameter" value={diameterUnit} onChange={setDiameterUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Bending moment"
+          value={bendingMoment}
+          onChange={setBendingMoment}
+          unit={
+            <ModuleUnitSelect moduleId="shafts" fieldKey="moment" value={bendingMomentUnit} onChange={setBendingMomentUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Axial force"
+          value={axialForce}
+          onChange={setAxialForce}
+          unit={
+            <ModuleUnitSelect moduleId="shafts" fieldKey="force" value={axialForceUnit} onChange={setAxialForceUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Shear force"
+          value={shearForce}
+          onChange={setShearForce}
+          unit={
+            <ModuleUnitSelect moduleId="shafts" fieldKey="force" value={shearForceUnit} onChange={setShearForceUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Torsion"
+          value={torque}
+          onChange={setTorque}
+          unit={<ModuleUnitSelect moduleId="shafts" fieldKey="torque" value={torqueUnit} onChange={setTorqueUnit} />}
+        />
+        <CalculatorUnitField
+          label="Yield strength"
+          value={yieldStrength}
+          onChange={setYieldStrength}
+          unit={
+            <ModuleUnitSelect moduleId="shafts" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Ultimate strength"
+          value={ultimateStrength}
+          onChange={setUltimateStrength}
+          unit={
+            <ModuleUnitSelect moduleId="shafts" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />
+          }
+        />
       </div>
     </CalculatorInputPanel>
   );
 }
-

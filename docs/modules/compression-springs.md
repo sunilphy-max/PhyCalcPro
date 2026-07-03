@@ -2,7 +2,7 @@
 
 **Purpose**
 
-Design helical compression springs per EN 13906-1 and Shigley methods: spring rate, solid height, shear stress, buckling screen, and surge frequency. Supports ASTM spring wire grades with size-effect ultimate strength.
+Design helical compression springs per EN 13906-1 and Shigley methods: spring rate, solid height, shear stress, buckling screen, surge frequency, and optional EN 13906 fatigue screening. Supports ASTM spring wire grades, EN 10270 wire catalog picker, and Auto-design wire/coil sweeps.
 
 **Physics & theory**
 
@@ -10,9 +10,7 @@ A helical compression spring wound from wire diameter \( d \) on mean coil diame
 
 EN 13906-1 allowable shear for cold-coiled springs is \( \tau_{\mathrm{zul}} = 0.56 R_m \), where \( R_m \) follows size-effect fit \( R_m = A/d^m \) for standard wire grades. Buckling when free length \( L_0 \) exceeds \( 2.63D/\nu \) with end condition coefficient \( \nu \).
 
-Spring wire strength exhibits a size effect: smaller diameter wire achieves higher ultimate tensile strength per ASTM spring wire specifications. The module applies Shigley Table 10-4 fits (Sut = A/d^m) for standard wire grades when selected instead of custom ultimate strength.
-
-Surge frequency must remain well above the forcing frequency to avoid coil resonance and fatigue failure. Buckling of compression springs occurs when the free length exceeds a critical slenderness ratio dependent on end condition — EN 13906-1 provides the screening limit used here.
+Optional fatigue screening uses characteristic shear fatigue strength \( \tau_{k0} \) with life-class reduction and Goodman mean-stress correction when minimum deflection is specified (life classes VL/LH/MH/HH).
 
 **Governing equations**
 
@@ -34,7 +32,7 @@ f_{\mathrm{surge}} = \frac{1}{2}\sqrt{\frac{k}{m_{\mathrm{active}}}}
 
 **Numerical method**
 
-Closed-form EN 13906-1 / Shigley equations. Wire ultimate from Shigley Table 10-4 fits (music, hard-drawn, oil-tempered, chrome-vanadium, chrome-silicon). Active coil mass computed for surge frequency. Buckling flag for slenderness \( L_0/D \).
+Closed-form EN 13906-1 / Shigley equations. Wire ultimate from Shigley Table 10-4 fits or `springWireCatalog.ts` (EN 10270 / ASTM stock). Active coil mass computed for surge frequency. Fatigue via `en13906Fatigue.ts` when enabled.
 
 **Inputs**
 
@@ -45,25 +43,42 @@ Closed-form EN 13906-1 / Shigley equations. Wire ultimate from Shigley Table 10-
 | `modulus` \( G \) | Shear modulus |
 | `deflection`, `freeLength` | Operating deflection and \( L_0 \) |
 | `wireType` | ASTM wire grade or custom \( R_m \) |
+| Wire stock picker | Optional catalog designation → auto-fill \( d \), \( G \), \( R_m \) |
+| `endCondition` | Buckling end condition (ν coefficient) |
+| `operatingFrequencyHz` | Forcing frequency for surge margin (target 10×) |
+| Fatigue panel | Life class, wire quality 1–3, minimum deflection |
 
 **Outputs**
 
-- Spring rate, solid height, max load, shear stress, allowable stress, safety factor, surge frequency, buckling risk
-- Wahl factor.
+- Spring rate, solid height, loaded length, solid height clearance, max load, shear stress, static SF
+- Surge frequency and margin, buckling limit, spring index, Wahl factor
+- Optional fatigue SF and utilization; governing failure mode
+- Load–deflection and stress plots; spring outline preview
 
 **Design codes & checks**
 
-- **Indicative:** Shigley Ch. 10 screening
+- **Indicative:** Shear stress utilization, solid height, surge margin, fatigue life (when enabled)
 - **EU:** EN 13906-1 cold-coiled helical compression springs
 - **US:** SAE AMS spring wire specifications (reference)
 
+**Design workflow**
+
+- **Validate:** Forward check on entered geometry.
+- **Auto-design:** Sweeps `springWireCatalog` wire diameters and active coils within max OD for target rate and stress.
+- **Compare:** Ranked wire/coil alternatives with Apply.
 
 **Assumptions & limitations**
 
 - Circular wire, closed and ground ends (solid height includes 2d end allowance).
-- Static or moderate-cycle loading; fatigue not fully per EN 13906 fatigue classes.
-- Surge frequency assumes fixed-fixed end mass model.
+- Fatigue uses simplified τk0 + Goodman screening — verify critical designs against EN 13906 nomographs.
+- Surge margin requires operating frequency input; default 10× margin target.
 - Not for extension or torsion springs (see dedicated modules).
+
+**Verification**
+
+- CI: `compression-springs-indicative-01.json`, `compression-springs-indicative-fatigue-01.json`
+- Vitest: `src/lib/springs/compression-springs/engine.test.ts`, `en13906Fatigue.test.ts`
+- Engineer sign-off: [spring-modules-user-tasks.md](./spring-modules-user-tasks.md), [validation-master-checklist.md](../validation-master-checklist.md)
 
 **References**
 
@@ -71,5 +86,3 @@ Closed-form EN 13906-1 / Shigley equations. Wire ultimate from Shigley Table 10-
 2. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 10.
 3. Wahl, A. M. *Mechanical Springs*, 2nd ed. McGraw-Hill.
 4. ASTM A228/A227/A229. *Steel Wire for Mechanical Springs*.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

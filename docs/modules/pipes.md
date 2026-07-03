@@ -63,11 +63,15 @@ Ring–beam pipe FEM (`solver`): pipe meshed along length with circumferential r
 - Stress intensification at welds requires user SIF factors for detailed work.
 - Minimum 8 segments required for adequate ring resolution.
 
+**Verification**
+
+- CI: `pipes-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. ASME B31.3:2022. *Process Piping*.
 2. Timoshenko, S. P., & Woinowsky-Krieger, S. *Theory of Plates and Shells*.
 3. Spuybroek, W. H. *Flexibility Analysis of Piping Systems*. Kluwer.
 4. ASME BPVC Section III (nuclear piping context, reference).
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

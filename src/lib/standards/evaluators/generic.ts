@@ -24,6 +24,12 @@ const RESULT_TO_CHECK: Record<string, { checkId: string; kind: "safety_factor" |
   staticSafetyFactor: { checkId: "static_capacity", kind: "safety_factor" },
   speedMargin: { checkId: "speed_limit", kind: "safety_factor" },
   fatigueSafetyFactor: { checkId: "fatigue", kind: "safety_factor" },
+  stressUtilization: { checkId: "shear_stress", kind: "utilization" },
+  surgeMargin: { checkId: "surge_margin", kind: "safety_factor" },
+  hookSafetyFactor: { checkId: "hook_stress", kind: "safety_factor" },
+  bodySafetyFactor: { checkId: "shear_stress", kind: "safety_factor" },
+  safetyFactorResultant: { checkId: "von_mises", kind: "safety_factor" },
+  fatigueUtilization: { checkId: "fatigue_life", kind: "utilization" },
 };
 
 const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
@@ -37,6 +43,11 @@ const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
     safetyFactorShear: "shear",
     safetyFactorAxial: "tensile",
     safetyFactorBearing: "bearing",
+    safetyFactorResultant: "von_mises",
+  },
+  welds: {
+    safetyFactorOverall: "shear",
+    safetyFactorResultant: "von_mises",
   },
   shafts: {
     safetyFactor: "von_mises",
@@ -52,6 +63,25 @@ const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
   },
   fatigue: {
     safetyFactor: "goodman",
+  },
+  "compression-springs": {
+    safetyFactor: "shear_stress",
+    stressUtilization: "shear_stress",
+    surgeMargin: "surge_margin",
+    fatigueSafetyFactor: "fatigue_life",
+  },
+  "extension-springs": {
+    safetyFactor: "shear_stress",
+    bodySafetyFactor: "shear_stress",
+    hookSafetyFactor: "hook_stress",
+    stressUtilization: "shear_stress",
+    surgeMargin: "surge_margin",
+    fatigueSafetyFactor: "fatigue_life",
+  },
+  "torsion-springs": {
+    safetyFactor: "bending_stress",
+    stressUtilization: "bending_stress",
+    fatigueSafetyFactor: "fatigue_life",
   },
   "combined-loading": {
     safetyFactor: "von_mises",

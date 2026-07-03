@@ -9,6 +9,8 @@ import {
   isCheckImplemented,
 } from "./moduleCatalog";
 import { getDesignCodeOption } from "./designCodes";
+import { getModuleEquations } from "./equations";
+import type { EquationReference } from "./types";
 
 const ENGINE_VERSION = "phase1-0.1.0";
 
@@ -37,6 +39,7 @@ export function buildCalculationSpec(params: {
   designCode: DesignCodeId;
   method?: string;
   implementedChecks: EngineeringCheck[];
+  equations?: EquationReference[];
 }): CalculationSpec {
   const profile = getModuleStandardProfile(params.moduleId);
   const designCode = params.designCode;
@@ -94,7 +97,7 @@ export function buildCalculationSpec(params: {
     method: params.method ?? profile?.indicativeMethod ?? "Numerical evaluation",
     validationStatus: profile?.validationStatus ?? "indicative",
     standards: profile?.standardsByCode[designCode] ?? profile?.standardsByCode.INDICATIVE ?? [],
-    equations: [],
+    equations: params.equations ?? getModuleEquations(params.moduleId),
     assumptions: profile?.assumptions ?? [],
     limitations: profile?.limitations ?? [],
     checks,

@@ -1,0 +1,20 @@
+{
+  "id": "trusses-indicative-01",
+  "moduleId": "trusses",
+  "designCode": "INDICATIVE",
+  "description": "Warren truss — 10 m span, 100 kN load",
+  "inputs": {
+    "span": 10,
+    "height": 2,
+    "panels": 4,
+    "A": 0.005,
+    "E": 210000000000,
+    "load": 100000
+  },
+  "expected": {
+    "maxDisplacement": 0.0014971360631108952,
+    "maxForce": 117187.5
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — truss FEM v1"
+}

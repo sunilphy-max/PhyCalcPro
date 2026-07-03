@@ -125,6 +125,13 @@ function CalculatorLayoutBody({
             </div>
           ) : null}
 
+          {profile?.validationStatus === "draft" ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+              <span className="font-semibold">Draft module.</span> Results are indicative only — review
+              assumptions and limitations in the calculation basis before design use.
+            </div>
+          ) : null}
+
           {/* Inputs left, results right */}
           <div
             className={`grid grid-cols-1 gap-4 ${

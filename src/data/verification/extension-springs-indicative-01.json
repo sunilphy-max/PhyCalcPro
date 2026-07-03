@@ -1,0 +1,24 @@
+{
+  "id": "extension-springs-indicative-01",
+  "moduleId": "extension-springs",
+  "designCode": "INDICATIVE",
+  "description": "Extension spring — 2 mm wire, Fi = 5 N, machine hook, extension 15 mm",
+  "inputs": {
+    "wireDiameter": 0.002,
+    "meanDiameter": 0.02,
+    "activeCoils": 10,
+    "freeLength": 0.06,
+    "modulus": 81000000000,
+    "deflection": 0.015,
+    "ultimateStrength": 1400000000,
+    "initialTension": 5,
+    "hookType": "machine"
+  },
+  "expected": {
+    "springRate": 2025,
+    "forceAtExtension": 35.375,
+    "hookSafetyFactor": 2.354
+  },
+  "tolerancePercent": 5,
+  "source": "F = Fi + kx; hook SF with K_hook = 1.25; τ_zul = 0.56·Rm"
+}

@@ -1,7 +1,10 @@
 import { solveCompressionSpringEngine } from "@/lib/springs/compression-springs/engine";
 import { SPRING_WIRE_DIAMETERS_MM } from "@/data/catalogs/standardSeries";
+import { designSweepWireDiametersMm } from "@/data/catalogs/springWireCatalog";
 
-const WIRE_SIZES_MM = SPRING_WIRE_DIAMETERS_MM.filter((d) => d >= 0.5);
+const WIRE_SIZES_MM = designSweepWireDiametersMm().length > 0
+  ? designSweepWireDiametersMm()
+  : SPRING_WIRE_DIAMETERS_MM.filter((d) => d >= 0.5);
 
 export type CompressionSpringCandidate = {
   wireDiameter: number;

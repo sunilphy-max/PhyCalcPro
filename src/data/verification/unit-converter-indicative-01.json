@@ -1,0 +1,17 @@
+{
+  "id": "unit-converter-indicative-01",
+  "moduleId": "unit-converter",
+  "designCode": "INDICATIVE",
+  "description": "MPa to psi conversion",
+  "inputs": {
+    "value": 100,
+    "fromUnit": "MPa",
+    "toUnit": "psi",
+    "dimension": "stress"
+  },
+  "expected": {
+    "convertedValue": 14503.76807894691
+  },
+  "tolerancePercent": 1,
+  "source": "Unit conversion"
+}

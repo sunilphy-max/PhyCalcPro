@@ -125,8 +125,8 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 | Module | Validate | Auto-design / Compare |
 |--------|----------|------------------------|
 | gears | Lewis + contact | Tooth-count sweep, module / face-width sweep |
-| shafts | FEM shaft stress | Standard diameter sweep from live loads |
-| bearings | ISO 281 life | Deep-groove series ranking |
+| shafts | FEM shaft stress, fatigue, critical speed | Standard diameter sweep from live loads; fatigue handoff |
+| bearings | ISO 281 basic + modified life, ISO 76 static, speed margin | Catalog ranking by utilization; shaft handoff |
 | bevel / worm / planetary | Module engines | Ratio and geometry sweeps |
 | flywheels, cams, brakes-clutches | Module engines | Inertia / profile / torque sweeps |
 
@@ -142,8 +142,11 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 
 | Module | Validate | Auto-design / Compare |
 |--------|----------|------------------------|
-| compression-springs | Wahl shear stress | Wire + active coil sweep; Compare Apply wired |
-| extension-springs, torsion-springs | Module engines | Wire and coil sweeps |
+| compression-springs | Wahl shear, buckling, surge, optional EN 13906 fatigue | Wire + coil sweep from `springWireCatalog`; max OD envelope |
+| extension-springs | Body + hook SF, Fi limit, surge, optional fatigue | Wire/coil sweep for rate, hook SF, fatigue margin |
+| torsion-springs | Bending SF with curvature factor Kb, optional fatigue | Wire/coil/leg sweep for target rate (N·m/rad) |
+
+All three support wire stock picker, saved projects, fatigue module handoff, and CI verification JSON.
 
 ### Fasteners
 
@@ -196,7 +199,7 @@ Links are routes to the next calculator (manual handoff; automatic load propagat
 ## Gaps and planned depth
 
 - **Tools**: No sizing candidates by design (Validate + advisor context only).
-- **Cross-module handoff**: Links wired; automatic torque/load propagation gear → shaft → bearing is planned.
+- **Cross-module handoff**: Gear → shaft → bearing links wired; `publishHandoff` carries loads/stress to fatigue and downstream modules (manual Apply on target page).
 - **Workflow maturity**: Some modules remain `workflow` until dedicated design solvers land.
 
 ---
@@ -205,5 +208,6 @@ Links are routes to the next calculator (manual handoff; automatic load propagat
 
 - `npm run validate:layout` — product page layout rules
 - `npm run build` — type and layout checks
-- `npm run test:verification` — physics benchmarks
+- `npm run test:verification` — physics benchmarks (24 JSON cases; 61 solvers registered)
+- [validation-master-checklist.md](./validation-master-checklist.md) — engineer sign-off per module
 - Manual: toggle **Auto-design → Validate → Compare**; confirm Auto-design applies best candidate; Compare **Apply** updates form and switches to Validate.

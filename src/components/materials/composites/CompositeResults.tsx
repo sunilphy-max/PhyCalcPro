@@ -78,6 +78,16 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
               value={formatEngineeringValue(fromBase(result.strength_transverse, "stress", stressUnit), stressUnit)}
               tone="orange"
             />
+            <CalculatorMetricCard
+              label="Modulus at ply angle"
+              value={formatEngineeringValue(fromBase(result.E_atPlyAngle, "stress", stressUnit), stressUnit)}
+              tone="green"
+            />
+            <CalculatorMetricCard
+              label="Tsai-Hill utilization"
+              numericValue={result.tsaiHillUtilization}
+              tone={result.tsaiHillUtilization > 1 ? "red" : "green"}
+            />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Stiffness ratio vs matrix"

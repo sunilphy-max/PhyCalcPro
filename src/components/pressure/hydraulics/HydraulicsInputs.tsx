@@ -3,7 +3,8 @@
 import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import UnitSelector from "@/components/shared/UnitSelector";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 
 type Props = {
   boreDiameter: number;
@@ -54,108 +55,63 @@ export default function HydraulicsInputs({
       description="Analyze actuator forces and pressure loads."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate hydraulics" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <div className="space-y-2 text-sm text-slate-700">
-          <label>Bore diameter</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step={0.001}
-              value={boreDiameter}
-              onChange={(e) => setBoreDiameter(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="length"
-              value={boreUnit}
-              onChange={setBoreUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2 text-sm text-slate-700">
-          <label>Rod diameter</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step={0.001}
-              value={rodDiameter}
-              onChange={(e) => setRodDiameter(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="length"
-              value={boreUnit}
-              onChange={setBoreUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2 text-sm text-slate-700">
-          <label>Stroke length</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step={0.01}
-              value={strokeLength}
-              onChange={(e) => setStrokeLength(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="length"
-              value={strokeUnit}
-              onChange={setStrokeUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2 text-sm text-slate-700">
-          <label>System pressure</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step={10000}
-              value={pressure}
-              onChange={(e) => setPressure(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="pressure"
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Bore diameter"
+          value={boreDiameter}
+          onChange={setBoreDiameter}
+          min={0}
+          step={0.001}
+          unit={
+            <ModuleUnitSelect moduleId="hydraulics" fieldKey="diameter" value={boreUnit} onChange={setBoreUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Rod diameter"
+          value={rodDiameter}
+          onChange={setRodDiameter}
+          min={0}
+          step={0.001}
+          unit={
+            <ModuleUnitSelect moduleId="hydraulics" fieldKey="diameter" value={boreUnit} onChange={setBoreUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Stroke length"
+          value={strokeLength}
+          onChange={setStrokeLength}
+          min={0}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect moduleId="hydraulics" fieldKey="diameter" value={strokeUnit} onChange={setStrokeUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="System pressure"
+          value={pressure}
+          onChange={setPressure}
+          min={0}
+          step={10000}
+          unit={
+            <ModuleUnitSelect
+              moduleId="hydraulics"
+              fieldKey="pressure"
               value={pressureUnit}
               onChange={setPressureUnit}
             />
-          </div>
-        </div>
-
-        <div className="space-y-2 text-sm text-slate-700">
-          <label>Target force</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              min={0}
-              step={100}
-              value={forceGoal}
-              onChange={(e) => setForceGoal(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              label=""
-              dimension="force"
-              value={forceUnit}
-              onChange={setForceUnit}
-            />
-          </div>
-        </div>
+          }
+        />
+        <CalculatorUnitField
+          label="Target force"
+          value={forceGoal}
+          onChange={setForceGoal}
+          min={0}
+          step={100}
+          unit={
+            <ModuleUnitSelect moduleId="hydraulics" fieldKey="force" value={forceUnit} onChange={setForceUnit} />
+          }
+        />
       </div>
     </CalculatorInputPanel>
   );
 }
-

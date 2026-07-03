@@ -1,0 +1,18 @@
+{
+  "id": "hydraulics-indicative-01",
+  "moduleId": "hydraulics",
+  "designCode": "INDICATIVE",
+  "description": "Hydraulic cylinder — 20 MPa, 50 mm bore",
+  "inputs": {
+    "pressure": 20000000,
+    "boreDiameter": 0.05,
+    "rodDiameter": 0.028,
+    "stroke": 0.3
+  },
+  "expected": {
+    "extendForce": 39269.90816987242,
+    "retractForce": 26954.86496780043
+  },
+  "tolerancePercent": 5,
+  "source": "F = P·A"
+}

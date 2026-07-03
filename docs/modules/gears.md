@@ -56,11 +56,15 @@ Closed-form ISO 6336 and Lewis screening via `solveGearDesign`. Input power, spe
 - Uniform load distribution along face width unless \( K_{H\beta} \) specified.
 - No microgeometry (profile modification) analysis.
 
+**Verification**
+
+- CI: `gears-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. ISO 6336-1:2019. *Calculation of load capacity of spur and helical gears — Part 1: Basic principles*.
 2. ISO 6336-2:2019. *Part 2: Calculation of surface durability (pitting)*.
 3. ISO 6336-3:2019. *Part 3: Calculation of tooth bending strength*.
 4. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 13–14.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

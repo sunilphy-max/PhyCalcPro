@@ -1,12 +1,12 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
-import UnitSelector from "@/components/shared/UnitSelector";
-import MeshControls from "@/components/shared/MeshControls";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MeshControls from "@/components/shared/MeshControls";
 import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
@@ -93,48 +93,24 @@ export default function FrameInputs({
           onChange={setSpan}
           min={0.5}
           step={0.1}
-          unit={
-            <UnitSelector
-              dimension="length"
-              value={spanUnit}
-              onChange={setSpanUnit}
-              label=""
-            />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="length" value={spanUnit} onChange={setSpanUnit} />}
         />
-
         <CalculatorUnitField
           label="Height"
           value={height}
           onChange={setHeight}
           min={0.5}
           step={0.1}
-          unit={
-            <UnitSelector
-              dimension="length"
-              value={heightUnit}
-              onChange={setHeightUnit}
-              label=""
-            />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="length" value={heightUnit} onChange={setHeightUnit} />}
         />
-
         <CalculatorUnitField
           label="Axial area"
           value={area}
           onChange={setArea}
           min={1e-6}
           step="any"
-          unit={
-            <UnitSelector
-              dimension="area"
-              value={areaUnit}
-              onChange={setAreaUnit}
-              label=""
-            />
-          }
+          unit={<ModuleUnitSelect moduleId="sections" fieldKey="area" value={areaUnit} onChange={setAreaUnit} />}
         />
-
         <CalculatorUnitField
           label="Moment of inertia"
           value={I}
@@ -142,45 +118,24 @@ export default function FrameInputs({
           min={1e-10}
           step="any"
           unit={
-            <UnitSelector
-              dimension="inertia"
-              value={inertiaUnit}
-              onChange={setInertiaUnit}
-              label=""
-            />
+            <ModuleUnitSelect moduleId="sections" fieldKey="inertia" value={inertiaUnit} onChange={setInertiaUnit} />
           }
         />
-
         <CalculatorUnitField
           label="Young's modulus"
           value={E}
           onChange={setE}
           min={1e8}
           step="any"
-          unit={
-            <UnitSelector
-              dimension="stress"
-              value={EUnit}
-              onChange={setEUnit}
-              label=""
-            />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="stress" value={EUnit} onChange={setEUnit} />}
         />
-
         <CalculatorUnitField
           label="Midspan downward load"
           value={load}
           onChange={setLoad}
           min={0}
           step={100}
-          unit={
-            <UnitSelector
-              dimension="force"
-              value={loadUnit}
-              onChange={setLoadUnit}
-              label=""
-            />
-          }
+          unit={<ModuleUnitSelect moduleId="frames" fieldKey="force" value={loadUnit} onChange={setLoadUnit} />}
         />
       </div>
 
@@ -188,7 +143,6 @@ export default function FrameInputs({
         <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
         <MeshControls elements={segments} onChangeElements={setSegments} refine />
       </div>
-
     </CalculatorInputPanel>
   );
 }

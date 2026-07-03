@@ -2,7 +2,9 @@
 
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import ModuleUnitField from "@/components/shared/ModuleUnitField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   axialForce: number;
@@ -43,13 +45,101 @@ export default function CombinedLoadingInputs(props: Props) {
       description="Combine axial, bending, torsion, and shear for a von Mises-style check."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate combined stress" designAware />}
     >
-      <ModuleUnitField moduleId="combined-loading" fieldKey="axialForce" value={props.axialForce} unit={props.axialUnit} onValueChange={props.setAxialForce} onUnitChange={props.setAxialUnit} />
-      <ModuleUnitField moduleId="combined-loading" fieldKey="bendingMoment" value={props.bendingMoment} unit={props.momentUnit} onValueChange={props.setBendingMoment} onUnitChange={props.setMomentUnit} />
-      <ModuleUnitField moduleId="combined-loading" fieldKey="torque" value={props.torque} unit={props.torqueUnit} onValueChange={props.setTorque} onUnitChange={props.setTorqueUnit} />
-      <ModuleUnitField moduleId="combined-loading" fieldKey="shearForce" value={props.shearForce} unit={props.shearUnit} onValueChange={props.setShearForce} onUnitChange={props.setShearUnit} />
-      <ModuleUnitField moduleId="combined-loading" fieldKey="sectionWidth" value={props.width} unit={props.widthUnit} onValueChange={props.setWidth} onUnitChange={props.setWidthUnit} step="0.01" />
-      <ModuleUnitField moduleId="combined-loading" fieldKey="sectionHeight" value={props.height} unit={props.heightUnit} onValueChange={props.setHeight} onUnitChange={props.setHeightUnit} step="0.01" />
-      <ModuleUnitField moduleId="combined-loading" fieldKey="yieldStrength" value={props.yieldStrength} unit={props.stressUnit} onValueChange={props.setYieldStrength} onUnitChange={props.setStressUnit} />
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Axial force"
+          value={props.axialForce}
+          onChange={props.setAxialForce}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="axialForce"
+              value={props.axialUnit}
+              onChange={props.setAxialUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Bending moment"
+          value={props.bendingMoment}
+          onChange={props.setBendingMoment}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="bendingMoment"
+              value={props.momentUnit}
+              onChange={props.setMomentUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Torsion"
+          value={props.torque}
+          onChange={props.setTorque}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="torque"
+              value={props.torqueUnit}
+              onChange={props.setTorqueUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Shear force"
+          value={props.shearForce}
+          onChange={props.setShearForce}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="shearForce"
+              value={props.shearUnit}
+              onChange={props.setShearUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Section width"
+          value={props.width}
+          onChange={props.setWidth}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="sectionWidth"
+              value={props.widthUnit}
+              onChange={props.setWidthUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Section height"
+          value={props.height}
+          onChange={props.setHeight}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="sectionHeight"
+              value={props.heightUnit}
+              onChange={props.setHeightUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Yield strength"
+          value={props.yieldStrength}
+          onChange={props.setYieldStrength}
+          unit={
+            <ModuleUnitSelect
+              moduleId="combined-loading"
+              fieldKey="yieldStrength"
+              value={props.stressUnit}
+              onChange={props.setStressUnit}
+            />
+          }
+        />
+      </div>
     </CalculatorInputPanel>
   );
 }

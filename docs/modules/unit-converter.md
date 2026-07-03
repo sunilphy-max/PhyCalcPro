@@ -51,11 +51,15 @@ Supported dimensions include length, mass, force, pressure, stress, energy, powe
 - Currency and dimensionless ratios not supported unless defined.
 - Compound units (e.g., lbf·ft as derived entries) must use the predefined dimension registry.
 
+**Verification**
+
+- CI: `unit-converter-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. NIST SP 811. *Guide for the Use of the International System of Units (SI)*.
 2. ISO 80000 quantities and units series.
 3. IEEE/ASTM SI 10. *American National Standard for Metric Practice*.
 4. BIPM. *The International System of Units (SI)*, 9th ed.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

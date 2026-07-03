@@ -44,7 +44,7 @@ page.tsx
 
 - **`wrapResult`** attaches a `CalculationSpec` with design-code checks via `withCalculationSpec`.
 - **Specialized evaluators** (full check mapping): beams, columns, gears, combined-loading, welds.
-- **Generic evaluator** (`evaluators/generic.ts`): all other catalogued modules — checks are declared but mapped from indicative outputs.
+- **Generic evaluator** (`evaluators/generic.ts`): all other catalogued modules — maps solver output fields (safety factor, utilization, life margin, fatigue SF, etc.) to catalog checks via `MODULE_FIELD_OVERRIDES`. Flagship modules with extended mappings: **shafts**, **bearings**, **compression-springs**, **extension-springs**, **torsion-springs**, **rivets**, **welds**.
 
 ### 1.3 Design codes
 
@@ -80,12 +80,16 @@ Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUn
 ### 1.6 Testing & verification
 
 - **Vitest** (`npm test`) — unit tests and externally sourced benchmarks (Shigley, Roark, AISC, ISO 6336/281, VDI 2230, EN 13906, etc.) under `src/lib/**/**/*.test.ts`.
-- **Verification workbook** — `npm run test:verification` runs JSON cases in `src/data/verification/`.
+- **Verification CI** — `npm run test:verification` runs JSON cases in `src/data/verification/` against **`moduleSolverRegistry.ts`** (61 solvers registered).
+- **Bootstrap** — `npx tsx scripts/bootstrap-verification.ts` generates JSON from seeds in `verificationSeeds.ts`.
+- **Engineer sign-off** — [validation-master-checklist.md](./validation-master-checklist.md) lists validation tasks for all 62 modules; springs also have [spring-modules-user-tasks.md](./modules/spring-modules-user-tasks.md).
 - **FEM regression** — analytical comparisons for beam equilibrium, column buckling, and plate shear-locking in `src/lib/structural/__tests__/`.
+
+**CI benchmark modules (24 with committed JSON):** beams, bearings, bevel-gears, circular-plates, columns, combined-loading, compression-springs (×2), corrosion, extension-springs, fatigue, gears, hydraulics, impact, keys-splines, pipes, rivets, rotation, shafts, suspension, timing-belts, torsion-springs, unit-converter, v-belts.
 
 ### 1.7 Release tiers
 
-`CalculatorLayout` shows catalog `validationStatus` and a computed release tier from benchmark stats (`ReleaseTierBadge`). Benchmark solvers exist for a subset (gears, columns, combined-loading, impact, fatigue, corrosion, suspension, rotation).
+`CalculatorLayout` shows catalog `validationStatus` and a computed release tier from benchmark stats (`ReleaseTierBadge`). Solvers are registered for 61 modules; promote modules toward **verified** by adding JSON cases and completing the master validation checklist.
 
 ### 1.8 Design workflow layer
 
@@ -156,9 +160,9 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 | `CalculatorLayout` + `moduleId` | All 62 active pages |
 | `useStandardCalculation` / `useCalculatorModule` | 62 / 62 |
 | Unit profiles (`moduleProfiles.ts`) | All expansion modules + majority of legacy modules |
-| Modern `inputs`/`results` or full `*Inputs`/`*Results` | **All 62 modules** (Tier 2 homogenization complete, 2026-06) |
+| Modern `inputs`/`results` or full `*Inputs`/`*Results` | **All 63 modules** (Tier 2 homogenization complete, 2026-06) |
 | `CalculatorResultsShell` / metric cards | Universal on expansion modules; widespread elsewhere |
-| Specialized code evaluators | 5 modules (beams, columns, gears, combined-loading, welds); flagship solvers also attach standard checks (ISO 6336, ISO 281, EN 13906, VDI 2230) |
+| Specialized code evaluators | 5 modules (beams, columns, gears, combined-loading, welds); **generic.ts** field mapping for shafts, bearings, all spring types, rivets, welds |
 | Extracted from monolith (complete) | impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties |
 
 ### Validation catalog status
@@ -224,7 +228,16 @@ From `src/data/moduleMaturity.ts`:
 | Medium | CAD/SVG/DXF export for geometry-producing modules. |
 | Low | Expert coefficient auto-recommendations per standard clause. |
 
-**Recently addressed (2026 gap remediation):** Standard/catalog tables (bolt table M3–M64, bearing 60xx series, spring wire grades, ISO 54 gear modules); solver-backed design sweeps; `/projects` dashboard; cross-calc gear → shaft → bearing handoff; structured PDF reports; Vitest external benchmarks.
+**Recently addressed (2026 gap remediation):** Standard/catalog tables; solver-backed design sweeps; `/projects` dashboard; cross-calc handoff; structured PDF reports; Vitest external benchmarks.
+
+**Recently addressed (2026 Q3 module upgrades):**
+
+- **Shafts** — 1D FEM, stepped/hollow geometry, bearing supports, Kt features, fatigue screening, FEA critical speed, bearing handoff; CI + `engine.test.ts`.
+- **Bearings** — ISO 281 modified life, ISO 76 static check, speed margin, catalog ranking in design mode; CI + `engine.test.ts`.
+- **Springs (all three)** — shared EN 13906 helpers, wire catalog (`springWireCatalog.ts`), fatigue screening (life class VL/LH/MH/HH), surge/buckling/hook factors, unified results UI, design sweeps; 5 CI cases + 18 Vitest tests.
+- **Site-wide verification** — `moduleSolverRegistry.ts` (61 solvers), 24 JSON CI cases, [validation-master-checklist.md](./validation-master-checklist.md).
+
+Dedicated evaluators: **beams, columns, gears, combined-loading, welds**. Additional standard checks attach via **generic.ts** on shafts, bearings, springs, rivets, welds, and bolts.
 
 ### 13.3 Design code depth
 
@@ -236,9 +249,7 @@ From `src/data/moduleMaturity.ts`:
 | Low | Bolts: full multi-bolt VDI 2230 system (beyond elastic pattern sharing) |
 | Low | Gears: scuffing and micropitting (ISO 6336-20/22) |
 
-**Recently addressed (2026 remediation):** AISC 360 / EC3 beam shear + LTB + column inelastic curves; ISO 6336 gear worksheet; ISO 281 bearing life with catalog C; EN 13906 compression springs; VDI 2230 single-bolt mode; Basquin + Marin fatigue; graded material catalog.
-
-Dedicated evaluators: **beams, columns, gears, combined-loading, welds**. Additional standard checks attach via solver output on bearings, springs, and bolts.
+**Recently addressed (2026 remediation):** AISC 360 / EC3 beam shear + LTB + column inelastic curves; ISO 6336 gear worksheet; ISO 281 bearing life with catalog C; EN 13906 spring static + fatigue screening; VDI 2230 single-bolt mode; Basquin + Marin fatigue; graded material catalog.
 
 ### 13.4 Physics & solver scope
 
@@ -249,7 +260,9 @@ Dedicated evaluators: **beams, columns, gears, combined-loading, welds**. Additi
 
 ### 13.5 Testing & release
 
-- Expand `benchmarkRunner` coverage beyond the current eight solvers.
+- **24 modules** have committed verification JSON; **61** have solvers in `moduleSolverRegistry.ts`.
+- Bootstrap new cases: `npx tsx scripts/bootstrap-verification.ts`.
+- Engineer validation: [validation-master-checklist.md](./validation-master-checklist.md).
 - Wire release tier gates to CI so **beta** modules require passing benchmarks before promotion.
 - `npm run validate:layout` enforces no duplicate sidebars / DashboardLayout on product pages — keep in pre-build.
 
@@ -261,7 +274,8 @@ When adding a module:
 2. Add `moduleMaturity` entry and `moduleProfiles` fields.
 3. Follow the page contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
 4. Add `docs/modules/{moduleId}.md` with all required sections; run `node scripts/audit-module-docs.mjs`.
+5. Add verification JSON when the solver is stable; see [VerificationGuide.md](./VerificationGuide.md).
 
 ---
 
-*Generated from codebase review: `modules.ts`, `moduleCatalog.ts`, `moduleMaturity.ts`, `moduleProfiles.ts`, solver engines under `src/lib/**`, and product pages under `src/app/products/**`.*
+*Last updated: 2026-07 — reflects shaft/bearing/spring upgrades and site-wide verification registry.*

@@ -1,0 +1,26 @@
+{
+  "id": "rivets-indicative-01",
+  "moduleId": "rivets",
+  "designCode": "INDICATIVE",
+  "description": "Single rivet shear — 6 mm, 2 kN shear",
+  "inputs": {
+    "rivetDiameter": 6,
+    "plateThickness": 3,
+    "quantity": 1,
+    "shearForce": 2000,
+    "axialForce": 0,
+    "rivetType": "solid",
+    "material": {
+      "name": "steel",
+      "yieldStress": 280000000,
+      "shearStrength": 170000000,
+      "bearingStrength": 340000000
+    }
+  },
+  "expected": {
+    "safetyFactorOverall": 2403318.379996192,
+    "safetyFactorShear": 2403318.379996192
+  },
+  "tolerancePercent": 5,
+  "source": "Rivet shear/bearing screening"
+}

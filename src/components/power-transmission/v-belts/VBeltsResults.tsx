@@ -110,7 +110,7 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
       {result ? (
         <div className="space-y-8">
           {insights ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900/50">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <p className="font-medium text-slate-900 dark:text-slate-100">
                 {insights.applicationLabel} · SF {serviceFactor.toFixed(2)}
                 {insights.serviceFactorSource === "application" ? " (from application)" : " (manual override)"}
@@ -241,7 +241,7 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
                 tone="red"
               />
             </CalculatorMetricGrid>
-            <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-950 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-100">
+            <div className="rounded-xl border border-indigo-200 bg-white p-4 text-sm text-indigo-950 shadow-sm dark:border-indigo-900 dark:bg-slate-900 dark:text-indigo-100">
               <p className="font-semibold">Shaft & bearing handoff</p>
               <p className="mt-1">
                 Driver radial load {formatEngineeringValue(result.radialLoadDriver, "N")} and torque{" "}

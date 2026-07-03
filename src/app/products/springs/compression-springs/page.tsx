@@ -11,6 +11,9 @@ import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { toBase } from "@/lib/units/conversions";
 import { solveCompressionSpringEngine } from "@/lib/springs/compression-springs/engine";
 import type { CompressionSpringResult, SpringWireType } from "@/lib/springs/compression-springs/types";
+import type { SpringEndCondition } from "@/lib/springs/shared/helicalCommon";
+import type { En13906LifeClass, En13906WireQuality } from "@/lib/springs/shared/en13906Fatigue";
+import { fromBase } from "@/lib/units/conversions";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
@@ -63,6 +66,13 @@ export default function Page() {
   const [stressUnit, setStressUnit] = useState("MPa");
   const [modulusUnit, setModulusUnit] = useState("GPa");
   const [wireType, setWireType] = useState<SpringWireType>("music");
+  const [endCondition, setEndCondition] = useState<SpringEndCondition>("guided");
+  const [operatingFrequencyHz, setOperatingFrequencyHz] = useState(0);
+  const [enableFatigueCheck, setEnableFatigueCheck] = useState(false);
+  const [lifeClass, setLifeClass] = useState<En13906LifeClass>("VL");
+  const [wireQuality, setWireQuality] = useState<En13906WireQuality>(1);
+  const [minDeflection, setMinDeflection] = useState(0);
+  const [catalogDesignation, setCatalogDesignation] = useState("");
   const [result, setResult] = useState<(CompressionSpringResult & { calculationSpec?: CalculationSpec }) | null>(null);
   const [projectName, setProjectName] = useState("Compression Spring Project");
   const [saving, setSaving] = useState(false);
@@ -119,6 +129,12 @@ export default function Page() {
       modulus: toBase(modulus, "stress", modulusUnit),
       ultimateStrength: toBase(ultimateStrength, "stress", stressUnit),
       wireType,
+      endCondition,
+      operatingFrequencyHz: operatingFrequencyHz > 0 ? operatingFrequencyHz : undefined,
+      enableFatigueCheck,
+      lifeClass,
+      wireQuality,
+      minDeflection: enableFatigueCheck ? toBase(minDeflection, "length", lengthUnit) : undefined,
     });
     setResult(wrapResult(raw));
     publishHandoff("fatigue", {
@@ -220,6 +236,27 @@ export default function Page() {
           saving={saving}
           projectName={projectName}
           setProjectName={setProjectName}
+          endCondition={endCondition}
+          setEndCondition={setEndCondition}
+          operatingFrequencyHz={operatingFrequencyHz}
+          setOperatingFrequencyHz={setOperatingFrequencyHz}
+          enableFatigueCheck={enableFatigueCheck}
+          setEnableFatigueCheck={setEnableFatigueCheck}
+          lifeClass={lifeClass}
+          setLifeClass={setLifeClass}
+          wireQuality={wireQuality}
+          setWireQuality={setWireQuality}
+          minDeflection={minDeflection}
+          setMinDeflection={setMinDeflection}
+          catalogDesignation={catalogDesignation}
+          setCatalogDesignation={setCatalogDesignation}
+          onCatalogPick={(entry) => {
+            setWireDiameter(fromBase(entry.diameterMm / 1000, "length", lengthUnit));
+            setModulus(fromBase(entry.shearModulusPa, "stress", modulusUnit));
+            if (wireType === "custom") {
+              setUltimateStrength(fromBase(entry.tensileStrengthPa, "stress", stressUnit));
+            }
+          }}
         />
       }
       results={

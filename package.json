@@ -7,7 +7,7 @@
     "build": "npm run validate:layout && node --max-old-space-size=4096 node_modules/next/dist/bin/next build",
     "start": "next start",
     "lint": "eslint",
-    "validate:layout": "node scripts/validate-product-layout.mjs",
+    "validate:layout": "node scripts/validate-module-registry.mjs && node scripts/validate-product-layout.mjs",
     "generate:verification-template": "node scripts/generate-verification-template.mjs",
     "test:verification": "tsx scripts/run-verification.ts",
     "test": "vitest run",

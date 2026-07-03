@@ -159,6 +159,83 @@ export const compressionSpringChecks: ModuleCheckDefinition[] = [
     { INDICATIVE: ref("Mechanics", "Solid height") },
     { INDICATIVE: "implemented" }
   ),
+  checkDef(
+    "surge_margin",
+    "Surge frequency margin",
+    "safety_factor",
+    {
+      INDICATIVE: ref("Mechanics", "Surge", "f_surge / f_operating ≥ 10"),
+      EU: ref("EN", "13906-1", "Surge frequency"),
+    },
+    { INDICATIVE: "implemented", EU: "implemented" }
+  ),
+  checkDef(
+    "fatigue_life",
+    "Fatigue life (EN 13906)",
+    "safety_factor",
+    {
+      INDICATIVE: ref("Mechanics", "Spring fatigue", "τa vs τk0 with life factor"),
+      EU: ref("EN", "13906-1", "Fatigue strength"),
+    },
+    { INDICATIVE: "implemented", EU: "implemented" }
+  ),
+];
+
+export const extensionSpringChecks: ModuleCheckDefinition[] = [
+  checkDef(
+    "shear_stress",
+    "Body shear stress utilization",
+    "utilization",
+    {
+      INDICATIVE: ref("Mechanics", "Extension spring body", "τ = K_w·8FD/(πd³)"),
+      EU: ref("EN", "13906-2", "Extension springs"),
+    },
+    { INDICATIVE: "implemented", EU: "implemented" }
+  ),
+  checkDef(
+    "hook_stress",
+    "Hook stress safety factor",
+    "safety_factor",
+    {
+      INDICATIVE: ref("Mechanics", "Hook stress factor", "Empirical K_hook"),
+      EU: ref("EN", "13906-2", "End fitting stress"),
+    },
+    { INDICATIVE: "implemented", EU: "implemented" }
+  ),
+  checkDef(
+    "surge_margin",
+    "Surge frequency margin",
+    "safety_factor",
+    { INDICATIVE: ref("Mechanics", "Surge", "f_surge / f_operating ≥ 10") },
+    { INDICATIVE: "implemented" }
+  ),
+  checkDef(
+    "fatigue_life",
+    "Fatigue life (EN 13906-2)",
+    "safety_factor",
+    { EU: ref("EN", "13906-2", "Extension spring fatigue") },
+    { EU: "implemented" }
+  ),
+];
+
+export const torsionSpringChecks: ModuleCheckDefinition[] = [
+  checkDef(
+    "bending_stress",
+    "Coil bending stress utilization",
+    "utilization",
+    {
+      INDICATIVE: ref("Mechanics", "Torsion spring coil", "σ = K_b·32M/(πd³)"),
+      EU: ref("EN", "13906-3", "Torsion springs"),
+    },
+    { INDICATIVE: "implemented", EU: "implemented" }
+  ),
+  checkDef(
+    "fatigue_life",
+    "Fatigue life (EN 13906-3)",
+    "safety_factor",
+    { EU: ref("EN", "13906-3", "Torsion spring fatigue") },
+    { EU: "implemented" }
+  ),
 ];
 
 export const vBeltChecks: ModuleCheckDefinition[] = [

@@ -2,6 +2,8 @@ import type { DesignCodeId, ModuleStandardProfile } from "./types";
 import {
   beamChecks,
   compressionSpringChecks,
+  extensionSpringChecks,
+  torsionSpringChecks,
   gearChecks,
   genericIndicativeCheck,
   keysSplinesChecks,
@@ -507,12 +509,8 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("ratio_error", "Ratio error", "other"),
   ]),
   "compression-springs": withCodeChecks("compression-springs", "Compression Springs", compressionSpringChecks),
-  "extension-springs": withCodeChecks("extension-springs", "Extension Springs", [
-    genericIndicativeCheck("shear_stress", "Shear stress utilization", "utilization"),
-  ]),
-  "torsion-springs": withCodeChecks("torsion-springs", "Torsion Springs", [
-    genericIndicativeCheck("bending_stress", "Bending stress utilization", "utilization"),
-  ]),
+  "extension-springs": withCodeChecks("extension-springs", "Extension Springs", extensionSpringChecks),
+  "torsion-springs": withCodeChecks("torsion-springs", "Torsion Springs", torsionSpringChecks),
   "keys-splines": withCodeChecks("keys-splines", "Keys & Splines", keysSplinesChecks, {
     standardsByCode: { ISO: [{ body: "ISO", document: "3912" }] },
   }),

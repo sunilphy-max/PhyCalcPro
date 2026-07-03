@@ -58,11 +58,15 @@ Closed-form shear and bearing checks for selected key standard size or custom di
 - Set-screws and taper keys use different models.
 - Hub wall thickness must support bearing — not checked here.
 
+**Verification**
+
+- CI: `keys-splines-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. ISO 3912:2019. *Parallel keys and keyways*.
 2. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 7.
 3. DIN 6892:2012. *Drive type connections — Keys*.
 4. Peterson, R. E. *Stress Concentration Factors* (keyway Kt).
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

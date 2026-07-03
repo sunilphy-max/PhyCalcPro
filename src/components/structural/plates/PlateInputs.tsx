@@ -1,10 +1,12 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
+import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass } from "@/components/calculator/styles";
 import type { BoundaryType } from "@/lib/structural/plates/types";
 
 type Props = {
@@ -68,109 +70,53 @@ export default function PlateInputs({
       description="Thin plate bending and stress analysis."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run plate FEM" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Length</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={length}
-              onChange={(e) => setLength(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="plates"
-              fieldKey="length"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Width</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={width}
-              onChange={(e) => setWidth(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="plates"
-              fieldKey="length"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Thickness</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={thickness}
-              onChange={(e) => setThickness(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="plates"
-              fieldKey="thickness"
-              value={thicknessUnit}
-              onChange={setThicknessUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Pressure load</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={pressure}
-              onChange={(e) => setPressure(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="plates"
-              fieldKey="pressure"
-              value={pressureUnit}
-              onChange={setPressureUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Young&apos;s modulus</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={E}
-              onChange={(e) => setE(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="plates"
-              fieldKey="stress"
-              value={EUnit}
-              onChange={setEUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-slate-700">Poisson&apos;s ratio</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            max="0.49"
-            value={nu}
-            onChange={(e) => setNu(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </div>
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Length"
+          value={length}
+          onChange={setLength}
+          unit={
+            <ModuleUnitSelect moduleId="plates" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Width"
+          value={width}
+          onChange={setWidth}
+          unit={
+            <ModuleUnitSelect moduleId="plates" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Thickness"
+          value={thickness}
+          onChange={setThickness}
+          unit={
+            <ModuleUnitSelect moduleId="plates" fieldKey="thickness" value={thicknessUnit} onChange={setThicknessUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Pressure load"
+          value={pressure}
+          onChange={setPressure}
+          unit={
+            <ModuleUnitSelect moduleId="plates" fieldKey="pressure" value={pressureUnit} onChange={setPressureUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Young's modulus"
+          value={E}
+          onChange={setE}
+          unit={<ModuleUnitSelect moduleId="plates" fieldKey="stress" value={EUnit} onChange={setEUnit} />}
+        />
+        <CalculatorNumberField
+          label="Poisson's ratio"
+          value={nu}
+          onChange={setNu}
+          min={0}
+          max={0.49}
+          step={0.01}
+        />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
@@ -178,18 +124,17 @@ export default function PlateInputs({
         <MeshControls elements={meshSegments} onChangeElements={setMeshSegments} refine />
       </div>
 
-      <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700">Support condition</label>
+      <label className="space-y-2">
+        <span className={calculatorFieldLabelClass}>Support condition</span>
         <select
           value={boundaryType}
           onChange={(e) => setBoundaryType(e.target.value as BoundaryType)}
-          className="w-full rounded border border-slate-300 px-3 py-2"
+          className={calculatorSelectClass}
         >
           <option value="clamped">Clamped edges</option>
           <option value="simply_supported">Simply supported edges</option>
         </select>
-      </div>
+      </label>
     </CalculatorInputPanel>
   );
 }
-

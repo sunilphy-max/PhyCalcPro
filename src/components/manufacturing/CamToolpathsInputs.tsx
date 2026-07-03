@@ -1,8 +1,9 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   toolDiameter: number;
@@ -54,140 +55,65 @@ export default function CamToolpathsInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate toolpath" designAware />}
     >
       <div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Tool diameter</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={toolDiameter}
-              min={1}
-              step={0.1}
-              onChange={(e) => setToolDiameter(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">mm</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Number of flutes</span>
-          <input
-            type="number"
-            value={numFlutes}
-            min={1}
-            step={1}
-            onChange={(e) => setNumFlutes(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Spindle speed</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={spindleSpeed}
-              min={100}
-              step={10}
-              onChange={(e) => setSpindleSpeed(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">RPM</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Feed per tooth</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={feedPerTooth}
-              min={0.01}
-              step={0.01}
-              onChange={(e) => setFeedPerTooth(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">mm/tooth</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Axial depth</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={axialDepth}
-              min={0.1}
-              step={0.1}
-              onChange={(e) => setAxialDepth(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">mm</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Radial depth</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={radialDepth}
-              min={0.1}
-              step={0.1}
-              onChange={(e) => setRadialDepth(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">mm</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Stock length</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={stockLength}
-              min={1}
-              step={1}
-              onChange={(e) => setStockLength(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">mm</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Stock width</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={stockWidth}
-              min={toolDiameter}
-              step={1}
-              onChange={(e) => setStockWidth(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">mm</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Step-over</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={stepOverPercent}
-              min={10}
-              max={100}
-              step={5}
-              onChange={(e) => setStepOverPercent(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">%</span>
-          </div>
-        </label>
+        <CalculatorNumberField
+          label="Tool diameter (mm)"
+          value={toolDiameter}
+          onChange={setToolDiameter}
+          min={1}
+          step={0.1}
+        />
+        <CalculatorNumberField label="Number of flutes" value={numFlutes} onChange={setNumFlutes} min={1} step={1} />
+        <CalculatorNumberField
+          label="Spindle speed (rpm)"
+          value={spindleSpeed}
+          onChange={setSpindleSpeed}
+          min={100}
+          step={10}
+        />
+        <CalculatorNumberField
+          label="Feed per tooth (mm/tooth)"
+          value={feedPerTooth}
+          onChange={setFeedPerTooth}
+          min={0.01}
+          step={0.01}
+        />
+        <CalculatorNumberField
+          label="Axial depth (mm)"
+          value={axialDepth}
+          onChange={setAxialDepth}
+          min={0.1}
+          step={0.1}
+        />
+        <CalculatorNumberField
+          label="Radial depth (mm)"
+          value={radialDepth}
+          onChange={setRadialDepth}
+          min={0.1}
+          step={0.1}
+        />
+        <CalculatorNumberField
+          label="Stock length (mm)"
+          value={stockLength}
+          onChange={setStockLength}
+          min={1}
+          step={1}
+        />
+        <CalculatorNumberField
+          label="Stock width (mm)"
+          value={stockWidth}
+          onChange={setStockWidth}
+          min={toolDiameter}
+          step={1}
+        />
+        <CalculatorNumberField
+          label="Step-over (%)"
+          value={stepOverPercent}
+          onChange={setStepOverPercent}
+          min={10}
+          max={100}
+          step={5}
+        />
       </div>
-
     </CalculatorInputPanel>
   );
 }

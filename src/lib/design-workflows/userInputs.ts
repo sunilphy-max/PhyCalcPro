@@ -46,6 +46,9 @@ export type ModuleUserInputs = {
   targetRate?: number;
   maxForce?: number;
   maxOD?: number;
+  initialTension?: number;
+  legLength?: number;
+  deflectionAngleDeg?: number;
   lift?: number;
   baseRadius?: number;
 

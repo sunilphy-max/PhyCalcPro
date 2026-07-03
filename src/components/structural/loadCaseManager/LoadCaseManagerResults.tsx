@@ -54,6 +54,20 @@ export default function LoadCaseManagerResults({ result }: Props) {
             tone={statusTone(result.designStatus)}
             size="lg"
           />
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
+            <p className="font-semibold text-slate-900">Beam module handoff</p>
+            <p className="mt-1 text-slate-600">{result.beamHandoff.note}</p>
+            <p className="mt-2 font-mono text-xs text-slate-700">
+              Point load {formatEngineeringValue(result.beamHandoff.pointLoadN, "N")} · Moment{" "}
+              {formatEngineeringValue(result.beamHandoff.momentNm, "N·m")}
+            </p>
+            <a
+              href={result.beamHandoff.route}
+              className="mt-3 inline-flex text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            >
+              Open Beams calculator →
+            </a>
+          </div>
         </>
       ) : null}
     </CalculatorResultsShell>

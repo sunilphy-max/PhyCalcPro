@@ -2,7 +2,9 @@
 
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import ModuleUnitField from "@/components/shared/ModuleUnitField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   mass: number;
@@ -35,46 +37,63 @@ export default function ImpactInputs(props: Props) {
       description="Estimate average impact force and dynamic stress for a sudden loading event."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate impact results" designAware />}
     >
-      <ModuleUnitField
-        moduleId="impact"
-        fieldKey="mass"
-        value={props.mass}
-        unit={props.massUnit}
-        onValueChange={props.setMass}
-        onUnitChange={props.setMassUnit}
-      />
-      <ModuleUnitField
-        moduleId="impact"
-        fieldKey="velocity"
-        value={props.velocityChange}
-        unit={props.velocityUnit}
-        onValueChange={props.setVelocityChange}
-        onUnitChange={props.setVelocityUnit}
-      />
-      <ModuleUnitField
-        moduleId="impact"
-        fieldKey="duration"
-        value={props.impactDuration}
-        unit={props.durationUnit}
-        onValueChange={props.setImpactDuration}
-        onUnitChange={props.setDurationUnit}
-      />
-      <ModuleUnitField
-        moduleId="impact"
-        fieldKey="area"
-        value={props.crossSectionArea}
-        unit={props.areaUnit}
-        onValueChange={props.setCrossSectionArea}
-        onUnitChange={props.setAreaUnit}
-      />
-      <ModuleUnitField
-        moduleId="impact"
-        fieldKey="stress"
-        value={props.yieldStrength}
-        unit={props.stressUnit}
-        onValueChange={props.setYieldStrength}
-        onUnitChange={props.setStressUnit}
-      />
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Mass"
+          value={props.mass}
+          onChange={props.setMass}
+          unit={
+            <ModuleUnitSelect moduleId="impact" fieldKey="mass" value={props.massUnit} onChange={props.setMassUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Velocity change"
+          value={props.velocityChange}
+          onChange={props.setVelocityChange}
+          unit={
+            <ModuleUnitSelect
+              moduleId="impact"
+              fieldKey="velocity"
+              value={props.velocityUnit}
+              onChange={props.setVelocityUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Impact duration"
+          value={props.impactDuration}
+          onChange={props.setImpactDuration}
+          unit={
+            <ModuleUnitSelect
+              moduleId="impact"
+              fieldKey="duration"
+              value={props.durationUnit}
+              onChange={props.setDurationUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Cross-section area"
+          value={props.crossSectionArea}
+          onChange={props.setCrossSectionArea}
+          unit={
+            <ModuleUnitSelect moduleId="impact" fieldKey="area" value={props.areaUnit} onChange={props.setAreaUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Yield strength"
+          value={props.yieldStrength}
+          onChange={props.setYieldStrength}
+          unit={
+            <ModuleUnitSelect
+              moduleId="impact"
+              fieldKey="stress"
+              value={props.stressUnit}
+              onChange={props.setStressUnit}
+            />
+          }
+        />
+      </div>
     </CalculatorInputPanel>
   );
 }

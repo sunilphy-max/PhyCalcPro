@@ -49,6 +49,7 @@ export function solveVibrationFEM(config: VibrationConfig): VibrationResult {
     length: mesh.length,
     modalMass: modes.map((mode) => mode.modalMass),
     modalStiffness: modes.map((mode) => mode.modalStiffness),
+    fundamentalFrequency: frequencies[0] ?? 0,
   };
 }
 

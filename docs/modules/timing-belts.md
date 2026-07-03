@@ -59,11 +59,15 @@ Closed-form geometry and power screening per timing belt check templates. Tooth 
 - Neglects belt stiffness dynamics and resonance at high speed.
 - Standard trapezoidal or curvilinear tooth profiles per selected pitch family.
 
+**Verification**
+
+- CI: `timing-belts-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 17.
 2. ISO 5296:2012. *Synchronous belt drives — Pulleys*.
 3. Gates Corporation. *Poly Chain GT Carbon Design Manual*.
 4. Budynas, R. G., Nisbett, J. K. *Shigley's Mechanical Engineering Design*, 11th ed.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

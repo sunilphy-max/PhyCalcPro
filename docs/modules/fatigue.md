@@ -59,11 +59,15 @@ Closed-form Marin factors (Shigley Table 6-2), mean-stress correction, and Basqu
 - Constant amplitude loading; variable amplitude needs Miner's rule extension.
 - No environmental corrosion-fatigue interaction.
 
+**Verification**
+
+- CI: `fatigue-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 6.
 2. ISO 12107:2012. *Metallic materials — Fatigue testing — Statistical planning*.
 3. Dowling, N. E. *Mechanical Behavior of Materials*, 5th ed.
 4. Peterson, R. E. *Stress Concentration Factors*.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

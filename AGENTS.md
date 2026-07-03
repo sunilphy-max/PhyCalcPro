@@ -17,3 +17,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Charts:** use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, and `xUnit` (not units baked into labels). Metric summaries must use `formatEngineeringValue` from `src/lib/display/formatEngineering.ts` so peak/max values show units.
 - **Design standard vs units:** changing US/EU/ISO/Indicative only sets **defaults** via `useDesignCodeUnits` (runs on `designCode` change, not every render). `ModuleUnitSelect` shows **all** units for the field dimension unless `restrictToProfile` is set.
 - **Numeric inputs:** use `CalculatorUnitField` + `calculatorNumberInputClass` (spin buttons hidden, `flex-1 min-w-0` so values like Young's modulus are not clipped). **Metric numbers:** use `CalculatorMetricCard` `numericValue` or `formatDisplayNumber()` for auto scientific notation when |value| ≥ 1000 or &lt; 0.01.
+
+## Verification & QA
+
+- **CI benchmarks:** `npm run test:verification` — 24 JSON cases in `src/data/verification/` against `src/lib/qa/moduleSolverRegistry.ts` (61 solvers).
+- **Engineer sign-off:** [docs/validation-master-checklist.md](./docs/validation-master-checklist.md) · [docs/VerificationGuide.md](./docs/VerificationGuide.md)
+- **Bootstrap new cases:** `npx tsx scripts/bootstrap-verification.ts`

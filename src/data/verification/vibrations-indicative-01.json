@@ -1,0 +1,21 @@
+{
+  "id": "vibrations-indicative-01",
+  "moduleId": "vibrations",
+  "designCode": "INDICATIVE",
+  "description": "Simply supported beam — first natural frequency",
+  "inputs": {
+    "length": 1,
+    "E": 210000000000,
+    "I": 0.000001,
+    "A": 0.001,
+    "rho": 7850,
+    "segments": 10,
+    "support": "simply_supported",
+    "dampingRatio": 0.02
+  },
+  "expected": {
+    "fundamentalFrequency": 256.9198297468234
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — beam modal FEM v1"
+}

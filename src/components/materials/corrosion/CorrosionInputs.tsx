@@ -2,10 +2,9 @@
 
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import ModuleUnitField from "@/components/shared/ModuleUnitField";
-import { moduleUnitProfiles } from "@/lib/units/moduleProfiles";
-
-const defaults = moduleUnitProfiles.corrosion;
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   initialThickness: number;
@@ -34,10 +33,61 @@ export default function CorrosionInputs(props: Props) {
       description="Estimate required material thickness for corrosion exposure."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate corrosion allowance" designAware />}
     >
-      <ModuleUnitField moduleId="corrosion" fieldKey="initialThickness" value={props.initialThickness} unit={props.thicknessUnit} onValueChange={props.setInitialThickness} onUnitChange={props.setThicknessUnit} />
-      <ModuleUnitField moduleId="corrosion" fieldKey="corrosionRate" value={props.corrosionRate} unit={props.rateUnit} onValueChange={props.setCorrosionRate} onUnitChange={props.setRateUnit} step="0.01" />
-      <ModuleUnitField moduleId="corrosion" fieldKey="designLife" value={props.designLife} unit={props.lifeUnit} onValueChange={props.setDesignLife} onUnitChange={props.setLifeUnit} />
-      <ModuleUnitField moduleId="corrosion" fieldKey="safetyMargin" value={props.safetyMargin} unit={props.marginUnit} onValueChange={props.setSafetyMargin} onUnitChange={props.setMarginUnit} />
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Initial thickness"
+          value={props.initialThickness}
+          onChange={props.setInitialThickness}
+          unit={
+            <ModuleUnitSelect
+              moduleId="corrosion"
+              fieldKey="initialThickness"
+              value={props.thicknessUnit}
+              onChange={props.setThicknessUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Corrosion rate"
+          value={props.corrosionRate}
+          onChange={props.setCorrosionRate}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect
+              moduleId="corrosion"
+              fieldKey="corrosionRate"
+              value={props.rateUnit}
+              onChange={props.setRateUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Design life"
+          value={props.designLife}
+          onChange={props.setDesignLife}
+          unit={
+            <ModuleUnitSelect
+              moduleId="corrosion"
+              fieldKey="designLife"
+              value={props.lifeUnit}
+              onChange={props.setLifeUnit}
+            />
+          }
+        />
+        <CalculatorUnitField
+          label="Safety margin"
+          value={props.safetyMargin}
+          onChange={props.setSafetyMargin}
+          unit={
+            <ModuleUnitSelect
+              moduleId="corrosion"
+              fieldKey="safetyMargin"
+              value={props.marginUnit}
+              onChange={props.setMarginUnit}
+            />
+          }
+        />
+      </div>
     </CalculatorInputPanel>
   );
 }

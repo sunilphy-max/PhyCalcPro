@@ -47,20 +47,19 @@ function ensureDir(dir) {
 function createPage(route) {
   const parts = route.split("/").filter(Boolean);
 
-  // expected: products/category/module
-  if (parts.length !== 3) {
+  // products/category/module or products/module (e.g. profiles)
+  if (parts.length < 2 || parts[0] !== "products") {
     console.log("⚠️ Skipping invalid route:", route);
     return;
   }
 
-  const [, category, module] = parts;
+  const folderPath =
+    parts.length === 2
+      ? path.join(ROOT, "src/app/products", parts[1])
+      : path.join(ROOT, "src/app/products", parts[1], parts[2]);
 
-  const folderPath = path.join(
-    ROOT,
-    "src/app/products",
-    category,
-    module
-  );
+  const category = parts.length === 2 ? parts[1] : parts[1];
+  const module = parts.length === 2 ? parts[1] : parts[2];
 
   const filePath = path.join(folderPath, "page.tsx");
 

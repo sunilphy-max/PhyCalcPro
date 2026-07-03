@@ -251,45 +251,36 @@ export default function BeamDashboard({
         </CalculatorMetricGrid>
       ) : null}
 
-      {/* Probe bar */}
-      <div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-900 px-3 py-2.5 text-sm text-white shadow sm:grid-cols-5">
-        <div>
-          <div className="text-slate-400">Case</div>
-          <div className="font-semibold">
-            {caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active")}
-          </div>
-        </div>
-        <div>
-          <div className="text-slate-400">Position ({units.length})</div>
-          <div className="font-semibold">
-            {probeData
+      <CalculatorMetricGrid cols={2} className="sm:grid-cols-5">
+        <CalculatorMetricCard
+          label="Case"
+          value={caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active")}
+        />
+        <CalculatorMetricCard
+          label={`Position (${units.length})`}
+          value={
+            probeData
               ? formatEngineeringValue(probeData.x, units.length, { digits: 3 })
-              : "Click beam model"}
-          </div>
-        </div>
-        <div>
-          <div className="text-slate-400">Shear ({units.force})</div>
-          <div className="font-semibold">
-            {probeData ? formatEngineeringValue(probeData.shear, units.force) : "—"}
-          </div>
-        </div>
-        <div>
-          <div className="text-slate-400">Moment ({units.moment})</div>
-          <div className="font-semibold">
-            {probeData ? formatEngineeringValue(probeData.moment, units.moment) : "—"}
-          </div>
-        </div>
-        <div>
-          <div className="text-slate-400">Deflection ({units.length})</div>
-          <div className="font-semibold">
-            {probeData
-              ? formatEngineeringValue(probeData.deflection, units.length, {
-                  useExponential: true,
-                })
-              : "—"}
-          </div>
-        </div>
-      </div>
+              : "Click beam model"
+          }
+        />
+        <CalculatorMetricCard
+          label={`Shear (${units.force})`}
+          value={probeData ? formatEngineeringValue(probeData.shear, units.force) : "—"}
+        />
+        <CalculatorMetricCard
+          label={`Moment (${units.moment})`}
+          value={probeData ? formatEngineeringValue(probeData.moment, units.moment) : "—"}
+        />
+        <CalculatorMetricCard
+          label={`Deflection (${units.length})`}
+          value={
+            probeData
+              ? formatEngineeringValue(probeData.deflection, units.length, { useExponential: true })
+              : "—"
+          }
+        />
+      </CalculatorMetricGrid>
 
       <EngineeringPlotPicker tabs={plotTabs} defaultTabId="model" label="Result chart" />
 

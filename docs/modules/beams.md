@@ -79,6 +79,11 @@ Physics checks report `staticEquilibriumResidual` (difference between total appl
 - Shear check uses rectangular-web estimate from \( I \) and \( c \).
 - Application presets adjust targets but do not implement full standard clauses.
 
+**Verification**
+
+- CI: `beams-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Roark, R. J., Young, W. C., & Budynas, R. G. *Formulas for Stress and Strain*, 8th ed. McGraw-Hill.

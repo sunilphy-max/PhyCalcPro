@@ -1,10 +1,29 @@
 {
-  "ranAt": "2026-06-13T01:50:48.618Z",
-  "total": 13,
-  "passed": 13,
+  "ranAt": "2026-07-03T19:02:46.555Z",
+  "total": 30,
+  "passed": 30,
   "failed": 0,
   "skipped": 0,
   "results": [
+    {
+      "caseId": "beams-indicative-01",
+      "moduleId": "beams",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxDeflection",
+          "expected": 0.0024801587301586823,
+          "actual": 0.0024801587301586823,
+          "pass": true
+        },
+        {
+          "field": "maxMoment",
+          "expected": 12500.000000000728,
+          "actual": 12500.000000000728,
+          "pass": true
+        }
+      ]
+    },
     {
       "caseId": "bearings-indicative-01",
       "moduleId": "bearings",
@@ -33,6 +52,19 @@
           "field": "bendingSafety",
           "expected": 1.6517865854044413,
           "actual": 1.6517865854044413,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bolts-indicative-01",
+      "moduleId": "bolts",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxBoltForce",
+          "expected": 10077.822185373187,
+          "actual": 10077.822185373187,
           "pass": true
         }
       ]
@@ -102,6 +134,69 @@
       ]
     },
     {
+      "caseId": "compression-springs-indicative-fatigue-01",
+      "moduleId": "compression-springs",
+      "pass": true,
+      "fields": [
+        {
+          "field": "springRate",
+          "expected": 2025,
+          "actual": 2025,
+          "pass": true
+        },
+        {
+          "field": "fatigueSafetyFactor",
+          "expected": 9.4663,
+          "actual": 9.46633139750708,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "corrosion-indicative-01",
+      "moduleId": "corrosion",
+      "pass": true,
+      "fields": [
+        {
+          "field": "corrosionAllowance",
+          "expected": 0.002,
+          "actual": 0.002,
+          "pass": true
+        },
+        {
+          "field": "requiredThickness",
+          "expected": 0.0124,
+          "actual": 0.0124,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "extension-springs-indicative-01",
+      "moduleId": "extension-springs",
+      "pass": true,
+      "fields": [
+        {
+          "field": "springRate",
+          "expected": 2025,
+          "actual": 2025,
+          "pass": true
+        },
+        {
+          "field": "forceAtExtension",
+          "expected": 35.375,
+          "actual": 35.375,
+          "pass": true
+        },
+        {
+          "field": "hookSafetyFactor",
+          "expected": 2.354,
+          "actual": 2.4326924774416145,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "fatigue-indicative-01",
       "moduleId": "fatigue",
       "pass": true,
@@ -121,6 +216,25 @@
       ]
     },
     {
+      "caseId": "frames-indicative-01",
+      "moduleId": "frames",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxDisplacement",
+          "expected": 0.005405659661634178,
+          "actual": 0.005405659661634178,
+          "pass": true
+        },
+        {
+          "field": "maxMoment",
+          "expected": 210621.34891131203,
+          "actual": 210621.34891131203,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "gears-indicative-01",
       "moduleId": "gears",
       "pass": true,
@@ -135,6 +249,56 @@
           "field": "safetyFactor",
           "expected": 1.6045684478209867,
           "actual": 1.6045684478209867,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "hydraulics-indicative-01",
+      "moduleId": "hydraulics",
+      "pass": true,
+      "fields": [
+        {
+          "field": "extendForce",
+          "expected": 39269.90816987242,
+          "actual": 39269.90816987242,
+          "pass": true
+        },
+        {
+          "field": "retractForce",
+          "expected": 26954.86496780043,
+          "actual": 26954.86496780043,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "impact-indicative-01",
+      "moduleId": "impact",
+      "pass": true,
+      "fields": [
+        {
+          "field": "impulse",
+          "expected": 100,
+          "actual": 100,
+          "pass": true
+        },
+        {
+          "field": "averageForce",
+          "expected": 10000,
+          "actual": 10000,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 3.978873577297383,
+          "actual": 3.978873577297383,
+          "pass": true
+        },
+        {
+          "field": "dynamicAmplification",
+          "expected": 3.1415926535897936,
+          "actual": 3.1415926535897936,
           "pass": true
         }
       ]
@@ -172,6 +336,50 @@
       ]
     },
     {
+      "caseId": "rivets-indicative-01",
+      "moduleId": "rivets",
+      "pass": true,
+      "fields": [
+        {
+          "field": "safetyFactorOverall",
+          "expected": 2403318.379996192,
+          "actual": 2403318.379996192,
+          "pass": true
+        },
+        {
+          "field": "safetyFactorShear",
+          "expected": 2403318.379996192,
+          "actual": 2403318.379996192,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "rotation-indicative-01",
+      "moduleId": "rotation",
+      "pass": true,
+      "fields": [
+        {
+          "field": "inertia",
+          "expected": 0.4,
+          "actual": 0.4,
+          "pass": true
+        },
+        {
+          "field": "kineticEnergy",
+          "expected": 4934.80220054468,
+          "actual": 4934.80220054468,
+          "pass": true
+        },
+        {
+          "field": "torque",
+          "expected": 31.830988618379067,
+          "actual": 31.830988618379067,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "shafts-indicative-01",
       "moduleId": "shafts",
       "pass": true,
@@ -179,13 +387,38 @@
         {
           "field": "safetyFactor",
           "expected": 14.076773127612789,
-          "actual": 14.076773127612789,
+          "actual": 14.076773127807586,
           "pass": true
         },
         {
           "field": "maxStress",
           "expected": 17759752.020838052,
-          "actual": 17759752.020838052,
+          "actual": 17759752.020592287,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "suspension-indicative-01",
+      "moduleId": "suspension",
+      "pass": true,
+      "fields": [
+        {
+          "field": "lateralForce",
+          "expected": 4704,
+          "actual": 4704,
+          "pass": true
+        },
+        {
+          "field": "rollAngleDegrees",
+          "expected": 8.08558040488618,
+          "actual": 8.08558040488618,
+          "pass": true
+        },
+        {
+          "field": "loadTransfer",
+          "expected": 1617,
+          "actual": 1617,
           "pass": true
         }
       ]
@@ -210,6 +443,63 @@
       ]
     },
     {
+      "caseId": "torsion-springs-indicative-01",
+      "moduleId": "torsion-springs",
+      "pass": true,
+      "fields": [
+        {
+          "field": "springRate",
+          "expected": 0.328125,
+          "actual": 0.32812500000000006,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 1.5794,
+          "actual": 1.5794344473007709,
+          "pass": true
+        },
+        {
+          "field": "curvatureFactor",
+          "expected": 1.0806,
+          "actual": 1.0805555555555555,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "trusses-indicative-01",
+      "moduleId": "trusses",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxDisplacement",
+          "expected": 0.0014971360631108952,
+          "actual": 0.0014971360631108952,
+          "pass": true
+        },
+        {
+          "field": "maxForce",
+          "expected": 117187.5,
+          "actual": 117187.5,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "unit-converter-indicative-01",
+      "moduleId": "unit-converter",
+      "pass": true,
+      "fields": [
+        {
+          "field": "convertedValue",
+          "expected": 14503.76807894691,
+          "actual": 14503.76807894691,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "v-belts-indicative-01",
       "moduleId": "v-belts",
       "pass": true,
@@ -224,6 +514,51 @@
           "field": "drivenSpeed",
           "expected": 725,
           "actual": 725,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "vessels-indicative-01",
+      "moduleId": "vessels",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxHoopStress",
+          "expected": 125978931.95814683,
+          "actual": 125978931.95814683,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "vibrations-indicative-01",
+      "moduleId": "vibrations",
+      "pass": true,
+      "fields": [
+        {
+          "field": "fundamentalFrequency",
+          "expected": 256.9198297468234,
+          "actual": 256.9198297468195,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "welds-indicative-01",
+      "moduleId": "welds",
+      "pass": true,
+      "fields": [
+        {
+          "field": "resultantStress",
+          "expected": 60.09309755330205,
+          "actual": 60.09309755330205,
+          "pass": true
+        },
+        {
+          "field": "safetyFactorOverall",
+          "expected": 4.077007343192571,
+          "actual": 4.077007343192571,
           "pass": true
         }
       ]

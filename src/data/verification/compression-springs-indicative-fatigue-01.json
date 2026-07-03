@@ -1,0 +1,25 @@
+{
+  "id": "compression-springs-indicative-fatigue-01",
+  "moduleId": "compression-springs",
+  "designCode": "INDICATIVE",
+  "description": "Compression spring fatigue — stroke 2–10 mm, VL life class",
+  "inputs": {
+    "wireDiameter": 0.002,
+    "meanDiameter": 0.02,
+    "activeCoils": 10,
+    "freeLength": 0.05,
+    "modulus": 81000000000,
+    "deflection": 0.01,
+    "minDeflection": 0.002,
+    "ultimateStrength": 1400000000,
+    "enableFatigueCheck": true,
+    "lifeClass": "VL",
+    "wireQuality": 1
+  },
+  "expected": {
+    "springRate": 2025,
+    "fatigueSafetyFactor": 9.4663
+  },
+  "tolerancePercent": 8,
+  "source": "EN 13906-1 characteristic τk0 with Goodman mean-stress correction"
+}

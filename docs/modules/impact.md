@@ -54,11 +54,15 @@ Closed-form impulse and average force (`engine`). Impact duration converted from
 - Impact duration must be estimated or measured — highly uncertain.
 - Plastic energy absorption not subtracted from impulse.
 
+**Verification**
+
+- CI: `impact-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 4.
 2. Rao, S. S. *Mechanical Vibrations*, 6th ed., shock response.
 3. MIL-STD-810. *Environmental Engineering Considerations and Laboratory Tests*.
 4. Barrow, H. D. *Applied Mechanics*, impact problems.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

@@ -63,11 +63,15 @@ Linear buckling FEM (`femSolver`): the column is meshed along its length. Elasti
 - Uniform prismatic section along length.
 - Validated against Euler closed-form for standard end conditions.
 
+**Verification**
+
+- CI: `columns-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Timoshenko, S. P., & Gere, J. M. *Theory of Elastic Stability*, 2nd ed. McGraw-Hill.
 2. AISC. *Specification for Structural Steel Buildings* (ANSI/AISC 360-22), Chapter E.
 3. EN 1993-1-1:2005. *Eurocode 3 — Buckling of members*.
 4. Gere, J. M., & Goodno, B. J. *Mechanics of Materials*, 9th ed.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

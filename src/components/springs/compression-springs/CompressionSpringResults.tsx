@@ -61,24 +61,47 @@ export default function CompressionSpringResults({
     const deflections = Array.from({ length: steps }, (_, i) => (maxDeflection * i) / (steps - 1));
     const loads = deflections.map((d) => result.springRate * d);
 
-    tabs.push({
-      id: "load-deflection",
-      label: "Load–deflection",
-      content: (
-        <EngineeringPlot
-          title="Spring load vs deflection"
-          x={deflections}
-          y={loads}
-          yLabel="Force"
-          xLabel="Deflection"
-          xUnit={lengthUnit}
-          unitLabel="N"
-        />
-      ),
-    });
+    tabs.push(
+      {
+        id: "load-deflection",
+        label: "Load–deflection",
+        content: (
+          <EngineeringPlot
+            title="Spring load vs deflection"
+            x={deflections}
+            y={loads}
+            yLabel="Force"
+            xLabel="Deflection"
+            xUnit={lengthUnit}
+            unitLabel="N"
+          />
+        ),
+      },
+      {
+        id: "stress-deflection",
+        label: "Stress vs deflection",
+        content: (
+          <EngineeringPlot
+            title="Shear stress vs deflection"
+            x={deflections}
+            y={deflections.map((d) => {
+              const F = result.springRate * d;
+              return (result.shearStress / Math.max(result.maxLoad, 1e-9)) * F;
+            })}
+            yLabel="Shear stress"
+            xLabel="Deflection"
+            xUnit={lengthUnit}
+            unitLabel="Pa"
+            showPeak={false}
+          />
+        ),
+      }
+    );
 
     return tabs;
   }, [geometry, lengthUnit, result]);
+
+  const status = result?.isSafe ? "safe" : "danger";
 
   return (
     <CalculatorResultsShell
@@ -98,31 +121,31 @@ export default function CompressionSpringResults({
               { metric: "springRate", value: result.springRate },
               { metric: "maxLoad", value: result.maxLoad },
               { metric: "shearStress", value: result.shearStress },
-              { metric: "allowableShearStress", value: result.allowableShearStress },
               { metric: "safetyFactor", value: result.safetyFactor },
-              { metric: "springIndex", value: result.springIndex },
-              { metric: "wahlFactor", value: result.wahlFactor },
+              { metric: "naturalFrequency", value: result.naturalFrequency },
+              { metric: "solidHeightClearance", value: result.solidHeightClearance },
             ]
           : undefined
       }
     >
       {result ? (
         <>
-          <CalculatorMetricGrid cols={2}>
+          <CalculatorMetricGrid cols={4}>
+            <CalculatorMetricCard label="Status" value={result.isSafe ? "Pass" : "Check"} status={status} />
+            <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
+            <CalculatorMetricCard label="Spring rate" value={formatEngineeringValue(result.springRate, "N/m")} tone="blue" />
             <CalculatorMetricCard
-              label="Spring rate"
-              value={formatEngineeringValue(result.springRate, "N/m")}
-              tone="blue"
+              label="Static safety τ_zul/τ"
+              numericValue={result.safetyFactor}
+              status={result.safetyFactor >= 1.5 ? "safe" : "danger"}
             />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
-              label="Solid height"
-              value={formatEngineeringValue(fromBase(result.solidHeight, "length", lengthUnit), lengthUnit)}
-              tone="blue"
-            />
-            <CalculatorMetricCard
-              label="Load at deflection"
-              value={formatEngineeringValue(result.maxLoad, "N")}
-              tone="purple"
+              label="Solid height clearance"
+              value={formatEngineeringValue(fromBase(result.solidHeightClearance, "length", lengthUnit), lengthUnit)}
+              tone={result.solidHeightClearance >= 0 ? "blue" : "red"}
             />
             <CalculatorMetricCard
               label="Surge frequency"
@@ -130,25 +153,34 @@ export default function CompressionSpringResults({
               tone="blue"
             />
             <CalculatorMetricCard
-              label="Spring index C"
-              numericValue={result.springIndex}
-              tone={result.springIndex >= 4 && result.springIndex <= 12 ? "blue" : "orange"}
+              label="Surge margin"
+              value={result.surgeMargin != null ? `${result.surgeMargin.toFixed(1)}×` : "Set operating Hz"}
+              tone={result.surgeMargin == null || result.surgeMargin >= 10 ? "blue" : "orange"}
             />
-            <CalculatorMetricCard label="Wahl factor Kw" numericValue={result.wahlFactor} tone="blue" />
+            <CalculatorMetricCard label="Spring index C" numericValue={result.springIndex} tone="blue" />
           </CalculatorMetricGrid>
+
+          {result.fatigueSafetyFactor != null ? (
+            <CalculatorMetricGrid cols={2}>
+              <CalculatorMetricCard
+                label={`Fatigue SF (${result.lifeClass ?? "VL"})`}
+                numericValue={result.fatigueSafetyFactor}
+                status={result.fatiguePass ? "safe" : "danger"}
+              />
+              <CalculatorMetricCard
+                label="Fatigue utilization"
+                numericValue={result.fatigueUtilization ?? undefined}
+                tone={result.fatiguePass ? "green" : "orange"}
+              />
+            </CalculatorMetricGrid>
+          ) : null}
+
           <CalculatorMetricCard
-            label="Static safety factor (τ_zul / τ)"
-            numericValue={result.safetyFactor}
-            status={
-              result.safetyFactor >= 1.5 ? "safe" : result.safetyFactor >= 1 ? "warning" : "danger"
-            }
-            size="lg"
-          />
-          <CalculatorMetricCard
-            label={`Buckling screen (L0/D = ${formatDisplayNumber(result.slenderness)})`}
-            value={result.bucklingRisk ? "Check buckling — guide the spring" : "Buckle-proof (EN 13906-1)"}
+            label={`Buckling (L0/D = ${formatDisplayNumber(result.slenderness)} ≤ ${formatDisplayNumber(result.bucklingLimit)})`}
+            value={result.bucklingRisk ? "Check buckling — add guidance" : "Buckle-proof"}
             tone={result.bucklingRisk ? "orange" : "green"}
           />
+
           <EngineeringPlotPicker
             tabs={plotTabs}
             defaultTabId={geometry ? "outline" : "load-deflection"}

@@ -1,0 +1,21 @@
+{
+  "id": "suspension-indicative-01",
+  "moduleId": "suspension",
+  "designCode": "INDICATIVE",
+  "description": "Roll screening — 1200 kg sprung mass, 0.4g lateral",
+  "inputs": {
+    "sprungMass": 1200,
+    "lateralAcceleration": 3.92,
+    "wheelbase": 2.7,
+    "trackWidth": 1.6,
+    "cgHeight": 0.55,
+    "rollStiffness": 45000
+  },
+  "expected": {
+    "lateralForce": 4704,
+    "rollAngleDegrees": 8.08558040488618,
+    "loadTransfer": 1617
+  },
+  "tolerancePercent": 5,
+  "source": "Roll moment / roll stiffness"
+}

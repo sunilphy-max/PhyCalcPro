@@ -161,9 +161,9 @@ export default function ScrewsDashboard({ result }: Props) {
       ) : null}
 
       {result.recommendations.length > 0 ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <h3 className="text-sm font-semibold text-amber-900">Recommendations</h3>
-          <ul className="mt-2 space-y-1 text-sm text-amber-800">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-900">Recommendations</h3>
+          <ul className="mt-2 space-y-1 text-sm text-slate-700">
             {result.recommendations.map((rec, index) => (
               <li key={index}>{rec}</li>
             ))}

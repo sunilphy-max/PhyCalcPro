@@ -1,0 +1,22 @@
+{
+  "id": "torsion-springs-indicative-01",
+  "moduleId": "torsion-springs",
+  "designCode": "INDICATIVE",
+  "description": "Torsion spring — 2 mm wire, 8 coils, 90° deflection, E = 210 GPa",
+  "inputs": {
+    "wireDiameter": 0.002,
+    "meanDiameter": 0.02,
+    "activeCoils": 8,
+    "legLength": 0.03,
+    "deflectionAngleDeg": 90,
+    "modulus": 210000000000,
+    "ultimateStrength": 1400000000
+  },
+  "expected": {
+    "springRate": 0.328125,
+    "safetyFactor": 1.5794,
+    "curvatureFactor": 1.0806
+  },
+  "tolerancePercent": 5,
+  "source": "k = E·d⁴/(64·D·n); σ = K_b·32M/(πd³); σ_zul = 0.8·Rm"
+}

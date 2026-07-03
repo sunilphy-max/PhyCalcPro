@@ -56,11 +56,15 @@ Virtual spur gear transformation followed by gear rating checks shared with the 
 - Assumes proper mounting and lapping; no deflection under load.
 - No scuffing or lapping contact pattern analysis.
 
+**Verification**
+
+- CI: `bevel-gears-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. ISO 10300-1:2014. *Calculation of load capacity of bevel gears*.
 2. AGMA 2003-D19. *Rating the Pitting Resistance and Bending Strength of Generated Straight Bevel, Zerol Bevel and Spiral Bevel Gear Teeth*.
 3. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed.
 4. Maitra, G. M. *Handbook of Gear Design*, 2nd ed. McGraw-Hill.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

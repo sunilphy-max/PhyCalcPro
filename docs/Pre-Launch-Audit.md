@@ -3,7 +3,7 @@
 **Date:** 2026-06-07  
 **Scope:** UI/theme consistency, formatting, physics/solvers, Auto-design/Validate/Compare, clutter, launch readiness  
 **Environment tested:** `NEXT_PUBLIC_FREE_LAUNCH=true` (`.env.local`), Windows, Node build pipeline  
-**Full module audit:** [`docs/Website-Module-Audit.md`](Website-Module-Audit.md) — 62 modules, homogenization complete (2026-06-07)
+**Full module audit:** [`docs/Website-Module-Audit.md`](Website-Module-Audit.md) — 63 modules, homogenization complete (2026-06-07)
 
 ---
 

@@ -3,7 +3,8 @@
 import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
-import UnitSelector from "@/components/shared/UnitSelector";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 
 type Props = {
@@ -63,107 +64,65 @@ export default function PressureVesselInputs({
       description="Thin and thick wall vessel design screening."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vessel FEM" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Radius</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={radius}
-              min={0.01}
-              step={0.01}
-              onChange={(e) => setRadius(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="length"
-              value={radiusUnit}
-              onChange={setRadiusUnit}
-              label=""
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Thickness</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={thickness}
-              min={0.001}
-              step={0.001}
-              onChange={(e) => setThickness(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="length"
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Radius"
+          value={radius}
+          onChange={setRadius}
+          min={0.01}
+          step={0.01}
+          unit={
+            <ModuleUnitSelect moduleId="vessels" fieldKey="radius" value={radiusUnit} onChange={setRadiusUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Thickness"
+          value={thickness}
+          onChange={setThickness}
+          min={0.001}
+          step={0.001}
+          unit={
+            <ModuleUnitSelect
+              moduleId="vessels"
+              fieldKey="thickness"
               value={thicknessUnit}
               onChange={setThicknessUnit}
-              label=""
             />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Cylinder length</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={length}
-              min={0.1}
-              step={0.1}
-              onChange={(e) => setLength(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="length"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-              label=""
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Internal pressure</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={pressure}
-              min={1}
-              step={10}
-              onChange={(e) => setPressure(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="pressure"
+          }
+        />
+        <CalculatorUnitField
+          label="Cylinder length"
+          value={length}
+          onChange={setLength}
+          min={0.1}
+          step={0.1}
+          unit={
+            <ModuleUnitSelect moduleId="vessels" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
+          }
+        />
+        <CalculatorUnitField
+          label="Internal pressure"
+          value={pressure}
+          onChange={setPressure}
+          min={1}
+          step={10}
+          unit={
+            <ModuleUnitSelect
+              moduleId="vessels"
+              fieldKey="pressure"
               value={pressureUnit}
               onChange={setPressureUnit}
-              label=""
             />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Young&apos;s modulus</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={E}
-              min={1e8}
-              step={1e8}
-              onChange={(e) => setE(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <UnitSelector
-              dimension="stress"
-              value={EUnit}
-              onChange={setEUnit}
-              label=""
-            />
-          </div>
-        </div>
-
+          }
+        />
+        <CalculatorUnitField
+          label="Young's modulus"
+          value={E}
+          onChange={setE}
+          min={1e8}
+          step={1e8}
+          unit={<ModuleUnitSelect moduleId="vessels" fieldKey="E" value={EUnit} onChange={setEUnit} />}
+        />
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 sm:col-span-2">
           <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
           <MeshControls elements={segments} onChangeElements={setSegments} refine />
@@ -172,4 +131,3 @@ export default function PressureVesselInputs({
     </CalculatorInputPanel>
   );
 }
-

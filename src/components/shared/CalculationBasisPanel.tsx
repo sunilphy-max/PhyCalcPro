@@ -6,6 +6,16 @@ type Props = {
   spec: CalculationSpec | null | undefined;
 };
 
+function EquationBlock({ expression, label, description }: { expression: string; label: string; description?: string }) {
+  return (
+    <li className="space-y-1">
+      <p className="font-medium text-slate-800">{label}</p>
+      <p className="font-mono text-xs text-slate-700 bg-slate-50 rounded px-2 py-1.5 overflow-x-auto">{expression}</p>
+      {description ? <p className="text-xs text-slate-500">{description}</p> : null}
+    </li>
+  );
+}
+
 export default function CalculationBasisPanel({ spec }: Props) {
   if (!spec) return null;
 
@@ -23,6 +33,17 @@ export default function CalculationBasisPanel({ spec }: Props) {
                 {ref.clause ? ` — ${ref.clause}` : ""}
                 {ref.edition ? ` (${ref.edition})` : ""}
               </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {spec.equations.length ? (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Governing equations</p>
+          <ul className="mt-2 space-y-3">
+            {spec.equations.map((eq) => (
+              <EquationBlock key={eq.id} label={eq.label} expression={eq.expression} description={eq.description} />
             ))}
           </ul>
         </div>

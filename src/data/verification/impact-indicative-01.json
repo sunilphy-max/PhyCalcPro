@@ -1,0 +1,21 @@
+{
+  "id": "impact-indicative-01",
+  "moduleId": "impact",
+  "designCode": "INDICATIVE",
+  "description": "Impact load — 50 kg, 2 m/s delta-v, 10 ms duration",
+  "inputs": {
+    "mass": 50,
+    "velocityChange": 2,
+    "impactDuration": 10,
+    "crossSectionArea": 500,
+    "yieldStrength": 250
+  },
+  "expected": {
+    "impulse": 100,
+    "averageForce": 10000,
+    "safetyFactor": 3.978873577297383,
+    "dynamicAmplification": 3.1415926535897936
+  },
+  "tolerancePercent": 5,
+  "source": "Impulse-momentum screening"
+}

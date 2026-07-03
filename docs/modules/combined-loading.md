@@ -66,11 +66,15 @@ Closed-form evaluation: section properties \( A \), \( I_{xx} \), and \( J \) ar
 - Torsion uses rectangular approximation; thin-wall or circular sections need dedicated checks.
 - Shear stress from transverse force is averaged over area (not parabolic distribution).
 
+**Verification**
+
+- CI: `combined-loading-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed. McGraw-Hill.
 2. Gere, J. M., & Goodno, B. J. *Mechanics of Materials*, 9th ed.
 3. AISC. *Specification for Structural Steel Buildings* (ANSI/AISC 360-22), Chapter H.
 4. EN 1993-1-1:2005. *Eurocode 3 — Clause 6.2*.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

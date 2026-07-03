@@ -22,4 +22,12 @@ export type LoadCaseManagerResult = {
   combinedStress: number;
   safetyFactor: number;
   designStatus: "safe" | "warning" | "critical";
+  /** Envelope loads for handoff to the Beams module (Validate / import workflow). */
+  beamHandoff: {
+    moduleId: "beams";
+    route: "/products/structural/beams";
+    pointLoadN: number;
+    momentNm: number;
+    note: string;
+  };
 };

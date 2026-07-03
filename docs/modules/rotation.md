@@ -54,11 +54,15 @@ Closed-form rotational dynamics (`engine`). User supplies inertia, torque, speed
 - No gyroscopic effects on supported shafts.
 - Motor thermal limits not evaluated.
 
+**Verification**
+
+- CI: `rotation-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 15.
 2. Norton, R. L. *Design of Machinery*, 6th ed.
 3. Rao, S. S. *Mechanical Vibrations*, 6th ed.
 4. IEC 60034-12. *Rotating electrical machines* (motor sizing context).
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

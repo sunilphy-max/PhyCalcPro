@@ -1,0 +1,21 @@
+{
+  "id": "welds-indicative-01",
+  "moduleId": "welds",
+  "designCode": "INDICATIVE",
+  "description": "Double fillet weld group — shear + axial",
+  "inputs": {
+    "weldType": "fillet",
+    "weldSize": 6,
+    "weldLength": 100,
+    "weldCount": 2,
+    "shearForce": 50000,
+    "axialForce": 10000,
+    "material": { "name": "E70", "strength": 490, "yieldStress": 400 }
+  },
+  "expected": {
+    "resultantStress": 60.09309755330205,
+    "safetyFactorOverall": 4.077007343192571
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — weld throat stress v1"
+}

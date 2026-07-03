@@ -1,10 +1,12 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
+import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass } from "@/components/calculator/styles";
 import type { SupportType } from "@/lib/dynamics/vibrations/types";
 
 type Props = {
@@ -72,134 +74,74 @@ export default function VibrationInputs({
       description="Natural frequency and resonance screening."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vibration analysis" designAware />}
     >
-<div className={`${calculatorInputGridClass}`}>
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Beam length</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={length}
-              min={0.1}
-              step={0.1}
-              onChange={(e) => setLength(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="vibrations"
-              fieldKey="length"
-              value={lengthUnit}
-              onChange={setLengthUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Support condition</label>
+      <div className={`${calculatorInputGridClass}`}>
+        <CalculatorUnitField
+          label="Beam length"
+          value={length}
+          onChange={setLength}
+          min={0.1}
+          step={0.1}
+          unit={
+            <ModuleUnitSelect moduleId="vibrations" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
+          }
+        />
+        <label className="space-y-2">
+          <span className={calculatorFieldLabelClass}>Support condition</span>
           <select
             value={support}
             onChange={(e) => setSupport(e.target.value as SupportType)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className={calculatorSelectClass}
           >
             <option value="simply_supported">Simply supported</option>
             <option value="cantilever">Cantilever</option>
             <option value="fixed_fixed">Fixed-fixed</option>
           </select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Young&apos;s modulus</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={E}
-              min={1e8}
-              step={1e8}
-              onChange={(e) => setE(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="vibrations"
-              fieldKey="modulus"
-              value={EUnit}
-              onChange={setEUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Density</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={rho}
-              min={1}
-              step={10}
-              onChange={(e) => setRho(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="vibrations"
-              fieldKey="density"
-              value={rhoUnit}
-              onChange={setRhoUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Cross-sectional area</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={A}
-              min={1e-6}
-              step={1e-5}
-              onChange={(e) => setA(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="vibrations"
-              fieldKey="area"
-              value={areaUnit}
-              onChange={setAreaUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Moment of inertia</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={I}
-              min={1e-10}
-              step={1e-9}
-              onChange={(e) => setI(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <ModuleUnitSelect
-              moduleId="vibrations"
-              fieldKey="inertia"
-              value={inertiaUnit}
-              onChange={setInertiaUnit}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-slate-700">Damping ratio ζ</label>
-          <input
-            type="number"
-            min={0}
-            max={0.5}
-            step={0.01}
-            value={dampingRatio}
-            onChange={(e) => setDampingRatio(Number(e.target.value))}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-          <p className="text-xs text-slate-500">Light damping (ζ ≈ 0.02–0.05) for damped natural frequency estimate.</p>
-        </div>
-
+        </label>
+        <CalculatorUnitField
+          label="Young's modulus"
+          value={E}
+          onChange={setE}
+          min={1e8}
+          step={1e8}
+          unit={<ModuleUnitSelect moduleId="vibrations" fieldKey="modulus" value={EUnit} onChange={setEUnit} />}
+        />
+        <CalculatorUnitField
+          label="Density"
+          value={rho}
+          onChange={setRho}
+          min={1}
+          step={10}
+          unit={<ModuleUnitSelect moduleId="vibrations" fieldKey="density" value={rhoUnit} onChange={setRhoUnit} />}
+        />
+        <CalculatorUnitField
+          label="Cross-sectional area"
+          value={A}
+          onChange={setA}
+          min={1e-6}
+          step={1e-5}
+          unit={<ModuleUnitSelect moduleId="vibrations" fieldKey="area" value={areaUnit} onChange={setAreaUnit} />}
+        />
+        <CalculatorUnitField
+          label="Moment of inertia"
+          value={I}
+          onChange={setI}
+          min={1e-10}
+          step={1e-9}
+          unit={
+            <ModuleUnitSelect moduleId="vibrations" fieldKey="inertia" value={inertiaUnit} onChange={setInertiaUnit} />
+          }
+        />
+        <CalculatorNumberField
+          label="Damping ratio ζ"
+          value={dampingRatio}
+          onChange={setDampingRatio}
+          min={0}
+          max={0.5}
+          step={0.01}
+        />
+        <p className="text-xs text-slate-500">
+          Light damping (ζ ≈ 0.02–0.05) for damped natural frequency estimate.
+        </p>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 sm:col-span-2">
           <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
           <MeshControls elements={segments} onChangeElements={setSegments} refine />
@@ -208,4 +150,3 @@ export default function VibrationInputs({
     </CalculatorInputPanel>
   );
 }
-

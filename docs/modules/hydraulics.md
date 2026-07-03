@@ -59,11 +59,15 @@ Closed-form force, stress, and buckling equations (`engine`). Pressure computed 
 - Tie-rod vs welded body stress concentrations simplified.
 - Does not size ports, valves, or accumulators.
 
+**Verification**
+
+- CI: `hydraulics-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed.
 2. ISO 6020-1:2019. *Hydraulic fluid power — Mounting dimensions*.
 3. Parker Hannifin. *Cylinder Design Guide*.
 4. NFPA T3.6.7. *Fluid power systems — Cylinder bore sizes*.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

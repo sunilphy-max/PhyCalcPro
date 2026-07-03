@@ -1,75 +1,124 @@
-import type { CompressionSpringConfig, CompressionSpringResult, SpringWireType } from "./types";
+import type { SpringEndCondition } from "../shared/helicalCommon";
+import {
+  activeCoilMass,
+  bucklingSlendernessLimit,
+  determineSpringStatus,
+  en13906AllowableShear,
+  helicalShearStress,
+  helicalSpringRate,
+  isBucklingRisk,
+  solidHeightCompression,
+  springIndex,
+  surgeFrequencyHz,
+  wahlFactor,
+} from "../shared/helicalCommon";
+import { en13906ShearFatigueCheck } from "../shared/en13906Fatigue";
+import { wireUltimateStrengthPa, type SpringWireType } from "../shared/wireStrength";
+import type { CompressionSpringConfig, CompressionSpringResult } from "./types";
 
-/**
- * Wire strength size-effect fit Sut = A/d^m (d in mm), Shigley Table 10-4
- * (ASTM A228/A227/A229/A232/A401 cold-drawn spring wire).
- */
-const WIRE_STRENGTH_FIT: Record<Exclude<SpringWireType, "custom">, { A: number; m: number }> = {
-  music: { A: 2211e6, m: 0.145 },
-  "hard-drawn": { A: 1783e6, m: 0.19 },
-  "oil-tempered": { A: 1855e6, m: 0.187 },
-  "chrome-vanadium": { A: 2005e6, m: 0.168 },
-  "chrome-silicon": { A: 1974e6, m: 0.108 },
-};
+export { wireUltimateStrengthPa } from "../shared/wireStrength";
+export type { SpringWireType } from "../shared/wireStrength";
 
-export function wireUltimateStrengthPa(
-  wireType: SpringWireType | undefined,
-  wireDiameterM: number,
-  fallbackPa: number
-): number {
-  if (!wireType || wireType === "custom") return fallbackPa;
-  const { A, m } = WIRE_STRENGTH_FIT[wireType];
-  const dMm = Math.max(wireDiameterM * 1000, 0.1);
-  return A / Math.pow(dMm, m);
-}
-
-/**
- * Helical compression spring per EN 13906-1 / Shigley Ch. 10:
- *   k = G·d⁴/(8·D³·n), τ = K_w·8·F·D/(π·d³),
- *   static allowable τ_zul = 0.56·Rm (EN 13906-1 cold-coiled),
- *   buckle-proof when L0/D ≤ 2.63/ν (ν = 0.5, guided ends),
- *   surge frequency f = ½·√(k/m_active) for fixed-fixed ends.
- */
 export function solveCompressionSpringEngine(c: CompressionSpringConfig): CompressionSpringResult {
   const d = Math.max(c.wireDiameter, 1e-9);
   const D = Math.max(c.meanDiameter, 1e-9);
   const n = Math.max(c.activeCoils, 1);
-  const G = c.modulus; // shear modulus supplied directly
+  const G = c.modulus;
   const rho = c.density ?? 7850;
+  const endCondition: SpringEndCondition = c.endCondition ?? "guided";
+  const targetSf = c.targetSafetyFactor ?? 1.5;
+  const targetSurgeMargin = c.targetSurgeMargin ?? 10;
 
-  const springRate = (G * d ** 4) / (8 * D ** 3 * n);
-  const solidHeight = n * d + 2 * d; // closed and ground ends
+  const C = springIndex(D, d);
+  const Kw = wahlFactor(C);
+  const springRate = helicalSpringRate(G, d, D, n);
+  const solidHeight = solidHeightCompression(n, d);
+  const freeLength = c.freeLength > 0 ? c.freeLength : solidHeight + c.deflection;
+  const loadedLength = freeLength - c.deflection;
+  const solidHeightClearance = loadedLength - solidHeight;
   const maxLoad = springRate * c.deflection;
-
-  const C = D / d; // spring index
-  const wahlFactor = (4 * C - 1) / (4 * C - 4) + 0.615 / C;
-  const shearStress = (8 * maxLoad * D * wahlFactor) / (Math.PI * d ** 3);
+  const minDeflection = Math.max(c.minDeflection ?? 0, 0);
+  const minLoad = springRate * minDeflection;
+  const shearStress = helicalShearStress(maxLoad, D, d, Kw);
+  const shearStressMin = helicalShearStress(minLoad, D, d, Kw);
 
   const wireUltimate = wireUltimateStrengthPa(c.wireType, d, c.ultimateStrength);
-  const allowableShearStress = 0.56 * wireUltimate;
+  const allowableShearStress = en13906AllowableShear(wireUltimate);
   const safetyFactor = allowableShearStress / Math.max(shearStress, 1e-9);
+  const stressUtilization = shearStress / Math.max(allowableShearStress, 1e-9);
 
-  // Surge frequency: f = ½·√(k/m) with the active-coil wire mass
-  const activeMass = ((Math.PI * d ** 2) / 4) * (Math.PI * D * n) * rho;
-  const naturalFrequency = 0.5 * Math.sqrt(springRate / Math.max(activeMass, 1e-12));
+  const activeMass = activeCoilMass(d, D, n, rho);
+  const naturalFrequency = surgeFrequencyHz(springRate, activeMass);
 
-  // EN 13906-1 buckling screen, seating coefficient ν = 0.5 (both ends guided)
-  const freeLength = c.freeLength > 0 ? c.freeLength : solidHeight + c.deflection;
   const slenderness = freeLength / D;
-  const bucklingRisk = slenderness > 2.63 / 0.5;
+  const bucklingLimit = bucklingSlendernessLimit(endCondition);
+  const bucklingRisk = isBucklingRisk(freeLength, D, endCondition);
+
+  const operatingFrequency = c.operatingFrequencyHz ?? 0;
+  const surgeMargin =
+    operatingFrequency > 0 ? naturalFrequency / operatingFrequency : null;
+
+  const indexInRange = C >= 4 && C <= 12;
+
+  const fatigueEnabled =
+    c.enableFatigueCheck === true || (c.minDeflection != null && c.minDeflection > 0);
+  const fatigue = en13906ShearFatigueCheck({
+    tauMax: shearStress,
+    tauMin: shearStressMin,
+    ultimateStrength: wireUltimate,
+    wireDiameterM: d,
+    staticAllowableShear: allowableShearStress,
+    lifeClass: c.lifeClass,
+    loadCycles: c.loadCycles,
+    wireQuality: c.wireQuality,
+    enabled: fatigueEnabled,
+  });
+
+  const governingSf = fatigue.enabled
+    ? Math.min(safetyFactor, fatigue.fatigueSafetyFactor)
+    : safetyFactor;
+
+  const { designStatus, isSafe, governing } = determineSpringStatus({
+    safetyFactor: governingSf,
+    targetSf,
+    bucklingRisk,
+    solidClearance: solidHeightClearance,
+    surgeMargin,
+    targetSurgeMargin,
+    indexInRange,
+    fatiguePass: fatigue.enabled ? fatigue.fatiguePass : null,
+  });
+
+  let governingFailureMode = governing;
+  if (fatigue.enabled && fatigue.fatigueSafetyFactor < safetyFactor) {
+    governingFailureMode = "Fatigue (EN 13906)";
+  }
 
   return {
     springRate,
     solidHeight,
+    loadedLength,
+    solidHeightClearance,
     maxLoad,
     shearStress,
     allowableShearStress,
     wireUltimateStrength: wireUltimate,
     safetyFactor,
+    stressUtilization,
     naturalFrequency,
+    surgeMargin,
     springIndex: C,
-    wahlFactor,
+    wahlFactor: Kw,
     slenderness,
+    bucklingLimit,
     bucklingRisk,
+    outerDiameter: D + d,
+    designStatus,
+    isSafe: isSafe && (!fatigue.enabled || fatigue.fatiguePass),
+    governingFailureMode,
+    fatigueSafetyFactor: fatigue.enabled ? fatigue.fatigueSafetyFactor : null,
+    fatigueUtilization: fatigue.enabled ? fatigue.fatigueUtilization : null,
+    fatiguePass: fatigue.enabled ? fatigue.fatiguePass : null,
+    lifeClass: fatigue.enabled ? fatigue.lifeClass : null,
   };
 }

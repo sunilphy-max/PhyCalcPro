@@ -54,11 +54,15 @@ Closed-form roll and load transfer (`engine`). Roll angle in degrees compared to
 - Does not compute understeer gradient or tire friction ellipse.
 - Anti-roll bar tuning requires detailed suspension model beyond this screen.
 
+**Verification**
+
+- CI: `suspension-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Gillespie, T. D. *Fundamentals of Vehicle Dynamics*. SAE International.
 2. Milliken, W. F., & Milliken, D. L. *Race Car Vehicle Dynamics*. SAE.
 3. Reimpell, J., et al. *The Automotive Chassis*, 2nd ed. SAE.
 4. ISO 4138:2012. *Passenger cars — Steady-state circular driving behaviour*.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

@@ -10,6 +10,10 @@ import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorTextInputClass } from "@/components/calculator/styles";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 import type { SpringWireType } from "@/lib/springs/compression-springs/types";
+import type { SpringEndCondition } from "@/lib/springs/shared/helicalCommon";
+import type { En13906LifeClass, En13906WireQuality } from "@/lib/springs/shared/en13906Fatigue";
+import SpringFatigueFields from "@/components/springs/shared/SpringFatigueFields";
+import SpringWireCatalogPicker from "@/components/springs/shared/SpringWireCatalogPicker";
 
 type Props = {
   wireDiameter: number;
@@ -46,6 +50,21 @@ type Props = {
   saving?: boolean;
   projectName?: string;
   setProjectName?: Dispatch<SetStateAction<string>>;
+  endCondition?: SpringEndCondition;
+  setEndCondition?: (value: SpringEndCondition) => void;
+  operatingFrequencyHz?: number;
+  setOperatingFrequencyHz?: Dispatch<SetStateAction<number>>;
+  enableFatigueCheck?: boolean;
+  setEnableFatigueCheck?: Dispatch<SetStateAction<boolean>>;
+  lifeClass?: En13906LifeClass;
+  setLifeClass?: (value: En13906LifeClass) => void;
+  wireQuality?: En13906WireQuality;
+  setWireQuality?: (value: En13906WireQuality) => void;
+  minDeflection?: number;
+  setMinDeflection?: Dispatch<SetStateAction<number>>;
+  catalogDesignation?: string;
+  setCatalogDesignation?: Dispatch<SetStateAction<string>>;
+  onCatalogPick?: (entry: { diameterMm: number; tensileStrengthPa: number; shearModulusPa: number }) => void;
 };
 
 export default function CompressionSpringInputs({
@@ -83,6 +102,21 @@ export default function CompressionSpringInputs({
   saving = false,
   projectName,
   setProjectName,
+  endCondition = "guided",
+  setEndCondition,
+  operatingFrequencyHz = 0,
+  setOperatingFrequencyHz,
+  enableFatigueCheck = false,
+  setEnableFatigueCheck,
+  lifeClass = "VL",
+  setLifeClass,
+  wireQuality = 1,
+  setWireQuality,
+  minDeflection = 0,
+  setMinDeflection,
+  catalogDesignation = "",
+  setCatalogDesignation,
+  onCatalogPick,
 }: Props) {
   const isDesignMode = workflowMode === "design";
 
@@ -215,6 +249,14 @@ export default function CompressionSpringInputs({
           <option value="chrome-silicon">Chrome-silicon (A401)</option>
           <option value="custom">Custom (enter Rm below)</option>
         </CalculatorSelectField>
+        {setCatalogDesignation && onCatalogPick ? (
+          <SpringWireCatalogPicker
+            wireType={wireType}
+            catalogDesignation={catalogDesignation}
+            setCatalogDesignation={setCatalogDesignation}
+            onPick={onCatalogPick}
+          />
+        ) : null}
         {wireType === "custom" ? (
           <CalculatorUnitField
             label="Ultimate tensile strength Rm"
@@ -225,7 +267,40 @@ export default function CompressionSpringInputs({
             }
           />
         ) : null}
+        <CalculatorSelectField
+          label="End condition (buckling)"
+          value={endCondition}
+          onChange={(value) => setEndCondition?.(value as SpringEndCondition)}
+        >
+          <option value="guided">Guided (ν = 0.5)</option>
+          <option value="fixed_hinged">Fixed–hinged (ν = 0.707)</option>
+          <option value="hinged">Hinged–hinged (ν = 1.0)</option>
+          <option value="fixed_free">Fixed–free (ν = 2.0)</option>
+        </CalculatorSelectField>
+        <CalculatorNumberField
+          label="Operating frequency (Hz, optional)"
+          value={operatingFrequencyHz}
+          onChange={(value) => setOperatingFrequencyHz?.(value)}
+          min={0}
+          step={1}
+        />
       </div>
+      {setEnableFatigueCheck && setMinDeflection && setLifeClass && setWireQuality ? (
+        <SpringFatigueFields
+          enableFatigueCheck={enableFatigueCheck}
+          setEnableFatigueCheck={setEnableFatigueCheck}
+          lifeClass={lifeClass}
+          setLifeClass={setLifeClass}
+          wireQuality={wireQuality}
+          setWireQuality={setWireQuality}
+          minStrokeLabel="Minimum deflection (fatigue range)"
+          minStroke={minDeflection}
+          setMinStroke={setMinDeflection}
+          minStrokeUnit={
+            <ModuleUnitSelect moduleId="compression-springs" fieldKey="deflection" value={lengthUnit} onChange={setLengthUnit} />
+          }
+        />
+      ) : null}
     </CalculatorInputPanel>
   );
 }

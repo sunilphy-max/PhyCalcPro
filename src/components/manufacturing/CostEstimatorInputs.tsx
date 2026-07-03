@@ -1,8 +1,9 @@
 "use client";
 
-import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
   materialVolume: number;
@@ -58,160 +59,80 @@ export default function CostEstimatorInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Estimate cost" designAware />}
     >
       <div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Material volume</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={materialVolume}
-              min={0}
-              step={0.01}
-              onChange={(e) => setMaterialVolume(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">m³</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Material density</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={materialDensity}
-              min={0}
-              step={10}
-              onChange={(e) => setMaterialDensity(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">kg/m³</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Material cost</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={materialCostPerKg}
-              min={0}
-              step={0.01}
-              onChange={(e) => setMaterialCostPerKg(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">$/kg</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Machining time</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={machiningTime}
-              min={0}
-              step={0.1}
-              onChange={(e) => setMachiningTime(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">h</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Machine rate</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={machineRate}
-              min={0}
-              step={1}
-              onChange={(e) => setMachineRate(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">$/h</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Labor time</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={laborTime}
-              min={0}
-              step={0.1}
-              onChange={(e) => setLaborTime(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">h</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Labor rate</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={laborRate}
-              min={0}
-              step={1}
-              onChange={(e) => setLaborRate(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">$/h</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Finishing markup</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={finishPercent}
-              min={0}
-              max={100}
-              step={1}
-              onChange={(e) => setFinishPercent(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">%</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Overhead markup</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={overheadPercent}
-              min={0}
-              max={100}
-              step={1}
-              onChange={(e) => setOverheadPercent(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">%</span>
-          </div>
-        </label>
-
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Scrap allowance</span>
-          <div className="flex items-center gap-3">
-            <input
-              type="number"
-              value={scrapPercent}
-              min={0}
-              max={90}
-              step={1}
-              onChange={(e) => setScrapPercent(Number(e.target.value))}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-            <span className="text-sm text-slate-500">%</span>
-          </div>
-        </label>
+        <CalculatorNumberField
+          label="Material volume (m³)"
+          value={materialVolume}
+          onChange={setMaterialVolume}
+          min={0}
+          step={0.01}
+        />
+        <CalculatorNumberField
+          label="Material density (kg/m³)"
+          value={materialDensity}
+          onChange={setMaterialDensity}
+          min={0}
+          step={10}
+        />
+        <CalculatorNumberField
+          label="Material cost ($/kg)"
+          value={materialCostPerKg}
+          onChange={setMaterialCostPerKg}
+          min={0}
+          step={0.01}
+        />
+        <CalculatorNumberField
+          label="Machining time (h)"
+          value={machiningTime}
+          onChange={setMachiningTime}
+          min={0}
+          step={0.1}
+        />
+        <CalculatorNumberField
+          label="Machine rate ($/h)"
+          value={machineRate}
+          onChange={setMachineRate}
+          min={0}
+          step={1}
+        />
+        <CalculatorNumberField
+          label="Labor time (h)"
+          value={laborTime}
+          onChange={setLaborTime}
+          min={0}
+          step={0.1}
+        />
+        <CalculatorNumberField
+          label="Labor rate ($/h)"
+          value={laborRate}
+          onChange={setLaborRate}
+          min={0}
+          step={1}
+        />
+        <CalculatorNumberField
+          label="Finishing markup (%)"
+          value={finishPercent}
+          onChange={setFinishPercent}
+          min={0}
+          max={100}
+          step={1}
+        />
+        <CalculatorNumberField
+          label="Overhead markup (%)"
+          value={overheadPercent}
+          onChange={setOverheadPercent}
+          min={0}
+          max={100}
+          step={1}
+        />
+        <CalculatorNumberField
+          label="Scrap allowance (%)"
+          value={scrapPercent}
+          onChange={setScrapPercent}
+          min={0}
+          max={90}
+          step={1}
+        />
       </div>
-
     </CalculatorInputPanel>
   );
 }

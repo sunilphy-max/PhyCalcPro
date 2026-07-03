@@ -3,26 +3,38 @@
 import Link from "next/link";
 import { allModules, categories } from "@/data/modules";
 import EngineeringPlot from "@/components/EngineeringPlot";
+import SiteFooter from "@/components/SiteFooter";
 import {
   ArrowRight,
-  Activity,
-  ShieldCheck,
-  BarChart3,
-  Box,
-  CircleDot,
-  Database,
-  Flame,
-  Gauge,
+  BookOpen,
+  CheckCircle2,
+  FileOutput,
   Layers,
-  Magnet,
-  Orbit,
+  Mail,
+  ShieldCheck,
+  SlidersHorizontal,
   Wrench,
-  Zap,
+  Box,
+  Orbit,
+  Flame,
+  Database,
+  Gauge,
+  CircleDot,
 } from "lucide-react";
 import { isFreeLaunch } from "@/lib/licensing/validationMode";
+import {
+  buildModuleGateSummaries,
+  releaseTierLabel,
+} from "@/lib/qa/maturityGates";
+import { getBenchmarkStatsFromLastRun, getLastVerificationReport } from "@/lib/qa/lastRun";
+import { supportedBenchmarkModules } from "@/lib/qa/benchmarkRunner";
+import type { ReleaseTier } from "@/lib/qa/types";
 
-const demoX = Array.from({ length: 21 }, (_, index) => index * 0.2);
-const demoY = demoX.map((value) => Math.sin(value * 1.3) * 0.15 - 0.1 * value + 0.12);
+const spanM = 4;
+const demoX = Array.from({ length: 41 }, (_, index) => (index / 40) * spanM);
+const demoY = demoX.map((x) => (-4 * x * (spanM - x)) / (spanM * spanM));
+
+const designStandards = ["AISC", "ASME", "AGMA", "EN", "ISO"];
 
 const featuredWorkflowIds = [
   "beams",
@@ -36,57 +48,81 @@ const featuredWorkflowIds = [
 const applicationCards = [
   {
     title: "Mechanical design",
-    description: "Shafts, gears, bearings, flywheels, brakes, clutches and motion hardware.",
+    description: "Shafts, gears, bearings, flywheels, brakes, clutches, and power transmission.",
     href: "/products/machine/shafts",
     icon: Wrench,
   },
   {
     title: "Industrial structures",
-    description: "Beams, frames, trusses, plates, columns and application-based beam presets.",
+    description: "Beams, frames, trusses, plates, columns, and combined loading checks.",
     href: "/products/structural/beams",
     icon: Box,
   },
   {
     title: "Advanced systems",
-    description: "Vacuum, cryogenic, magnetic, superconducting, thermal, battery and hydrogen tools.",
+    description: "Vacuum, cryogenic, magnetic, superconducting, thermal, battery, and hydrogen screening.",
     href: "/products/advanced-systems/vacuum-engineering",
     icon: Orbit,
   },
   {
     title: "Energy and thermal",
-    description: "Heat transfer, battery cooling, hydrogen storage and pressure-system screening.",
+    description: "Heat transfer, battery cooling, hydrogen storage, and pressure-system helpers.",
     href: "/products/advanced-systems/thermal-management",
     icon: Flame,
   },
   {
     title: "Materials and fatigue",
-    description: "Material data, section properties, temperature effects, corrosion and fatigue checks.",
+    description: "Material data, section properties, temperature effects, corrosion, and fatigue.",
     href: "/products/materials/fatigue",
     icon: Database,
   },
   {
     title: "Manufacturing",
-    description: "Tolerances, fits, cost estimates and process planning helpers.",
+    description: "Tolerances, fits, cost estimates, and process planning.",
     href: "/products/manufacturing/tolerance",
     icon: Gauge,
   },
 ];
 
+const workflowSteps = [
+  {
+    step: "01",
+    title: "Set inputs and design standard",
+    description: "Enter geometry, loads, and material data. Choose US, EU, ISO, or indicative defaults per module.",
+    icon: SlidersHorizontal,
+  },
+  {
+    step: "02",
+    title: "Review checks and assumptions",
+    description: "See utilization, margins, warnings, and which code checks are implemented — not hidden behind a single number.",
+    icon: CheckCircle2,
+  },
+  {
+    step: "03",
+    title: "Export a defensible summary",
+    description: "Generate PDF or CSV reports with calculation context suitable for internal review or project records.",
+    icon: FileOutput,
+  },
+];
+
 const platformPillars = [
   {
-    title: "Application-aware calculations",
-    description: "Beam presets now adapt loads, stress limits, deflection targets and notes to the job.",
+    title: "Standards-aware calculations",
+    description:
+      "Modules expose design-code selectors, unit handling, and explicit notes on what is — and is not — implemented for each standard.",
     icon: Layers,
   },
   {
-    title: "Reference-backed reports",
-    description: "Results include assumptions, warnings, standards context and export-ready summaries.",
+    title: "Assumption-backed reports",
+    description:
+      "Results travel with warnings, reference metadata, and export-ready summaries so you can explain the calculation later.",
     icon: ShieldCheck,
   },
   {
-    title: "Advanced systems coverage",
-    description: "Screen vacuum, cryogenic, magnetic, superconducting, thermal, battery and hydrogen systems.",
-    icon: Zap,
+    title: "Transparent module maturity",
+    description:
+      "Release tiers and automated benchmarks are published on the quality dashboard. β modules are labeled until independently verified.",
+    icon: BookOpen,
   },
 ];
 
@@ -94,41 +130,48 @@ function getCategoryRoute(category: (typeof categories)[number]) {
   return category.modules.find((module) => !module.comingSoon)?.route ?? "/products";
 }
 
-function WorkstationPreview() {
-  const previewMetrics = [
-    { label: "Beam preset", value: "Lifting beam", tone: "text-cyan-300" },
-    { label: "Vacuum force", value: "4.05 kN", tone: "text-emerald-300" },
-    { label: "Coil energy", value: "625 J", tone: "text-fuchsia-300" },
-  ];
-
+function ModulePreview() {
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-slate-800 bg-slate-950 p-5 text-white shadow-[0_35px_80px_-35px_rgba(15,23,42,0.9)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.28em] text-cyan-300">Engineering workstation</p>
-          <h2 className="mt-2 text-xl font-semibold">Multi-domain calculation review</h2>
-        </div>
-        <div className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-200">
-          Export ready
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_50px_-20px_rgba(15,23,42,0.15)] dark:border-slate-800 dark:bg-slate-900">
+      <div className="border-b border-slate-200 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/60">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">Beam module</p>
+            <h2 className="mt-1 text-lg font-semibold text-slate-950 dark:text-white">
+              Simply supported — uniform load
+            </h2>
+          </div>
+          <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+            AISC · W12×26
+          </span>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="space-y-3">
-          {previewMetrics.map((metric) => (
-            <div key={metric.label} className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{metric.label}</p>
-              <p className={`mt-2 text-2xl font-semibold ${metric.tone}`}>{metric.value}</p>
-            </div>
-          ))}
+      <div className="grid gap-4 p-5 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+          <div className="rounded-xl border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/30">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Bending stress</p>
+            <p className="mt-1 text-2xl font-semibold text-green-700 dark:text-green-400">142 MPa</p>
+            <p className="mt-1 text-xs text-slate-500">Utilization 0.71</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/40">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Max deflection</p>
+            <p className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">8.4 mm</p>
+            <p className="mt-1 text-xs text-slate-500">L/476 · limit L/360</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/40">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Reaction</p>
+            <p className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">24.5 kN</p>
+            <p className="mt-1 text-xs text-slate-500">Each support</p>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-950/40">
           <EngineeringPlot
-            title="Response envelope"
+            title="Deflection"
             x={demoX}
             y={demoY}
-            yLabel="Response"
+            yLabel="Deflection"
             xLabel="Position"
             xUnit="m"
             unitLabel="mm"
@@ -136,142 +179,179 @@ function WorkstationPreview() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        {[
-          { label: "Vacuum", icon: CircleDot },
-          { label: "Cryogenic", icon: Activity },
-          { label: "Magnetic", icon: Magnet },
-        ].map((item) => {
-          const Icon = item.icon;
-          return (
-            <div key={item.label} className="flex items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/70 px-3 py-2 text-sm text-slate-300">
-              <Icon className="h-4 w-4 text-cyan-300" />
-              {item.label}
-            </div>
-          );
-        })}
+      <div className="border-t border-slate-200 px-5 py-3 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+          <span>Assumptions listed · PDF export available</span>
+          <span className="font-medium text-amber-700 dark:text-amber-400">β — verify against your worksheet</span>
+        </div>
       </div>
     </div>
   );
 }
 
+const releaseTiers: ReleaseTier[] = ["certified", "verified", "beta", "indicative", "draft"];
+
 export default function HomePage() {
   const availableModules = allModules.filter((module) => !module.comingSoon);
   const moduleCount = availableModules.length;
-  const advancedCategory = categories.find((category) => category.id === "advanced-systems");
-  const advancedCount = advancedCategory?.modules.filter((module) => !module.comingSoon).length ?? 0;
   const moduleById = new Map(availableModules.map((module) => [module.id, module]));
   const featuredWorkflows = featuredWorkflowIds
     .map((id) => moduleById.get(id))
     .filter((module): module is NonNullable<typeof module> => Boolean(module));
 
+  const benchmarkStats = getBenchmarkStatsFromLastRun();
+  const gateSummaries = buildModuleGateSummaries(benchmarkStats);
+  const lastVerification = getLastVerificationReport();
+  const ciModuleCount = supportedBenchmarkModules().length;
+  const tierCounts = releaseTiers.reduce(
+    (acc, tier) => {
+      acc[tier] = gateSummaries.filter((row) => row.releaseTier === tier).length;
+      return acc;
+    },
+    {} as Record<ReleaseTier, number>
+  );
+  const benchmarkModuleCount = Object.keys(benchmarkStats).filter(
+    (moduleId) => benchmarkStats[moduleId].total > 0
+  ).length;
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <section className="relative overflow-hidden border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.14),transparent_35%),radial-gradient(circle_at_top_right,_rgba(217,70,239,0.10),transparent_30%),#f8fafc]">
-        <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-white/80 to-transparent pointer-events-none" />
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-          <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+    <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-100">
+      <section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div className="space-y-8">
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-300/80 bg-white/80 px-4 py-1.5 text-sm font-medium text-slate-700 shadow-sm">
-                <BarChart3 className="h-4 w-4 text-slate-900" />
-                Mechanical, industrial and advanced systems
-              </div>
+              <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+                Design-assist for practicing engineers
+              </p>
 
-              <div className="space-y-6">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">PhyCalcPro engineering workspace</p>
-                  <h1 className="mt-4 max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
-                    Size, check and select engineering designs in one workspace.
-                  </h1>
-                </div>
-
-                <p className="max-w-2xl text-base leading-8 text-slate-600">
-                  Move from targets to sized members and drives—not just forward calculations. Compare catalog
-                  candidates, verify stress and deflection or buckling margin, and export assumption-backed
-                  reports across structures, machines, power transmission and advanced systems.
+              <div className="space-y-5">
+                <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl dark:text-white">
+                  Mechanical and structural calculations you can document.
+                </h1>
+                <p className="max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300">
+                  Size members, screen advanced systems, and check utilization — with standards
+                  context, explicit assumptions, and exportable reports. PhyCalcPro is a workspace,
+                  not a black-box solver.
                 </p>
-
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                    <div className="text-3xl font-semibold text-slate-950">{moduleCount}</div>
-                    <p className="mt-1 text-sm text-slate-600">engineering modules</p>
-                  </div>
-                  <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                    <div className="text-3xl font-semibold text-slate-950">{categories.length}</div>
-                    <p className="mt-1 text-sm text-slate-600">engineering categories</p>
-                  </div>
-                  <div className="rounded-3xl border border-slate-200 bg-white/90 p-5 shadow-sm">
-                    <div className="text-3xl font-semibold text-slate-950">{advancedCount}</div>
-                    <p className="mt-1 text-sm text-slate-600">advanced systems tools</p>
-                  </div>
-                </div>
               </div>
 
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <Link href="/products" className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
-                  Open design workspace
+              <div className="flex flex-wrap gap-2">
+                {designStandards.map((standard) => (
+                  <span
+                    key={standard}
+                    className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                  >
+                    {standard}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Link
+                  href="/products"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+                >
+                  Open workspace
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="/products/advanced-systems/vacuum-engineering"
-                  className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+                  href="/documentation"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition hover:border-slate-400 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                 >
-                  Open Advanced Systems
-                  <Orbit className="h-4 w-4" />
+                  Documentation
                 </Link>
                 <Link
-                  href={isFreeLaunch() ? "/documentation" : "/pricing"}
-                  className="inline-flex items-center justify-center rounded-full border border-transparent px-2 py-3 text-sm font-semibold text-slate-700 transition hover:text-slate-950"
+                  href="/trust"
+                  className="inline-flex items-center justify-center px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
                 >
-                  {isFreeLaunch() ? "Read docs" : "View pricing"}
+                  Trust & responsibility
                 </Link>
               </div>
+
               {isFreeLaunch() ? (
-                <p className="text-sm text-slate-600">
-                  Early access: design/check/select workflows, {moduleCount} engineering modules,
-                  standards metadata, PDF/CSV export and no signup required.
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Early access: {moduleCount} modules, all design standards, PDF/CSV export — no signup required.
                 </p>
-              ) : null}
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {moduleCount} engineering modules across {categories.length} disciplines.
+                </p>
+              )}
             </div>
 
-            <WorkstationPreview />
+            <ModulePreview />
           </div>
         </div>
       </section>
 
-      <section className="bg-white py-16">
+      <section className="border-b border-slate-200 bg-slate-50 py-14 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
+          <div className="max-w-2xl">
+            <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+              Workflow
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl dark:text-white">
+              From inputs to a reviewable result
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {workflowSteps.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.step}
+                  className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-semibold tabular-nums text-slate-400">{item.step}</span>
+                    <div className="rounded-lg bg-slate-100 p-2 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-200 bg-white py-14 dark:border-slate-800 dark:bg-slate-950">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Start by application</p>
-              <h2 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
-                Find the right engineering workflow faster.
+              <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+                By application
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl dark:text-white">
+                Start from what you are designing
               </h2>
             </div>
-            <p className="text-base leading-8 text-slate-600">
-              The homepage now routes by what you are designing, not just by formula type.
-              Jump directly into mechanical design, industrial structures, advanced systems,
-              thermal/energy workflows, materials or manufacturing.
+            <p className="text-sm leading-6 text-slate-600 dark:text-slate-400">
+              Route by discipline and job type — mechanical hardware, industrial structures,
+              advanced systems, materials, or manufacturing — rather than hunting for a formula.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {applicationCards.map((item) => {
               const Icon = item.icon;
               return (
                 <Link
                   key={item.title}
                   href={item.href}
-                  className="group rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
+                  className="group rounded-2xl border border-slate-200 bg-slate-50 p-5 transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-950 text-white">
-                    <Icon className="h-5 w-5" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold text-slate-950">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{item.description}</p>
-                  <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-cyan-700">
-                    Open workflow
-                    <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                  <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">{item.title}</h3>
+                  <p className="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.description}</p>
+                  <div className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 group-hover:text-slate-950 dark:text-slate-300 dark:group-hover:text-white">
+                    Open
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </div>
                 </Link>
               );
@@ -280,42 +360,40 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-slate-50 py-16">
+      <section className="border-b border-slate-200 bg-slate-50 py-14 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Featured workflows</p>
-              <h2 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
-                High-value calculators for current engineering work.
+              <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+                Featured modules
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl dark:text-white">
+                Frequently used calculators
               </h2>
             </div>
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-400"
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 transition hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
             >
-              View full catalog
+              Full catalog
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
 
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featuredWorkflows.map((module) => {
               const ModuleIcon = module.icon;
               return (
                 <Link
                   key={module.id}
                   href={module.route}
-                  className="group block overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-950 to-cyan-700 text-white">
-                    {ModuleIcon ? <ModuleIcon className="h-5 w-5" /> : <CircleDot className="h-5 w-5" />}
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+                    {ModuleIcon ? <ModuleIcon className="h-4 w-4" /> : <CircleDot className="h-4 w-4" />}
                   </div>
-                  <h3 className="mt-5 text-xl font-semibold text-slate-950">{module.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{module.description}</p>
-                  <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-slate-950">
-                    <span>Open tool</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
+                  <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">{module.title}</h3>
+                  <p className="mt-1.5 text-sm leading-6 text-slate-600 dark:text-slate-400">{module.description}</p>
                 </Link>
               );
             })}
@@ -323,43 +401,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-slate-200 bg-white py-16">
+      <section className="border-b border-slate-200 bg-white py-14 dark:border-slate-800 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-cyan-600">Full catalog</p>
-              <h2 className="mt-3 text-3xl font-semibold text-slate-950 sm:text-4xl">
-                Browse by engineering discipline.
+              <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+                Catalog
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl dark:text-white">
+                Browse by engineering discipline
               </h2>
             </div>
-            <p className="max-w-xl text-sm leading-6 text-slate-600">
-              Each category opens into focused calculators with unit handling, standards context,
-              assumptions and exportable results.
+            <p className="max-w-md text-sm leading-6 text-slate-600 dark:text-slate-400">
+              {moduleCount} modules with unit handling, standards metadata, and exportable results.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => {
               const Icon = category.icon;
               const categoryRoute = getCategoryRoute(category);
+              const liveCount = category.modules.filter((module) => !module.comingSoon).length;
               return (
                 <Link
                   key={category.id}
                   href={categoryRoute}
-                  className="group block overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-50 p-8 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                  className="group rounded-2xl border border-slate-200 bg-slate-50 p-6 transition hover:border-slate-300 hover:bg-white dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-slate-700 dark:hover:bg-slate-900"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-slate-900 text-white">
-                    <Icon className="h-5 w-5" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <h2 className="mt-6 text-xl font-semibold text-slate-950">{category.title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">{category.description}</p>
-                  <div className="mt-4 inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-500">
-                    {category.modules.length} tools
-                  </div>
-                  <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition group-hover:text-slate-950">
-                    <span>Explore {category.title.split(" ")[0]}</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </div>
+                  <h2 className="mt-4 font-semibold text-slate-950 dark:text-white">{category.title}</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{category.description}</p>
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">{liveCount} modules</p>
                 </Link>
               );
             })}
@@ -367,58 +441,190 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="bg-slate-950 py-16 text-white">
+      <section className="border-b border-slate-200 bg-slate-50 py-14 dark:border-slate-800 dark:bg-slate-900/40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
             <div>
-              <p className="text-sm uppercase tracking-[0.26em] text-cyan-300">Why PhyCalcPro</p>
-              <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">
-                From quick checks to defensible engineering summaries.
-              </h2>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-slate-300">
-                Use PhyCalcPro when you need more than a formula box: assumptions,
-                reference metadata, warnings, units and report-ready outputs stay with the calculation.
+              <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+                Who builds this
               </p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl dark:text-white">
+                A small, engineering-focused team
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                PhyCalcPro is built and maintained by practicing engineers who use these workflows
+                daily. We prioritize transparent methods, readable outputs, and honest maturity labels
+                over marketing claims. If a result looks wrong or a standard check is missing, we
+                want to hear about it — with your worksheet, units, and design code.
+              </p>
+              <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">
+                Contributors can submit benchmark cases through our verification program. Accepted
+                comparisons help modules move from β to verified on the quality dashboard.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-4">
+                <Link
+                  href="/support"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-800 transition hover:text-slate-950 dark:text-slate-200 dark:hover:text-white"
+                >
+                  <Mail className="h-4 w-4" />
+                  Contact support
+                </Link>
+                <Link
+                  href="/trust"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Trust & responsibility
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             </div>
 
-            <div className="grid gap-4">
-              {platformPillars.map((pillar) => {
-                const Icon = pillar.icon;
-                return (
-                  <div key={pillar.title} className="rounded-[1.5rem] border border-slate-800 bg-slate-900 p-5">
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-2xl bg-cyan-400/10 p-3 text-cyan-300">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-white">{pillar.title}</h3>
-                        <p className="mt-2 text-sm leading-6 text-slate-300">{pillar.description}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              <div className="rounded-[1.5rem] border border-cyan-400/30 bg-cyan-400/10 p-5">
-                <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+              <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <h3 className="font-semibold text-white">Ready to explore the new modules?</h3>
-                    <p className="mt-2 text-sm text-cyan-100">
-                      Start with vacuum pump-down, cryogenic heat leak, coil field or battery thermal screening.
+                  <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-500 dark:text-slate-400">
+                    Published quality data
+                  </p>
+                  <h3 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">
+                    Verification and release tiers
+                  </h3>
+                </div>
+                <Link
+                  href="/status"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+                >
+                  Full dashboard
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+
+              {lastVerification ? (
+                <p className="mt-4 text-sm text-emerald-700 dark:text-emerald-400">
+                  Last CI verification: {lastVerification.passed}/{lastVerification.total} benchmark
+                  cases passed
+                  <span className="text-slate-500 dark:text-slate-400">
+                    {" "}
+                    · {new Date(lastVerification.ranAt).toLocaleDateString(undefined, {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </p>
+              ) : (
+                <p className="mt-4 text-sm text-amber-700 dark:text-amber-300">
+                  No committed verification report yet.
+                </p>
+              )}
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Modules in CI
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+                    {ciModuleCount}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">Automated regression solvers</p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/50">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    With benchmarks
+                  </p>
+                  <p className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">
+                    {benchmarkModuleCount}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">Cases in last-run report</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {releaseTiers.map((tier) => (
+                  <div
+                    key={tier}
+                    className="rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-700"
+                  >
+                    <p className="text-xs text-slate-500">{releaseTierLabel(tier)}</p>
+                    <p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-950 dark:text-white">
+                      {tierCounts[tier] ?? 0}
                     </p>
                   </div>
-                  <Link
-                    href="/products/advanced-systems/vacuum-engineering"
-                    className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-50"
-                  >
-                    Open Advanced Systems
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      <section className="bg-slate-900 py-14 text-white dark:bg-slate-900">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.25em] text-slate-400">Why PhyCalcPro</p>
+              <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">
+                Built for engineers who need to show their work
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-300">
+                We do not claim automatic code compliance. Each module states what it checks,
+                what it omits, and its verification status. Review the{" "}
+                <Link href="/trust" className="underline underline-offset-2 hover:text-white">
+                  trust page
+                </Link>{" "}
+                and{" "}
+                <Link href="/status" className="underline underline-offset-2 hover:text-white">
+                  quality dashboard
+                </Link>{" "}
+                before relying on results for project work.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {platformPillars.map((pillar) => {
+                const Icon = pillar.icon;
+                return (
+                  <div
+                    key={pillar.title}
+                    className="rounded-xl border border-slate-700 bg-slate-800/50 p-5"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="rounded-lg bg-slate-700/80 p-2.5 text-slate-200">
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">{pillar.title}</h3>
+                        <p className="mt-1.5 text-sm leading-6 text-slate-300">{pillar.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-10 flex flex-col gap-4 border-t border-slate-700 pt-8 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-400">
+              Questions about methods or verification? We read every message.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+              >
+                Open workspace
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/support"
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-slate-500"
+              >
+                Contact support
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter />
     </div>
   );
 }

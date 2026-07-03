@@ -47,6 +47,7 @@ export function solveVibrationEngine(config: VibrationConfig): VibrationResult {
 
   return {
     ...result,
+    fundamentalFrequency: result.frequencies[0] ?? 0,
     dampedNaturalFrequencies,
     dampingRatio: zeta,
     resonanceNote,

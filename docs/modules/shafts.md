@@ -57,9 +57,19 @@ Fatigue (Indicative/US): modified Goodman on von Mises alternating/mean componen
 - Critical speed: first two lateral modes; gyroscopic/damping omitted
 - DIN 743 influence factors (K₁, K₂, K₃, β, K_V) not yet integrated
 
+**Verification**
+
+- CI: `shafts-indicative-01.json`
+- Vitest: `src/lib/machine/shafts/engine.test.ts`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md) (Machine → shafts)
+
+**Cross-module handoff**
+
+- Publishes alternating/mean stress to **fatigue** module after calculate
+- Receives gear/pulley loads from upstream calculators (manual today)
+
 **References**
 
 1. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 7.
 2. Peterson, R. E. *Stress Concentration Factors*.
 3. DIN 743:2012 (EU target standard — partial integration planned).
-4. PhyCalcPro verification: `src/data/verification/shafts-indicative-01.json`, `src/lib/machine/shafts/engine.test.ts`.

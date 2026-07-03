@@ -28,5 +28,12 @@ export function solveLoadCaseManagerEngine(
     combinedStress,
     safetyFactor,
     designStatus,
+    beamHandoff: {
+      moduleId: "beams",
+      route: "/products/structural/beams",
+      pointLoadN: envelopeShear,
+      momentNm: envelopeMoment,
+      note: "Use envelope shear as equivalent transverse load and envelope moment in Beams (indicative handoff).",
+    },
   };
 }

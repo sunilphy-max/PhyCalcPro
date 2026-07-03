@@ -58,11 +58,15 @@ Closed-form allowance and life equations (`engine`). User supplies corrosion rat
 - Does not select CRA materials or coatings.
 - Inspection interval planning is user responsibility.
 
+**Verification**
+
+- CI: `corrosion-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. ASME B31.3:2022. *Process Piping*, corrosion allowance.
 2. ASME BPVC Section VIII, Division 1, UG-25.
 3. NACE SP0169. *Control of External Corrosion on Underground Pipelines*.
 4. API 570. *Piping Inspection Code*.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.

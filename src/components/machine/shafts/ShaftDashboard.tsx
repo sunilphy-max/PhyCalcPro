@@ -9,7 +9,7 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { BearingSupport, LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
 
 type LayoutPreview = {
@@ -254,7 +254,7 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
         />
         <CalculatorMetricCard
           label="Max bearing slope"
-          value={`${((result.maxSlope || 0) * 1000).toFixed(2)} mrad`}
+          value={`${formatDisplayNumber((result.maxSlope || 0) * 1000)} mrad`}
         />
         <CalculatorMetricCard
           label="Slope utilization"
@@ -263,7 +263,7 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
       </CalculatorMetricGrid>
 
       {result.bearingReactions.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-900">Bearing reactions</h3>
           <ul className="mt-2 space-y-1 text-sm text-slate-700">
             {result.bearingReactions.map((r, i) => (

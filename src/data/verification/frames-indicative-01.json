@@ -1,0 +1,21 @@
+{
+  "id": "frames-indicative-01",
+  "moduleId": "frames",
+  "designCode": "INDICATIVE",
+  "description": "Portal frame — 6 m span, 50 kN roof load",
+  "inputs": {
+    "span": 6,
+    "height": 3,
+    "segments": 4,
+    "A": 0.01,
+    "I": 0.00008,
+    "E": 210000000000,
+    "load": 50000
+  },
+  "expected": {
+    "maxDisplacement": 0.005405659661634178,
+    "maxMoment": 210621.34891131203
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — portal frame FEM v1"
+}

@@ -48,9 +48,9 @@ export default function BoltPatternResults({ result, forceUnit }: Props) {
           value={formatEngineeringValue(result.appliedMoment, "N·m")}
         />
       </CalculatorMetricGrid>
-      <div className="mt-4 rounded-xl border border-slate-200 overflow-hidden">
+      <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-slate-600">
+          <thead className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-3 py-2 text-left">Bolt</th>
               <th className="px-3 py-2 text-right">x (m)</th>

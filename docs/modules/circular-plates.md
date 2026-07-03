@@ -65,11 +65,15 @@ Dual approach: (1) Roark closed-form coefficients for benchmark comparison; (2) 
 - Uniform pressure; no point loads or thermal gradients.
 - Linear elastic, small deflection.
 
+**Verification**
+
+- CI: `circular-plates-indicative-01.json`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md)
+
 **References**
 
 1. Roark, R. J., Young, W. C., & Budynas, R. G. *Formulas for Stress and Strain*, 8th ed., Case 11.
 2. Timoshenko, S., & Woinowsky-Krieger, S. *Theory of Plates and Shells*, 2nd ed.
 3. Ugural, A. C. *Stresses in Plates and Shells*, 4th ed.
 4. ASME BPVC Section VIII, Division 1, UG-34.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
