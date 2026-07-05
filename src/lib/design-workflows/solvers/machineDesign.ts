@@ -405,6 +405,7 @@ export function designPlainBearing(userInputs: ModuleUserInputs): ModuleDesignMo
     const d = dMm / 1000;
     try {
       const res = solvePlainBearingEngine({
+        bearingType: "journal",
         diameter: d,
         length: d * 1.2,
         load,
@@ -501,6 +502,8 @@ export function designMachineModule(moduleId: string, userInputs: ModuleUserInpu
   if (moduleId === "worm-gears") return designWormGear(userInputs);
   if (moduleId === "planetary-gears") return designPlanetaryGear(userInputs);
   if (moduleId === "gear-ratio-design") return designGearRatio(userInputs);
+  if (moduleId === "internal-gears-rack") return designGearModule(userInputs);
+  if (moduleId === "power-screws") return designShaftDiameter(userInputs);
   if (moduleId === "plain-bearings") return designPlainBearing(userInputs);
   if (moduleId === "brakes-clutches") return designBrakesClutches(userInputs);
   if (moduleId === "cams") return designCamProfile(userInputs);

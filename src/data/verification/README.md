@@ -41,7 +41,7 @@ npx tsx scripts/bootstrap-verification.ts
 
 to generate JSON from seeds in `src/lib/qa/verificationSeeds.ts` (skips existing files).
 
-**Modules with committed CI cases (24):** beams, bearings, bevel-gears, circular-plates, columns, combined-loading, compression-springs (×2), corrosion, extension-springs, fatigue, gears, hydraulics, impact, keys-splines, pipes, rivets, rotation, shafts, suspension, timing-belts, torsion-springs, unit-converter, v-belts.
+**Modules with committed CI cases (38 cases, 34 modules):** includes shells, internal-gears-rack (×2), power-screws (×2), plain-bearings (×2), tolerance (3D), plus beams, bearings, bevel-gears, bolts, circular-plates, columns, combined-loading, compression-springs (×2), corrosion, extension-springs, fatigue, frames, gears, hydraulics, impact, keys-splines, pipes, rivets, rotation, shafts, suspension, timing-belts, torsion-springs, trusses, unit-converter, v-belts, vessels, vibrations, welds.
 
 ## After you verify against a standard
 

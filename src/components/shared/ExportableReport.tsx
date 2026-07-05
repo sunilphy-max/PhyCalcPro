@@ -8,6 +8,7 @@ import { buildCsvRowsFromResult, mergeCsvRows, type CsvRow } from "@/lib/export/
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { ReportMeta } from "@/lib/export/structuredReport";
+import type { ReportRow } from "@/lib/export/reportPayload";
 
 type Props = {
   fileName: string;
@@ -16,6 +17,7 @@ type Props = {
   title?: string;
   description?: string;
   csvRows?: CsvRow[];
+  inputRows?: ReportRow[];
   calculationSpec?: CalculationSpec | null;
   result?: Record<string, unknown> | null;
   qualityOverrides?: Partial<ModuleQualityChecklist>;
@@ -32,6 +34,7 @@ export default function ExportableReport({
   title,
   description,
   csvRows,
+  inputRows,
   calculationSpec,
   result,
   qualityOverrides,
@@ -61,6 +64,10 @@ export default function ExportableReport({
     () => JSON.stringify(reportMeta ?? null),
     [reportMeta]
   );
+  const inputRowsKey = useMemo(
+    () => JSON.stringify(inputRows ?? null),
+    [inputRows]
+  );
 
   useEffect(() => {
     if (!registerReport || !moduleId) return;
@@ -71,6 +78,7 @@ export default function ExportableReport({
       title,
       description,
       csvRows: mergedCsv,
+      inputRows,
       calculationSpec,
       reportMeta,
       qualityOverrides,
@@ -86,6 +94,7 @@ export default function ExportableReport({
     title,
     description,
     mergedCsvKey,
+    inputRowsKey,
     calculationSpecKey,
     reportMetaKey,
     qualityOverridesKey,
@@ -93,8 +102,8 @@ export default function ExportableReport({
   ]);
 
   return (
-    <div className={className}>
-      <div ref={reportRef} className="space-y-6 export-report-content">
+    <div className={`min-w-0 ${className}`.trim()}>
+      <div ref={reportRef} className="min-w-0 space-y-6 export-report-content">
         {calculationSpec ? (
           <>
             <EngineeringChecksPanel spec={calculationSpec} />

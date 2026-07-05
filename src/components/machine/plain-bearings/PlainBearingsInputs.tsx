@@ -6,8 +6,11 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
+import type { PlainBearingType } from "@/lib/machine/plain-bearings/types";
 
 type Props = {
+  bearingType: PlainBearingType;
+  setBearingType: Dispatch<SetStateAction<PlainBearingType>>;
   load: number;
   setLoad: Dispatch<SetStateAction<number>>;
   loadUnit: string;
@@ -22,88 +25,90 @@ type Props = {
   setClearance: Dispatch<SetStateAction<number>>;
   viscosity: number;
   setViscosity: Dispatch<SetStateAction<number>>;
+  padDiameterRatio: number;
+  setPadDiameterRatio: Dispatch<SetStateAction<number>>;
+  padCount: number;
+  setPadCount: Dispatch<SetStateAction<number>>;
   lengthUnit: string;
   setLengthUnit: Dispatch<SetStateAction<string>>;
   onCalculate: () => void;
 };
 
-export default function PlainBearingsInputs({
-  load,
-  setLoad,
-  loadUnit,
-  setLoadUnit,
-  speed,
-  setSpeed,
-  diameter,
-  setDiameter,
-  length,
-  setLength,
-  clearance,
-  setClearance,
-  viscosity,
-  setViscosity,
-  lengthUnit,
-  setLengthUnit,
-  onCalculate,
-}: Props) {
+export default function PlainBearingsInputs(props: Props) {
+  const isJournal = props.bearingType === "journal";
+
   return (
     <CalculatorInputPanel
-      title="Plain journal bearing"
-      description="Screen Sommerfeld number, eccentricity and minimum film thickness for hydrodynamic lubrication."
-      footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate bearing" designAware />}
+      title="Plain bearing"
+      description="Hydrodynamic journal, thrust pad and tilting-pad thrust screening."
+      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate bearing" designAware />}
     >
-      <div className={`${calculatorInputGridClass}`}>
+      <label className="space-y-2 text-sm text-slate-700 block">
+        <span>Bearing type</span>
+        <select
+          value={props.bearingType}
+          onChange={(e) => props.setBearingType(e.target.value as PlainBearingType)}
+          className={calculatorNumberInputClass}
+        >
+          <option value="journal">Journal (radial)</option>
+          <option value="thrust_pad">Thrust pad (flat)</option>
+          <option value="tilting_pad">Tilting-pad thrust</option>
+        </select>
+      </label>
+      <div className={calculatorInputGridClass}>
         <CalculatorUnitField
-          label="Radial load"
-          value={load}
-          onChange={setLoad}
+          label={isJournal ? "Radial load" : "Axial thrust load"}
+          value={props.load}
+          onChange={props.setLoad}
           unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="load" value={loadUnit} onChange={setLoadUnit} />
+            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="load" value={props.loadUnit} onChange={props.setLoadUnit} />
           }
         />
         <label className="space-y-2 text-sm text-slate-700">
-          <span>Journal speed (rpm)</span>
-          <input
-            type="number"
-            value={speed}
-            onChange={(e) => setSpeed(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
+          <span>Shaft speed (rpm)</span>
+          <input type="number" value={props.speed} onChange={(e) => props.setSpeed(Number(e.target.value))} className={calculatorNumberInputClass} />
         </label>
         <CalculatorUnitField
-          label="Journal diameter"
-          value={diameter}
-          onChange={setDiameter}
+          label={isJournal ? "Journal diameter" : "Pad outer diameter"}
+          value={props.diameter}
+          onChange={props.setDiameter}
           unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="diameter" value={lengthUnit} onChange={setLengthUnit} />
+            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="diameter" value={props.lengthUnit} onChange={props.setLengthUnit} />
           }
         />
+        {isJournal ? (
+          <CalculatorUnitField
+            label="Bearing length"
+            value={props.length}
+            onChange={props.setLength}
+            unit={
+              <ModuleUnitSelect moduleId="plain-bearings" fieldKey="length" value={props.lengthUnit} onChange={props.setLengthUnit} />
+            }
+          />
+        ) : (
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Outer / inner diameter ratio</span>
+            <input type="number" step="0.1" value={props.padDiameterRatio} onChange={(e) => props.setPadDiameterRatio(Number(e.target.value))} className={calculatorNumberInputClass} />
+          </label>
+        )}
         <CalculatorUnitField
-          label="Bearing length"
-          value={length}
-          onChange={setLength}
+          label="Clearance / film gap"
+          value={props.clearance}
+          onChange={props.setClearance}
           unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="length" value={lengthUnit} onChange={setLengthUnit} />
-          }
-        />
-        <CalculatorUnitField
-          label="Radial clearance"
-          value={clearance}
-          onChange={setClearance}
-          unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="clearance" value={lengthUnit} onChange={setLengthUnit} />
+            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="clearance" value={props.lengthUnit} onChange={props.setLengthUnit} />
           }
         />
         <label className="space-y-2 text-sm text-slate-700">
           <span>Dynamic viscosity (Pa·s)</span>
-          <input
-            type="number"
-            step="0.001"
-            value={viscosity}
-            onChange={(e) => setViscosity(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
+          <input type="number" step="0.001" value={props.viscosity} onChange={(e) => props.setViscosity(Number(e.target.value))} className={calculatorNumberInputClass} />
         </label>
+        {props.bearingType === "tilting_pad" ? (
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Number of pads</span>
+            <input type="number" min={3} value={props.padCount} onChange={(e) => props.setPadCount(Number(e.target.value))} className={calculatorNumberInputClass} />
+          </label>
+        ) : null}
       </div>
     </CalculatorInputPanel>
   );

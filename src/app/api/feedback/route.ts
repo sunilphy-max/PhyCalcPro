@@ -4,20 +4,21 @@ import { isRateLimited } from "@/lib/feedback/rateLimit";
 import { storeFeedback } from "@/lib/feedback/store";
 import { validateFeedbackPayload } from "@/lib/feedback/validate";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
+import { SUPPORT_EMAIL } from "@/lib/site/supportEmail";
 
 export const runtime = "nodejs";
 
 function userFacingError(emailConfigured: boolean, emailError?: string): string {
   if (!emailConfigured) {
-    return "Feedback email is not configured on this site yet. Please email support@phycalcpro.com directly.";
+    return `Feedback email is not configured on this site yet. Please email ${SUPPORT_EMAIL} directly.`;
   }
 
   const lower = (emailError ?? "").toLowerCase();
   if (lower.includes("domain") || lower.includes("verify") || lower.includes("from")) {
-    return "Feedback email could not be sent (sender domain not verified in Resend). Please email support@phycalcpro.com directly.";
+    return `Feedback email could not be sent (sender domain not verified in Resend). Please email ${SUPPORT_EMAIL} directly.`;
   }
 
-  return "We could not deliver your message right now. Please email support@phycalcpro.com directly.";
+  return `We could not deliver your message right now. Please email ${SUPPORT_EMAIL} directly.`;
 }
 
 export async function POST(request: Request) {

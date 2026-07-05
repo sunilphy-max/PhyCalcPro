@@ -23,9 +23,9 @@ const REQUIRED_SECTIONS = [
 ];
 
 const allModuleIds = [
-  "beams", "frames", "trusses", "columns", "plates", "combined-loading", "load-case-manager", "circular-plates",
+  "beams", "frames", "trusses", "columns", "plates", "combined-loading", "load-case-manager", "circular-plates", "shells",
   "v-belts", "timing-belts", "roller-chains", "multi-pulley",
-  "shafts", "gears", "bearings", "cams", "flywheels", "bevel-gears", "worm-gears", "planetary-gears", "gear-ratio-design", "plain-bearings", "brakes-clutches",
+  "shafts", "gears", "internal-gears-rack", "bearings", "cams", "flywheels", "bevel-gears", "worm-gears", "planetary-gears", "gear-ratio-design", "plain-bearings", "brakes-clutches", "power-screws",
   "compression-springs", "extension-springs", "torsion-springs",
   "bolts", "welds", "rivets", "safety-factor", "keys-splines", "shaft-hubs", "pins",
   "material-db", "sections", "rolled-sections", "profiles", "composites", "temperature-properties", "fatigue", "corrosion",

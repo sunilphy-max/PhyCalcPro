@@ -1,4 +1,6 @@
-const DEFAULT_NOTIFY_EMAIL = "support@phycalcpro.com";
+import { SUPPORT_EMAIL } from "@/lib/site/supportEmail";
+
+const DEFAULT_NOTIFY_EMAIL = SUPPORT_EMAIL;
 
 export type FeedbackEmailResult = {
   sent: boolean;

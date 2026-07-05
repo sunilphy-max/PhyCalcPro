@@ -2,13 +2,12 @@ import Link from "next/link";
 import { Mail } from "lucide-react";
 import FeedbackForm from "@/components/feedback/FeedbackForm";
 import { isMonetizationEnabled } from "@/lib/licensing/validationMode";
+import { SUPPORT_EMAIL } from "@/lib/site/supportEmail";
 
 export const metadata = {
   title: "Support — PhyCalcPro",
   description: "Contact PhyCalcPro for help, feedback, verification benchmarks, and engineering questions.",
 };
-
-const SUPPORT_EMAIL = "support@phycalcpro.com";
 
 export default function SupportPage() {
   return (

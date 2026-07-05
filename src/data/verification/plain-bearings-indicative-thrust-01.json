@@ -1,0 +1,23 @@
+{
+  "id": "plain-bearings-indicative-thrust-01",
+  "moduleId": "plain-bearings",
+  "designCode": "INDICATIVE",
+  "description": "Flat thrust pad — 50 kN axial, 120 mm OD, 900 rpm",
+  "inputs": {
+    "bearingType": "thrust_pad",
+    "load": 50000,
+    "speed": 900,
+    "diameter": 0.12,
+    "length": 0.04,
+    "clearance": 0.0001,
+    "viscosity": 0.03,
+    "padDiameterRatio": 2
+  },
+  "expected": {
+    "unitLoad": 5894627.521922049,
+    "minFilmThickness": 0.000001,
+    "powerLoss": 45.772240792375584
+  },
+  "tolerancePercent": 3,
+  "source": "PhyCalcPro regression — thrust pad unit load v1"
+}

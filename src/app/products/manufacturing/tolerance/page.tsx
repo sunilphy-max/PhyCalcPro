@@ -23,6 +23,7 @@ export default function Page() {
   const [toleranceUnit, setToleranceUnit] = useState("mm");
   const [tolerances, setTolerances] = useState([0.05, 0.02, 0.01]);
   const [tolerancesY, setTolerancesY] = useState<number[]>([]);
+  const [tolerancesZ, setTolerancesZ] = useState<number[]>([]);
   const [monteCarloSamples, setMonteCarloSamples] = useState(1000);
   const [result, setResult] = useState<WithCalculationSpec<ToleranceResult> | null>(null);
 
@@ -31,6 +32,9 @@ export default function Page() {
       tolerances: tolerances.map((value) => toBase(value, "length", toleranceUnit)),
       ...(tolerancesY.length
         ? { tolerancesY: tolerancesY.map((value) => toBase(value, "length", toleranceUnit)) }
+        : {}),
+      ...(tolerancesZ.length
+        ? { tolerancesZ: tolerancesZ.map((value) => toBase(value, "length", toleranceUnit)) }
         : {}),
       ...(monteCarloSamples > 0 ? { monteCarloSamples } : {}),
     };
@@ -45,6 +49,10 @@ export default function Page() {
         totalTolerance: fromBase(raw.totalTolerance, "length", toleranceUnit),
         worstCaseY: raw.worstCaseY !== undefined ? fromBase(raw.worstCaseY, "length", toleranceUnit) : undefined,
         rssY: raw.rssY !== undefined ? fromBase(raw.rssY, "length", toleranceUnit) : undefined,
+        worstCaseZ: raw.worstCaseZ !== undefined ? fromBase(raw.worstCaseZ, "length", toleranceUnit) : undefined,
+        rssZ: raw.rssZ !== undefined ? fromBase(raw.rssZ, "length", toleranceUnit) : undefined,
+        worstCase3d: raw.worstCase3d !== undefined ? fromBase(raw.worstCase3d, "length", toleranceUnit) : undefined,
+        rss3d: raw.rss3d !== undefined ? fromBase(raw.rss3d, "length", toleranceUnit) : undefined,
         monteCarloMean:
           raw.monteCarloMean !== undefined ? fromBase(raw.monteCarloMean, "length", toleranceUnit) : undefined,
         monteCarloStdDev:
@@ -88,6 +96,8 @@ export default function Page() {
           setTolerances={setTolerances}
           tolerancesY={tolerancesY}
           setTolerancesY={setTolerancesY}
+          tolerancesZ={tolerancesZ}
+          setTolerancesZ={setTolerancesZ}
           toleranceUnit={toleranceUnit}
           setToleranceUnit={setToleranceUnit}
           monteCarloSamples={monteCarloSamples}

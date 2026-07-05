@@ -65,7 +65,7 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     },
     limitations: [
       "1D beam model for mechanical and industrial structures; not a building-code design check.",
-      "Application presets adjust load factor, allowable stress target, and deflection target but do not implement full standard clauses.",
+      "Application presets adjust load factor, allowable stress target, deflection target, and service factors by module; they do not implement full standard clauses.",
       "LTB uses simplified unbraced length = span unless overridden.",
       "Shear check uses rectangular-web estimate from I and c.",
     ],
@@ -527,12 +527,24 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("energy", "Energy per stop", "other"),
   ]),
   "plain-bearings": withCodeChecks("plain-bearings", "Plain Bearings", [
-    genericIndicativeCheck("sommerfeld", "Sommerfeld number screening", "other"),
+    genericIndicativeCheck("sommerfeld", "Sommerfeld / film factor screening", "other"),
     genericIndicativeCheck("film_thickness", "Minimum film thickness", "other"),
+    genericIndicativeCheck("unit_load", "Thrust unit load", "stress"),
   ]),
   "circular-plates": withCodeChecks("circular-plates", "Circular Plates", [
     genericIndicativeCheck("deflection", "Plate deflection", "deflection"),
     genericIndicativeCheck("stress", "Plate bending stress", "stress"),
+  ]),
+  shells: withCodeChecks("shells", "Cylindrical Shells", [
+    genericIndicativeCheck("hoop_stress", "Hoop stress", "stress"),
+    genericIndicativeCheck("von_mises", "von Mises stress", "stress"),
+    genericIndicativeCheck("safety_factor", "Stress safety factor", "safety_factor"),
+  ]),
+  "internal-gears-rack": withCodeChecks("internal-gears-rack", "Internal Gears & Rack", gearChecks),
+  "power-screws": withCodeChecks("power-screws", "Power & Ball Screws", [
+    genericIndicativeCheck("efficiency", "Drive efficiency", "other"),
+    genericIndicativeCheck("safety_factor", "Thread safety factor", "safety_factor"),
+    genericIndicativeCheck("torque", "Required torque", "other"),
   ]),
   "rolled-sections": withCodeChecks("rolled-sections", "Rolled Sections", [
     genericIndicativeCheck("area", "Section area lookup", "other"),

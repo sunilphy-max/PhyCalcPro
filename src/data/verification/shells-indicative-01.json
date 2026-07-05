@@ -1,0 +1,25 @@
+{
+  "id": "shells-indicative-01",
+  "moduleId": "shells",
+  "designCode": "INDICATIVE",
+  "description": "Closed thin cylinder — 0.5 MPa internal, r=500 mm, t=10 mm",
+  "inputs": {
+    "radius": 0.5,
+    "thickness": 0.01,
+    "length": 2,
+    "internalPressure": 500000,
+    "axialForce": 0,
+    "bendingMoment": 0,
+    "modulus": 210000000000,
+    "poisson": 0.3,
+    "endCondition": "closed",
+    "allowableStress": 170000000
+  },
+  "expected": {
+    "hoopStress": 25000000,
+    "vonMisesStress": 21650635.094610967,
+    "safetyFactor": 7.85196366097891
+  },
+  "tolerancePercent": 2,
+  "source": "Thin-shell membrane: σ_h = pr/t, von Mises screening — PhyCalcPro regression v1"
+}

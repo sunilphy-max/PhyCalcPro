@@ -42,7 +42,7 @@ export default function DesignModeToggle({ workflow, compact = false }: Props) {
         </span>
       </div>
 
-      <div className={`mt-3 grid gap-2 ${compact ? "grid-cols-3" : "sm:grid-cols-3"}`}>
+      <div className={`mt-3 grid gap-2 ${compact ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-3"}`}>
         {workflow.modes.map((item) => {
           const Icon = modeIcons[item.id];
           const active = mode === item.id;

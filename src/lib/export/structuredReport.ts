@@ -1,34 +1,24 @@
-import type { CalculationSpec, EngineeringCheckStatus } from "@/lib/standards/types";
-import type { CsvRow } from "@/lib/export/csvRows";
+import type { EngineeringCheckStatus } from "@/lib/standards/types";
+import {
+  formatCheckSummaryText,
+  formatReportValue,
+  type ReportPayload,
+  type ReportRow,
+  sanitizeReportFileName,
+} from "@/lib/export/reportPayload";
+import {
+  formatReportFooterLeft,
+  formatReportFooterRight,
+} from "@/lib/site/reportBrand";
+import type { ReportChartImage } from "@/lib/export/structuredReportTypes";
 
-export type ReportMeta = {
-  project?: string;
-  engineer?: string;
-  revision?: string;
-  notes?: string;
-};
-
-export type ReportChartImage = {
-  dataUrl: string;
-  widthPx: number;
-  heightPx: number;
-  caption?: string;
-};
-
-export type StructuredReportOptions = {
-  fileName: string;
-  moduleTitle: string;
-  meta?: ReportMeta;
-  spec?: CalculationSpec | null;
-  /** Result rows (typically { metric, value } or richer objects) */
-  resultRows?: CsvRow[];
-  chartImages?: ReportChartImage[];
-};
+export type { ReportChartImage, ReportMeta } from "@/lib/export/structuredReportTypes";
 
 const PAGE_W = 210;
 const PAGE_H = 297;
 const MARGIN = 15;
 const CONTENT_W = PAGE_W - 2 * MARGIN;
+const FOOTER_Y = PAGE_H - 7;
 
 const STATUS_LABEL: Record<EngineeringCheckStatus, string> = {
   pass: "PASS",
@@ -46,38 +36,30 @@ const STATUS_COLOR: Record<EngineeringCheckStatus, [number, number, number]> = {
   indicative: [70, 100, 180],
 };
 
-function formatCell(value: unknown): string {
-  if (value == null) return "";
-  if (typeof value === "number") {
-    if (!Number.isFinite(value)) return String(value);
-    const abs = Math.abs(value);
-    if (abs !== 0 && (abs >= 1e5 || abs < 1e-3)) return value.toExponential(4);
-    return Number(value.toPrecision(6)).toString();
-  }
-  return String(value);
-}
-
 type Doc = import("jspdf").jsPDF;
 
 class ReportWriter {
   y = MARGIN;
+  sectionNumber = 0;
 
   constructor(private doc: Doc) {}
 
   ensureSpace(height: number) {
-    if (this.y + height > PAGE_H - MARGIN - 8) {
+    if (this.y + height > PAGE_H - MARGIN - 12) {
       this.doc.addPage();
       this.y = MARGIN;
     }
   }
 
   sectionTitle(text: string) {
+    this.sectionNumber += 1;
+    const title = `${this.sectionNumber}. ${text}`;
     this.ensureSpace(12);
     this.y += 4;
     this.doc.setFont("helvetica", "bold");
     this.doc.setFontSize(11);
     this.doc.setTextColor(20, 20, 20);
-    this.doc.text(text, MARGIN, this.y);
+    this.doc.text(title, MARGIN, this.y);
     this.y += 1.5;
     this.doc.setDrawColor(60, 60, 60);
     this.doc.setLineWidth(0.4);
@@ -117,9 +99,22 @@ class ReportWriter {
     this.y += 1;
   }
 
-  table(headers: string[], rows: string[][], columnWidths?: number[], statusColumn?: number, statuses?: EngineeringCheckStatus[]) {
-    const widths =
-      columnWidths ?? headers.map(() => CONTENT_W / headers.length);
+  dataTable(rows: ReportRow[]) {
+    this.table(
+      ["Parameter", "Value", "Unit", "Notes"],
+      rows.map((row) => [row.parameter, row.value, row.unit ?? "", row.notes ?? ""]),
+      [CONTENT_W * 0.35, CONTENT_W * 0.3, CONTENT_W * 0.12, CONTENT_W * 0.23]
+    );
+  }
+
+  table(
+    headers: string[],
+    rows: string[][],
+    columnWidths?: number[],
+    statusColumn?: number,
+    statuses?: EngineeringCheckStatus[]
+  ) {
+    const widths = columnWidths ?? headers.map(() => CONTENT_W / headers.length);
     const rowHeight = 6;
 
     const drawHeader = () => {
@@ -142,14 +137,13 @@ class ReportWriter {
     this.doc.setFontSize(8);
 
     rows.forEach((row, rowIdx) => {
-      // Measure wrapped height for the row
       const cellLines = row.map((cell, i) =>
         this.doc.splitTextToSize(cell, widths[i]! - 4) as string[]
       );
       const lineCount = Math.max(1, ...cellLines.map((l) => l.length));
       const h = lineCount * 3.8 + 2.2;
 
-      if (this.y + h > PAGE_H - MARGIN - 8) {
+      if (this.y + h > PAGE_H - MARGIN - 12) {
         this.doc.addPage();
         this.y = MARGIN;
         drawHeader();
@@ -199,87 +193,127 @@ class ReportWriter {
   }
 }
 
-function drawTitleBlock(doc: Doc, writer: ReportWriter, options: StructuredReportOptions) {
-  const { moduleTitle, meta, spec } = options;
-  const boxH = 30;
+async function loadLogoDataUrl(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const response = await fetch("/phycalcpro-logo.png");
+    if (!response.ok) return null;
+    const blob = await response.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : null);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
+function drawTitleBlock(
+  doc: Doc,
+  writer: ReportWriter,
+  payload: ReportPayload,
+  logoDataUrl: string | null
+) {
+  const { moduleTitle, meta, spec, productName, tagline, siteUrl, generatedAt } = payload;
+  const boxH = logoDataUrl ? 38 : 32;
+
   doc.setDrawColor(35, 45, 60);
   doc.setLineWidth(0.5);
   doc.rect(MARGIN, writer.y - 4, CONTENT_W, boxH);
 
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, "PNG", MARGIN + 3, writer.y - 1, 14, 14);
+  }
+
+  const titleX = logoDataUrl ? MARGIN + 20 : MARGIN + 4;
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(15);
+  doc.setFontSize(14);
   doc.setTextColor(20, 20, 20);
-  doc.text(moduleTitle, MARGIN + 4, writer.y + 3);
+  doc.text(moduleTitle, titleX, writer.y + 4);
 
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(90, 90, 90);
+  doc.text(`${productName} — ${tagline}`, titleX, writer.y + 9);
+  doc.text(siteUrl, titleX, writer.y + 13);
+
   doc.setFontSize(8.5);
   doc.setTextColor(70, 70, 70);
   const left = [
-    `Project: ${meta?.project ?? "—"}`,
-    `Engineer: ${meta?.engineer ?? "—"}`,
-    `Revision: ${meta?.revision ?? "A"}`,
+    `Project: ${meta.project ?? "—"}`,
+    `Engineer: ${meta.engineer ?? "—"}`,
+    `Revision: ${meta.revision ?? "A"}`,
   ];
   const right = [
-    `Date: ${new Date().toISOString().slice(0, 10)}`,
+    `Date: ${generatedAt.isoDate} (${generatedAt.local})`,
     `Design code: ${spec?.designCode ?? "—"}`,
-    `Engine: PhyCalcPro ${spec?.engineVersion ?? ""} (${spec?.validationStatus ?? "indicative"})`,
+    `Engine: ${productName} ${spec?.engineVersion ?? ""} (${spec?.validationStatus ?? "indicative"})`,
   ];
-  left.forEach((line, i) => doc.text(line, MARGIN + 4, writer.y + 10 + i * 4.5));
-  right.forEach((line, i) => doc.text(line, MARGIN + CONTENT_W / 2 + 4, writer.y + 10 + i * 4.5));
+  left.forEach((line, i) => doc.text(line, MARGIN + 4, writer.y + 19 + i * 4.5));
+  right.forEach((line, i) =>
+    doc.text(line, MARGIN + CONTENT_W / 2 + 4, writer.y + 19 + i * 4.5)
+  );
 
-  writer.y += boxH + 4;
+  writer.y += boxH + 3;
+  writer.paragraph(payload.disclaimer, { size: 7.5, color: [110, 110, 110] });
+  writer.y += 1;
 }
 
-function addFooters(doc: Doc) {
+function addFooters(doc: Doc, payload: ReportPayload) {
   const pageCount = doc.getNumberOfPages();
+  const footerLeft = formatReportFooterLeft(payload.siteUrl);
   for (let i = 1; i <= pageCount; i += 1) {
     doc.setPage(i);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     doc.setTextColor(130, 130, 130);
-    doc.text(
-      `Generated by PhyCalcPro — ${new Date().toISOString().replace("T", " ").slice(0, 16)} UTC`,
-      MARGIN,
-      PAGE_H - 7
-    );
-    doc.text(`Page ${i} of ${pageCount}`, PAGE_W - MARGIN, PAGE_H - 7, { align: "right" });
+    const leftLines = doc.splitTextToSize(footerLeft, CONTENT_W * 0.62) as string[];
+    leftLines.forEach((line, idx) => {
+      doc.text(line, MARGIN, FOOTER_Y - (leftLines.length - 1 - idx) * 3.2);
+    });
+    doc.text(formatReportFooterRight(i, pageCount), PAGE_W - MARGIN, FOOTER_Y, { align: "right" });
   }
 }
 
 /**
- * Structured calculation report: title block, method, results tables,
- * pass/fail code checks with clause references, key formulas, assumptions
- * and vector-quality chart snapshots — replaces the screenshot pipeline.
+ * Structured calculation report: title block, inputs, method, results,
+ * engineering checks, formulas, standards, charts, assumptions/limitations.
  */
-export async function generateStructuredReportPdf(options: StructuredReportOptions): Promise<void> {
+export async function generateStructuredReportPdf(payload: ReportPayload): Promise<void> {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const writer = new ReportWriter(doc);
+  const logoDataUrl = await loadLogoDataUrl();
 
-  drawTitleBlock(doc, writer, options);
+  drawTitleBlock(doc, writer, payload, logoDataUrl);
 
-  const spec = options.spec ?? null;
+  const spec = payload.spec;
+
+  if (payload.inputRows.length > 0) {
+    writer.sectionTitle("Input parameters");
+    writer.dataTable(payload.inputRows);
+  }
 
   if (spec?.method) {
     writer.sectionTitle("Method");
     writer.paragraph(spec.method);
   }
 
-  if (options.resultRows && options.resultRows.length > 0) {
+  if (payload.resultRows.length > 0) {
     writer.sectionTitle("Results");
-    const headers = Object.keys(options.resultRows[0]!);
-    const rows = options.resultRows.map((row) => headers.map((h) => formatCell(row[h])));
-    const firstColW = CONTENT_W * 0.45;
-    const restW = (CONTENT_W - firstColW) / Math.max(headers.length - 1, 1);
-    writer.table(
-      headers.map((h) => h.charAt(0).toUpperCase() + h.slice(1)),
-      rows,
-      [firstColW, ...headers.slice(1).map(() => restW)]
-    );
+    writer.dataTable(payload.resultRows);
   }
 
   if (spec && spec.checks.length > 0) {
     writer.sectionTitle(`Engineering checks (${spec.designCode})`);
+    if (payload.checkSummary) {
+      writer.paragraph(formatCheckSummaryText(payload.checkSummary), {
+        size: 8.5,
+        color: [60, 60, 60],
+      });
+    }
     const headers = ["Check", "Status", "Value", "Limit", "Unit", "Reference"];
     const widths = [
       CONTENT_W * 0.26,
@@ -292,8 +326,8 @@ export async function generateStructuredReportPdf(options: StructuredReportOptio
     const rows = spec.checks.map((check) => [
       check.label,
       STATUS_LABEL[check.status],
-      check.value != null ? formatCell(check.value) : "—",
-      check.limit != null ? formatCell(check.limit) : "—",
+      check.value != null ? formatReportValue(check.value) : "—",
+      check.limit != null ? formatReportValue(check.limit) : "—",
       check.unit ?? "",
       check.standardRef
         ? `${check.standardRef.document}${check.standardRef.clause ? ` ${check.standardRef.clause}` : ""}`
@@ -322,27 +356,34 @@ export async function generateStructuredReportPdf(options: StructuredReportOptio
     );
   }
 
-  if (options.chartImages && options.chartImages.length > 0) {
-    writer.sectionTitle("Charts");
-    for (const img of options.chartImages) {
+  if (payload.chartImages.length > 0) {
+    writer.sectionTitle("Charts & diagrams");
+    for (const img of payload.chartImages) {
       writer.image(img);
     }
   }
 
-  if (spec && (spec.assumptions.length > 0 || spec.limitations.length > 0)) {
-    if (spec.assumptions.length > 0) {
-      writer.sectionTitle("Assumptions");
-      writer.bulletList(spec.assumptions);
-    }
-    if (spec.limitations.length > 0) {
-      writer.sectionTitle("Limitations");
-      writer.bulletList(spec.limitations);
-    }
+  if (spec && spec.assumptions.length > 0) {
+    writer.sectionTitle("Assumptions");
+    writer.bulletList(spec.assumptions);
   }
 
-  addFooters(doc);
+  if (spec && spec.limitations.length > 0) {
+    writer.sectionTitle("Limitations");
+    writer.bulletList(spec.limitations);
+  }
 
-  const safeName =
-    options.fileName.replace(/[^a-zA-Z0-9-_]+/g, "-").replace(/^-+|-+$/g, "") || "report";
-  doc.save(`${safeName}.pdf`);
+  if (metaNotes(payload)) {
+    writer.sectionTitle("Report notes");
+    writer.paragraph(metaNotes(payload)!);
+  }
+
+  addFooters(doc, payload);
+
+  doc.save(`${sanitizeReportFileName(payload.fileName)}.pdf`);
+}
+
+function metaNotes(payload: ReportPayload): string | null {
+  const notes = payload.meta.notes?.trim();
+  return notes || null;
 }

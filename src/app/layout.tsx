@@ -7,6 +7,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 export const metadata = {
   title: "PhyCalcPro",
   description: "Engineering Calculation & Design Platform",
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    apple: "/phycalcpro-logo.png",
+  },
 };
 
 export default function RootLayout({

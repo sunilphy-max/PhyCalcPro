@@ -76,7 +76,7 @@ export default function CalculatorMetricCard({
 
   return (
     <div
-      className={`rounded-xl border p-3 ${cardStyle} ${className}`.trim()}
+      className={`min-w-0 rounded-xl border p-3 ${cardStyle} ${className}`.trim()}
     >
       <div className="mb-1 text-xs text-slate-500 dark:text-slate-400">{label}</div>
       <div

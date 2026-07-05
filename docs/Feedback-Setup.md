@@ -10,11 +10,11 @@ Uses [Resend](https://resend.com) (HTTP API, no extra npm package).
 
 ```bash
 RESEND_API_KEY=re_xxxxxxxx
-FEEDBACK_NOTIFY_EMAIL=you@yourdomain.com
+FEEDBACK_NOTIFY_EMAIL=sunilphy@gmail.com
 RESEND_FROM_EMAIL=PhyCalcPro <feedback@yourdomain.com>
 ```
 
-- `FEEDBACK_NOTIFY_EMAIL` — where you receive messages (defaults to `support@phycalcpro.com`)
+- `FEEDBACK_NOTIFY_EMAIL` — where you receive messages (defaults to `sunilphy@gmail.com`)
 - `RESEND_FROM_EMAIL` — must be a verified sender/domain in Resend
 - Replies go to the submitter’s email via `reply_to`
 

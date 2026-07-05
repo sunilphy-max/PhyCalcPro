@@ -14,6 +14,7 @@ import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaul
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { CsvRow } from "@/lib/export/csvRows";
+import type { ReportRow } from "@/lib/export/reportPayload";
 import type { ReportMeta } from "@/lib/export/structuredReport";
 import { allModules } from "@/data/modules";
 
@@ -23,6 +24,7 @@ export type CalculatorReportRegistration = {
   title?: string;
   description?: string;
   csvRows?: CsvRow[];
+  inputRows?: ReportRow[];
   calculationSpec?: CalculationSpec | null;
   reportMeta?: ReportMeta;
   qualityOverrides?: Partial<ModuleQualityChecklist>;
@@ -32,9 +34,13 @@ export type CalculatorReportRegistration = {
 type CalculatorReportContextValue = {
   registered: boolean;
   exportPdf: () => Promise<void>;
+  exportExcel: () => Promise<void>;
   exportCsv: () => void;
+  reportEnabled: boolean;
   pdfEnabled: boolean;
   exporting: boolean;
+  exportingPdf: boolean;
+  exportingExcel: boolean;
   downloading: boolean;
   statusMessage: string | null;
   statusTone: "error" | "success";
@@ -68,6 +74,7 @@ export function CalculatorReportProvider({
       calculationSpec: registration.calculationSpec,
       reportMeta: registration.reportMeta,
       csvRows: registration.csvRows,
+      inputRows: registration.inputRows,
     };
   }, [moduleId, registration]);
 
@@ -90,7 +97,8 @@ export function CalculatorReportProvider({
         JSON.stringify(prev.calculationSpec) === JSON.stringify(next.calculationSpec) &&
         JSON.stringify(prev.reportMeta) === JSON.stringify(next.reportMeta) &&
         JSON.stringify(prev.qualityOverrides) === JSON.stringify(next.qualityOverrides) &&
-        JSON.stringify(prev.csvRows) === JSON.stringify(next.csvRows)
+        JSON.stringify(prev.csvRows) === JSON.stringify(next.csvRows) &&
+        JSON.stringify(prev.inputRows) === JSON.stringify(next.inputRows)
       ) {
         return prev;
       }
@@ -106,9 +114,13 @@ export function CalculatorReportProvider({
     () => ({
       registered: registration != null,
       exportPdf: exportState.exportPdf,
+      exportExcel: exportState.exportExcel,
       exportCsv: exportState.exportCsv,
+      reportEnabled: exportState.reportEnabled,
       pdfEnabled: exportState.pdfEnabled,
       exporting: exportState.exporting,
+      exportingPdf: exportState.exportingPdf,
+      exportingExcel: exportState.exportingExcel,
       downloading: exportState.downloading,
       statusMessage: exportState.statusMessage,
       statusTone: exportState.statusTone,

@@ -53,7 +53,7 @@ const exportMigratedRoutes = new Set([
   "/products/manufacturing/cam-toolpaths",
   "/products/structural/combined-loading",
   "/products/structural/load-case-manager",
-  "/products/profiles",
+  "/products/materials/profiles",
 ]);
 
 export const exportUnitAudit: ModuleAuditEntry[] = allModules.map((module) => ({

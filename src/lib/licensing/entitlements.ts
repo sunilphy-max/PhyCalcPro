@@ -35,6 +35,9 @@ export function canExportPdf(entitlement: Entitlement): boolean {
   return hasMinTier(entitlement, "pro");
 }
 
+/** Pro-gated structured PDF and Excel reports. */
+export const canExportReport = canExportPdf;
+
 export function canExportCsv(_entitlement: Entitlement): boolean {
   return true;
 }

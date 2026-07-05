@@ -1,4 +1,5 @@
 import Link from "next/link";
+import PhyCalcMark from "@/components/brand/PhyCalcMark";
 
 const productLinks = [
   { href: "/products", label: "All modules" },
@@ -26,9 +27,7 @@ export default function SiteFooter() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
-                P
-              </div>
+              <PhyCalcMark size={40} className="h-10 w-10 shrink-0 rounded-xl shadow-sm" />
               <div>
                 <div className="font-semibold text-slate-950 dark:text-white">PhyCalcPro</div>
                 <div className="text-xs text-slate-500 dark:text-slate-400">Engineering workspace</div>

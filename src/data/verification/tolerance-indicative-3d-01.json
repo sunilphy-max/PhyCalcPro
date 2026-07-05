@@ -1,0 +1,19 @@
+{
+  "id": "tolerance-indicative-3d-01",
+  "moduleId": "tolerance",
+  "designCode": "INDICATIVE",
+  "description": "3D dimensional chain — X/Y/Z worst-case and RSS magnitudes",
+  "inputs": {
+    "tolerances": [0.05, 0.02, 0.01],
+    "tolerancesY": [0.03, 0.01],
+    "tolerancesZ": [0.02],
+    "monteCarloSamples": 0
+  },
+  "expected": {
+    "worstCase": 0.08,
+    "worstCase3d": 0.0916515138991168,
+    "rss3d": 0.066332495807108
+  },
+  "tolerancePercent": 1,
+  "source": "Vector stack: |WC| = sqrt(WCx² + WCy² + WCz²) — PhyCalcPro regression v1"
+}

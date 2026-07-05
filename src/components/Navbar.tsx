@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
+import PhyCalcMark from "@/components/brand/PhyCalcMark";
 import PlanBadge from "@/components/licensing/PlanBadge";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 
@@ -53,7 +54,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-900 text-white font-semibold">P</div>
+            <PhyCalcMark size={44} className="h-11 w-11 shrink-0 rounded-2xl shadow-sm" />
             <div className="hidden sm:block">
               <div className="text-slate-900 font-semibold dark:text-slate-100">PhyCalcPro</div>
               <div className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Engineering Platform</div>

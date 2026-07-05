@@ -341,6 +341,27 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     pressure: { dimension: "pressure", defaultUnit: "Pa", units: ["Pa", "MPa", "bar", "psi"], label: "Uniform pressure" },
     modulus: { dimension: "stress", defaultUnit: "GPa", units: ["GPa", "MPa", "Pa", "psi"], label: "Elastic modulus" },
   },
+  shells: {
+    radius: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Mean radius" },
+    thickness: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Wall thickness" },
+    length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Shell length" },
+    pressure: { dimension: "pressure", defaultUnit: "Pa", units: ["Pa", "MPa", "bar", "psi", "kPa"], label: "Internal pressure" },
+    force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Axial force" },
+    moment: { dimension: "moment", defaultUnit: "N·m", units: ["N·m", "kN·m", "lbf·ft"], label: "Bending moment" },
+    modulus: { dimension: "stress", defaultUnit: "GPa", units: ["GPa", "MPa", "Pa", "psi"], label: "Elastic modulus" },
+    stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi", "ksi"], label: "Allowable stress" },
+  },
+  "internal-gears-rack": {
+    power: { dimension: "power", defaultUnit: "kW", units: ["kW", "W", "hp"], label: "Power" },
+    module: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Module" },
+    faceWidth: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Face width" },
+    length: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Pitch diameter" },
+  },
+  "power-screws": {
+    length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Screw length" },
+    force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Axial load" },
+    stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi"], label: "Allowable stress" },
+  },
   "rolled-sections": {
     length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Section depth" },
     area: { dimension: "area", defaultUnit: "m2", units: ["m2", "mm2", "in2"], label: "Area" },

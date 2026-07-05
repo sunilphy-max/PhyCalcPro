@@ -2,8 +2,9 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useApplicationPreset } from "@/hooks/useApplicationPreset";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -51,8 +52,17 @@ export default function Page() {
   const [yieldStrength, setYieldStrength] = useState(250e6);
   const [endCondition, setEndCondition] = useState<EndCondition>("pinned");
   const [sectionDesignation, setSectionDesignation] = useState("");
-  const [targetSafetyFactor, setTargetSafetyFactor] = useState(2);
+  const { preset } = useApplicationPreset("columns");
+  const [targetSafetyFactor, setTargetSafetyFactor] = useState(
+    () => preset?.knobs.targetSafetyFactor ?? 2
+  );
   const { mode } = useDesignWorkflow();
+
+  useEffect(() => {
+    if (preset?.knobs.targetSafetyFactor != null) {
+      setTargetSafetyFactor(preset.knobs.targetSafetyFactor);
+    }
+  }, [preset?.id, preset?.knobs.targetSafetyFactor]);
 
   // =========================
   // UNITS

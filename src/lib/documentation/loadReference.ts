@@ -267,7 +267,7 @@ export function getAllModuleIdsForDocs(): string[] {
 }
 
 export function getModuleRoute(moduleId: string): string | undefined {
-  if (moduleId === "profiles") return "/products/profiles";
+  if (moduleId === "profiles") return "/products/materials/profiles";
   return allModules.find((m) => m.id === moduleId)?.route;
 }
 

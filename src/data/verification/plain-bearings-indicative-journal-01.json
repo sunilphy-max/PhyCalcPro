@@ -1,0 +1,22 @@
+{
+  "id": "plain-bearings-indicative-journal-01",
+  "moduleId": "plain-bearings",
+  "designCode": "INDICATIVE",
+  "description": "Journal bearing — 50 mm dia, 20 kN radial, 1200 rpm",
+  "inputs": {
+    "bearingType": "journal",
+    "load": 20000,
+    "speed": 1200,
+    "diameter": 0.05,
+    "length": 0.04,
+    "clearance": 0.00005,
+    "viscosity": 0.03
+  },
+  "expected": {
+    "sommerfeldNumber": 0.00037699111843077514,
+    "eccentricityRatio": 0.95,
+    "minFilmThickness": 0.0000012500000000000012
+  },
+  "tolerancePercent": 3,
+  "source": "PhyCalcPro regression — Sommerfeld journal bearing v1"
+}

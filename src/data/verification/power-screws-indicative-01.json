@@ -1,0 +1,24 @@
+{
+  "id": "power-screws-indicative-01",
+  "moduleId": "power-screws",
+  "designCode": "INDICATIVE",
+  "description": "Square-thread power screw — 10 kN axial, D=50 mm, μ=0.15",
+  "inputs": {
+    "screwType": "power_screw",
+    "threadType": "square",
+    "majorDiameter": 0.05,
+    "pitch": 0.01,
+    "lead": 0.01,
+    "length": 0.5,
+    "axialForce": 10000,
+    "frictionCoefficient": 0.15,
+    "starts": 1
+  },
+  "expected": {
+    "efficiency": 31.705363832192972,
+    "safetyFactor": 30.37269575046047,
+    "torque": 50.19811282855953
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — power screw torque and efficiency v1"
+}

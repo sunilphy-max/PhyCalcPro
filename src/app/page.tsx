@@ -4,15 +4,13 @@ import Link from "next/link";
 import { allModules, categories } from "@/data/modules";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import SiteFooter from "@/components/SiteFooter";
+import WorkflowDataFlow from "@/components/home/WorkflowDataFlow";
 import {
   ArrowRight,
   BookOpen,
-  CheckCircle2,
-  FileOutput,
   Layers,
   Mail,
   ShieldCheck,
-  SlidersHorizontal,
   Wrench,
   Box,
   Orbit,
@@ -81,27 +79,6 @@ const applicationCards = [
     description: "Tolerances, fits, cost estimates, and process planning.",
     href: "/products/manufacturing/tolerance",
     icon: Gauge,
-  },
-];
-
-const workflowSteps = [
-  {
-    step: "01",
-    title: "Set inputs and design standard",
-    description: "Enter geometry, loads, and material data. Choose US, EU, ISO, or indicative defaults per module.",
-    icon: SlidersHorizontal,
-  },
-  {
-    step: "02",
-    title: "Review checks and assumptions",
-    description: "See utilization, margins, warnings, and which code checks are implemented — not hidden behind a single number.",
-    icon: CheckCircle2,
-  },
-  {
-    step: "03",
-    title: "Export a defensible summary",
-    description: "Generate PDF or CSV reports with calculation context suitable for internal review or project records.",
-    icon: FileOutput,
   },
 ];
 
@@ -295,26 +272,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {workflowSteps.map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.step}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-semibold tabular-nums text-slate-400">{item.step}</span>
-                    <div className="rounded-lg bg-slate-100 p-2 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                  </div>
-                  <h3 className="mt-4 font-semibold text-slate-950 dark:text-white">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{item.description}</p>
-                </div>
-              );
-            })}
-          </div>
+          <WorkflowDataFlow />
         </div>
       </section>
 

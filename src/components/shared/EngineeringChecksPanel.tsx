@@ -50,7 +50,7 @@ export default function EngineeringChecksPanel({
   const pending = spec.checks.filter((c) => c.status === "not_available");
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-slate-900">{title}</h3>

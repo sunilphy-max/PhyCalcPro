@@ -76,6 +76,24 @@
     overflow: hidden;
     contain: layout paint;
   }
+
+  /* Module math blocks — scroll horizontally instead of overlapping adjacent columns */
+  .math-expression.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+  }
+
+  .math-expression:not(.katex-display) {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Plotly modebar stays inside the module column stacking context */
+  .products-module-main .modebar-container,
+  .products-module-main .modebar-group {
+    z-index: 1;
+  }
 }
 
 @layer utilities {
@@ -177,5 +195,31 @@
   .documentation-prose [data-footnotes] a[data-footnote-backref] {
     margin-left: 0.25rem;
     font-size: 0.75rem;
+  }
+
+  @keyframes workflow-flow {
+    0% {
+      transform: translate(-50%, -50%) translateX(-18px);
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) translateX(52px);
+      opacity: 0;
+    }
+  }
+
+  .workflow-flow-dot {
+    top: 50%;
+    animation: workflow-flow 2.4s ease-in-out infinite;
+  }
+
+  .workflow-flow-dot-delay {
+    animation-delay: 0.9s;
   }
 }

@@ -25,6 +25,7 @@ import { solveBrakesClutchesEngine } from "@/lib/machine/brakes-clutches/engine"
 import { solveCamEngine } from "@/lib/machine/cams/engine";
 import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
 import { solveGearRatioDesignEngine } from "@/lib/machine/gear-ratio-design/engine";
+import { solveInternalGearsRackEngine } from "@/lib/machine/internal-gears-rack/engine";
 import { solvePlainBearingEngine } from "@/lib/machine/plain-bearings/engine";
 import { solvePlanetaryGearEngine } from "@/lib/machine/planetary-gears/engine";
 import { solveWormGearEngine } from "@/lib/machine/worm-gears/engine";
@@ -52,6 +53,7 @@ import { solveBeamEngine } from "@/lib/structural/beams/engine";
 import { solveBucklingEngine } from "@/lib/structural/columns/engine";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
 import { solveCircularPlateEngine } from "@/lib/structural/circular-plates/engine";
+import { solveShellEngine } from "@/lib/structural/shells/engine";
 import { solveFrameEngine } from "@/lib/structural/frames/engine";
 import { solveLoadCaseManagerEngine } from "@/lib/structural/loadCaseManager/engine";
 import { solvePlateEngine } from "@/lib/structural/plates/engine";
@@ -88,6 +90,7 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   "combined-loading": (i) => solveCombinedLoadingEngine(i as never) as Record<string, unknown>,
   "load-case-manager": (i) => solveLoadCaseManagerEngine(i as never) as Record<string, unknown>,
   "circular-plates": (i) => solveCircularPlateEngine(i as never) as Record<string, unknown>,
+  shells: (i) => solveShellEngine(i as never) as Record<string, unknown>,
   "v-belts": (i) => solveVBeltDrive(i as never) as Record<string, unknown>,
   "timing-belts": (i) => solveTimingBeltDrive(i as never) as Record<string, unknown>,
   "roller-chains": (i) => solveRollerChainDrive(i as never) as Record<string, unknown>,
@@ -101,6 +104,8 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   "worm-gears": (i) => solveWormGearEngine(i as never) as Record<string, unknown>,
   "planetary-gears": (i) => solvePlanetaryGearEngine(i as never) as Record<string, unknown>,
   "gear-ratio-design": (i) => solveGearRatioDesignEngine(i as never) as Record<string, unknown>,
+  "internal-gears-rack": (i) => solveInternalGearsRackEngine(i as never) as Record<string, unknown>,
+  "power-screws": (i) => solveScrewEngine(i as never) as Record<string, unknown>,
   "plain-bearings": (i) => solvePlainBearingEngine(i as never) as Record<string, unknown>,
   "brakes-clutches": (i) => solveBrakesClutchesEngine(i as never) as Record<string, unknown>,
   "compression-springs": (i) => solveCompressionSpringEngine(i as never) as Record<string, unknown>,

@@ -1,5 +1,6 @@
 import { solvePlateEngine } from "@/lib/structural/plates/engine";
 import { solveCircularPlateEngine } from "@/lib/structural/circular-plates/engine";
+import { solveShellEngine } from "@/lib/structural/shells/engine";
 import { solveFrameEngine } from "@/lib/structural/frames/engine";
 import { solveTrussEngine } from "@/lib/structural/trusses/engine";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
@@ -206,9 +207,46 @@ export function designLoadCaseEnvelope(userInputs: ModuleUserInputs): ModuleDesi
   return designCombinedLoadingSection(userInputs);
 }
 
+function designShellThickness(userInputs: ModuleUserInputs): ModuleDesignModeResult {
+  const radius = userInputs.length ?? 0.5;
+  const pressure = userInputs.pressure ?? 500e3;
+  const allowable = userInputs.allowableStressPa ?? 170e6;
+  const thicknessesMm = [4, 6, 8, 10, 12, 16, 20, 25, 30];
+
+  const items = thicknessesMm.map((tMm) => {
+    const t = tMm / 1000;
+    try {
+      const res = solveShellEngine({
+        radius,
+        thickness: t,
+        length: userInputs.columnLength ?? 2,
+        internalPressure: pressure,
+        axialForce: userInputs.axialLoad ?? 0,
+        bendingMoment: userInputs.bendingMoment ?? 0,
+        modulus: userInputs.E ?? 210e9,
+        poisson: 0.3,
+        endCondition: "closed",
+        allowableStress: allowable,
+      });
+      const util = 1 / Math.max(res.safetyFactor, 1e-9);
+      return {
+        label: `t = ${tMm} mm`,
+        utilization: util,
+        fields: { thickness: tMm, thicknessUnit: "mm" },
+        detail: `SF ${res.safetyFactor.toFixed(2)}`,
+      };
+    } catch {
+      return { label: `${tMm} mm`, utilization: 99, fields: { thickness: tMm }, detail: "invalid" };
+    }
+  });
+
+  return resultFromSweep(sweepCatalogForUtilization(items), "Shell wall thickness sweep for von Mises safety factor.");
+}
+
 export function designStructuralModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {
   if (moduleId === "plates") return designPlateThickness(userInputs);
   if (moduleId === "circular-plates") return designCircularPlateThickness(userInputs);
+  if (moduleId === "shells") return designShellThickness(userInputs);
   if (moduleId === "frames") return designFrameSection(userInputs);
   if (moduleId === "trusses") return designTrussSection(userInputs);
   if (moduleId === "combined-loading") return designCombinedLoadingSection(userInputs);

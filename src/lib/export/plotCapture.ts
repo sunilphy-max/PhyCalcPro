@@ -5,6 +5,8 @@ type PlotlyModule = {
   ) => Promise<string>;
 };
 
+import type { PlotDataExport } from "@/lib/export/reportPayload";
+
 type WindowWithPlotly = Window & { Plotly?: PlotlyModule };
 
 /**
@@ -173,4 +175,27 @@ export async function preparePlotsForCapture(container: HTMLElement): Promise<()
   }
 
   return () => restores.forEach((restore) => restore());
+}
+
+/**
+ * Read serialized plot series from [data-export-plot-data] nodes for Excel chart-data sheets.
+ */
+export function collectPlotSeriesData(container: HTMLElement): PlotDataExport[] {
+  const plots: PlotDataExport[] = [];
+  const nodes = container.querySelectorAll<HTMLElement>("[data-export-plot-data]");
+  nodes.forEach((node) => {
+    const raw = node.getAttribute("data-export-plot-data");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as PlotDataExport;
+      const caption =
+        node.getAttribute("data-export-caption") ??
+        parsed.title ??
+        undefined;
+      plots.push({ ...parsed, title: caption ?? parsed.title });
+    } catch {
+      // Skip malformed plot data.
+    }
+  });
+  return plots;
 }

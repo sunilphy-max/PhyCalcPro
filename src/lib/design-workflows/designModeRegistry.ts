@@ -105,6 +105,13 @@ export function runModuleDesignMode(
     return designSpringModule(moduleId, userInputs);
   }
 
+  if (moduleId === "load-case-manager") {
+    return designStructuralModule(moduleId, userInputs);
+  }
+  if (moduleId === "safety-factor") {
+    return designFastenerModule(moduleId, userInputs);
+  }
+
   const category = catalogModule.category;
   if (category === "structural") return designStructuralModule(moduleId, userInputs);
   if (category === "machine") return designMachineModule(moduleId, userInputs);

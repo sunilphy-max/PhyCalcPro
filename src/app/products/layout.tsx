@@ -10,10 +10,10 @@ export default function ProductsLayout({
 }) {
   return (
     <DesignCodeProvider>
-      {/* Grid columns + minmax(0,1fr) keep wide charts from spilling over the sidebar. */}
-      <div className="products-shell grid w-full min-w-0 grid-cols-[18rem_minmax(0,1fr)] items-start">
+      {/* Stack on narrow viewports; minmax(0,1fr) keeps charts from spilling over the sidebar. */}
+      <div className="products-shell grid w-full min-w-0 grid-cols-1 items-start lg:grid-cols-[18rem_minmax(0,1fr)]">
         <Sidebar />
-        <div className="products-module-main min-w-0">{children}</div>
+        <div className="products-module-main min-w-0 overflow-x-clip">{children}</div>
       </div>
     </DesignCodeProvider>
   );

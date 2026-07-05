@@ -22,6 +22,7 @@ import {
   getBeamApplicationPreset,
   type BeamApplicationId,
 } from "@/lib/structural/beams/applicationPresets";
+import { useBeamApplicationPreset } from "@/hooks/useApplicationPreset";
 
 type BeamProjectData = {
   length: number;
@@ -72,12 +73,11 @@ export default function Page() {
     "simply_supported" | "cantilever" | "fixed_fixed"
   >("simply_supported");
   const [material, setMaterial] = useState("S275JR");
-  const [applicationId, setApplicationId] =
-    useState<BeamApplicationId>("general_mechanics");
+  const { applicationId } = useBeamApplicationPreset();
+  const { patchDesignTarget, mode } = useDesignWorkflow();
   const [sectionDesignation, setSectionDesignation] = useState("");
   const [designMaxDeflection, setDesignMaxDeflection] = useState<number | undefined>(undefined);
   const [designMaxStress, setDesignMaxStress] = useState<number | undefined>(undefined);
-  const { mode } = useDesignWorkflow();
   // =========================
   // UNITS
   // =========================
@@ -473,7 +473,7 @@ const handleLoadDrag = (
     setC(p.c);
     setMaterial(p.material && materials.some((m) => m.name === p.material) ? p.material : "S275JR");
     setLoads(p.loads ?? []);
-    setApplicationId(p.applicationId ?? "general_mechanics");
+    patchDesignTarget("applicationPresetId", p.applicationId ?? "general_mechanics");
     setSectionDesignation(p.sectionDesignation ?? "");
     if (p.support === "simply_supported" || p.support === "cantilever" || p.support === "fixed_fixed") {
       setSupport(p.support);
@@ -524,8 +524,6 @@ const handleLoadDrag = (
             loads={loads}
             material={material}
             setMaterial={setMaterial}
-            applicationId={applicationId}
-            setApplicationId={setApplicationId}
             updateLoad={updateLoad}
             removeLoad={removeLoad}
             addPointLoad={addPointLoad}

@@ -73,17 +73,44 @@ export function solveToleranceEngine(config: ToleranceConfig): ToleranceResult {
     rssY = Math.sqrt(ty.reduce((sum, value) => sum + value * value, 0));
   }
 
+  let worstCaseZ: number | undefined;
+  let rssZ: number | undefined;
+  if (config.tolerancesZ?.length) {
+    const tz = config.tolerancesZ.map((value) => Math.abs(value));
+    worstCaseZ = tz.reduce((sum, value) => sum + value, 0);
+    rssZ = Math.sqrt(tz.reduce((sum, value) => sum + value * value, 0));
+  }
+
+  const worstCase3d =
+    worstCaseY !== undefined || worstCaseZ !== undefined
+      ? Math.sqrt(worstCase ** 2 + (worstCaseY ?? 0) ** 2 + (worstCaseZ ?? 0) ** 2)
+      : undefined;
+  const rss3d =
+    rssY !== undefined || rssZ !== undefined
+      ? Math.sqrt(rss ** 2 + (rssY ?? 0) ** 2 + (rssZ ?? 0) ** 2)
+      : undefined;
+
   let monteCarloMean: number | undefined;
   let monteCarloStdDev: number | undefined;
   const samples = config.monteCarloSamples ?? 0;
   if (samples > 0) {
     const draws: number[] = [];
+    const ty = config.tolerancesY?.map((value) => Math.abs(value)) ?? [];
+    const tz = config.tolerancesZ?.map((value) => Math.abs(value)) ?? [];
     for (let i = 0; i < samples; i++) {
-      let stack = 0;
+      let stackX = 0;
       for (const t of tolerances) {
-        stack += (Math.random() * 2 - 1) * t;
+        stackX += (Math.random() * 2 - 1) * t;
       }
-      draws.push(stack);
+      let stackY = 0;
+      for (const t of ty) {
+        stackY += (Math.random() * 2 - 1) * t;
+      }
+      let stackZ = 0;
+      for (const t of tz) {
+        stackZ += (Math.random() * 2 - 1) * t;
+      }
+      draws.push(Math.sqrt(stackX ** 2 + stackY ** 2 + stackZ ** 2));
     }
     monteCarloMean = draws.reduce((a, b) => a + b, 0) / draws.length;
     monteCarloStdDev = Math.sqrt(
@@ -99,6 +126,10 @@ export function solveToleranceEngine(config: ToleranceConfig): ToleranceResult {
     totalTolerance,
     worstCaseY,
     rssY,
+    worstCaseZ,
+    rssZ,
+    worstCase3d,
+    rss3d,
     monteCarloMean,
     monteCarloStdDev,
   };

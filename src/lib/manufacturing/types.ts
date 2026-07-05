@@ -24,6 +24,7 @@ export type FitResult = {
 export type ToleranceConfig = {
   tolerances: number[];
   tolerancesY?: number[];
+  tolerancesZ?: number[];
   monteCarloSamples?: number;
 };
 
@@ -35,6 +36,12 @@ export type ToleranceResult = {
   totalTolerance: number;
   worstCaseY?: number;
   rssY?: number;
+  worstCaseZ?: number;
+  rssZ?: number;
+  /** 3D vector magnitude: sqrt(worstX² + worstY² + worstZ²) */
+  worstCase3d?: number;
+  /** 3D RSS magnitude */
+  rss3d?: number;
   monteCarloMean?: number;
   monteCarloStdDev?: number;
 };

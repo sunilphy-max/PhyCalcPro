@@ -1,6 +1,6 @@
 # PhyCalcPro — Modules Technical Reference
 
-Engineering software manual for the **62 active product modules** shipped under `/products/*`. This document describes purpose, governing methods, design-code support, UI maturity, and known gaps. It complements the homogenization contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
+Engineering software manual for the **66 active product modules** shipped under `/products/*`. This document describes purpose, governing methods, design-code support, UI maturity, and known gaps. It complements the homogenization contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
 
 **Audience:** engineers evaluating PhyCalcPro for design work, and developers extending modules.
 
@@ -80,12 +80,12 @@ Charts use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, `xUn
 ### 1.6 Testing & verification
 
 - **Vitest** (`npm test`) — unit tests and externally sourced benchmarks (Shigley, Roark, AISC, ISO 6336/281, VDI 2230, EN 13906, etc.) under `src/lib/**/**/*.test.ts`.
-- **Verification CI** — `npm run test:verification` runs JSON cases in `src/data/verification/` against **`moduleSolverRegistry.ts`** (61 solvers registered).
+- **Verification CI** — `npm run test:verification` runs **38** JSON cases in `src/data/verification/` against **`moduleSolverRegistry.ts`** (64 solvers registered).
 - **Bootstrap** — `npx tsx scripts/bootstrap-verification.ts` generates JSON from seeds in `verificationSeeds.ts`.
 - **Engineer sign-off** — [validation-master-checklist.md](./validation-master-checklist.md) lists validation tasks for all 62 modules; springs also have [spring-modules-user-tasks.md](./modules/spring-modules-user-tasks.md).
 - **FEM regression** — analytical comparisons for beam equilibrium, column buckling, and plate shear-locking in `src/lib/structural/__tests__/`.
 
-**CI benchmark modules (24 with committed JSON):** beams, bearings, bevel-gears, circular-plates, columns, combined-loading, compression-springs (×2), corrosion, extension-springs, fatigue, gears, hydraulics, impact, keys-splines, pipes, rivets, rotation, shafts, suspension, timing-belts, torsion-springs, unit-converter, v-belts.
+**CI benchmark modules (38 JSON cases, 34 modules):** beams, bearings, bevel-gears, bolts, circular-plates, columns, combined-loading, compression-springs (×2), corrosion, extension-springs, fatigue, frames, gears, hydraulics, impact, internal-gears-rack (×2), keys-splines, pipes, plain-bearings (×2), power-screws (×2), rivets, rotation, shafts, shells, suspension, timing-belts, tolerance, torsion-springs, trusses, unit-converter, v-belts, vessels, vibrations, welds.
 
 ### 1.7 Release tiers
 
@@ -140,18 +140,18 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 
 | Category | Count | Module IDs |
 |----------|------:|------------|
-| Structural | 8 | beams, frames, trusses, columns, plates, combined-loading, load-case-manager, circular-plates |
+| Structural | 8 | beams, frames, trusses, columns, plates, combined-loading, circular-plates, shells |
 | Power transmission | 4 | v-belts, timing-belts, roller-chains, multi-pulley |
-| Machine | 11 | shafts, gears, bearings, cams, flywheels, bevel-gears, worm-gears, planetary-gears, gear-ratio-design, plain-bearings, brakes-clutches |
+| Machine | 13 | shafts, gears, internal-gears-rack, bearings, cams, flywheels, bevel-gears, worm-gears, planetary-gears, gear-ratio-design, plain-bearings, brakes-clutches, power-screws |
 | Springs | 3 | compression-springs, extension-springs, torsion-springs |
-| Fasteners | 7 | bolts, welds, rivets, safety-factor, keys-splines, shaft-hubs, pins |
-| Materials | 7 | database, sections, rolled-sections, composites, temperature-properties, fatigue, corrosion |
+| Connections | 6 | bolts, welds, rivets, keys-splines, shaft-hubs, pins |
+| Materials | 8 | database, sections, rolled-sections, profiles, composites, temperature-properties, fatigue, corrosion |
 | Pressure | 4 | pipes, vessels, hydraulics, heat-exchangers |
 | Dynamics | 4 | vibrations, rotation, impact, suspension |
 | Manufacturing | 4 | tolerance, fits, cost-estimator, cam-toolpaths |
 | Advanced systems | 8 | vacuum-engineering, cryogenic-engineering, magnetic-fields, superconducting-systems, thermal-management, battery-ev-systems, hydrogen-systems, precision-motion |
-| Tools | 2 | formula-reference, unit-converter |
-| **Total** | **62** | |
+| Tools | 4 | load-case-manager, safety-factor, formula-reference, unit-converter |
+| **Total** | **66** | |
 
 ### Homogenization snapshot
 
@@ -260,7 +260,7 @@ Dedicated evaluators: **beams, columns, gears, combined-loading, welds**. Additi
 
 ### 13.5 Testing & release
 
-- **24 modules** have committed verification JSON; **61** have solvers in `moduleSolverRegistry.ts`.
+- **34 modules** (38 JSON cases) have committed verification; **64** have solvers in `moduleSolverRegistry.ts`.
 - Bootstrap new cases: `npx tsx scripts/bootstrap-verification.ts`.
 - Engineer validation: [validation-master-checklist.md](./validation-master-checklist.md).
 - Wire release tier gates to CI so **beta** modules require passing benchmarks before promotion.

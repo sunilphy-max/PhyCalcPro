@@ -11,26 +11,25 @@ type Props = {
 };
 
 export default function PlainBearingsResults({ result, lengthUnit }: Props) {
-  const adequateFilm = result?.status.includes("adequate");
+  const adequateFilm = result?.status.includes("adequate") || result?.status.includes("Adequate");
 
   return (
     <CalculatorResultsShell
       moduleId="plain-bearings"
       fileName="plain-bearing"
       title="Export plain bearing results"
-      description="Export Sommerfeld number, film thickness and power loss."
+      description="Export film thickness, load and power loss."
       calculationSpec={result?.calculationSpec}
       empty={!result}
-      emptyMessage="Enter journal bearing data and calculate."
+      emptyMessage="Enter bearing data and calculate."
       heading="Plain bearing results"
       csvRows={
         result
           ? [
+              { metric: "bearingType", value: result.bearingType },
               { metric: "sommerfeldNumber", value: result.sommerfeldNumber },
-              { metric: "eccentricityRatio", value: result.eccentricityRatio },
               { metric: "minFilmThickness", value: result.minFilmThickness },
               { metric: "powerLoss", value: result.powerLoss },
-              { metric: "status", value: result.status },
             ]
           : undefined
       }
@@ -39,32 +38,31 @@ export default function PlainBearingsResults({ result, lengthUnit }: Props) {
         <>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
-              label="Sommerfeld number"
-              numericValue={result.sommerfeldNumber}
+              label="Bearing type"
+              value={
+                result.bearingType === "journal"
+                  ? "Journal"
+                  : result.bearingType === "thrust_pad"
+                    ? "Thrust pad"
+                    : "Tilting pad"
+              }
               tone="blue"
             />
-            <CalculatorMetricCard
-              label="Eccentricity ratio"
-              numericValue={result.eccentricityRatio}
-              tone="purple"
-            />
+            <CalculatorMetricCard label="Film / load factor" numericValue={result.sommerfeldNumber} tone="blue" />
+            {result.bearingType === "journal" ? (
+              <CalculatorMetricCard label="Eccentricity ratio" numericValue={result.eccentricityRatio} tone="purple" />
+            ) : null}
+            {result.unitLoad != null ? (
+              <CalculatorMetricCard label="Unit load" value={formatEngineeringValue(result.unitLoad, "Pa")} tone="orange" />
+            ) : null}
             <CalculatorMetricCard
               label="Minimum film thickness"
               value={formatEngineeringValue(fromBase(result.minFilmThickness, "length", lengthUnit), lengthUnit)}
               tone={adequateFilm ? "green" : "red"}
             />
-            <CalculatorMetricCard
-              label="Power loss"
-              value={formatEngineeringValue(result.powerLoss, "W")}
-              tone="orange"
-            />
+            <CalculatorMetricCard label="Power loss" value={formatEngineeringValue(result.powerLoss, "W")} tone="orange" />
           </CalculatorMetricGrid>
-          <CalculatorMetricCard
-            label="Lubrication status"
-            value={result.status}
-            tone={adequateFilm ? "green" : "red"}
-            size="lg"
-          />
+          <CalculatorMetricCard label="Status" value={result.status} tone={adequateFilm ? "green" : "red"} size="lg" />
         </>
       ) : null}
     </CalculatorResultsShell>

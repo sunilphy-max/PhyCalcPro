@@ -6,26 +6,26 @@ import Link from "next/link";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ReportMeta } from "@/lib/export/structuredReport";
-
-type CSVRow = Record<string, string | number | null | undefined>;
+import type { ReportRow } from "@/lib/export/reportPayload";
+import {
+  buildReportPayload,
+  sanitizeReportFileName,
+} from "@/lib/export/reportPayload";
+import type { CsvRow } from "@/lib/export/csvRows";
 
 type Props = {
   reportRef: RefObject<HTMLElement | null>;
   fileName: string;
   title?: string;
   description?: string;
-  csvRows?: CSVRow[];
-  /** Module title shown in the report title block */
+  csvRows?: CsvRow[];
+  inputRows?: ReportRow[];
   moduleTitle?: string;
   calculationSpec?: CalculationSpec | null;
   reportMeta?: ReportMeta;
 };
 
-function sanitizeFileName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9-_]+/g, "-").replace(/^-+|-+$/g, "") || "report";
-}
-
-function downloadCsv(fileName: string, rows: CSVRow[]) {
+function downloadCsv(fileName: string, rows: CsvRow[]) {
   if (rows.length === 0) return;
 
   const headers = Object.keys(rows[0]);
@@ -45,7 +45,7 @@ function downloadCsv(fileName: string, rows: CSVRow[]) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${sanitizeFileName(fileName)}.csv`;
+  link.download = `${sanitizeReportFileName(fileName)}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -58,49 +58,58 @@ export default function ResultExportControls({
   title = "Export summary",
   description,
   csvRows,
+  inputRows,
   moduleTitle,
   calculationSpec,
   reportMeta,
 }: Props) {
   const { canExportPdf, unlockAllFeatures, isMonetizationEnabled } = useEntitlement();
-  const pdfEnabled = canExportPdf();
-  const [exporting, setExporting] = useState(false);
+  const reportEnabled = canExportPdf();
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [exportingExcel, setExportingExcel] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [statusTone, setStatusTone] = useState<"error" | "success">("success");
 
+  const exporting = exportingPdf || exportingExcel;
+
+  const collectPayload = async () => {
+    if (!reportRef.current) {
+      throw new Error("Nothing to export yet. Run the calculation first.");
+    }
+    const { collectChartImages, collectPlotSeriesData, preparePlotsForCapture } =
+      await import("@/lib/export/plotCapture");
+    const restorePlots = await preparePlotsForCapture(reportRef.current);
+    const chartImages = await collectChartImages(reportRef.current);
+    const plotData = collectPlotSeriesData(reportRef.current);
+    restorePlots();
+
+    return buildReportPayload({
+      fileName: sanitizeReportFileName(fileName),
+      moduleTitle: moduleTitle ?? title ?? "Calculation report",
+      meta: reportMeta,
+      spec: calculationSpec,
+      resultRows: csvRows,
+      inputRows,
+      chartImages,
+      plotData,
+    });
+  };
+
   const exportPdf = async () => {
-    if (!pdfEnabled) {
+    if (!reportEnabled) {
       setStatusTone("error");
       setStatusMessage("PDF export requires a Pro license.");
       return;
     }
-    if (!reportRef.current) {
-      setStatusTone("error");
-      setStatusMessage("Nothing to export yet. Run the calculation first.");
-      return;
-    }
 
-    setExporting(true);
+    setExportingPdf(true);
     setStatusMessage(null);
 
     try {
-      const { collectChartImages, preparePlotsForCapture } = await import("@/lib/export/plotCapture");
+      const payload = await collectPayload();
       const { generateStructuredReportPdf } = await import("@/lib/export/structuredReport");
-
-      const restorePlots = await preparePlotsForCapture(reportRef.current);
-      const chartImages = await collectChartImages(reportRef.current);
-      restorePlots();
-
-      await generateStructuredReportPdf({
-        fileName: sanitizeFileName(fileName),
-        moduleTitle: moduleTitle ?? title ?? "Calculation report",
-        meta: reportMeta,
-        spec: calculationSpec,
-        resultRows: csvRows,
-        chartImages,
-      });
-
+      await generateStructuredReportPdf(payload);
       setStatusTone("success");
       setStatusMessage("PDF report exported.");
     } catch (error) {
@@ -110,7 +119,34 @@ export default function ResultExportControls({
         error instanceof Error ? error.message : "PDF export failed. Try again."
       );
     } finally {
-      setExporting(false);
+      setExportingPdf(false);
+    }
+  };
+
+  const exportExcel = async () => {
+    if (!reportEnabled) {
+      setStatusTone("error");
+      setStatusMessage("Excel export requires a Pro license.");
+      return;
+    }
+
+    setExportingExcel(true);
+    setStatusMessage(null);
+
+    try {
+      const payload = await collectPayload();
+      const { generateStructuredReportExcel } = await import("@/lib/export/structuredReportExcel");
+      await generateStructuredReportExcel(payload);
+      setStatusTone("success");
+      setStatusMessage("Excel report exported.");
+    } catch (error) {
+      console.error("Excel export error:", error);
+      setStatusTone("error");
+      setStatusMessage(
+        error instanceof Error ? error.message : "Excel export failed. Try again."
+      );
+    } finally {
+      setExportingExcel(false);
     }
   };
 
@@ -145,11 +181,19 @@ export default function ResultExportControls({
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={exportPdf}
-            disabled={exporting || !pdfEnabled}
+            onClick={() => void exportPdf()}
+            disabled={exporting || !reportEnabled}
             className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {exporting ? "Exporting PDF…" : pdfEnabled ? "Export PDF" : "PDF (Pro)"}
+            {exportingPdf ? "Exporting PDF…" : reportEnabled ? "Export PDF" : "PDF (Pro)"}
+          </button>
+          <button
+            type="button"
+            onClick={() => void exportExcel()}
+            disabled={exporting || !reportEnabled}
+            className="inline-flex items-center justify-center rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {exportingExcel ? "Exporting Excel…" : reportEnabled ? "Export Excel" : "Excel (Pro)"}
           </button>
           {csvRows && csvRows.length > 0 ? (
             <button
@@ -163,10 +207,10 @@ export default function ResultExportControls({
           ) : null}
         </div>
       </div>
-      {isMonetizationEnabled && !pdfEnabled ? (
+      {isMonetizationEnabled && !reportEnabled ? (
         <div className="mt-3 space-y-2 text-xs text-slate-600">
           <p>
-            PDF reports with engineering checks are included in{" "}
+            PDF and Excel reports with engineering checks and charts are included in{" "}
             <Link href="/pricing" className="font-semibold underline">
               Pro
             </Link>

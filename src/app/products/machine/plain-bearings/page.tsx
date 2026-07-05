@@ -36,6 +36,9 @@ export default function Page() {
   const [length, setLength] = useState(40);
   const [clearance, setClearance] = useState(0.05);
   const [viscosity, setViscosity] = useState(0.03);
+  const [bearingType, setBearingType] = useState<"journal" | "thrust_pad" | "tilting_pad">("journal");
+  const [padDiameterRatio, setPadDiameterRatio] = useState(2);
+  const [padCount, setPadCount] = useState(6);
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [result, setResult] = useState<(PlainBearingResult & { calculationSpec?: CalculationSpec }) | null>(null);
 
@@ -43,12 +46,15 @@ export default function Page() {
     setResult(
       wrapResult(
         solvePlainBearingEngine({
+          bearingType,
           load: toBase(load, "force", loadUnit),
           speed,
           diameter: toBase(diameter, "length", lengthUnit),
           length: toBase(length, "length", lengthUnit),
           clearance: toBase(clearance, "length", lengthUnit),
           viscosity,
+          padDiameterRatio,
+          padCount,
         })
       )
     );
@@ -83,6 +89,8 @@ export default function Page() {
       title="Plain Bearings"
       inputs={
         <PlainBearingsInputs
+          bearingType={bearingType}
+          setBearingType={setBearingType}
           load={load}
           setLoad={setLoad}
           loadUnit={loadUnit}
@@ -97,6 +105,10 @@ export default function Page() {
           setClearance={setClearance}
           viscosity={viscosity}
           setViscosity={setViscosity}
+          padDiameterRatio={padDiameterRatio}
+          setPadDiameterRatio={setPadDiameterRatio}
+          padCount={padCount}
+          setPadCount={setPadCount}
           lengthUnit={lengthUnit}
           setLengthUnit={setLengthUnit}
           onCalculate={calculate}

@@ -8,12 +8,13 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 type Props = {
   result: WithCalculationSpec<ScrewResult> | null;
   projectName: string;
+  moduleId?: string;
 };
 
-export default function ScrewsResults({ result, projectName }: Props) {
+export default function ScrewsResults({ result, projectName, moduleId = "power-screws" }: Props) {
   return (
     <CalculatorResultsShell
-      moduleId="bolts"
+      moduleId={moduleId}
       fileName={projectName || "screw"}
       calculationSpec={result?.calculationSpec}
       title="Export Screw results"

@@ -1,0 +1,28 @@
+{
+  "id": "internal-gears-rack-indicative-01",
+  "moduleId": "internal-gears-rack",
+  "designCode": "INDICATIVE",
+  "description": "Internal spur pair — 15 kW @ 1200 rpm, m=3 mm, 20/80 teeth",
+  "inputs": {
+    "gearType": "internal",
+    "power": 15000,
+    "speed": 1200,
+    "module": 0.003,
+    "pinionTeeth": 20,
+    "gearTeeth": 80,
+    "faceWidth": 0.025,
+    "material": {
+      "name": "Steel",
+      "E": 210000000000,
+      "yieldStress": 250000000,
+      "poisson": 0.3
+    }
+  },
+  "expected": {
+    "actualRatio": 4,
+    "safetyFactor": 2.0734511513692637,
+    "tangentialForce": 3978.8735772973837
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — internal gear Lewis screening v1"
+}

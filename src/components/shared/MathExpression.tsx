@@ -2,7 +2,7 @@
 
 import katex from "katex";
 import "katex/dist/katex.min.css";
-import { expressionToLatex } from "@/lib/display/expressionToLatex";
+import { expressionToLatex, isAuthoredLatex } from "@/lib/display/expressionToLatex";
 
 type Props = {
   expression: string;
@@ -18,7 +18,7 @@ export default function MathExpression({
   display = false,
   className = "",
 }: Props) {
-  const tex = latex ?? expressionToLatex(expression);
+  const tex = latex ?? (isAuthoredLatex(expression) ? expression : expressionToLatex(expression));
 
   try {
     const html = katex.renderToString(tex, {
@@ -30,7 +30,7 @@ export default function MathExpression({
 
     return (
       <span
-        className={`math-expression ${display ? "katex-display" : ""} ${className}`.trim()}
+        className={`math-expression block max-w-full overflow-x-auto ${display ? "katex-display" : ""} ${className}`.trim()}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     );

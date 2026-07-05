@@ -1,0 +1,395 @@
+import type { ModuleApplicationPreset } from "./types";
+import { ALL_DESIGN_CODES } from "./types";
+
+const structuralGeneral: ModuleApplicationPreset = {
+  id: "general_mechanics",
+  label: "General mechanics",
+  description: "Elastic screening for brackets, rails, and non-code machine members.",
+  designCodes: ALL_DESIGN_CODES,
+  standards: ["Roark's Formulas", "Timoshenko beam theory", "Machinery's Handbook"],
+  knobs: { loadFactor: 1, allowableStressRatio: 0.6, deflectionLimitRatio: 360, targetSafetyFactor: 2 },
+};
+
+export const structuralApplicationPresets: ModuleApplicationPreset[] = [
+  structuralGeneral,
+  {
+    id: "building_steel_us",
+    label: "Building steel (AISC)",
+    description: "US structural steel member screening with AISC-style load and deflection targets.",
+    designCodes: ["US"],
+    standards: ["AISC 360", "ASCE 7 load context"],
+    knobs: { loadFactor: 1.2, allowableStressRatio: 0.66, deflectionLimitRatio: 360, targetSafetyFactor: 1.67 },
+    calculationNotes: ["Uses indicative load factor — verify load combinations per ASCE 7."],
+  },
+  {
+    id: "building_steel_eu",
+    label: "Building steel (EN 1993)",
+    description: "EU harmonized steel member screening with EN 1993-1-1 context.",
+    designCodes: ["EU"],
+    standards: ["EN 1993-1-1", "EN 1990 load combinations"],
+    knobs: { loadFactor: 1.35, allowableStressRatio: 0.55, deflectionLimitRatio: 300, targetSafetyFactor: 1.5 },
+  },
+  {
+    id: "machine_frame",
+    label: "Machine frame / equipment skid",
+    description: "Industrial frame screening with fatigue and stiffness expectations.",
+    designCodes: ["INDICATIVE", "EU", "ISO"],
+    standards: ["FKM Guideline", "ISO 12100", "Machinery's Handbook"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.25, allowableStressRatio: 0.5, deflectionLimitRatio: 500, targetSafetyFactor: 2.5 },
+  },
+  {
+    id: "lifting_crane",
+    label: "Lifting / crane support",
+    description: "Hoist, runway, and below-hook support screening.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["ASME BTH-1", "CMAA 70", "EN 13001", "ISO 8686"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.5, allowableStressRatio: 0.4, deflectionLimitRatio: 750, targetSafetyFactor: 3 },
+    limitations: ["Does not replace full crane or lifting-device code checks."],
+  },
+  {
+    id: "offshore_energy",
+    label: "Energy / offshore support",
+    description: "Wind, renewable, and offshore equipment support screening.",
+    designCodes: ["EU", "ISO"],
+    standards: ["IEC 61400", "DNV-ST-0126", "DNV-RP-C203"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.35, allowableStressRatio: 0.4, deflectionLimitRatio: 500, targetSafetyFactor: 2.5 },
+  },
+  {
+    id: "aerospace_member",
+    label: "Aerospace / lightweight",
+    description: "Lightweight member screening with ultimate load margin awareness.",
+    designCodes: ["US", "ISO"],
+    standards: ["MMPDS", "CMH-17", "FAA / EASA CS context"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.5, allowableStressRatio: 0.45, deflectionLimitRatio: 1000, targetSafetyFactor: 1.5 },
+    limitations: ["Not an airworthiness certification calculation."],
+  },
+];
+
+export const powerTransmissionApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_drive",
+    label: "General industrial drive",
+    description: "Standard belt, chain, or pulley drive screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Machinery's Handbook", "Manufacturer catalog practice"],
+    knobs: { serviceFactor: 1.2, loadFactor: 1, targetSafetyFactor: 2 },
+  },
+  {
+    id: "heavy_duty_drive",
+    label: "Heavy-duty / shock load",
+    description: "Crushers, reciprocating compressors, and high-shock applications.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["AGMA 927", "ISO 10821 service factors"],
+    knobs: { serviceFactor: 1.6, loadFactor: 1.25, targetSafetyFactor: 2.5 },
+  },
+  {
+    id: "precision_drive",
+    label: "Precision / low vibration",
+    description: "Machine tools, test equipment, and low-vibration drives.",
+    designCodes: ["INDICATIVE", "EU", "ISO"],
+    standards: ["ISO 10821", "VDI 2056 vibration context"],
+    knobs: { serviceFactor: 1.1, loadFactor: 1, deflectionLimitRatio: 800, targetSafetyFactor: 2 },
+  },
+  {
+    id: "continuous_process",
+    label: "Continuous process (24/7)",
+    description: "Pumps, fans, and continuous-duty process drives.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["API 610 context", "ISO 10821"],
+    knobs: { serviceFactor: 1.3, loadFactor: 1.1, targetSafetyFactor: 2 },
+  },
+];
+
+export const machineApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_rotating",
+    label: "General rotating machinery",
+    description: "Shafts, gears, and bearings for typical industrial duty.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Machinery's Handbook", "Shigley's Mechanical Engineering Design"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2, serviceFactor: 1.25 },
+  },
+  {
+    id: "agma_gear_us",
+    label: "Power transmission (AGMA)",
+    description: "US gear and shaft screening with AGMA service context.",
+    designCodes: ["US"],
+    standards: ["AGMA 2001", "AGMA 2101", "AGMA 6001"],
+    knobs: { loadFactor: 1.15, targetSafetyFactor: 1.5, serviceFactor: 1.3 },
+  },
+  {
+    id: "din_shaft_eu",
+    label: "Shaft fatigue (DIN 743)",
+    description: "EU shaft and rotating component fatigue screening.",
+    designCodes: ["EU"],
+    standards: ["DIN 743", "FKM Guideline"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.2, targetSafetyFactor: 2, serviceFactor: 1.4 },
+  },
+  {
+    id: "iso_bearing",
+    label: "Bearing life (ISO 281)",
+    description: "International bearing selection and life screening.",
+    designCodes: ["ISO", "EU"],
+    standards: ["ISO 281", "ISO 76"],
+    knobs: { serviceFactor: 1.2, targetSafetyFactor: 1.5, loadFactor: 1 },
+  },
+  {
+    id: "high_speed",
+    label: "High-speed / critical speed sensitive",
+    description: "Turbomachinery and high-RPM drives with critical-speed margin.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["API 617 context", "DIN 743"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.1, targetSafetyFactor: 2.5, deflectionLimitRatio: 1000 },
+  },
+];
+
+export const springApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_spring",
+    label: "General spring application",
+    description: "Standard compression, extension, or torsion spring screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Machinery's Handbook", "Wahl / Spring Design Manual"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 1.5, serviceFactor: 1.1 },
+  },
+  {
+    id: "automotive_spring",
+    label: "Automotive / suspension",
+    description: "Suspension and chassis spring context with fatigue awareness.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["SAE J1123 context", "ISO 10243"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.25, targetSafetyFactor: 1.8, serviceFactor: 1.3 },
+  },
+  {
+    id: "precision_spring",
+    label: "Precision instrument",
+    description: "Low-rate or instrument springs with tight deflection control.",
+    designCodes: ["INDICATIVE", "ISO"],
+    standards: ["ISO 10243", "Instrument spring practice"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2, deflectionLimitRatio: 500 },
+  },
+];
+
+export const fastenerApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_joint",
+    label: "General bolted / welded joint",
+    description: "Standard joint screening for bolts, welds, and pins.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Machinery's Handbook", "Shigley's joint design"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2 },
+  },
+  {
+    id: "aisc_connection_us",
+    label: "Structural connection (AISC / AWS)",
+    description: "US steel connection and weld screening.",
+    designCodes: ["US"],
+    standards: ["AISC 360 J3", "AWS D1.1"],
+    knobs: { loadFactor: 1.2, targetSafetyFactor: 1.67 },
+  },
+  {
+    id: "en_joint_eu",
+    label: "Structural joint (EN 1993-1-8)",
+    description: "EU bolted and welded joint screening.",
+    designCodes: ["EU"],
+    standards: ["EN 1993-1-8", "VDI 2230"],
+    knobs: { loadFactor: 1.35, targetSafetyFactor: 1.5 },
+  },
+  {
+    id: "high_vibration_joint",
+    label: "High-vibration / fatigue joint",
+    description: "Joints in rotating or cyclic-load equipment.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["VDI 2230", "FKM welded joint context"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.25, targetSafetyFactor: 2.5, serviceFactor: 1.4 },
+  },
+];
+
+export const materialsApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_material",
+    label: "General material assessment",
+    description: "Fatigue, corrosion, or composite screening for typical duty.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["ASM Handbook", "MMPDS / CMH-17 context"],
+    knobs: { targetSafetyFactor: 2, loadFactor: 1 },
+  },
+  {
+    id: "infinite_life",
+    label: "Infinite-life design target",
+    description: "High-cycle fatigue with conservative stress targets.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Modified Goodman", "Gerber / Soderberg context"],
+    fatigueSensitive: true,
+    knobs: { targetSafetyFactor: 2.5, allowableStressRatio: 0.4 },
+  },
+  {
+    id: "corrosive_service",
+    label: "Corrosive / marine service",
+    description: "Corrosion allowance and derated strength screening.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["NACE MR0175 context", "ISO 12944"],
+    knobs: { targetSafetyFactor: 2.5, allowableStressRatio: 0.5, loadFactor: 1.1 },
+  },
+];
+
+export const pressureApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_pressure",
+    label: "General pressure component",
+    description: "Pipes, vessels, and hydraulic component screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Mechanics of materials", "Roark's plate formulas"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2 },
+  },
+  {
+    id: "asme_vessel_us",
+    label: "Pressure vessel (ASME VIII)",
+    description: "US pressure vessel and piping screening context.",
+    designCodes: ["US"],
+    standards: ["ASME BPVC VIII", "ASME B31.3"],
+    knobs: { loadFactor: 1.1, targetSafetyFactor: 3.5, allowableStressRatio: 0.667 },
+  },
+  {
+    id: "en_pressure_eu",
+    label: "Pressure equipment (EN 13445)",
+    description: "EU harmonized pressure equipment screening.",
+    designCodes: ["EU"],
+    standards: ["EN 13445", "EN 13480"],
+    knobs: { loadFactor: 1.2, targetSafetyFactor: 2.4, allowableStressRatio: 0.6 },
+  },
+  {
+    id: "hydraulic_system",
+    label: "Hydraulic / fluid power",
+    description: "Hydraulic lines, cylinders, and manifolds.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["ISO 4413", "SAE J517 context"],
+    knobs: { loadFactor: 1.25, targetSafetyFactor: 2, serviceFactor: 1.3 },
+  },
+];
+
+export const dynamicsApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_dynamics",
+    label: "General dynamic analysis",
+    description: "Vibration, rotation, impact, and suspension screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Mechanical vibrations theory", "ISO 2041"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2 },
+  },
+  {
+    id: "rotating_equipment",
+    label: "Rotating equipment",
+    description: "Motors, drives, and rotating machinery dynamics.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["ISO 10816", "API 610 vibration limits"],
+    knobs: { loadFactor: 1.1, targetSafetyFactor: 2, serviceFactor: 1.2 },
+  },
+  {
+    id: "vehicle_suspension",
+    label: "Vehicle / suspension",
+    description: "Automotive suspension and ride dynamics context.",
+    designCodes: ["US", "EU"],
+    standards: ["SAE suspension practice", "ISO 2631 ride comfort"],
+    knobs: { loadFactor: 1.3, targetSafetyFactor: 1.8, serviceFactor: 1.25 },
+  },
+  {
+    id: "shock_impact",
+    label: "Shock / impact event",
+    description: "Drop, crash, and transient impact screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["MIL-STD-810 context", "Energy methods"],
+    knobs: { loadFactor: 1.5, targetSafetyFactor: 2.5 },
+  },
+];
+
+export const manufacturingApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_manufacturing",
+    label: "General manufacturing",
+    description: "Tolerance, fits, cost, and toolpath screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["ISO 286", "ASME Y14.5"],
+    knobs: { targetSafetyFactor: 1.5 },
+  },
+  {
+    id: "precision_machining",
+    label: "Precision machining",
+    description: "Tight tolerance and precision fit applications.",
+    designCodes: ["INDICATIVE", "EU", "ISO"],
+    standards: ["ISO 286 IT5–IT7", "ISO 1101"],
+    knobs: { targetSafetyFactor: 2, deflectionLimitRatio: 1000 },
+  },
+  {
+    id: "high_volume_production",
+    label: "High-volume production",
+    description: "Cost-optimized manufacturing with standard tolerances.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["ISO 286 IT10–IT12", "Six Sigma cost context"],
+    knobs: { targetSafetyFactor: 1.25, serviceFactor: 1.1 },
+  },
+];
+
+export const advancedSystemsApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_advanced",
+    label: "General advanced system",
+    description: "Vacuum, cryogenic, magnetic, or specialty system screening.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["First-order engineering estimates"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2.5 },
+    limitations: ["Screening-level only — validate with detailed analysis."],
+  },
+  {
+    id: "vacuum_cryogenic",
+    label: "Vacuum / cryogenic",
+    description: "Vacuum chambers, cryostats, and low-temperature hardware.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["ASME BPVC VIII context", "ASTM E595", "CGA cryogenic guidance"],
+    knobs: { loadFactor: 1.25, allowableStressRatio: 0.35, targetSafetyFactor: 3 },
+  },
+  {
+    id: "electromagnetic",
+    label: "Electromagnetic / superconducting",
+    description: "Coils, magnets, and Lorentz-force support structures.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["IEC magnet practice", "ITER structural context"],
+    fatigueSensitive: true,
+    knobs: { loadFactor: 1.3, allowableStressRatio: 0.4, targetSafetyFactor: 2.5 },
+  },
+  {
+    id: "battery_thermal",
+    label: "Battery / thermal management",
+    description: "EV battery packs and thermal management systems.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["UN 38.3 context", "IEC 62619", "SAE J2464"],
+    knobs: { loadFactor: 1.2, targetSafetyFactor: 2.5, serviceFactor: 1.2 },
+  },
+];
+
+export const toolsApplicationPresets: ModuleApplicationPreset[] = [
+  {
+    id: "general_screening",
+    label: "General engineering screening",
+    description: "Default safety and load factors for utility calculations.",
+    designCodes: ALL_DESIGN_CODES,
+    standards: ["Indicative engineering practice"],
+    knobs: { loadFactor: 1, targetSafetyFactor: 2, serviceFactor: 1.2 },
+  },
+  {
+    id: "code_aligned",
+    label: "Code-aligned screening",
+    description: "Conservative factors when comparing to a design standard.",
+    designCodes: ["US", "EU", "ISO"],
+    standards: ["Selected design standard context"],
+    knobs: { loadFactor: 1.2, targetSafetyFactor: 1.67, serviceFactor: 1.3 },
+  },
+];

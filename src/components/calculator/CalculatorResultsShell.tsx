@@ -5,6 +5,7 @@ import ExportableReport from "@/components/shared/ExportableReport";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { CsvRow } from "@/lib/export/csvRows";
+import type { ReportRow } from "@/lib/export/reportPayload";
 import type { ReportMeta } from "@/lib/export/structuredReport";
 import CalculatorEmptyResults from "./CalculatorEmptyResults";
 import CalculatorResultsPanel from "./CalculatorResultsPanel";
@@ -17,6 +18,7 @@ type Props = {
   calculationSpec?: CalculationSpec | null;
   result?: Record<string, unknown> | null;
   csvRows?: CsvRow[];
+  inputRows?: ReportRow[];
   qualityOverrides?: Partial<ModuleQualityChecklist>;
   showQualityChecklist?: boolean;
   /** Title block metadata (project, engineer) for the structured PDF report */

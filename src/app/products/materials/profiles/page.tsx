@@ -25,17 +25,11 @@ export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("profiles");
 
-  // =========================
-  // INPUTS
-  // =========================
   const [shape, setShape] = useState<ShapeProperties>({
     shape: "rectangle",
     rectangle: { width: 0.1, height: 0.2 },
   });
 
-  // =========================
-  // UI STATE
-  // =========================
   const [result, setResult] = useState<AreaPropertiesResult | null>(null);
   const [projectName, setProjectName] = useState("Area Properties Project");
   const [saving, setSaving] = useState(false);
@@ -43,49 +37,29 @@ export default function Page() {
     loadLocalProjects<ProfilesProjectData>("profiles")
   );
 
-  // =========================
-  // SOLVER
-  // =========================
   const runCheck = () => {
-    const config: AreaPropertiesConfig = {
-      shape,
-    };
-
+    const config: AreaPropertiesConfig = { shape };
     const raw = solveAreaPropertiesEngine(config);
     setResult(wrapResult(raw));
   };
 
-  // =========================
-  // SAVE
-  // =========================
   const saveProject = () => {
     setSaving(true);
-
-    const projects = saveLocalProject<ProfilesProjectData>("profiles", projectName, {
-      shape,
-    });
-
+    const projects = saveLocalProject<ProfilesProjectData>("profiles", projectName, { shape });
     setSavedProjects(projects);
     setSaving(false);
   };
 
-  // =========================
-  // LOAD
-  // =========================
   const loadProjectIntoForm = (p: ProfilesProject) => {
     setProjectName(p.name);
     setShape(p.shape);
   };
 
-  // =========================
-  // UI
-  // =========================
-
   const designUserInputs = useMemo((): ModuleUserInputs => ({
-      requiredI: result?.ixx,
-      width: shape.shape === "rectangle" ? shape.rectangle?.width : undefined,
-      height: shape.shape === "rectangle" ? shape.rectangle?.height : undefined,
-    }), [result, shape]);
+    requiredI: result?.ixx,
+    width: shape.shape === "rectangle" ? shape.rectangle?.width : undefined,
+    height: shape.shape === "rectangle" ? shape.rectangle?.height : undefined,
+  }), [result, shape]);
 
   useSyncDesignInputs("profiles", designUserInputs);
 

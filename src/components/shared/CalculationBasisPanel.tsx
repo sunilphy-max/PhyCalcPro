@@ -1,5 +1,6 @@
 "use client";
 
+import MathExpression from "@/components/shared/MathExpression";
 import type { CalculationSpec } from "@/lib/standards/types";
 
 type Props = {
@@ -10,7 +11,9 @@ function EquationBlock({ expression, label, description }: { expression: string;
   return (
     <li className="space-y-1">
       <p className="font-medium text-slate-800">{label}</p>
-      <p className="font-mono text-xs text-slate-700 bg-slate-50 rounded px-2 py-1.5 overflow-x-auto">{expression}</p>
+      <div className="rounded bg-slate-50 px-2 py-1.5 overflow-x-auto text-slate-800">
+        <MathExpression expression={expression} display />
+      </div>
       {description ? <p className="text-xs text-slate-500">{description}</p> : null}
     </li>
   );
@@ -20,7 +23,7 @@ export default function CalculationBasisPanel({ spec }: Props) {
   if (!spec) return null;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3 text-sm">
+    <div className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm space-y-3 text-sm">
       <h3 className="font-semibold text-slate-900">Calculation basis</h3>
 
       {spec.standards.length ? (

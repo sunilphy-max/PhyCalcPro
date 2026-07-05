@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-03T19:02:46.555Z",
-  "total": 30,
-  "passed": 30,
+  "ranAt": "2026-07-05T04:23:59.443Z",
+  "total": 38,
+  "passed": 38,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -304,6 +304,50 @@
       ]
     },
     {
+      "caseId": "internal-gears-rack-indicative-01",
+      "moduleId": "internal-gears-rack",
+      "pass": true,
+      "fields": [
+        {
+          "field": "actualRatio",
+          "expected": 4,
+          "actual": 4,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 2.0734511513692637,
+          "actual": 2.0734511513692637,
+          "pass": true
+        },
+        {
+          "field": "tangentialForce",
+          "expected": 3978.8735772973837,
+          "actual": 3978.8735772973837,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "internal-gears-rack-indicative-rack-01",
+      "moduleId": "internal-gears-rack",
+      "pass": true,
+      "fields": [
+        {
+          "field": "safetyFactor",
+          "expected": 2.7143360527015816,
+          "actual": 2.7143360527015816,
+          "pass": true
+        },
+        {
+          "field": "tangentialForce",
+          "expected": 3536.7765131532296,
+          "actual": 3536.7765131532296,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "keys-splines-indicative-01",
       "moduleId": "keys-splines",
       "pass": true,
@@ -331,6 +375,106 @@
           "field": "maxHoopStress",
           "expected": 38687655.638989076,
           "actual": 38687655.638989076,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "plain-bearings-indicative-journal-01",
+      "moduleId": "plain-bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "sommerfeldNumber",
+          "expected": 0.00037699111843077514,
+          "actual": 0.00037699111843077514,
+          "pass": true
+        },
+        {
+          "field": "eccentricityRatio",
+          "expected": 0.95,
+          "actual": 0.95,
+          "pass": true
+        },
+        {
+          "field": "minFilmThickness",
+          "expected": 0.0000012500000000000012,
+          "actual": 0.0000012500000000000012,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "plain-bearings-indicative-thrust-01",
+      "moduleId": "plain-bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "unitLoad",
+          "expected": 5894627.521922049,
+          "actual": 5894627.521922049,
+          "pass": true
+        },
+        {
+          "field": "minFilmThickness",
+          "expected": 0.000001,
+          "actual": 0.000001,
+          "pass": true
+        },
+        {
+          "field": "powerLoss",
+          "expected": 45.772240792375584,
+          "actual": 45.772240792375584,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "power-screws-indicative-01",
+      "moduleId": "power-screws",
+      "pass": true,
+      "fields": [
+        {
+          "field": "efficiency",
+          "expected": 31.705363832192972,
+          "actual": 31.705363832192972,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 30.37269575046047,
+          "actual": 30.37269575046047,
+          "pass": true
+        },
+        {
+          "field": "torque",
+          "expected": 50.19811282855953,
+          "actual": 50.19811282855953,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "power-screws-indicative-ball-01",
+      "moduleId": "power-screws",
+      "pass": true,
+      "fields": [
+        {
+          "field": "efficiency",
+          "expected": 97.51845751527294,
+          "actual": 97.51845751527294,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 23.852607402103196,
+          "actual": 23.852607402103196,
+          "pass": true
+        },
+        {
+          "field": "power",
+          "expected": 1025.4469004940775,
+          "actual": 1025.4469004940775,
           "pass": true
         }
       ]
@@ -399,6 +543,31 @@
       ]
     },
     {
+      "caseId": "shells-indicative-01",
+      "moduleId": "shells",
+      "pass": true,
+      "fields": [
+        {
+          "field": "hoopStress",
+          "expected": 25000000,
+          "actual": 25000000,
+          "pass": true
+        },
+        {
+          "field": "vonMisesStress",
+          "expected": 21650635.094610967,
+          "actual": 21650635.094610967,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 7.85196366097891,
+          "actual": 7.85196366097891,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "suspension-indicative-01",
       "moduleId": "suspension",
       "pass": true,
@@ -438,6 +607,31 @@
           "field": "drivenSpeed",
           "expected": 725,
           "actual": 725,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "tolerance-indicative-3d-01",
+      "moduleId": "tolerance",
+      "pass": true,
+      "fields": [
+        {
+          "field": "worstCase",
+          "expected": 0.08,
+          "actual": 0.08,
+          "pass": true
+        },
+        {
+          "field": "worstCase3d",
+          "expected": 0.0916515138991168,
+          "actual": 0.0916515138991168,
+          "pass": true
+        },
+        {
+          "field": "rss3d",
+          "expected": 0.066332495807108,
+          "actual": 0.066332495807108,
           "pass": true
         }
       ]
@@ -539,7 +733,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468195,
+          "actual": 256.9198297468234,
           "pass": true
         }
       ]

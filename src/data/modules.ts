@@ -37,6 +37,7 @@ import {
   CircleEllipsis,
   BookOpen,
   ArrowLeftRight,
+  Cylinder,
 } from "lucide-react";
 
 /**
@@ -55,6 +56,8 @@ export type EngineeringModule = {
   tags?: string[];
   featured?: boolean;
   comingSoon?: boolean;
+  /** Sidebar sub-heading within a category (e.g. Machine → Gearing). */
+  subGroup?: string;
 };
 
 /**
@@ -144,20 +147,21 @@ export const categories: EngineeringCategory[] = [
         icon: Combine,
       },
       {
-        id: "load-case-manager",
-        title: "Load Case Manager",
-        description: "Manage multiple structural load cases and envelopes",
-        route: "/products/structural/load-case-manager",
-        category: "structural",
-        icon: Workflow,
-      },
-      {
         id: "circular-plates",
         title: "Circular Plates",
         description: "Annular and solid plate deflection screening",
         route: "/products/structural/circular-plates",
         category: "structural",
         icon: CircleEllipsis,
+      },
+      {
+        id: "shells",
+        title: "Cylindrical Shells",
+        description: "Thin-shell hoop, axial and bending stress screening",
+        route: "/products/structural/shells",
+        category: "structural",
+        icon: Cylinder,
+        tags: ["plates", "pressure", "axisymmetric"],
       },
     ],
   },
@@ -224,49 +228,23 @@ export const categories: EngineeringCategory[] = [
 
     modules: [
       {
-        id: "shafts",
-        title: "Shaft Design",
-        description: "Torsion, bending, fatigue analysis",
-        route: "/products/machine/shafts",
-        category: "machine",
-        icon: RotateCcw,
-        featured: true,
-      },
-
-      {
         id: "gears",
         title: "Gear Design",
         description: "Spur and helical gear calculations",
         route: "/products/machine/gears",
         category: "machine",
         icon: CircleDot,
+        subGroup: "Gearing",
       },
-
       {
-        id: "bearings",
-        title: "Bearing Selection",
-        description: "Load rating and life estimation",
-        route: "/products/machine/bearings",
+        id: "internal-gears-rack",
+        title: "Internal Gears & Rack",
+        description: "Internal spur and rack-and-pinion strength screening",
+        route: "/products/machine/internal-gears-rack",
         category: "machine",
-        icon: Gauge,
-      },
-
-      {
-        id: "cams",
-        title: "Cam Design",
-        description: "Cam profile and motion analysis",
-        route: "/products/machine/cams",
-        category: "machine",
-        icon: Activity,
-      },
-
-      {
-        id: "flywheels",
-        title: "Flywheel Design",
-        description: "Energy storage and inertia design",
-        route: "/products/machine/flywheels",
-        category: "machine",
-        icon: Disc3,
+        icon: GitBranch,
+        subGroup: "Gearing",
+        tags: ["gears", "rack", "internal"],
       },
       {
         id: "bevel-gears",
@@ -275,6 +253,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/machine/bevel-gears",
         category: "machine",
         icon: CircleDot,
+        subGroup: "Gearing",
       },
       {
         id: "worm-gears",
@@ -283,6 +262,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/machine/worm-gears",
         category: "machine",
         icon: RotateCcw,
+        subGroup: "Gearing",
       },
       {
         id: "planetary-gears",
@@ -291,6 +271,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/machine/planetary-gears",
         category: "machine",
         icon: Orbit,
+        subGroup: "Gearing",
       },
       {
         id: "gear-ratio-design",
@@ -299,14 +280,45 @@ export const categories: EngineeringCategory[] = [
         route: "/products/machine/gear-ratio-design",
         category: "machine",
         icon: Scaling,
+        subGroup: "Gearing",
       },
       {
-        id: "plain-bearings",
-        title: "Plain Bearings",
-        description: "Hydrodynamic journal bearing screening",
-        route: "/products/machine/plain-bearings",
+        id: "shafts",
+        title: "Shaft Design",
+        description: "Torsion, bending, fatigue analysis",
+        route: "/products/machine/shafts",
         category: "machine",
-        icon: Circle,
+        icon: RotateCcw,
+        featured: true,
+        subGroup: "Rotating Machinery",
+      },
+      {
+        id: "power-screws",
+        title: "Power & Ball Screws",
+        description: "Lead screw efficiency, torque and buckling screening",
+        route: "/products/machine/power-screws",
+        category: "machine",
+        icon: Bolt,
+        subGroup: "Rotating Machinery",
+        tags: ["screw", "linear actuator", "ball screw"],
+      },
+      {
+        id: "cams",
+        title: "Cam Design",
+        description: "Cam profile and motion analysis",
+        route: "/products/machine/cams",
+        category: "machine",
+        icon: Activity,
+        subGroup: "Rotating Machinery",
+      },
+      {
+        id: "flywheels",
+        title: "Flywheel Design",
+        description: "Energy storage and inertia design",
+        route: "/products/machine/flywheels",
+        category: "machine",
+        icon: Disc3,
+        subGroup: "Rotating Machinery",
       },
       {
         id: "brakes-clutches",
@@ -315,6 +327,25 @@ export const categories: EngineeringCategory[] = [
         route: "/products/machine/brakes-clutches",
         category: "machine",
         icon: Disc3,
+        subGroup: "Rotating Machinery",
+      },
+      {
+        id: "bearings",
+        title: "Bearing Selection",
+        description: "Load rating and life estimation",
+        route: "/products/machine/bearings",
+        category: "machine",
+        icon: Gauge,
+        subGroup: "Bearings",
+      },
+      {
+        id: "plain-bearings",
+        title: "Plain Bearings",
+        description: "Journal and thrust pad hydrodynamic screening",
+        route: "/products/machine/plain-bearings",
+        category: "machine",
+        icon: Circle,
+        subGroup: "Bearings",
       },
     ],
   },
@@ -364,8 +395,8 @@ export const categories: EngineeringCategory[] = [
   // =========================================================
   {
     id: "fasteners",
-    title: "Fasteners & Connections",
-    description: "Bolts, welds, rivets, threaded joints",
+    title: "Connections & Fasteners",
+    description: "Bolts, welds, rivets, keys, pins and joints",
 
     icon: Wrench,
     color: "from-red-500 to-red-600",
@@ -397,14 +428,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/fasteners/rivets",
         category: "fasteners",
         icon: GitBranch,
-      },
-      {
-        id: "safety-factor",
-        title: "Safety Factor",
-        description: "Compute reserve factors for bolts, shafts and joints",
-        route: "/products/fasteners/safety-factor",
-        category: "fasteners",
-        icon: ShieldCheck,
       },
       {
         id: "keys-splines",
@@ -471,11 +494,10 @@ export const categories: EngineeringCategory[] = [
         icon: LayoutGrid,
       },
       {
-        // Route exception: lives at /products/profiles (not /products/materials/profiles) for stable URL.
         id: "profiles",
         title: "Area Properties",
         description: "Centroid, inertia and moduli for common profile shapes",
-        route: "/products/profiles",
+        route: "/products/materials/profiles",
         category: "materials",
         icon: Ruler,
       },
@@ -740,12 +762,30 @@ export const categories: EngineeringCategory[] = [
   {
     id: "tools",
     title: "Technical Tools",
-    description: "Formula reference and unit conversion",
+    description: "Load cases, safety factors, formulas and unit conversion",
 
     icon: BookOpen,
     color: "from-indigo-500 to-indigo-600",
 
     modules: [
+      {
+        id: "load-case-manager",
+        title: "Load Case Manager",
+        description: "Manage multiple structural load cases and envelopes",
+        route: "/products/structural/load-case-manager",
+        category: "tools",
+        icon: Workflow,
+        subGroup: "Analysis Utilities",
+      },
+      {
+        id: "safety-factor",
+        title: "Safety Factor",
+        description: "Compute reserve factors for bolts, shafts and joints",
+        route: "/products/fasteners/safety-factor",
+        category: "tools",
+        icon: ShieldCheck,
+        subGroup: "Analysis Utilities",
+      },
       {
         id: "formula-reference",
         title: "Engineering Formulas",
@@ -753,6 +793,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/tools/formula-reference",
         category: "tools",
         icon: BookOpen,
+        subGroup: "Reference",
       },
       {
         id: "unit-converter",
@@ -761,6 +802,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/tools/unit-converter",
         category: "tools",
         icon: ArrowLeftRight,
+        subGroup: "Reference",
       },
     ],
   },

@@ -112,11 +112,33 @@ export default function EngineeringPlot({
   const hoverYUnit = unitLabel ? ` ${unitLabel}` : "";
   const hoverXUnit = xUnit ? ` ${xUnit}` : "";
 
+  const plotExportData = useMemo(
+    () =>
+      JSON.stringify({
+        title,
+        x,
+        xLabel,
+        xUnit,
+        yLabel,
+        unitLabel,
+        series: [
+          { label: yLabel, y: cleanY, unitLabel },
+          ...series.map((s) => ({
+            label: s.label,
+            y: s.y,
+            unitLabel: s.unitLabel,
+          })),
+        ],
+      }),
+    [title, x, xLabel, xUnit, yLabel, unitLabel, cleanY, series]
+  );
+
   return (
     <div
       className="relative max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900"
       data-export-plot="true"
       data-export-caption={title}
+      data-export-plot-data={plotExportData}
     >
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</div>

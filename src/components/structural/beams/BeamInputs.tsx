@@ -8,9 +8,9 @@ import RolledSectionPicker from "@/components/design-workflows/RolledSectionPick
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 import {
-  beamApplicationPresets,
-  type BeamApplicationId,
+  getBeamApplicationPreset,
 } from "@/lib/structural/beams/applicationPresets";
+import { useBeamApplicationPreset } from "@/hooks/useApplicationPreset";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
@@ -53,8 +53,6 @@ type Props = {
 
   material: string;
   setMaterial: (v: string) => void;
-  applicationId: BeamApplicationId;
-  setApplicationId: (v: BeamApplicationId) => void;
 
   onCalculate: () => void;
   saveProject: () => void;
@@ -80,14 +78,13 @@ type Props = {
 };
 
 export default function BeamInputs(props: Props) {
+  const { applicationId } = useBeamApplicationPreset();
   const beamMaterials = materials.filter((material) =>
     ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(
       material.category
     )
   );
-  const selectedApplication =
-    beamApplicationPresets.find((preset) => preset.id === props.applicationId) ??
-    beamApplicationPresets[0]!;
+  const selectedApplication = getBeamApplicationPreset(applicationId);
   const isDesignMode = props.workflowMode === "design";
   const showManualSection = !isDesignMode;
 
@@ -158,31 +155,6 @@ export default function BeamInputs(props: Props) {
             ))}
           </select>
         </label>
-
-        <div className="rounded-xl border border-cyan-200 bg-cyan-50/80 p-3 dark:border-cyan-900/50 dark:bg-cyan-950/30">
-          <label className="text-xs font-semibold uppercase tracking-wide text-cyan-800 dark:text-cyan-200">
-            Application preset
-          </label>
-          <select
-            className={`${calculatorSelectClass} mt-2`}
-            value={props.applicationId}
-            onChange={(e) => props.setApplicationId(e.target.value as BeamApplicationId)}
-          >
-            {beamApplicationPresets.map((preset) => (
-              <option key={preset.id} value={preset.id}>
-                {preset.label}
-              </option>
-            ))}
-          </select>
-          <p className="mt-2 text-xs leading-relaxed text-cyan-950 dark:text-cyan-100">
-            {selectedApplication.description}
-          </p>
-          <p className="mt-1 text-xs text-cyan-900 dark:text-cyan-200/90">
-            Load factor {selectedApplication.loadFactor.toFixed(2)} · allowable stress{" "}
-            {(selectedApplication.allowableStressRatio * 100).toFixed(0)}% of yield · deflection L/
-            {selectedApplication.deflectionLimitRatio}
-          </p>
-        </div>
       </CalculatorFormSection>
 
       {isDesignMode ? (

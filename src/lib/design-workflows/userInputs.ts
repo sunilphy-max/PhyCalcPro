@@ -2,6 +2,9 @@ import type { EndCondition } from "@/lib/structural/columns/types";
 import type { Load } from "@/lib/structural/beams/types";
 import type { BeamApplicationId } from "@/lib/structural/beams/applicationPresets";
 
+/** Shared application preset id (see src/lib/applications). */
+export type ApplicationPresetId = string;
+
 /** Live module state passed from calculator pages to the design advisor and computed candidates. */
 export type ModuleUserInputs = {
   // Beams / structural geometry
@@ -18,6 +21,9 @@ export type ModuleUserInputs = {
   c?: number;
   inertia?: number;
   applicationId?: BeamApplicationId;
+  applicationPresetId?: ApplicationPresetId;
+  allowableStressRatio?: number;
+  deflectionLimitRatio?: number;
   allowableStressPa?: number;
   deflectionLimit?: number;
   sectionDesignation?: string;

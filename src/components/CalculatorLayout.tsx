@@ -2,6 +2,8 @@
 
 import { ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
+import ApplicationPresetSelector from "@/components/shared/ApplicationPresetSelector";
+import { moduleSupportsApplicationPreset } from "@/lib/applications";
 import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
 import DesignModeToggle from "@/components/design-workflows/DesignModeToggle";
 import DesignTargetFields from "@/components/design-workflows/DesignTargetFields";
@@ -69,6 +71,9 @@ function CalculatorLayoutBody({
   const isScreeningModule = moduleId
     ? allModules.find((m) => m.id === moduleId)?.category === "advanced-systems"
     : false;
+  const showApplicationPreset = moduleId
+    ? moduleSupportsApplicationPreset(moduleId)
+    : false;
 
   const inputColumn =
     inputs ??
@@ -134,19 +139,24 @@ function CalculatorLayoutBody({
 
           {/* Inputs left, results right */}
           <div
-            className={`grid grid-cols-1 gap-4 ${
+            className={`grid min-w-0 grid-cols-1 gap-4 ${
               inputColumn && resultColumn
-                ? "lg:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]"
+                ? "xl:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]"
                 : ""
             }`}
           >
             {inputColumn ? (
-              <aside className={`${calculatorWorkspaceClass} max-w-full`}>
+              <aside className={`${calculatorWorkspaceClass} max-w-full min-w-0`}>
+                {showApplicationPreset && moduleId ? (
+                  <ApplicationPresetSelector moduleId={moduleId} />
+                ) : null}
                 {moduleId ? <DesignTargetFields moduleId={moduleId} /> : null}
                 {inputColumn}
               </aside>
             ) : null}
-            {resultColumn ? <div className="min-w-0 space-y-4">{resultColumn}</div> : null}
+            {resultColumn ? (
+              <div className="@container/results min-w-0 space-y-4">{resultColumn}</div>
+            ) : null}
           </div>
 
           {designWorkflow ? <ModuleDesignAdvisor workflow={designWorkflow} /> : null}

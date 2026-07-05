@@ -1,3 +1,8 @@
+/** True when the string is already LaTeX (module equation registry, docs). */
+export function isAuthoredLatex(expression: string): boolean {
+  return /\\(?:[a-zA-Z]+|[^a-zA-Z\s])/.test(expression);
+}
+
 /**
  * Convert formula-reference Unicode expressions to KaTeX-safe LaTeX.
  * Used where authors write readable symbols (σ, ½, ·) instead of raw LaTeX.

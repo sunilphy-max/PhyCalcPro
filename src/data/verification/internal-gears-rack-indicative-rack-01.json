@@ -1,0 +1,27 @@
+{
+  "id": "internal-gears-rack-indicative-rack-01",
+  "moduleId": "internal-gears-rack",
+  "designCode": "INDICATIVE",
+  "description": "Rack and pinion — 8 kW @ 600 rpm, m=4 mm, 18-tooth pinion",
+  "inputs": {
+    "gearType": "rack",
+    "power": 8000,
+    "speed": 600,
+    "module": 0.004,
+    "pinionTeeth": 18,
+    "gearTeeth": 18,
+    "faceWidth": 0.03,
+    "material": {
+      "name": "Steel",
+      "E": 210000000000,
+      "yieldStress": 250000000,
+      "poisson": 0.3
+    }
+  },
+  "expected": {
+    "safetyFactor": 2.7143360527015816,
+    "tangentialForce": 3536.7765131532296
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — rack pinion Lewis screening v1"
+}

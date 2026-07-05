@@ -1,0 +1,24 @@
+{
+  "id": "power-screws-indicative-ball-01",
+  "moduleId": "power-screws",
+  "designCode": "INDICATIVE",
+  "description": "Ball screw — 5 kN @ 1200 rpm, D=32 mm, μ=0.003",
+  "inputs": {
+    "screwType": "ball_screw",
+    "majorDiameter": 0.032,
+    "pitch": 0.01,
+    "lead": 0.01,
+    "ballDiameter": 0.006,
+    "contactAngle": 45,
+    "axialForce": 5000,
+    "frictionCoefficient": 0.003,
+    "speed": 1200
+  },
+  "expected": {
+    "efficiency": 97.51845751527294,
+    "safetyFactor": 23.852607402103196,
+    "power": 1025.4469004940775
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — ball screw efficiency v1"
+}
