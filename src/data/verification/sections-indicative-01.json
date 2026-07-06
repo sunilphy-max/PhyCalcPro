@@ -1,0 +1,18 @@
+{
+  "id": "sections-indicative-01",
+  "moduleId": "sections",
+  "designCode": "INDICATIVE",
+  "description": "Rectangle section — 100×200 mm",
+  "inputs": {
+    "shape": "rectangle",
+    "width": 0.1,
+    "height": 0.2
+  },
+  "expected": {
+    "area": 0.020000000000000004,
+    "Ixx": 0.00006666666666666668,
+    "Iyy": 0.00001666666666666667
+  },
+  "tolerancePercent": 2,
+  "source": "Section property formulas"
+}

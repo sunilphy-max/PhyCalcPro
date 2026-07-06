@@ -1,0 +1,21 @@
+{
+  "id": "planetary-gears-indicative-01",
+  "moduleId": "planetary-gears",
+  "designCode": "INDICATIVE",
+  "description": "Planetary set — sun 20, planet 30, target 5:1",
+  "inputs": {
+    "sunTeeth": 20,
+    "planetTeeth": 30,
+    "targetRatio": 5,
+    "module": 0.003,
+    "power": 1000,
+    "speed": 1500
+  },
+  "expected": {
+    "actualRatio": 5,
+    "ringTeeth": 80,
+    "planetCount": 6
+  },
+  "tolerancePercent": 5,
+  "source": "Willis planetary ratio"
+}

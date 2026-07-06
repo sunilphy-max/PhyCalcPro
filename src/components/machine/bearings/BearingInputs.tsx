@@ -4,7 +4,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
-import type { BearingType, BearingReliability, LubricationClass } from "@/lib/machine/bearings/types";
+import type { BearingType, BearingReliability, LubricationClass, BearingCatalogTier, BearingArrangement } from "@/lib/machine/bearings/types";
 import { bearingsOfType, findBearing } from "@/data/catalogs/bearingCatalog";
 
 type Props = {
@@ -30,6 +30,10 @@ type Props = {
   setReliability: (reliability: BearingReliability) => void;
   lubricationClass: LubricationClass | "";
   setLubricationClass: (v: LubricationClass | "") => void;
+  catalogTier: BearingCatalogTier;
+  setCatalogTier: (tier: BearingCatalogTier) => void;
+  arrangement: BearingArrangement;
+  setArrangement: (a: BearingArrangement) => void;
   maxBoreMm: number | "";
   setMaxBoreMm: (v: number | "") => void;
   onCalculate: () => void;
@@ -62,6 +66,10 @@ export default function BearingInputs({
   setReliability,
   lubricationClass,
   setLubricationClass,
+  catalogTier,
+  setCatalogTier,
+  arrangement,
+  setArrangement,
   maxBoreMm,
   setMaxBoreMm,
   onCalculate,
@@ -70,7 +78,7 @@ export default function BearingInputs({
   projectName,
   setProjectName,
 }: Props) {
-  const catalogOptions = bearingsOfType(bearingType);
+  const catalogOptions = bearingsOfType(bearingType, catalogTier);
   const selected = findBearing(designation);
 
   return (
@@ -184,6 +192,31 @@ export default function BearingInputs({
       )}
 
       <div className={`${calculatorInputGridClass}`}>
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Catalog tier (MITCalc I / II / III)</span>
+          <select
+            value={catalogTier}
+            onChange={(event) => setCatalogTier(event.target.value as BearingCatalogTier)}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            <option value="skf_metric">Rolling bearings I — SKF metric</option>
+            <option value="inch">Rolling bearings II — inch series</option>
+            <option value="ina_fag">Rolling bearings III — INA/FAG</option>
+          </select>
+        </label>
+        <label className="space-y-2 text-sm text-slate-700">
+          <span>Mounting arrangement</span>
+          <select
+            value={arrangement}
+            onChange={(event) => setArrangement(event.target.value as BearingArrangement)}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            <option value="single">Single bearing</option>
+            <option value="back_to_back">Back-to-back (O)</option>
+            <option value="face_to_face">Face-to-face (X)</option>
+            <option value="tandem">Tandem (T)</option>
+          </select>
+        </label>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Reliability (ISO 281 a1)</span>
           <select

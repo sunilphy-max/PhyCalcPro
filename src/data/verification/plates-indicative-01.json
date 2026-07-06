@@ -1,0 +1,23 @@
+{
+  "id": "plates-indicative-01",
+  "moduleId": "plates",
+  "designCode": "INDICATIVE",
+  "description": "Clamped rectangular plate — uniform pressure",
+  "inputs": {
+    "length": 2,
+    "width": 1.2,
+    "thickness": 0.015,
+    "E": 210000000000,
+    "nu": 0.3,
+    "q": 10000,
+    "elementsX": 8,
+    "elementsY": 8,
+    "boundaryType": "clamped"
+  },
+  "expected": {
+    "maxDeflection": 0.0007411291482586763,
+    "maxMoment": 558.3375089158302
+  },
+  "tolerancePercent": 5,
+  "source": "Plate FEM vs Roark screening"
+}

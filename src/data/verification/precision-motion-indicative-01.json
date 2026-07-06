@@ -1,0 +1,13 @@
+{
+  "id": "precision-motion-indicative-01",
+  "moduleId": "precision-motion",
+  "designCode": "INDICATIVE",
+  "description": "Stage stiffness — defaults",
+  "inputs": {},
+  "expected": {
+    "stiffness": 3881.249999999999,
+    "naturalFrequency": 8.09581006871068
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "composites-indicative-01",
+  "moduleId": "composites",
+  "designCode": "INDICATIVE",
+  "description": "UD lamina rule-of-mixtures — 60% fiber",
+  "inputs": {
+    "fiberVolumeFraction": 0.6,
+    "fiberModulus": 230000000000,
+    "matrixModulus": 3500000000,
+    "fiberStrength": 3500000000,
+    "matrixStrength": 80000000,
+    "fiberDensity": 1800,
+    "matrixDensity": 1200,
+    "fiberPoisson": 0.2,
+    "matrixPoisson": 0.35
+  },
+  "expected": {
+    "E_longitudinal": 139400000000,
+    "E_transverse": 8554729011.6896925,
+    "density": 1560
+  },
+  "tolerancePercent": 5,
+  "source": "ROM composite stiffness"
+}

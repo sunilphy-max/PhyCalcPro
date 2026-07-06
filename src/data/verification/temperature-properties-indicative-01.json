@@ -1,0 +1,19 @@
+{
+  "id": "temperature-properties-indicative-01",
+  "moduleId": "temperature-properties",
+  "designCode": "INDICATIVE",
+  "description": "Steel derating at 200 °C",
+  "inputs": {
+    "baseYield": 250000000,
+    "baseModulus": 210000000000,
+    "coefficientThermalExpansion": 0.000012,
+    "temperature": 200
+  },
+  "expected": {
+    "adjustedYield": 160000000,
+    "adjustedModulus": 153300000000,
+    "expansionPerMeter": 0.00216
+  },
+  "tolerancePercent": 5,
+  "source": "Temperature property derating"
+}

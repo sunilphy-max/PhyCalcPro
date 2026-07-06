@@ -3,6 +3,8 @@ import type {
   DesignCodeId,
   EngineeringCheck,
   EngineeringCheckStatus,
+  EquationReference,
+  WorksheetStep,
 } from "./types";
 import {
   getModuleStandardProfile,
@@ -10,7 +12,6 @@ import {
 } from "./moduleCatalog";
 import { getDesignCodeOption } from "./designCodes";
 import { getModuleEquations } from "./equations";
-import type { EquationReference } from "./types";
 
 const ENGINE_VERSION = "phase1-0.1.0";
 
@@ -40,6 +41,7 @@ export function buildCalculationSpec(params: {
   method?: string;
   implementedChecks: EngineeringCheck[];
   equations?: EquationReference[];
+  worksheetSteps?: WorksheetStep[];
 }): CalculationSpec {
   const profile = getModuleStandardProfile(params.moduleId);
   const designCode = params.designCode;
@@ -101,6 +103,7 @@ export function buildCalculationSpec(params: {
     assumptions: profile?.assumptions ?? [],
     limitations: profile?.limitations ?? [],
     checks,
+    worksheetSteps: params.worksheetSteps,
     engineVersion: ENGINE_VERSION,
     computedAt: new Date().toISOString(),
   };

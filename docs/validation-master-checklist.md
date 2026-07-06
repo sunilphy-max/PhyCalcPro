@@ -1,6 +1,6 @@
 # PhyCalcPro — Master validation checklist
 
-Use this document to validate **physics, standards mapping, and design outputs** across all **62 calculator modules**. Automated CI covers modules with verification JSON; everything else needs your engineer sign-off.
+Use this document to validate **physics, standards mapping, and design outputs** across all **66 calculator modules**. Automated CI covers modules with verification JSON; everything else needs your engineer sign-off.
 
 ## Before you start
 
@@ -8,7 +8,7 @@ Use this document to validate **physics, standards mapping, and design outputs**
    ```bash
    npm run test:verification
    ```
-   **24 modules** currently have committed benchmark cases (see [Verification status](#verification-status) below).
+   **64 modules** currently have committed benchmark cases (**70 cases** total; see [Verification status](#verification-status) below).
 
 2. For each module you rely on in production, complete the **Physics** and **Standards** columns in the tables below.
 
@@ -47,12 +47,12 @@ Use this document to validate **physics, standards mapping, and design outputs**
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
 | **beams** | CI | Cross-check max moment/deflection vs closed-form (simply supported / cantilever). Verify AISC/EC3 checks if using code mode. LTB not fully embedded. |
-| **frames** | Solver | Compare 2–3 bay frame reactions to hand frame analysis or SAP2000. |
-| **trusses** | Solver | Pratt/Warren example — member forces vs method of joints. |
+| **frames** | CI | Compare 2–3 bay frame reactions to hand frame analysis or SAP2000. |
+| **trusses** | CI | Pratt/Warren example — member forces vs method of joints. |
 | **columns** | CI | Euler + code curve SF vs AISC/EC3 worksheet. Inelastic buckling partial. |
-| **plates** | Solver | Rectangular plate deflection vs Roark for simply supported case. |
+| **plates** | CI | Rectangular plate deflection vs Roark for simply supported case. |
 | **combined-loading** | CI | Von Mises / Tresca vs textbook combined stress example. |
-| **load-case-manager** | Solver | Envelope max/min matches manual load combination. |
+| **load-case-manager** | CI | Envelope max/min matches manual load combination. |
 | **circular-plates** | CI | Uniform pressure — deflection/moment vs Roark Table. |
 
 ---
@@ -63,8 +63,8 @@ Use this document to validate **physics, standards mapping, and design outputs**
 |--------|------|------------------------|
 | **v-belts** | CI | Cross-check belt speed, wrap, power vs Gates manual example. |
 | **timing-belts** | CI | Tooth count / center distance vs manufacturer datasheet. |
-| **roller-chains** | Solver | Add CI case — chain tension vs ANSI B29.1 power table. |
-| **multi-pulley** | Solver | Belt length / wrap angles vs CAD layout. |
+| **roller-chains** | CI | Chain tension vs ANSI B29.1 power table. |
+| **multi-pulley** | CI | Belt length / wrap angles vs CAD layout. |
 
 ---
 
@@ -75,14 +75,14 @@ Use this document to validate **physics, standards mapping, and design outputs**
 | **shafts** | CI | DIN 743 / Shigley shaft example — bending, torsion, Kt, critical speed. |
 | **gears** | CI | ISO 6336 / AGMA bending + contact vs MITCalc or vendor software. |
 | **bearings** | CI | ISO 281 L10, ISO 76 static, speed margin vs SKF catalog example. |
-| **cams** | Solver | Displacement/velocity/acceleration vs polynomial cam design text. |
-| **flywheels** | Solver | Energy storage vs ½Iω² hand calc. |
+| **cams** | CI | Displacement/velocity/acceleration vs polynomial cam design text. |
+| **flywheels** | CI | Energy storage vs ½Iω² hand calc. |
 | **bevel-gears** | CI | Gleason/Klingelnberg screening — verify cone distance and forces. |
-| **worm-gears** | Solver | Efficiency and thermal load vs vendor rating. |
-| **planetary-gears** | Solver | Willis equation + planet load sharing assumption. |
-| **gear-ratio-design** | Solver | Stage ratios and center distances vs layout drawing. |
-| **plain-bearings** | Solver | Sommerfeld / Raimondi–Boyd chart comparison. |
-| **brakes-clutches** | Solver | Torque capacity vs friction coefficient × normal force. |
+| **worm-gears** | CI | Efficiency and thermal load vs vendor rating. |
+| **planetary-gears** | CI | Willis equation + planet load sharing assumption. |
+| **gear-ratio-design** | CI | Stage ratios and center distances vs layout drawing. |
+| **plain-bearings** | CI | Sommerfeld / Raimondi–Boyd chart comparison. |
+| **brakes-clutches** | CI | Torque capacity vs friction coefficient × normal force. |
 
 ---
 
@@ -100,13 +100,13 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **bolts** | Solver | VDI 2230 / AISC joint example — preload, slip, fatigue. |
-| **welds** | Solver | AISC/AWS fillet throat stress vs manual calc. Add CI JSON. |
+| **bolts** | CI | VDI 2230 / AISC joint example — preload, slip, fatigue. |
+| **welds** | CI | AISC/AWS fillet throat stress vs manual calc. |
 | **rivets** | CI | Single-shear / bearing vs MIL-HDBK or Shigley. |
-| **safety-factor** | Solver | Combined SF definitions match your company standard. |
+| **safety-factor** | CI | Combined SF definitions match your company standard. |
 | **keys-splines** | CI | Key shear/bearing vs ISO 3912 / Shigley. |
-| **shaft-hubs** | Solver | Interference / clearance fit pressure vs DIN 7190. |
-| **pins** | Solver | Double shear pin vs Shigley Table. |
+| **shaft-hubs** | CI | Interference / clearance fit pressure vs DIN 7190. |
+| **pins** | CI | Double shear pin vs Shigley Table. |
 
 ---
 
@@ -115,11 +115,11 @@ Use this document to validate **physics, standards mapping, and design outputs**
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
 | **material-db** | Browse | Spot-check E, ν, Sy against MMPDS / matweb for alloys you use. |
-| **sections** | Solver | Area properties vs CAD section properties. |
-| **rolled-sections** | Solver | W/HSS designation lookup vs AISC Steel Construction Manual. |
-| **profiles** | Solver | Custom polygon I/A/c vs hand composite sections. |
-| **composites** | Solver | CLT stiffness vs Jones textbook lamina example. |
-| **temperature-properties** | Solver | Interpolated strength derating vs code table. |
+| **sections** | CI | Area properties vs CAD section properties. |
+| **rolled-sections** | CI | W/HSS designation lookup vs AISC Steel Construction Manual. |
+| **profiles** | CI | Custom polygon I/A/c vs hand composite sections. |
+| **composites** | CI | CLT stiffness vs Jones textbook lamina example. |
+| **temperature-properties** | CI | Interpolated strength derating vs code table. |
 | **fatigue** | CI | Goodman/Gerber + Marin vs Shigley Ex. 6-1. |
 | **corrosion** | CI | Corrosion allowance vs API 510 / company spec. |
 
@@ -130,9 +130,9 @@ Use this document to validate **physics, standards mapping, and design outputs**
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
 | **pipes** | CI | Barlow hoop stress vs ASME B31.3 example. |
-| **vessels** | Solver | Thin/thick cylinder vs ASME VIII Div.1 UG-27. Add CI JSON. |
+| **vessels** | CI | Thin/thick cylinder vs ASME VIII Div.1 UG-27. |
 | **hydraulics** | CI | Cylinder force vs manufacturer catalog. |
-| **heat-exchangers** | Solver | LMTD / NTU vs Bell–Delaware screening example. |
+| **heat-exchangers** | CI | LMTD / NTU vs Bell–Delaware screening example. |
 
 ---
 
@@ -140,7 +140,7 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **vibrations** | Solver | Natural frequency vs analytical beam ω₁. |
+| **vibrations** | CI | Natural frequency vs analytical beam ω₁. |
 | **rotation** | CI | Centripetal force / KE vs textbook. |
 | **impact** | CI | Impulse–momentum average force vs energy method. |
 | **suspension** | CI | Roll angle / load transfer vs vehicle dynamics text. |
@@ -151,10 +151,10 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **tolerance** | Solver | Stack-up RSS vs worst-case drawing review. |
-| **fits** | Solver | ISO 286 hole/shaft fit vs tolerance table. |
-| **cost-estimator** | Solver | Order-of-magnitude only — calibrate to your shop rates. |
-| **cam-toolpaths** | Solver | Toolpath length/time vs CAM post output. |
+| **tolerance** | CI | Stack-up RSS vs worst-case drawing review. |
+| **fits** | CI | ISO 286 hole/shaft fit vs tolerance table. |
+| **cost-estimator** | CI | Order-of-magnitude only — calibrate to your shop rates. |
+| **cam-toolpaths** | CI | Toolpath length/time vs CAM post output. |
 
 ---
 
@@ -162,14 +162,14 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **vacuum-engineering** | Solver | Pump-down time vs vendor curve; add CI JSON with your chamber. |
-| **cryogenic-engineering** | Solver | Heat leak / boil-off vs cryo supplier data. |
-| **magnetic-fields** | Solver | B-field vs Biot–Savart / FEM for simple coil. |
-| **superconducting-systems** | Solver | Critical current margin vs material Ic(B,T). |
-| **thermal-management** | Solver | Junction temperature vs 1D thermal resistance network. |
-| **battery-ev-systems** | Solver | Pack energy / C-rate vs cell datasheet. |
-| **hydrogen-systems** | Solver | Storage pressure / flow vs safety case. |
-| **precision-motion** | Solver | Stage error budget vs encoder resolution + backlash. |
+| **vacuum-engineering** | CI | Pump-down time vs vendor curve; replace bootstrap with your chamber. |
+| **cryogenic-engineering** | CI | Heat leak / boil-off vs cryo supplier data. |
+| **magnetic-fields** | CI | B-field vs Biot–Savart / FEM for simple coil. |
+| **superconducting-systems** | CI | Critical current margin vs material Ic(B,T). |
+| **thermal-management** | CI | Junction temperature vs 1D thermal resistance network. |
+| **battery-ev-systems** | CI | Pack energy / C-rate vs cell datasheet. |
+| **hydrogen-systems** | CI | Storage pressure / flow vs safety case. |
+| **precision-motion** | CI | Stage error budget vs encoder resolution + backlash. |
 
 ---
 
@@ -177,7 +177,7 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **formula-reference** | Solver | Spot-check 5 formulas against Roark / Shigley. |
+| **formula-reference** | CI | Spot-check 5 formulas against Roark / Shigley. |
 | **unit-converter** | CI | NIST conversion factors for critical unit pairs. |
 
 ---
@@ -211,7 +211,7 @@ npm run test:verification
 
 | File | Purpose |
 |------|---------|
-| `src/lib/qa/moduleSolverRegistry.ts` | All automated solvers (61 modules) |
+| `src/lib/qa/moduleSolverRegistry.ts` | All automated solvers (65 modules) |
 | `src/lib/qa/benchmarkRunner.ts` | CI runner |
 | `src/lib/standards/evaluators/generic.ts` | Result field → standard check mapping |
 | `src/lib/standards/moduleCatalog.ts` | Per-module check definitions |
@@ -219,12 +219,14 @@ npm run test:verification
 
 ---
 
-*Last updated: 2026-07 — 24 CI modules, 61 solver registry entries.*
+*Last updated: 2026-07 — 70 CI cases, 64 modules with benchmarks, 65 solver registry entries.*
 
 ---
 
 ## Related documents
 
 - [VerificationGuide.md](./VerificationGuide.md) — CI commands and JSON schema
+- [manual-engineer-signoff.md](./manual-engineer-signoff.md) — MITCalc / worksheet validation template
+- [manual-release-tier-guide.md](./manual-release-tier-guide.md) — promoting modules on `/status`
 - [modules/spring-modules-user-tasks.md](./modules/spring-modules-user-tasks.md) — spring-specific tasks
 - [Design-Workflow-Reference.md](./Design-Workflow-Reference.md) — Auto-design / Validate / Compare

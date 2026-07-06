@@ -7,13 +7,15 @@ import SearchBar from "@/components/SearchBar";
 import PhyCalcMark from "@/components/brand/PhyCalcMark";
 import PlanBadge from "@/components/licensing/PlanBadge";
 import { useEntitlement } from "@/contexts/EntitlementContext";
+import { usePersistenceOptional } from "@/contexts/PersistenceContext";
+import { isSupabaseSignInReady, showAccountNav } from "@/lib/supabase/setupStatus";
 
 const allNavigationItems = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
   { href: "/projects", label: "Projects" },
   { href: "/pricing", label: "Pricing", monetizationOnly: true },
-  { href: "/account", label: "Account", monetizationOnly: true },
+  { href: "/account", label: "Account", monetizationOnly: true, authEnabled: true },
   { href: "/status", label: "Quality" },
   { href: "/support", label: "Support" },
   { href: "/documentation", label: "Docs" },
@@ -21,12 +23,24 @@ const allNavigationItems = [
 
 export default function Navbar() {
   const { isMonetizationEnabled } = useEntitlement();
+  const persistence = usePersistenceOptional();
+  const accountNavVisible = showAccountNav();
+  const signInReady = isSupabaseSignInReady();
   const navigationItems = useMemo(
     () =>
-      allNavigationItems.filter(
-        (item) => !("monetizationOnly" in item && item.monetizationOnly) || isMonetizationEnabled
-      ),
-    [isMonetizationEnabled]
+      allNavigationItems.filter((item) => {
+        if ("monetizationOnly" in item && item.monetizationOnly && isMonetizationEnabled) {
+          return true;
+        }
+        if ("authEnabled" in item && item.authEnabled && accountNavVisible) {
+          return true;
+        }
+        if ("monetizationOnly" in item && item.monetizationOnly) {
+          return false;
+        }
+        return true;
+      }),
+    [isMonetizationEnabled, accountNavVisible]
   );
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -72,6 +86,16 @@ export default function Navbar() {
           </nav>
 
           <PlanBadge />
+
+          {accountNavVisible ? (
+            <span className="hidden rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 lg:inline dark:border-slate-700 dark:text-slate-300">
+              {persistence?.mode === "authenticated"
+                ? "Signed in"
+                : signInReady
+                  ? "Guest"
+                  : "Guest · cloud pending"}
+            </span>
+          ) : null}
 
           <button
             type="button"

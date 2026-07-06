@@ -116,6 +116,9 @@ export default function Page() {
   const [result, setResult] = useState<ShaftResult | null>(null);
   const [meshSegments, setMeshSegments] = useState(100);
   const [stressConcentrationFactor, setStressConcentrationFactor] = useState(1);
+  const [din743K_sigma, setDin743K_sigma] = useState(1);
+  const [din743K_tau, setDin743K_tau] = useState(1);
+  const [din743Gamma_F, setDin743Gamma_F] = useState(1);
   const [projectName, setProjectName] = useState("Shaft Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<ShaftProject[]>(() =>
@@ -196,6 +199,11 @@ export default function Page() {
         enabled: operatingRpm > 0,
         surfaceFinish,
       },
+      din743: {
+        K_sigma: din743K_sigma,
+        K_tau: din743K_tau,
+        gamma_F: din743Gamma_F,
+      },
     };
   }, [
     diameter,
@@ -216,6 +224,9 @@ export default function Page() {
     operatingRpm,
     includeSelfWeight,
     surfaceFinish,
+    din743K_sigma,
+    din743K_tau,
+    din743Gamma_F,
     useSteppedGeometry,
     segments,
   ]);
@@ -423,6 +434,12 @@ export default function Page() {
             setMeshSegments={setMeshSegments}
             stressConcentrationFactor={stressConcentrationFactor}
             setStressConcentrationFactor={setStressConcentrationFactor}
+            din743K_sigma={din743K_sigma}
+            setDin743K_sigma={setDin743K_sigma}
+            din743K_tau={din743K_tau}
+            setDin743K_tau={setDin743K_tau}
+            din743Gamma_F={din743Gamma_F}
+            setDin743Gamma_F={setDin743Gamma_F}
             onCalculate={calculate}
             onSave={saveProject}
             saving={saving}

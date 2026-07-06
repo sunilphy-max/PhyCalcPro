@@ -1,0 +1,23 @@
+{
+  "id": "fits-indicative-01",
+  "moduleId": "fits",
+  "designCode": "INDICATIVE",
+  "description": "ISO 50 H7/g6 fit",
+  "inputs": {
+    "nominalSize": 0.05,
+    "holeUpper": 0,
+    "holeLower": 0,
+    "shaftUpper": 0,
+    "shaftLower": 0,
+    "isoHoleGrade": 7,
+    "isoHoleLetter": "H",
+    "isoShaftGrade": 6,
+    "isoShaftLetter": "g"
+  },
+  "expected": {
+    "clearanceMin": -0.000009905322211449519,
+    "clearanceMax": 0.00001229626205559442
+  },
+  "tolerancePercent": 2,
+  "source": "ISO 286 fit limits"
+}

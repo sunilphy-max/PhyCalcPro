@@ -14,6 +14,8 @@ import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
+import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
+import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 
 export type SupportPreset = "fixed_left" | "simply_supported" | "custom";
 
@@ -62,6 +64,12 @@ type Props = {
   setMeshSegments: (value: number) => void;
   stressConcentrationFactor: number;
   setStressConcentrationFactor: (value: number) => void;
+  din743K_sigma: number;
+  setDin743K_sigma: (v: number) => void;
+  din743K_tau: number;
+  setDin743K_tau: (v: number) => void;
+  din743Gamma_F: number;
+  setDin743Gamma_F: (v: number) => void;
   onCalculate: () => void;
   onSave: () => void;
   saving: boolean;
@@ -112,6 +120,12 @@ export default function ShaftInputs({
   setMeshSegments,
   stressConcentrationFactor,
   setStressConcentrationFactor,
+  din743K_sigma,
+  setDin743K_sigma,
+  din743K_tau,
+  setDin743K_tau,
+  din743Gamma_F,
+  setDin743Gamma_F,
   onCalculate,
   onSave,
   saving,
@@ -406,6 +420,35 @@ export default function ShaftInputs({
           </select>
         </div>
       </section>
+
+      <CalculatorFormSection
+        title="DIN 743 coefficients"
+        description="Influence and fatigue reduction factors for EU shaft worksheets (K_σ, K_τ, γ_F)."
+      >
+        <div className="grid grid-cols-3 gap-2">
+          <CalculatorNumberField
+            label="K_σ bending"
+            value={din743K_sigma}
+            onChange={setDin743K_sigma}
+            step={0.05}
+            min={1}
+          />
+          <CalculatorNumberField
+            label="K_τ torsion"
+            value={din743K_tau}
+            onChange={setDin743K_tau}
+            step={0.05}
+            min={1}
+          />
+          <CalculatorNumberField
+            label="γ_F fatigue"
+            value={din743Gamma_F}
+            onChange={setDin743Gamma_F}
+            step={0.05}
+            min={1}
+          />
+        </div>
+      </CalculatorFormSection>
 
       <section className="space-y-3 border-t border-slate-200 pt-4">
         <h3 className="text-sm font-semibold text-slate-900">Load cases</h3>

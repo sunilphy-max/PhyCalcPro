@@ -14,6 +14,15 @@ export function isMonetizationEnabled(): boolean {
   return !publicEnv.freeLaunch;
 }
 
+/** Show Account nav and auth UX when Supabase sign-in is ready. */
+export function isAuthUiEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_SUPABASE_ENABLED === "true" &&
+    Boolean(
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+    );
+}
+
 function envUnlocksAll(): boolean {
   if (publicEnv.freeLaunch) return true;
   if (publicEnv.validationMode) return true;

@@ -104,6 +104,34 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
             status={result.safetyFactor >= 1.5 ? "safe" : "danger"}
             size="lg"
           />
+          {result.iso6336BendingSafetyFactor != null ? (
+            <CalculatorMetricGrid cols={2}>
+              <CalculatorMetricCard
+                label="ISO 6336 bending S_F"
+                numericValue={result.iso6336BendingSafetyFactor}
+                tone="green"
+              />
+              <CalculatorMetricCard
+                label="ISO 6336 pitting S_H"
+                numericValue={result.iso6336ContactSafetyFactor ?? 0}
+                tone="green"
+              />
+              {result.scuffingSafetyFactor != null ? (
+                <CalculatorMetricCard
+                  label="Scuffing screening"
+                  numericValue={result.scuffingSafetyFactor}
+                  tone="purple"
+                />
+              ) : null}
+              {result.micropittingSafetyFactor != null ? (
+                <CalculatorMetricCard
+                  label="Micropitting screening"
+                  numericValue={result.micropittingSafetyFactor}
+                  tone="purple"
+                />
+              ) : null}
+            </CalculatorMetricGrid>
+          ) : null}
           <EngineeringPlotPicker tabs={plotTabs} defaultTabId="mesh" label="Result view" />
         </>
       ) : null}

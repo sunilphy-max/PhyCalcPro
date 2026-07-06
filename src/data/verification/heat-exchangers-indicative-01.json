@@ -1,0 +1,25 @@
+{
+  "id": "heat-exchangers-indicative-01",
+  "moduleId": "heat-exchangers",
+  "designCode": "INDICATIVE",
+  "description": "Counterflow HX — LMTD screening",
+  "inputs": {
+    "hotFlowRate": 1.2,
+    "coldFlowRate": 1.5,
+    "hotCp": 4180,
+    "coldCp": 4180,
+    "hotInletTemp": 150,
+    "coldInletTemp": 25,
+    "hotOutletTemp": 80,
+    "U": 500,
+    "area": 30,
+    "flowType": "counterflow"
+  },
+  "expected": {
+    "heatTransferRate": 351120,
+    "LMTD": 61.735657612699754,
+    "effectiveness": 0.80365878452276
+  },
+  "tolerancePercent": 5,
+  "source": "LMTD / NTU screening"
+}

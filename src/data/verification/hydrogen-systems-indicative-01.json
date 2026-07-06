@@ -1,0 +1,13 @@
+{
+  "id": "hydrogen-systems-indicative-01",
+  "moduleId": "hydrogen-systems",
+  "designCode": "INDICATIVE",
+  "description": "H2 storage screening — defaults",
+  "inputs": {},
+  "expected": {
+    "storedMass": 3.5360072383213166,
+    "hoopStress": 729166666.6666666
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

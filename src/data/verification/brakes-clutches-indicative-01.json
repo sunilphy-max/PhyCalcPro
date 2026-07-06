@@ -1,0 +1,22 @@
+{
+  "id": "brakes-clutches-indicative-01",
+  "moduleId": "brakes-clutches",
+  "designCode": "INDICATIVE",
+  "description": "Disc brake — μ=0.3, 2 kN clamp",
+  "inputs": {
+    "frictionCoeff": 0.3,
+    "outerRadius": 0.15,
+    "innerRadius": 0.08,
+    "actuationForce": 2000,
+    "speed": 1500,
+    "engagementTime": 0.5,
+    "safetyFactorTarget": 2
+  },
+  "expected": {
+    "frictionTorque": 71.13043478260867,
+    "powerDissipated": 11173.142567984565,
+    "safetyFactor": 1.481884057971014
+  },
+  "tolerancePercent": 5,
+  "source": "Friction torque capacity"
+}

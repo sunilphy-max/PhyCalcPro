@@ -66,6 +66,16 @@ export type ShaftFatigueOptions = {
   alternatingTorqueFraction?: number;
 };
 
+/** DIN 743 influence and fatigue reduction coefficients (worksheet inputs). */
+export type ShaftDin743Coefficients = {
+  /** Bending stress influence factor K_σ (default 1) */
+  K_sigma?: number;
+  /** Torsion stress influence factor K_τ (default 1) */
+  K_tau?: number;
+  /** Fatigue strength reduction factor γ_F (default 1) */
+  gamma_F?: number;
+};
+
 export type ShaftAnalysisLimits = {
   /** Max deflection as span / ratio (default 1000) */
   deflectionLimitRatio?: number;
@@ -91,6 +101,7 @@ export type ShaftConfig = {
   operatingRpm?: number;
   includeSelfWeight?: boolean;
   fatigue?: ShaftFatigueOptions;
+  din743?: ShaftDin743Coefficients;
   limits?: ShaftAnalysisLimits;
 };
 

@@ -9,9 +9,15 @@ export type CatalogBearingType =
   | "angular_contact"
   | "cylindrical_roller";
 
+export type BearingCatalogTier = "skf_metric" | "inch" | "ina_fag";
+
+export type BearingCatalogSource = "SKF" | "INCH" | "INA_FAG";
+
 export type BearingCatalogEntry = {
   designation: string;
   type: CatalogBearingType;
+  /** Catalog family — defaults to SKF metric series */
+  source?: BearingCatalogSource;
   boreMm: number;
   outerDiameterMm: number;
   widthMm: number;
@@ -67,12 +73,34 @@ export const bearingCatalog: BearingCatalogEntry[] = [
   { designation: "NU 206", type: "cylindrical_roller", boreMm: 30, outerDiameterMm: 62, widthMm: 16, dynamicRatingN: 38000, staticRatingN: 36500, limitingSpeedRpm: 8500 },
   { designation: "NU 207", type: "cylindrical_roller", boreMm: 35, outerDiameterMm: 72, widthMm: 17, dynamicRatingN: 48000, staticRatingN: 51000, limitingSpeedRpm: 7500 },
   { designation: "NU 208", type: "cylindrical_roller", boreMm: 40, outerDiameterMm: 80, widthMm: 18, dynamicRatingN: 53900, staticRatingN: 53000, limitingSpeedRpm: 7000 },
+  // Inch series (MITCalc Bearings II representative)
+  { designation: "R 4", type: "deep_groove", source: "INCH", boreMm: 6.35, outerDiameterMm: 15.875, widthMm: 4.978, dynamicRatingN: 2240, staticRatingN: 950, limitingSpeedRpm: 32000 },
+  { designation: "R 6", type: "deep_groove", source: "INCH", boreMm: 9.525, outerDiameterMm: 22.225, widthMm: 5.556, dynamicRatingN: 3350, staticRatingN: 1500, limitingSpeedRpm: 28000 },
+  { designation: "R 8", type: "deep_groove", source: "INCH", boreMm: 12.7, outerDiameterMm: 28.575, widthMm: 7.938, dynamicRatingN: 4750, staticRatingN: 2240, limitingSpeedRpm: 24000 },
+  // INA/FAG series (MITCalc Bearings III representative)
+  { designation: "6205-2RS INA", type: "deep_groove", source: "INA_FAG", boreMm: 25, outerDiameterMm: 52, widthMm: 15, dynamicRatingN: 14000, staticRatingN: 7800, limitingSpeedRpm: 11000 },
+  { designation: "6206-2RS INA", type: "deep_groove", source: "INA_FAG", boreMm: 30, outerDiameterMm: 62, widthMm: 16, dynamicRatingN: 19500, staticRatingN: 11200, limitingSpeedRpm: 9500 },
+  { designation: "7205-B INA", type: "angular_contact", source: "INA_FAG", boreMm: 25, outerDiameterMm: 52, widthMm: 15, dynamicRatingN: 16000, staticRatingN: 9500, limitingSpeedRpm: 11000 },
 ];
 
 export function findBearing(designation: string): BearingCatalogEntry | undefined {
   return bearingCatalog.find((b) => b.designation === designation);
 }
 
-export function bearingsOfType(type: CatalogBearingType): BearingCatalogEntry[] {
-  return bearingCatalog.filter((b) => b.type === type);
+export function catalogSource(entry: BearingCatalogEntry): BearingCatalogSource {
+  return entry.source ?? "SKF";
+}
+
+export function bearingsOfTier(tier: BearingCatalogTier): BearingCatalogEntry[] {
+  const sources: Record<BearingCatalogTier, BearingCatalogSource[]> = {
+    skf_metric: ["SKF"],
+    inch: ["INCH"],
+    ina_fag: ["INA_FAG"],
+  };
+  return bearingCatalog.filter((b) => sources[tier].includes(catalogSource(b)));
+}
+
+export function bearingsOfType(type: CatalogBearingType, tier?: BearingCatalogTier): BearingCatalogEntry[] {
+  const pool = tier ? bearingsOfTier(tier) : bearingCatalog;
+  return pool.filter((b) => b.type === type);
 }

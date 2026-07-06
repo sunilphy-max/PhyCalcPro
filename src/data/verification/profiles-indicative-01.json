@@ -1,0 +1,22 @@
+{
+  "id": "profiles-indicative-01",
+  "moduleId": "profiles",
+  "designCode": "INDICATIVE",
+  "description": "Rectangle profile — 100×200 mm",
+  "inputs": {
+    "shape": {
+      "shape": "rectangle",
+      "rectangle": {
+        "width": 0.1,
+        "height": 0.2
+      }
+    }
+  },
+  "expected": {
+    "area": 0.020000000000000004,
+    "ixx": 0.00006666666666666668,
+    "iyy": 0.00001666666666666667
+  },
+  "tolerancePercent": 2,
+  "source": "Profile area properties"
+}

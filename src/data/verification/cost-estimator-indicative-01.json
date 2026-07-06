@@ -1,0 +1,25 @@
+{
+  "id": "cost-estimator-indicative-01",
+  "moduleId": "cost-estimator",
+  "designCode": "INDICATIVE",
+  "description": "Machined part cost screening",
+  "inputs": {
+    "materialVolume": 0.001,
+    "materialDensity": 7850,
+    "materialCostPerKg": 2.5,
+    "machiningTime": 2,
+    "machineRate": 80,
+    "laborTime": 1,
+    "laborRate": 45,
+    "finishPercent": 10,
+    "overheadPercent": 15,
+    "scrapPercent": 5
+  },
+  "expected": {
+    "totalCost": 284.150625,
+    "materialCost": 19.625,
+    "materialMass": 7.8500000000000005
+  },
+  "tolerancePercent": 5,
+  "source": "Order-of-magnitude cost model"
+}

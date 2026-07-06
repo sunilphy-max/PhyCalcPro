@@ -29,7 +29,13 @@ export function lifeExponentFor(type: BearingType): number {
 
 export function calculateBearingEquivalentLoad(config: BearingConfig): number {
   const Fr = Math.abs(config.radialLoad);
-  const Fa = Math.abs(config.axialLoad);
+  let Fa = Math.abs(config.axialLoad);
+  const arrangement = config.arrangement ?? "single";
+  if (arrangement === "back_to_back" || arrangement === "face_to_face") {
+    Fa = Fa / 2;
+  } else if (arrangement === "tandem") {
+    Fa = Fa * 0.5;
+  }
   const { X, Y, e } = bearingCoefficients[config.bearingType];
   const FaOverFr = Fr > 0 ? Fa / Fr : Number.POSITIVE_INFINITY;
 

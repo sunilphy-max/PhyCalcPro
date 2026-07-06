@@ -1,5 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
-import { memoryCreate, memoryList } from "./memoryStore";
+import { memoryCreate, memoryDelete, memoryList, memoryUpsert } from "./memoryStore";
 import type {
   CollectionName,
   PhysicsEquation,
@@ -49,19 +49,20 @@ async function createWithFallback<T extends keyof EntityByCollection>(
   collection: T,
   payload: Omit<EntityByCollection[T], "id" | "createdAt" | "updatedAt">
 ): Promise<EntityByCollection[T]> {
+  const providedId = (payload as { id?: string }).id;
   const nextItem = {
     ...payload,
-    id: createId(collection.slice(0, 3)),
+    id: providedId ?? createId(collection.slice(0, 3)),
     createdAt: nowIso(),
     updatedAt: nowIso(),
   } as EntityByCollection[T];
 
   const client = getSupabaseServerClient();
   if (!client) {
-    return memoryCreate(collection, nextItem);
+    return memoryUpsert(collection, nextItem);
   }
 
-  const { data, error } = await client.from(collection).insert(nextItem).select("*").single();
+  const { data, error } = await client.from(collection).upsert(nextItem).select("*").single();
   if (error) throw new Error(error.message);
   return data as EntityByCollection[T];
 }
@@ -78,4 +79,66 @@ export async function createRecord<T extends CollectionName>(
   payload: Omit<EntityByCollection[T], "id" | "createdAt" | "updatedAt">
 ): Promise<EntityByCollection[T]> {
   return createWithFallback(collection, payload);
+}
+
+export async function ensureDefaultProject(userId: string): Promise<void> {
+  const client = getSupabaseServerClient();
+  if (!client) {
+    const existing = memoryList<EntityByCollection["projects"]>("projects").find(
+      (p) => p.id === "default" && p.userId === userId
+    );
+    if (!existing) {
+      memoryCreate("projects", {
+        id: "default",
+        userId,
+        name: "Default",
+        tags: [],
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      });
+    }
+    return;
+  }
+
+  const { data } = await client
+    .from("projects")
+    .select("id")
+    .eq("id", "default")
+    .eq("userId", userId)
+    .maybeSingle();
+
+  if (data) return;
+
+  await client.from("projects").upsert({
+    id: "default",
+    userId,
+    name: "Default",
+    tags: [],
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+  });
+}
+
+export async function deleteRecord(
+  collection: "models",
+  userId: string,
+  id: string
+): Promise<boolean> {
+  const client = getSupabaseServerClient();
+  if (!client) {
+    const item = memoryList<EntityByCollection["models"]>("models").find(
+      (entry) => entry.id === id && entry.userId === userId
+    );
+    if (!item) return false;
+    return memoryDelete("models", id);
+  }
+
+  const { error, count } = await client
+    .from("models")
+    .delete({ count: "exact" })
+    .eq("id", id)
+    .eq("userId", userId);
+
+  if (error) throw new Error(error.message);
+  return (count ?? 0) > 0;
 }

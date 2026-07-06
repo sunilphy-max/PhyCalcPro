@@ -1,0 +1,24 @@
+{
+  "id": "worm-gears-indicative-01",
+  "moduleId": "worm-gears",
+  "designCode": "INDICATIVE",
+  "description": "Worm gear set — 2 kW @ 1450 rpm, 1:40",
+  "inputs": {
+    "power": 2000,
+    "speed": 1450,
+    "wormStarts": 1,
+    "gearTeeth": 40,
+    "module": 0.002,
+    "faceWidth": 0.03,
+    "frictionCoeff": 0.05,
+    "leadAngleDeg": 5,
+    "yieldStress": 250000000
+  },
+  "expected": {
+    "wormTorque": 20.698958009467347,
+    "efficiency": 0.6363336531337196,
+    "ratio": 40
+  },
+  "tolerancePercent": 8,
+  "source": "Worm gear torque relations"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "formula-reference-indicative-01",
+  "moduleId": "formula-reference",
+  "designCode": "INDICATIVE",
+  "description": "Kinetic energy — 10 kg @ 5 m/s",
+  "inputs": {
+    "formulaId": "kinetic_energy",
+    "inputs": {
+      "mass": 10,
+      "velocity": 5
+    }
+  },
+  "expected": {
+    "result": 125
+  },
+  "tolerancePercent": 2,
+  "source": "E = ½mv²"
+}

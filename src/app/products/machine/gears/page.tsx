@@ -12,7 +12,7 @@ import GearResults from "@/components/machine/gears/GearResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { toBase } from "@/lib/units/conversions";
 import { solveGearEngine } from "@/lib/machine/gears/engine";
-import type { GearResult, GearMaterial } from "@/lib/machine/gears/types";
+import type { GearResult, GearMaterial, GearRatingOptions } from "@/lib/machine/gears/types";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
@@ -51,6 +51,7 @@ type GearProjectData = {
   faceWidth: number;
   faceWidthUnit: string;
   material: string;
+  rating: GearRatingOptions;
 };
 
 type GearProject = LocalProject<GearProjectData>;
@@ -76,6 +77,14 @@ export default function Page() {
   const [faceWidth, setFaceWidth] = useState(40);
   const [faceWidthUnit, setFaceWidthUnit] = useState("mm");
   const [material, setMaterial] = useState("Steel");
+  const [rating, setRating] = useState<GearRatingOptions>({
+    applicationFactor: 1.25,
+    faceLoadFactor: 1.3,
+    qualityGrade: 7,
+    lubrication: "oil_bath",
+    enableScuffingScreen: false,
+    enableMicropittingScreen: false,
+  });
   const [stressUnit, setStressUnit] = useState("Pa");
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [result, setResult] = useState<(GearResult & { calculationSpec?: CalculationSpec }) | null>(null);
@@ -95,6 +104,7 @@ export default function Page() {
       pinionTeeth,
       gearRatio,
       material: MATERIALS[material] || MATERIALS.Steel,
+      rating,
     };
 
     const raw = solveGearEngine(config);
@@ -139,6 +149,7 @@ export default function Page() {
       faceWidth,
       faceWidthUnit,
       material,
+      rating,
     });
     setSavedProjects(projects);
     setSaving(false);
@@ -156,6 +167,7 @@ export default function Page() {
     setFaceWidth(project.faceWidth);
     setFaceWidthUnit(project.faceWidthUnit);
     setMaterial(project.material);
+    if (project.rating) setRating(project.rating);
   };
 
 
@@ -222,6 +234,8 @@ export default function Page() {
           setFaceWidthUnit={setFaceWidthUnit}
           material={material}
           setMaterial={setMaterial}
+          rating={rating}
+          setRating={setRating}
           onCalculate={calculate}
           projectName={projectName}
           setProjectName={setProjectName}

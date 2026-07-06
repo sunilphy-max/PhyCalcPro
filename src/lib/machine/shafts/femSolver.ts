@@ -107,10 +107,13 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     const critShear = post.shearStress[criticalIndex] ?? 0;
     const critKt = ktProfile[criticalIndex] ?? 1;
     const dCrit = diameterAtNode(model, criticalIndex);
+    const kSigma = config.din743?.K_sigma ?? 1;
+    const kTau = config.din743?.K_tau ?? 1;
+    const gammaF = config.din743?.gamma_F ?? 1;
 
     const stressState = rotatingShaftStressState(
-      critBending * critKt,
-      critShear * critKt,
+      critBending * critKt * kSigma,
+      critShear * critKt * kTau,
       0,
       config.fatigue?.alternatingTorqueFraction ?? 0
     );
@@ -120,7 +123,8 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
       material,
       stressState,
       { enabled: true, surfaceFinish: config.fatigue?.surfaceFinish ?? "machined" },
-      limits.targetFatigueSafetyFactor
+      limits.targetFatigueSafetyFactor,
+      gammaF
     );
     fatigueSafetyFactor = fatigue.safetyFactor;
     fatigueStatus = fatigue.status;

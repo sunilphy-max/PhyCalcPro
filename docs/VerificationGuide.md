@@ -4,7 +4,7 @@
 
 | Document | Purpose |
 |----------|---------|
-| **[validation-master-checklist.md](./validation-master-checklist.md)** | Per-module physics & standards sign-off (all 62 modules) |
+| **[validation-master-checklist.md](./validation-master-checklist.md)** | Per-module physics & standards sign-off (all 66 modules) |
 | **[modules/spring-modules-user-tasks.md](./modules/spring-modules-user-tasks.md)** | Spring-specific engineer checklist |
 | **`src/data/verification/README.md`** | JSON case schema and CI module list |
 
@@ -46,39 +46,13 @@ npm run generate:verification-template
 
 ### Architecture (2026)
 
-- **`src/lib/qa/moduleSolverRegistry.ts`** — central registry of **61** numeric solvers (all modules except material-db browse mode)
+- **`src/lib/qa/moduleSolverRegistry.ts`** — central registry of **65** numeric solvers (all modules except material-db browse mode)
 - **`src/lib/qa/benchmarkRunner.ts`** — runs verification cases against the registry
 - **`src/lib/qa/verificationSeeds.ts`** + **`scripts/bootstrap-verification.ts`** — generate new JSON from seed cases
 
-### Modules with committed CI cases (24)
+### Modules with committed CI cases (64 modules, 70 cases)
 
-| Module | Verification file(s) |
-|--------|----------------------|
-| beams | `beams-indicative-01.json` |
-| bearings | `bearings-indicative-01.json` |
-| bevel-gears | `bevel-gears-indicative-01.json` |
-| circular-plates | `circular-plates-indicative-01.json` |
-| columns | `columns-indicative-01.json` |
-| combined-loading | `combined-loading-indicative-01.json` |
-| compression-springs | `compression-springs-indicative-01.json`, `compression-springs-indicative-fatigue-01.json` |
-| corrosion | `corrosion-indicative-01.json` |
-| extension-springs | `extension-springs-indicative-01.json` |
-| fatigue | `fatigue-indicative-01.json` |
-| gears | `gears-indicative-01.json` |
-| hydraulics | `hydraulics-indicative-01.json` |
-| impact | `impact-indicative-01.json` |
-| keys-splines | `keys-splines-indicative-01.json` |
-| pipes | `pipes-indicative-01.json` |
-| rivets | `rivets-indicative-01.json` |
-| rotation | `rotation-indicative-01.json` |
-| shafts | `shafts-indicative-01.json` |
-| suspension | `suspension-indicative-01.json` |
-| timing-belts | `timing-belts-indicative-01.json` |
-| torsion-springs | `torsion-springs-indicative-01.json` |
-| unit-converter | `unit-converter-indicative-01.json` |
-| v-belts | `v-belts-indicative-01.json` |
-
-All other modules with solvers can add JSON at any time — the registry already supports them.
+All solver-backed modules except **material-db** have at least one committed benchmark. See `src/data/verification/` and `last-run.json` for the current list. Maturity gate: `npm run validate:maturity-gates` (runs after `test:verification`).
 
 ### Adding a new benchmark
 

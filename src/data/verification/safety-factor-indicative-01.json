@@ -1,0 +1,21 @@
+{
+  "id": "safety-factor-indicative-01",
+  "moduleId": "safety-factor",
+  "designCode": "INDICATIVE",
+  "description": "Combined loading SF — 50 mm dia bar",
+  "inputs": {
+    "diameter": 0.05,
+    "axialForce": 10000,
+    "shearForce": 5000,
+    "bendingMoment": 200,
+    "torque": 150,
+    "yieldStrength": 250000000,
+    "ultimateStrength": 400000000
+  },
+  "expected": {
+    "vonMisesStress": 24270497.411723506,
+    "safetyFactorYield": 10.300571750096939
+  },
+  "tolerancePercent": 5,
+  "source": "Von Mises combined stress"
+}

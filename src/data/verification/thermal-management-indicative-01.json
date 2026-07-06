@@ -1,0 +1,13 @@
+{
+  "id": "thermal-management-indicative-01",
+  "moduleId": "thermal-management",
+  "designCode": "INDICATIVE",
+  "description": "Thermal network — defaults",
+  "inputs": {},
+  "expected": {
+    "totalCapacity": 164276.29475089334,
+    "thermalResistance": 0.00024349222181237732
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

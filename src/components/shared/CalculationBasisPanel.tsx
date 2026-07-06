@@ -74,6 +74,35 @@ export default function CalculationBasisPanel({ spec }: Props) {
         </div>
       ) : null}
 
+      {spec.worksheetSteps?.length ? (
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Worksheet steps</p>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-slate-200">
+            <table className="min-w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-500">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Factor</th>
+                  <th className="px-3 py-2 font-medium">Symbol</th>
+                  <th className="px-3 py-2 font-medium">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {spec.worksheetSteps.map((row) => (
+                  <tr key={`${row.label}-${row.symbol ?? row.value}`} className="border-t border-slate-100">
+                    <td className="px-3 py-2 text-slate-700">{row.label}</td>
+                    <td className="px-3 py-2 font-mono text-slate-600">{row.symbol ?? "—"}</td>
+                    <td className="px-3 py-2 font-mono text-slate-900">
+                      {row.value}
+                      {row.unit ? ` ${row.unit}` : ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
+
       <p className="text-xs text-slate-400 border-t border-slate-100 pt-2">
         Engine {spec.engineVersion} · {new Date(spec.computedAt).toLocaleString()}
       </p>

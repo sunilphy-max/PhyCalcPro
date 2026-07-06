@@ -1,0 +1,23 @@
+{
+  "id": "multi-pulley-indicative-01",
+  "moduleId": "multi-pulley",
+  "designCode": "INDICATIVE",
+  "description": "Two-pulley open belt layout",
+  "inputs": {
+    "diameters": [
+      0.2,
+      0.3
+    ],
+    "centerDistances": [
+      0.5
+    ],
+    "driveType": "open"
+  },
+  "expected": {
+    "totalBeltLength": 1.7903981633974482,
+    "minWrapAngle": 168.52165904546644,
+    "pulleyCount": 2
+  },
+  "tolerancePercent": 5,
+  "source": "Multi-pulley geometry"
+}

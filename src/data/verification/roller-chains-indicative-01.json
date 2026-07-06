@@ -1,0 +1,22 @@
+{
+  "id": "roller-chains-indicative-01",
+  "moduleId": "roller-chains",
+  "designCode": "INDICATIVE",
+  "description": "Roller chain drive — 5 kW, 19/38 teeth, 12.7 mm pitch",
+  "inputs": {
+    "power": 5000,
+    "speedDriver": 900,
+    "teethDriver": 19,
+    "teethDriven": 38,
+    "pitch": 0.0127,
+    "strands": 1,
+    "serviceFactor": 1.2
+  },
+  "expected": {
+    "chainTension": 1381406.271584473,
+    "powerUtilization": 16660.141292035085,
+    "ratio": 2
+  },
+  "tolerancePercent": 8,
+  "source": "Chain power rating screening"
+}

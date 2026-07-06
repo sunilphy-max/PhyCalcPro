@@ -1,0 +1,13 @@
+{
+  "id": "cryogenic-engineering-indicative-01",
+  "moduleId": "cryogenic-engineering",
+  "designCode": "INDICATIVE",
+  "description": "Cryogenic heat leak — defaults",
+  "inputs": {},
+  "expected": {
+    "totalHeatLeak": 51.45960528341953,
+    "boiloffRate": 22.34226078636908
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

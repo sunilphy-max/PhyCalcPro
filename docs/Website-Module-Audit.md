@@ -1,7 +1,7 @@
 # PhyCalcPro — Website Module Audit
 
-**Date:** 2026-06-07  
-**Scope:** All 62 engineering modules — inputs/results homogenization, design hooks, verification coverage  
+**Date:** 2026-07-06  
+**Scope:** All 66 engineering modules — inputs/results homogenization, design hooks, verification coverage  
 **Gold standard:** `PinInputs.tsx` + `PinResults.tsx` (see AGENTS.md)
 
 ---
@@ -10,8 +10,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Modules audited | 62 |
-| Verification benchmarks | 13 |
+| Modules audited | 66 |
+| Verification benchmarks | 70 |
 | Homogenized UI | 62/62 |
 | Legacy layout pages fixed (this pass) | 4 (rotation, cost-estimator, sections, cam-toolpaths) |
 | Inputs migrated to CalculatorCalculateButton (this pass) | 23 |

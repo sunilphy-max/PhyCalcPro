@@ -1,0 +1,20 @@
+{
+  "id": "pins-indicative-01",
+  "moduleId": "pins",
+  "designCode": "INDICATIVE",
+  "description": "Double shear pin — 20 mm, 5 kN",
+  "inputs": {
+    "force": 5000,
+    "pinDiameter": 0.02,
+    "plateThickness": 0.01,
+    "pinMaterialYield": 250000000,
+    "pinCount": 2
+  },
+  "expected": {
+    "shearStress": 7957747.154594767,
+    "shearSafety": 18.84955592153876,
+    "bearingSafety": 30
+  },
+  "tolerancePercent": 5,
+  "source": "Pin shear/bearing screening"
+}

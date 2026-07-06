@@ -1,0 +1,21 @@
+{
+  "id": "flywheels-indicative-01",
+  "moduleId": "flywheels",
+  "designCode": "INDICATIVE",
+  "description": "Solid disk flywheel — 1 m OD, 1800 rpm",
+  "inputs": {
+    "outerDiameter": 1,
+    "thickness": 0.1,
+    "faceWidth": 0.2,
+    "density": 7850,
+    "rpm": 1800,
+    "yieldStress": 250000000
+  },
+  "expected": {
+    "mass": 493.23004661359755,
+    "inertia": 123.30751165339939,
+    "storedEnergy": 2190593.447463182
+  },
+  "tolerancePercent": 5,
+  "source": "E = ½Iω²"
+}

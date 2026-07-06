@@ -1,0 +1,13 @@
+{
+  "id": "superconducting-systems-indicative-01",
+  "moduleId": "superconducting-systems",
+  "designCode": "INDICATIVE",
+  "description": "SC magnet margin — defaults",
+  "inputs": {},
+  "expected": {
+    "storedEnergy": 312500,
+    "currentMargin": 0.4117647058823529
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

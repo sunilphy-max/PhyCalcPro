@@ -1,0 +1,24 @@
+{
+  "id": "cam-toolpaths-indicative-01",
+  "moduleId": "cam-toolpaths",
+  "designCode": "INDICATIVE",
+  "description": "End mill pocket — 10 mm tool",
+  "inputs": {
+    "toolDiameter": 10,
+    "numFlutes": 4,
+    "spindleSpeed": 8000,
+    "feedPerTooth": 0.05,
+    "axialDepth": 2,
+    "radialDepth": 5,
+    "stockLength": 100,
+    "stockWidth": 50,
+    "stepOverPercent": 40
+  },
+  "expected": {
+    "feedRate": 1600,
+    "surfaceSpeed": 251.32741228718345,
+    "totalCutTime": 48.75
+  },
+  "tolerancePercent": 5,
+  "source": "CAM MRR screening"
+}

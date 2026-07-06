@@ -1,0 +1,14 @@
+{
+  "id": "magnetic-fields-indicative-01",
+  "moduleId": "magnetic-fields",
+  "designCode": "INDICATIVE",
+  "description": "Solenoid B-field — defaults",
+  "inputs": {},
+  "expected": {
+    "magneticField": 0.050265482457436686,
+    "inductance": 0.012566370614359173,
+    "storedEnergy": 2.5132741228718345
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

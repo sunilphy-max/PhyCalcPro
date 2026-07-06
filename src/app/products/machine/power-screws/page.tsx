@@ -9,8 +9,8 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import ScrewsInputs from "@/components/fasteners/bolts/ScrewsInputs";
-import ScrewsResults from "@/components/fasteners/bolts/ScrewsResults";
+import PowerScrewInputs from "@/components/machine/power-screws/PowerScrewInputs";
+import PowerScrewResults from "@/components/machine/power-screws/PowerScrewResults";
 import { solveScrewEngine } from "@/lib/fasteners/bolts/engine";
 import type { ScrewConfig, ScrewResult } from "@/lib/fasteners/bolts/types";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
@@ -88,7 +88,7 @@ export default function Page() {
         />
       }
       inputs={
-        <ScrewsInputs
+        <PowerScrewInputs
           projectName={projectName}
           setProjectName={setProjectName}
           config={config}
@@ -99,7 +99,7 @@ export default function Page() {
         />
       }
       results={
-        <ScrewsResults key={result ? JSON.stringify(result) : "empty"} result={result} projectName={projectName} />
+        <PowerScrewResults key={result ? JSON.stringify(result) : "empty"} result={result} projectName={projectName} />
       }
     />
   );

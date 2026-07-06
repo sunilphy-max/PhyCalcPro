@@ -1,10 +1,29 @@
 {
-  "ranAt": "2026-07-05T04:23:59.443Z",
-  "total": 38,
-  "passed": 38,
+  "ranAt": "2026-07-06T20:50:41.829Z",
+  "total": 70,
+  "passed": 70,
   "failed": 0,
   "skipped": 0,
   "results": [
+    {
+      "caseId": "battery-ev-systems-indicative-01",
+      "moduleId": "battery-ev-systems",
+      "pass": true,
+      "fields": [
+        {
+          "field": "packVoltage",
+          "expected": 355.20000000000005,
+          "actual": 355.20000000000005,
+          "pass": true
+        },
+        {
+          "field": "packEnergy",
+          "expected": 7.104000000000001,
+          "actual": 7.104000000000001,
+          "pass": true
+        }
+      ]
+    },
     {
       "caseId": "beams-indicative-01",
       "moduleId": "beams",
@@ -70,6 +89,81 @@
       ]
     },
     {
+      "caseId": "brakes-clutches-indicative-01",
+      "moduleId": "brakes-clutches",
+      "pass": true,
+      "fields": [
+        {
+          "field": "frictionTorque",
+          "expected": 71.13043478260867,
+          "actual": 71.13043478260867,
+          "pass": true
+        },
+        {
+          "field": "powerDissipated",
+          "expected": 11173.142567984565,
+          "actual": 11173.142567984565,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 1.481884057971014,
+          "actual": 1.481884057971014,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "cam-toolpaths-indicative-01",
+      "moduleId": "cam-toolpaths",
+      "pass": true,
+      "fields": [
+        {
+          "field": "feedRate",
+          "expected": 1600,
+          "actual": 1600,
+          "pass": true
+        },
+        {
+          "field": "surfaceSpeed",
+          "expected": 251.32741228718345,
+          "actual": 251.32741228718345,
+          "pass": true
+        },
+        {
+          "field": "totalCutTime",
+          "expected": 48.75,
+          "actual": 48.75,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "cams-indicative-01",
+      "moduleId": "cams",
+      "pass": true,
+      "fields": [
+        {
+          "field": "peakVelocity",
+          "expected": 0.006666666666666667,
+          "actual": 0.006666666666666667,
+          "pass": true
+        },
+        {
+          "field": "peakAcceleration",
+          "expected": 0.0044444444444444444,
+          "actual": 0.0044444444444444444,
+          "pass": true
+        },
+        {
+          "field": "peakPressureAngle",
+          "expected": 0.001326290414763181,
+          "actual": 0.001326290414763181,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "circular-plates-indicative-01",
       "moduleId": "circular-plates",
       "pass": true,
@@ -110,6 +204,31 @@
           "field": "safetyFactor",
           "expected": 6.025763851940786,
           "actual": 6.025763851940785,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "composites-indicative-01",
+      "moduleId": "composites",
+      "pass": true,
+      "fields": [
+        {
+          "field": "E_longitudinal",
+          "expected": 139400000000,
+          "actual": 139400000000,
+          "pass": true
+        },
+        {
+          "field": "E_transverse",
+          "expected": 8554729011.6896925,
+          "actual": 8554729011.6896925,
+          "pass": true
+        },
+        {
+          "field": "density",
+          "expected": 1560,
+          "actual": 1560,
           "pass": true
         }
       ]
@@ -172,6 +291,50 @@
       ]
     },
     {
+      "caseId": "cost-estimator-indicative-01",
+      "moduleId": "cost-estimator",
+      "pass": true,
+      "fields": [
+        {
+          "field": "totalCost",
+          "expected": 284.150625,
+          "actual": 284.150625,
+          "pass": true
+        },
+        {
+          "field": "materialCost",
+          "expected": 19.625,
+          "actual": 19.625,
+          "pass": true
+        },
+        {
+          "field": "materialMass",
+          "expected": 7.8500000000000005,
+          "actual": 7.8500000000000005,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "cryogenic-engineering-indicative-01",
+      "moduleId": "cryogenic-engineering",
+      "pass": true,
+      "fields": [
+        {
+          "field": "totalHeatLeak",
+          "expected": 51.45960528341953,
+          "actual": 51.45960528341953,
+          "pass": true
+        },
+        {
+          "field": "boiloffRate",
+          "expected": 22.34226078636908,
+          "actual": 22.34226078636908,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "extension-springs-indicative-01",
       "moduleId": "extension-springs",
       "pass": true,
@@ -216,6 +379,63 @@
       ]
     },
     {
+      "caseId": "fits-indicative-01",
+      "moduleId": "fits",
+      "pass": true,
+      "fields": [
+        {
+          "field": "clearanceMin",
+          "expected": -0.000009905322211449519,
+          "actual": -0.000009905322211449519,
+          "pass": true
+        },
+        {
+          "field": "clearanceMax",
+          "expected": 0.00001229626205559442,
+          "actual": 0.00001229626205559442,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "flywheels-indicative-01",
+      "moduleId": "flywheels",
+      "pass": true,
+      "fields": [
+        {
+          "field": "mass",
+          "expected": 493.23004661359755,
+          "actual": 493.23004661359755,
+          "pass": true
+        },
+        {
+          "field": "inertia",
+          "expected": 123.30751165339939,
+          "actual": 123.30751165339939,
+          "pass": true
+        },
+        {
+          "field": "storedEnergy",
+          "expected": 2190593.447463182,
+          "actual": 2190593.447463182,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "formula-reference-indicative-01",
+      "moduleId": "formula-reference",
+      "pass": true,
+      "fields": [
+        {
+          "field": "result",
+          "expected": 125,
+          "actual": 125,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "frames-indicative-01",
       "moduleId": "frames",
       "pass": true,
@@ -230,6 +450,31 @@
           "field": "maxMoment",
           "expected": 210621.34891131203,
           "actual": 210621.34891131203,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "gear-ratio-design-indicative-01",
+      "moduleId": "gear-ratio-design",
+      "pass": true,
+      "fields": [
+        {
+          "field": "actualRatio",
+          "expected": 3,
+          "actual": 3,
+          "pass": true
+        },
+        {
+          "field": "pinionTeeth",
+          "expected": 17,
+          "actual": 17,
+          "pass": true
+        },
+        {
+          "field": "gearTeeth",
+          "expected": 51,
+          "actual": 51,
           "pass": true
         }
       ]
@@ -254,6 +499,31 @@
       ]
     },
     {
+      "caseId": "heat-exchangers-indicative-01",
+      "moduleId": "heat-exchangers",
+      "pass": true,
+      "fields": [
+        {
+          "field": "heatTransferRate",
+          "expected": 351120,
+          "actual": 351120,
+          "pass": true
+        },
+        {
+          "field": "LMTD",
+          "expected": 61.735657612699754,
+          "actual": 61.735657612699754,
+          "pass": true
+        },
+        {
+          "field": "effectiveness",
+          "expected": 0.80365878452276,
+          "actual": 0.80365878452276,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "hydraulics-indicative-01",
       "moduleId": "hydraulics",
       "pass": true,
@@ -268,6 +538,25 @@
           "field": "retractForce",
           "expected": 26954.86496780043,
           "actual": 26954.86496780043,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "hydrogen-systems-indicative-01",
+      "moduleId": "hydrogen-systems",
+      "pass": true,
+      "fields": [
+        {
+          "field": "storedMass",
+          "expected": 3.5360072383213166,
+          "actual": 3.5360072383213166,
+          "pass": true
+        },
+        {
+          "field": "hoopStress",
+          "expected": 729166666.6666666,
+          "actual": 729166666.6666666,
           "pass": true
         }
       ]
@@ -367,6 +656,100 @@
       ]
     },
     {
+      "caseId": "load-case-manager-indicative-01",
+      "moduleId": "load-case-manager",
+      "pass": true,
+      "fields": [
+        {
+          "field": "combinedStress",
+          "expected": 8001874.780324919,
+          "actual": 8001874.780324919,
+          "pass": true
+        },
+        {
+          "field": "safetyFactor",
+          "expected": 31.242678355165246,
+          "actual": 31.242678355165246,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "magnetic-fields-indicative-01",
+      "moduleId": "magnetic-fields",
+      "pass": true,
+      "fields": [
+        {
+          "field": "magneticField",
+          "expected": 0.050265482457436686,
+          "actual": 0.050265482457436686,
+          "pass": true
+        },
+        {
+          "field": "inductance",
+          "expected": 0.012566370614359173,
+          "actual": 0.012566370614359173,
+          "pass": true
+        },
+        {
+          "field": "storedEnergy",
+          "expected": 2.5132741228718345,
+          "actual": 2.5132741228718345,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "multi-pulley-indicative-01",
+      "moduleId": "multi-pulley",
+      "pass": true,
+      "fields": [
+        {
+          "field": "totalBeltLength",
+          "expected": 1.7903981633974482,
+          "actual": 1.7903981633974482,
+          "pass": true
+        },
+        {
+          "field": "minWrapAngle",
+          "expected": 168.52165904546644,
+          "actual": 168.52165904546644,
+          "pass": true
+        },
+        {
+          "field": "pulleyCount",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "pins-indicative-01",
+      "moduleId": "pins",
+      "pass": true,
+      "fields": [
+        {
+          "field": "shearStress",
+          "expected": 7957747.154594767,
+          "actual": 7957747.154594767,
+          "pass": true
+        },
+        {
+          "field": "shearSafety",
+          "expected": 18.84955592153876,
+          "actual": 18.84955592153876,
+          "pass": true
+        },
+        {
+          "field": "bearingSafety",
+          "expected": 30,
+          "actual": 30,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "pipes-indicative-01",
       "moduleId": "pipes",
       "pass": true,
@@ -375,6 +758,31 @@
           "field": "maxHoopStress",
           "expected": 38687655.638989076,
           "actual": 38687655.638989076,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "plain-bearings-indicative-01",
+      "moduleId": "plain-bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "sommerfeldNumber",
+          "expected": 0.00037699111843077514,
+          "actual": 0.00037699111843077514,
+          "pass": true
+        },
+        {
+          "field": "eccentricityRatio",
+          "expected": 0.95,
+          "actual": 0.95,
+          "pass": true
+        },
+        {
+          "field": "minFilmThickness",
+          "expected": 0.0000012500000000000012,
+          "actual": 0.0000012500000000000012,
           "pass": true
         }
       ]
@@ -430,6 +838,50 @@
       ]
     },
     {
+      "caseId": "planetary-gears-indicative-01",
+      "moduleId": "planetary-gears",
+      "pass": true,
+      "fields": [
+        {
+          "field": "actualRatio",
+          "expected": 5,
+          "actual": 5,
+          "pass": true
+        },
+        {
+          "field": "ringTeeth",
+          "expected": 80,
+          "actual": 80,
+          "pass": true
+        },
+        {
+          "field": "planetCount",
+          "expected": 6,
+          "actual": 6,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "plates-indicative-01",
+      "moduleId": "plates",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxDeflection",
+          "expected": 0.0007411291482586763,
+          "actual": 0.0007411291482586763,
+          "pass": true
+        },
+        {
+          "field": "maxMoment",
+          "expected": 558.3375089158302,
+          "actual": 558.3375089158302,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "power-screws-indicative-01",
       "moduleId": "power-screws",
       "pass": true,
@@ -480,6 +932,50 @@
       ]
     },
     {
+      "caseId": "precision-motion-indicative-01",
+      "moduleId": "precision-motion",
+      "pass": true,
+      "fields": [
+        {
+          "field": "stiffness",
+          "expected": 3881.249999999999,
+          "actual": 3881.249999999999,
+          "pass": true
+        },
+        {
+          "field": "naturalFrequency",
+          "expected": 8.09581006871068,
+          "actual": 8.09581006871068,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "profiles-indicative-01",
+      "moduleId": "profiles",
+      "pass": true,
+      "fields": [
+        {
+          "field": "area",
+          "expected": 0.020000000000000004,
+          "actual": 0.020000000000000004,
+          "pass": true
+        },
+        {
+          "field": "ixx",
+          "expected": 0.00006666666666666668,
+          "actual": 0.00006666666666666668,
+          "pass": true
+        },
+        {
+          "field": "iyy",
+          "expected": 0.00001666666666666667,
+          "actual": 0.00001666666666666667,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "rivets-indicative-01",
       "moduleId": "rivets",
       "pass": true,
@@ -494,6 +990,56 @@
           "field": "safetyFactorShear",
           "expected": 2403318.379996192,
           "actual": 2403318.379996192,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "rolled-sections-indicative-01",
+      "moduleId": "rolled-sections",
+      "pass": true,
+      "fields": [
+        {
+          "field": "area",
+          "expected": 0.0123,
+          "actual": 0.0123,
+          "pass": true
+        },
+        {
+          "field": "ix",
+          "expected": 0.000222,
+          "actual": 0.000222,
+          "pass": true
+        },
+        {
+          "field": "sx",
+          "expected": 0.00144,
+          "actual": 0.00144,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "roller-chains-indicative-01",
+      "moduleId": "roller-chains",
+      "pass": true,
+      "fields": [
+        {
+          "field": "chainTension",
+          "expected": 1381406.271584473,
+          "actual": 1381406.271584473,
+          "pass": true
+        },
+        {
+          "field": "powerUtilization",
+          "expected": 16660.141292035085,
+          "actual": 16660.141292035085,
+          "pass": true
+        },
+        {
+          "field": "ratio",
+          "expected": 2,
+          "actual": 2,
           "pass": true
         }
       ]
@@ -519,6 +1065,69 @@
           "field": "torque",
           "expected": 31.830988618379067,
           "actual": 31.830988618379067,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "safety-factor-indicative-01",
+      "moduleId": "safety-factor",
+      "pass": true,
+      "fields": [
+        {
+          "field": "vonMisesStress",
+          "expected": 24270497.411723506,
+          "actual": 24270497.411723506,
+          "pass": true
+        },
+        {
+          "field": "safetyFactorYield",
+          "expected": 10.300571750096939,
+          "actual": 10.300571750096939,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "sections-indicative-01",
+      "moduleId": "sections",
+      "pass": true,
+      "fields": [
+        {
+          "field": "area",
+          "expected": 0.020000000000000004,
+          "actual": 0.020000000000000004,
+          "pass": true
+        },
+        {
+          "field": "Ixx",
+          "expected": 0.00006666666666666668,
+          "actual": 0.00006666666666666668,
+          "pass": true
+        },
+        {
+          "field": "Iyy",
+          "expected": 0.00001666666666666667,
+          "actual": 0.00001666666666666667,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "shaft-hubs-indicative-01",
+      "moduleId": "shaft-hubs",
+      "pass": true,
+      "fields": [
+        {
+          "field": "contactPressure",
+          "expected": 125999999.99999999,
+          "actual": 125999999.99999999,
+          "pass": true
+        },
+        {
+          "field": "frictionTorque",
+          "expected": 3711.006322052943,
+          "actual": 3711.006322052943,
           "pass": true
         }
       ]
@@ -568,6 +1177,25 @@
       ]
     },
     {
+      "caseId": "superconducting-systems-indicative-01",
+      "moduleId": "superconducting-systems",
+      "pass": true,
+      "fields": [
+        {
+          "field": "storedEnergy",
+          "expected": 312500,
+          "actual": 312500,
+          "pass": true
+        },
+        {
+          "field": "currentMargin",
+          "expected": 0.4117647058823529,
+          "actual": 0.4117647058823529,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "suspension-indicative-01",
       "moduleId": "suspension",
       "pass": true,
@@ -588,6 +1216,50 @@
           "field": "loadTransfer",
           "expected": 1617,
           "actual": 1617,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "temperature-properties-indicative-01",
+      "moduleId": "temperature-properties",
+      "pass": true,
+      "fields": [
+        {
+          "field": "adjustedYield",
+          "expected": 160000000,
+          "actual": 160000000,
+          "pass": true
+        },
+        {
+          "field": "adjustedModulus",
+          "expected": 153300000000,
+          "actual": 153300000000,
+          "pass": true
+        },
+        {
+          "field": "expansionPerMeter",
+          "expected": 0.00216,
+          "actual": 0.00216,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "thermal-management-indicative-01",
+      "moduleId": "thermal-management",
+      "pass": true,
+      "fields": [
+        {
+          "field": "totalCapacity",
+          "expected": 164276.29475089334,
+          "actual": 164276.29475089334,
+          "pass": true
+        },
+        {
+          "field": "thermalResistance",
+          "expected": 0.00024349222181237732,
+          "actual": 0.00024349222181237732,
           "pass": true
         }
       ]
@@ -713,6 +1385,31 @@
       ]
     },
     {
+      "caseId": "vacuum-engineering-indicative-01",
+      "moduleId": "vacuum-engineering",
+      "pass": true,
+      "fields": [
+        {
+          "field": "pumpDownTime",
+          "expected": 43.214604826532984,
+          "actual": 43.214604826532984,
+          "pass": true
+        },
+        {
+          "field": "conductance",
+          "expected": 10.083333333333334,
+          "actual": 10.083333333333334,
+          "pass": true
+        },
+        {
+          "field": "throughput",
+          "expected": 0.008,
+          "actual": 0.008,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "vessels-indicative-01",
       "moduleId": "vessels",
       "pass": true,
@@ -753,6 +1450,31 @@
           "field": "safetyFactorOverall",
           "expected": 4.077007343192571,
           "actual": 4.077007343192571,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "worm-gears-indicative-01",
+      "moduleId": "worm-gears",
+      "pass": true,
+      "fields": [
+        {
+          "field": "wormTorque",
+          "expected": 20.698958009467347,
+          "actual": 20.698958009467347,
+          "pass": true
+        },
+        {
+          "field": "efficiency",
+          "expected": 0.6363336531337196,
+          "actual": 0.6363336531337196,
+          "pass": true
+        },
+        {
+          "field": "ratio",
+          "expected": 40,
+          "actual": 40,
           "pass": true
         }
       ]

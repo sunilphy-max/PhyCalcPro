@@ -16,6 +16,11 @@ export type BearingReliability = 90 | 95 | 96 | 97 | 98 | 99;
 /** Simplified ISO 281 modified-life lubrication screening (a_ISO). */
 export type LubricationClass = "poor" | "average" | "good";
 
+export type BearingCatalogTier = "skf_metric" | "inch" | "ina_fag";
+
+/** Paired / duplex mounting (MITCalc-style layout). */
+export type BearingArrangement = "single" | "back_to_back" | "face_to_face" | "tandem";
+
 export type BearingConfig = {
   radialLoad: number;
   axialLoad: number;
@@ -29,6 +34,8 @@ export type BearingConfig = {
   designation?: string;
   reliabilityPercent?: BearingReliability;
   lubricationClass?: LubricationClass;
+  catalogTier?: BearingCatalogTier;
+  arrangement?: BearingArrangement;
   /** Target static safety factor s₀ = C₀/P₀ (default 1.0) */
   targetStaticSafetyFactor?: number;
   /** Minimum speed margin n_lim / n (default 1.0) */

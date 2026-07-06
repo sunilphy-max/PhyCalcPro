@@ -5,6 +5,7 @@ import { useCalculatorReportOptional } from "@/contexts/CalculatorReportContext"
 import EngineeringChecksPanel from "@/components/shared/EngineeringChecksPanel";
 import CalculationBasisPanel from "@/components/shared/CalculationBasisPanel";
 import { buildCsvRowsFromResult, mergeCsvRows, type CsvRow } from "@/lib/export/csvRows";
+import { recordCalculation } from "@/lib/persistence/calculationHistory";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { ReportMeta } from "@/lib/export/structuredReport";
@@ -44,6 +45,8 @@ export default function ExportableReport({
   className = "space-y-6",
 }: Props) {
   const reportRef = useRef<HTMLDivElement>(null);
+  const recordTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastRecordedKeyRef = useRef<string | null>(null);
   const reportContext = useCalculatorReportOptional();
   const registerReport = reportContext?.registerReport;
   const unregisterReport = reportContext?.unregisterReport;
@@ -100,6 +103,39 @@ export default function ExportableReport({
     qualityOverridesKey,
     showQualityChecklist,
   ]);
+
+  useEffect(() => {
+    if (!moduleId || !result || !calculationSpec) return;
+
+    const recordKey = JSON.stringify({
+      moduleId,
+      computedAt: calculationSpec.computedAt,
+      result,
+    });
+    if (lastRecordedKeyRef.current === recordKey) return;
+
+    if (recordTimeoutRef.current) {
+      clearTimeout(recordTimeoutRef.current);
+    }
+
+    recordTimeoutRef.current = setTimeout(() => {
+      lastRecordedKeyRef.current = recordKey;
+      void recordCalculation({
+        moduleId,
+        designCode: calculationSpec.designCode,
+        result,
+        calculationSpec,
+        inputRows,
+        reportMeta,
+      });
+    }, 1000);
+
+    return () => {
+      if (recordTimeoutRef.current) {
+        clearTimeout(recordTimeoutRef.current);
+      }
+    };
+  }, [moduleId, result, calculationSpec, inputRows, reportMeta]);
 
   return (
     <div className={`min-w-0 ${className}`.trim()}>

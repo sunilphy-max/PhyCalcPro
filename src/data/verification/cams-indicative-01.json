@@ -1,0 +1,22 @@
+{
+  "id": "cams-indicative-01",
+  "moduleId": "cams",
+  "designCode": "INDICATIVE",
+  "description": "Simple harmonic cam — 20 mm lift",
+  "inputs": {
+    "lift": 0.02,
+    "baseCircle": 0.04,
+    "radius": 0.01,
+    "speed": 1200,
+    "dwellAngle": 90,
+    "motionLaw": "simple_harmonic",
+    "profileType": "flat_follower"
+  },
+  "expected": {
+    "peakVelocity": 0.006666666666666667,
+    "peakAcceleration": 0.0044444444444444444,
+    "peakPressureAngle": 0.001326290414763181
+  },
+  "tolerancePercent": 5,
+  "source": "Polynomial cam kinematics"
+}

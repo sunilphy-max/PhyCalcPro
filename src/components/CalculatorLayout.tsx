@@ -13,6 +13,7 @@ import ModuleReferenceDocumentation from "@/components/design-workflows/ModuleRe
 import ModuleContinueWorkflowBar from "@/components/design-workflows/ModuleContinueWorkflowBar";
 import WorkflowModeHelp from "@/components/design-workflows/WorkflowModeHelp";
 import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
+import GuestHistoryBanner from "@/components/shared/GuestHistoryBanner";
 import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
 import { CalculatorReportProvider, useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
 import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaults";
@@ -136,6 +137,8 @@ function CalculatorLayoutBody({
               assumptions and limitations in the calculation basis before design use.
             </div>
           ) : null}
+
+          <GuestHistoryBanner />
 
           {/* Inputs left, results right */}
           <div

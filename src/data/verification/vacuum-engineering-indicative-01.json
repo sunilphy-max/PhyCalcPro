@@ -1,0 +1,14 @@
+{
+  "id": "vacuum-engineering-indicative-01",
+  "moduleId": "vacuum-engineering",
+  "designCode": "INDICATIVE",
+  "description": "Vacuum pump sizing — default field values",
+  "inputs": {},
+  "expected": {
+    "pumpDownTime": 43.214604826532984,
+    "conductance": 10.083333333333334,
+    "throughput": 0.008
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

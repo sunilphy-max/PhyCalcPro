@@ -39,6 +39,13 @@ export type EngineeringCheck = {
   notes?: string;
 };
 
+export type WorksheetStep = {
+  label: string;
+  symbol?: string;
+  value: string;
+  unit?: string;
+};
+
 export type CalculationSpec = {
   moduleId: string;
   designCode: DesignCodeId;
@@ -49,6 +56,8 @@ export type CalculationSpec = {
   assumptions: string[];
   limitations: string[];
   checks: EngineeringCheck[];
+  /** MITCalc-style intermediate factor rows for export reports */
+  worksheetSteps?: WorksheetStep[];
   engineVersion: string;
   computedAt: string;
 };

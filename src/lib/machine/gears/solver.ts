@@ -1,4 +1,5 @@
 import type { GearConfig, GearResult } from "./types";
+import { runIso6336Rating } from "@/lib/standards/codeChecks/iso6336";
 
 export function getLewisFormFactor(z: number) {
   return Math.max(0.1, 0.484 - 2.87 / z);
@@ -45,6 +46,51 @@ export function solveGearDesign(config: GearConfig): GearResult {
   const contactFatigueLimit = (2 * brinellHardness + 200) * 1e6;
   const contactFatigueSafetyFactor = contactFatigueLimit / Math.max(contactStress, 1e-9);
 
+  const ratingOpts = config.rating;
+  let iso6336: GearResult["iso6336"];
+  let iso6336BendingSafetyFactor: number | undefined;
+  let iso6336ContactSafetyFactor: number | undefined;
+  let scuffingSafetyFactor: number | null = null;
+  let micropittingSafetyFactor: number | null = null;
+
+  if (ratingOpts) {
+    const iso = runIso6336Rating({
+      tangentialForceN: tangentialForce,
+      faceWidthM: config.faceWidth,
+      moduleM: config.module,
+      z1: pinionTeeth,
+      z2: gearTeeth,
+      pinionDiameterM: pitchDiameterPinion,
+      pitchVelocityMs: pitchLineVelocity,
+      ePa: config.material.E,
+      poisson: config.material.poisson,
+      ultimatePa: ultimateStrength,
+      applicationFactor: ratingOpts.applicationFactor,
+      faceLoadFactor: ratingOpts.faceLoadFactor,
+      qualityGrade: ratingOpts.qualityGrade,
+    });
+    iso6336 = iso.factors;
+    iso6336BendingSafetyFactor = iso.bendingSafetyFactor;
+    iso6336ContactSafetyFactor = iso.contactSafetyFactor;
+
+    if (ratingOpts.enableScuffingScreen) {
+      const lubricationFactor =
+        ratingOpts.lubrication === "oil_bath"
+          ? 1.0
+          : ratingOpts.lubrication === "oil_mist"
+            ? 0.85
+            : ratingOpts.lubrication === "grease"
+              ? 0.7
+              : 0.5;
+      const scuffingLimit = 850e6 * lubricationFactor;
+      scuffingSafetyFactor = scuffingLimit / Math.max(iso.contactStressPa, 1e-9);
+    }
+    if (ratingOpts.enableMicropittingScreen) {
+      const micropittingLimit = 0.65 * contactFatigueLimit;
+      micropittingSafetyFactor = micropittingLimit / Math.max(iso.contactStressPa, 1e-9);
+    }
+  }
+
   return {
     pinionTeeth,
     gearTeeth,
@@ -65,5 +111,10 @@ export function solveGearDesign(config: GearConfig): GearResult {
     bendingFatigueSafetyFactor,
     contactFatigueSafetyFactor,
     material: config.material,
+    iso6336,
+    iso6336BendingSafetyFactor,
+    iso6336ContactSafetyFactor,
+    scuffingSafetyFactor,
+    micropittingSafetyFactor,
   };
 }

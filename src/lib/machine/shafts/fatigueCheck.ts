@@ -32,10 +32,11 @@ export function evaluateShaftFatigue(
   material: ShaftMaterial,
   stress: FatigueStressState,
   options: ShaftFatigueOptions,
-  targetSf = 1.5
+  targetSf = 1.5,
+  gammaF = 1
 ): ShaftFatigueResult {
   const finish: SurfaceFinish = options.surfaceFinish ?? "machined";
-  const Se = estimateEnduranceLimit(material);
+  const Se = estimateEnduranceLimit(material) / Math.max(gammaF, 1e-9);
 
   const bending = solveFatigueEngine({
     alternatingStress: stress.bendingAmplitude,

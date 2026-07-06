@@ -34,7 +34,36 @@ export const ROLLED_SECTIONS: Record<string, RolledSectionProps> = Object.fromEn
   })
 );
 
-export const ROLLED_SECTION_FAMILIES = ["W", "S", "C", "L", "IPE", "UPN", "L-EN"] as const;
+export const ROLLED_SECTION_FAMILIES = ["W", "S", "C", "L", "IPE", "UPN", "L-EN", "UK"] as const;
+
+/** EN/UK designation aliases → canonical catalog key */
+export const ROLLED_SECTION_ALIASES: Record<string, string> = {
+  "305x165x40": "W310x60",
+  "305x165x46": "W310x52",
+  "305x165x54": "W310x44",
+  "UB305x165x40": "W310x60",
+  "UB305x165x46": "W310x52",
+  "HEA600": "IPE600",
+  "HEA550": "IPE550",
+  "HEA500": "IPE500",
+  "HEA400": "IPE400",
+  "HEA300": "IPE300",
+  "HEA200": "IPE200",
+  "HEB300": "IPE300",
+  "HEB200": "IPE200",
+};
+
+export function resolveRolledSectionDesignation(designation: string): string {
+  const key = designation.trim();
+  if (ROLLED_SECTIONS[key]) return key;
+  const alias = ROLLED_SECTION_ALIASES[key];
+  if (alias && ROLLED_SECTIONS[alias]) return alias;
+  const normalized = key.replace(/\s+/g, "").replace(/×/g, "x");
+  if (ROLLED_SECTIONS[normalized]) return normalized;
+  const aliasNorm = ROLLED_SECTION_ALIASES[normalized];
+  if (aliasNorm && ROLLED_SECTIONS[aliasNorm]) return aliasNorm;
+  return "W310x97";
+}
 
 export function sectionsByFamily(family: string) {
   return Object.entries(ROLLED_SECTIONS)

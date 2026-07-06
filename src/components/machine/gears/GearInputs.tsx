@@ -6,7 +6,9 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
 import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
+import type { GearRatingOptions } from "@/lib/machine/gears/types";
 
 type Props = {
   power: number;
@@ -29,6 +31,8 @@ type Props = {
   setFaceWidthUnit: Dispatch<SetStateAction<string>>;
   material: string;
   setMaterial: Dispatch<SetStateAction<string>>;
+  rating: GearRatingOptions;
+  setRating: Dispatch<SetStateAction<GearRatingOptions>>;
   onCalculate: () => void;
   projectName?: string;
   setProjectName?: Dispatch<SetStateAction<string>>;
@@ -57,6 +61,8 @@ export default function GearInputs({
   setFaceWidthUnit,
   material,
   setMaterial,
+  rating,
+  setRating,
   onCalculate,
   projectName,
   setProjectName,
@@ -125,6 +131,69 @@ export default function GearInputs({
           <option value="Bronze">Bronze</option>
         </select>
       </label>
+
+      <CalculatorFormSection
+        title="ISO 6336 rating factors"
+        description="Application, dynamic, and face load factors for pitting and bending worksheets (US/EU/ISO design codes)."
+      >
+        <div className={calculatorInputGridClass}>
+          <CalculatorNumberField
+            label="Application factor K_A"
+            value={rating.applicationFactor ?? 1.25}
+            onChange={(v) => setRating((r) => ({ ...r, applicationFactor: v }))}
+            step={0.05}
+            min={1}
+          />
+          <CalculatorNumberField
+            label="Face load factor K_Hβ"
+            value={rating.faceLoadFactor ?? 1.3}
+            onChange={(v) => setRating((r) => ({ ...r, faceLoadFactor: v }))}
+            step={0.05}
+            min={1}
+          />
+          <CalculatorNumberField
+            label="Quality grade Q_v"
+            value={rating.qualityGrade ?? 7}
+            onChange={(v) => setRating((r) => ({ ...r, qualityGrade: Math.round(v) }))}
+            min={5}
+            max={11}
+          />
+          <label className="space-y-2">
+            <span className={calculatorFieldLabelClass}>Lubrication</span>
+            <select
+              value={rating.lubrication ?? "oil_bath"}
+              onChange={(e) =>
+                setRating((r) => ({
+                  ...r,
+                  lubrication: e.target.value as GearRatingOptions["lubrication"],
+                }))
+              }
+              className={calculatorSelectClass}
+            >
+              <option value="oil_bath">Oil bath</option>
+              <option value="oil_mist">Oil mist</option>
+              <option value="grease">Grease</option>
+              <option value="dry">Dry / marginal</option>
+            </select>
+          </label>
+        </div>
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={rating.enableScuffingScreen ?? false}
+            onChange={(e) => setRating((r) => ({ ...r, enableScuffingScreen: e.target.checked }))}
+          />
+          Scuffing screening (ISO 6336-20 indicative)
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={rating.enableMicropittingScreen ?? false}
+            onChange={(e) => setRating((r) => ({ ...r, enableMicropittingScreen: e.target.checked }))}
+          />
+          Micropitting screening (ISO 6336-22 indicative)
+        </label>
+      </CalculatorFormSection>
     </CalculatorInputPanel>
   );
 }

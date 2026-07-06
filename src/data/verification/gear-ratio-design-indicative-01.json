@@ -1,0 +1,18 @@
+{
+  "id": "gear-ratio-design-indicative-01",
+  "moduleId": "gear-ratio-design",
+  "designCode": "INDICATIVE",
+  "description": "Target 3:1 spur pair tooth search",
+  "inputs": {
+    "targetRatio": 3,
+    "maxTeeth": 100,
+    "minPinionTeeth": 17
+  },
+  "expected": {
+    "actualRatio": 3,
+    "pinionTeeth": 17,
+    "gearTeeth": 51
+  },
+  "tolerancePercent": 2,
+  "source": "Tooth-count ratio search"
+}

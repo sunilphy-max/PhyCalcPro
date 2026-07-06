@@ -1,0 +1,16 @@
+{
+  "id": "rolled-sections-indicative-01",
+  "moduleId": "rolled-sections",
+  "designCode": "INDICATIVE",
+  "description": "AISC W310×97 lookup",
+  "inputs": {
+    "designation": "W310x97"
+  },
+  "expected": {
+    "area": 0.0123,
+    "ix": 0.000222,
+    "sx": 0.00144
+  },
+  "tolerancePercent": 2,
+  "source": "Rolled section catalog"
+}

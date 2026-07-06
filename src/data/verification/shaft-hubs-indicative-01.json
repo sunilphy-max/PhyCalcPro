@@ -1,0 +1,20 @@
+{
+  "id": "shaft-hubs-indicative-01",
+  "moduleId": "shaft-hubs",
+  "designCode": "INDICATIVE",
+  "description": "Interference fit hub — 50 mm shaft",
+  "inputs": {
+    "shaftDiameter": 0.05,
+    "hubOuterDiameter": 0.1,
+    "hubLength": 0.05,
+    "interference": 0.0001,
+    "frictionCoeff": 0.15,
+    "modulus": 210000000000
+  },
+  "expected": {
+    "contactPressure": 125999999.99999999,
+    "frictionTorque": 3711.006322052943
+  },
+  "tolerancePercent": 5,
+  "source": "Lamé interference pressure"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "battery-ev-systems-indicative-01",
+  "moduleId": "battery-ev-systems",
+  "designCode": "INDICATIVE",
+  "description": "EV pack sizing — defaults",
+  "inputs": {},
+  "expected": {
+    "packVoltage": 355.20000000000005,
+    "packEnergy": 7.104000000000001
+  },
+  "tolerancePercent": 10,
+  "source": "Advanced systems calculator defaults"
+}

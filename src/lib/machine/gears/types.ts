@@ -5,6 +5,16 @@ export type GearMaterial = {
   poisson: number;
 };
 
+/** ISO 6336 worksheet factors (MITCalc-style rating inputs). */
+export type GearRatingOptions = {
+  applicationFactor?: number;
+  faceLoadFactor?: number;
+  qualityGrade?: number;
+  lubrication?: "oil_bath" | "oil_mist" | "grease" | "dry";
+  enableScuffingScreen?: boolean;
+  enableMicropittingScreen?: boolean;
+};
+
 export type GearConfig = {
   power: number;
   speed: number;
@@ -13,6 +23,19 @@ export type GearConfig = {
   gearRatio: number;
   faceWidth: number;
   material: GearMaterial;
+  rating?: GearRatingOptions;
+};
+
+export type GearIso6336Factors = {
+  KA: number;
+  KV: number;
+  KHbeta: number;
+  ZH: number;
+  ZE: number;
+  Zeps: number;
+  YFS: number;
+  Yeps: number;
+  contactRatio: number;
 };
 
 export type GearResult = {
@@ -35,4 +58,10 @@ export type GearResult = {
   bendingFatigueSafetyFactor: number;
   contactFatigueSafetyFactor: number;
   material: GearMaterial;
+  /** ISO 6336 factor breakdown when rating options are used */
+  iso6336?: GearIso6336Factors;
+  iso6336BendingSafetyFactor?: number;
+  iso6336ContactSafetyFactor?: number;
+  scuffingSafetyFactor?: number | null;
+  micropittingSafetyFactor?: number | null;
 };
