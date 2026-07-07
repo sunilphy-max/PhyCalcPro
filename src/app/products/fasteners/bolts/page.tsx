@@ -21,8 +21,11 @@ import {
 } from "@/lib/fasteners/bolts/vdi2230";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { BoltPatternResult } from "@/lib/fasteners/bolts/boltPatternTypes";
-import { toBase } from "@/lib/units/conversions";
+import { toBase, fromBase } from "@/lib/units/conversions";
 import Link from "next/link";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 
 type AnalysisMode = "bolt_pattern" | "vdi2230";
 
@@ -51,39 +54,62 @@ export default function Page() {
 
   const [patternResult, setPatternResult] = useState<BoltPatternResult | null>(null);
   const [vdiResult, setVdiResult] = useState<(Vdi2230Result & { calculationSpec?: CalculationSpec }) | null>(null);
+  const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const runCheck = () => {
     if (mode === "vdi2230") {
-      setVdiResult(
-        wrapResult(
-          solveVdi2230({
-            size: jointSize,
-            propertyClass,
-            tighteningMethod,
-            clampLength: toBase(clampLength, "length", lengthUnit),
-            jointModulus: 205e9,
-            axialLoad: toBase(jointAxialLoad, "force", forceUnit),
-            transverseLoad: toBase(jointTransverseLoad, "force", forceUnit),
-            threadFriction,
-            headFriction: threadFriction,
-            interfaceFriction,
-          })
-        )
-      );
+      const raw = solveVdi2230({
+        size: jointSize,
+        propertyClass,
+        tighteningMethod,
+        clampLength: toBase(clampLength, "length", lengthUnit),
+        jointModulus: 205e9,
+        axialLoad: toBase(jointAxialLoad, "force", forceUnit),
+        transverseLoad: toBase(jointTransverseLoad, "force", forceUnit),
+        threadFriction,
+        headFriction: threadFriction,
+        interfaceFriction,
+      });
+      setVdiResult(wrapResult(raw));
       setPatternResult(null);
+
+      publishHandoff("frames", {
+        fromModuleId: "bolts",
+        fromTitle: "Bolt Design",
+        summary: `Joint reactions: axial ${(toBase(jointAxialLoad, "force", forceUnit) / 1000).toFixed(2)} kN, transverse ${(toBase(jointTransverseLoad, "force", forceUnit) / 1000).toFixed(2)} kN.`,
+        params: {
+          reactionForce: Math.hypot(
+            toBase(jointAxialLoad, "force", forceUnit),
+            toBase(jointTransverseLoad, "force", forceUnit)
+          ),
+        },
+      });
+      completePowerTrainStep("bolts", `VDI ${jointSize}`);
       return;
     }
     setVdiResult(null);
-    setPatternResult(
-      solveBoltPattern({
-        boltCount: Math.max(2, Math.round(boltCount)),
-        patternRadius: toBase(patternRadius, "length", lengthUnit),
-        shearForce: toBase(shearForce, "force", forceUnit),
-        axialForce: toBase(axialForce, "force", forceUnit),
-        eccentricityX: toBase(eccentricityX, "length", lengthUnit),
-        eccentricityY: toBase(eccentricityY, "length", lengthUnit),
-      })
-    );
+    const pattern = solveBoltPattern({
+      boltCount: Math.max(2, Math.round(boltCount)),
+      patternRadius: toBase(patternRadius, "length", lengthUnit),
+      shearForce: toBase(shearForce, "force", forceUnit),
+      axialForce: toBase(axialForce, "force", forceUnit),
+      eccentricityX: toBase(eccentricityX, "length", lengthUnit),
+      eccentricityY: toBase(eccentricityY, "length", lengthUnit),
+    });
+    setPatternResult(pattern);
+
+    publishHandoff("frames", {
+      fromModuleId: "bolts",
+      fromTitle: "Bolt Pattern",
+      summary: `Pattern resultant ≈ ${(Math.hypot(toBase(shearForce, "force", forceUnit), toBase(axialForce, "force", forceUnit)) / 1000).toFixed(2)} kN.`,
+      params: {
+        reactionForce: Math.hypot(
+          toBase(shearForce, "force", forceUnit),
+          toBase(axialForce, "force", forceUnit)
+        ),
+      },
+    });
+    completePowerTrainStep("bolts", `${boltCount}-bolt pattern`);
   };
 
   const designUserInputs = useMemo((): ModuleUserInputs => ({
@@ -121,6 +147,26 @@ export default function Page() {
             </Link>
             .
           </div>
+          <CrossCalcHandoffBanner
+            moduleId="bolts"
+            onApply={(params) => {
+              if (params.tension != null) {
+                setJointAxialLoad(fromBase(params.tension, "force", forceUnit));
+                setMode("vdi2230");
+              }
+              if (params.shear != null) {
+                setJointTransverseLoad(fromBase(params.shear, "force", forceUnit));
+                setMode("vdi2230");
+              }
+              if (params.boltCount != null) {
+                setBoltCount(Math.round(params.boltCount));
+                setMode("bolt_pattern");
+              }
+              if (params.patternDiameter != null) {
+                setPatternRadius(fromBase(params.patternDiameter / 2, "length", lengthUnit));
+              }
+            }}
+          />
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <span className="text-sm font-medium text-slate-700">Analysis mode</span>
             <div className="mt-2 grid grid-cols-2 gap-2">

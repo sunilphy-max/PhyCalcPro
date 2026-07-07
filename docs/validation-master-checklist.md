@@ -68,13 +68,14 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 ---
 
-## Machine (11 modules)
+## Machine (12 modules)
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
 | **shafts** | CI | DIN 743 / Shigley shaft example — bending, torsion, Kt, critical speed. |
 | **gears** | CI | ISO 6336 / AGMA bending + contact vs MITCalc or vendor software. |
 | **bearings** | CI | ISO 281 L10, ISO 76 static, speed margin vs SKF catalog example. |
+| **housing** | CI | Cantilever housing screen vs hand bracket moment; bolt loads vs VDI pattern. |
 | **cams** | CI | Displacement/velocity/acceleration vs polynomial cam design text. |
 | **flywheels** | CI | Energy storage vs ½Iω² hand calc. |
 | **bevel-gears** | CI | Gleason/Klingelnberg screening — verify cone distance and forces. |
@@ -136,10 +137,11 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 ---
 
-## Dynamics (4 modules)
+## Dynamics (5 modules)
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
+| **motor** | CI | Rated torque T=P/ω vs motor nameplate; frame class indicative only. |
 | **vibrations** | CI | Natural frequency vs analytical beam ω₁. |
 | **rotation** | CI | Centripetal force / KE vs textbook. |
 | **impact** | CI | Impulse–momentum average force vs energy method. |
@@ -220,6 +222,24 @@ npm run test:verification
 ---
 
 *Last updated: 2026-07 — 70 CI cases, 64 modules with benchmarks, 65 solver registry entries.*
+
+---
+
+## Connected power-train workflow (sign-off)
+
+Run the full chain with **Projects → Start power train design** or `/products/dynamics/motor?assembly=new`:
+
+1. **Motor** — frame class and rated speed; handoff to V-belts applies power and service factor.
+2. **V-Belts** — belt sizing; handoff applies torque and radial load to shaft.
+3. **Multi-Pulley** (optional skip) — layout publishes diameters to V-belts.
+4. **Shafts** — FEM check; handoff to keys and bearings.
+5. **Bearings** — L10 life; handoff bore and loads to housing.
+6. **Keys & Splines** — shear/bearing SF from shaft torque.
+7. **Housing** — body and bolt loads; handoff to bolts.
+8. **Bolts** — VDI or pattern; handoff reaction to frame.
+9. **Frames** — mount frame check with imported joint load.
+
+Confirm each **Apply to inputs** banner (or auto-apply when using the stepper) populates the expected fields.
 
 ---
 

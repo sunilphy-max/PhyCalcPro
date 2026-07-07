@@ -1,0 +1,24 @@
+{
+  "id": "motor-indicative-01",
+  "moduleId": "motor",
+  "designCode": "INDICATIVE",
+  "description": "7.5 kW continuous 4-pole motor at 60 Hz",
+  "inputs": {
+    "power": 7500,
+    "poles": 4,
+    "lineFrequencyHz": 60,
+    "serviceClass": "continuous",
+    "startingTorqueFactor": 2,
+    "efficiency": 0.9,
+    "powerFactor": 0.85
+  },
+  "expected": {
+    "synchronousSpeedRpm": 1800,
+    "ratedTorque": 40.8,
+    "electricalPower": 8333.33,
+    "iecFrame": "90L",
+    "serviceFactor": 1.1
+  },
+  "tolerancePercent": 8,
+  "source": "T = P/ω, NEMA/IEC indicative frame bands"
+}

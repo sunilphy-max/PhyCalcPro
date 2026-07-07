@@ -13,6 +13,8 @@ import BearingInputs from "@/components/machine/bearings/BearingInputs";
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { fromBase } from "@/lib/units/conversions";
 import { toBase } from "@/lib/units/conversions";
@@ -70,6 +72,7 @@ export default function Page() {
   const [result, setResult] = useState<BearingResult | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
     useSavedProjects<BearingProjectData>("bearings", "Bearing Project");
+  const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const runCheck = () => {
     const catalogEntry = findBearing(designation);
@@ -91,7 +94,27 @@ export default function Page() {
       material: LEGACY_MATERIAL,
     };
 
-    setResult(wrapResult(solveBearingEngine(config)));
+    const raw = solveBearingEngine(config);
+    setResult(wrapResult(raw));
+
+    const bore = raw.geometry?.boreMm;
+    publishHandoff("housing", {
+      fromModuleId: "bearings",
+      fromTitle: "Bearing Selection",
+      summary: `Bore ${bore != null ? `${bore} mm` : "—"}; Fr ≈ ${(config.radialLoad / 1000).toFixed(2)} kN at ${config.speed} rpm.`,
+      params: {
+        ...(bore != null ? { boreMm: bore / 1000 } : {}),
+        radialLoad: config.radialLoad,
+        axialLoad: config.axialLoad,
+        speed: config.speed,
+      },
+    });
+    completePowerTrainStep("bearings", designation, {
+      ...(bore != null ? { boreMm: bore / 1000 } : {}),
+      radialLoad: config.radialLoad,
+      axialLoad: config.axialLoad,
+      speed: config.speed,
+    });
   };
 
   const designUserInputs = useMemo((): ModuleUserInputs => ({

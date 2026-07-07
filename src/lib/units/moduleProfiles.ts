@@ -122,6 +122,13 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     speed: { dimension: "frequency", defaultUnit: "rpm", units: ["rpm", "Hz", "rad/s"], label: "Speed" },
     life: { dimension: "time", defaultUnit: "hr", units: ["hr", "s", "min", "year"], label: "Life" },
   },
+  housing: {
+    boreDiameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Bore" },
+    radialLoad: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Radial load" },
+    axialLoad: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Axial load" },
+    boltCircleDiameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Bolt circle" },
+    yieldStress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "ksi", "psi"], label: "Yield stress" },
+  },
   plates: {
     length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Length" },
     thickness: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Thickness" },
@@ -203,6 +210,11 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     inertia: { dimension: "dimensionless", defaultUnit: "kg\u00b7m2", units: ["kg\u00b7m2", "lb\u00b7ft2"], label: "Inertia" },
     mass: { dimension: "mass", defaultUnit: "kg", units: ["kg", "lb"], label: "Mass" },
     power: { dimension: "power", defaultUnit: "kW", units: ["kW", "W", "hp"], label: "Power" },
+  },
+  motor: {
+    power: { dimension: "power", defaultUnit: "kW", units: ["kW", "W", "hp"], label: "Shaft power" },
+    speed: { dimension: "frequency", defaultUnit: "rpm", units: ["rpm"], label: "Rated speed" },
+    torque: { dimension: "torque", defaultUnit: "N\u00b7m", units: ["N\u00b7m", "kN\u00b7m", "lbf\u00b7ft"], label: "Torque" },
   },
   cams: {
     radius: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Radius / lift" },

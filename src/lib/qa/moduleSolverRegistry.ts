@@ -9,6 +9,7 @@ import { solveCostEstimatorEngine } from "@/lib/manufacturing/costEstimator/engi
 import { solveFitsEngine, solveToleranceEngine } from "@/lib/manufacturing/engine";
 import { solveImpactEngine } from "@/lib/dynamics/impact/engine";
 import { solveRotationEngine } from "@/lib/dynamics/rotation/engine";
+import { solveMotorEngine } from "@/lib/dynamics/motor/engine";
 import { solveSuspensionEngine } from "@/lib/dynamics/suspension/engine";
 import { solveVibrationEngine } from "@/lib/dynamics/vibrations/engine";
 import { solveScrewEngine } from "@/lib/fasteners/bolts/engine";
@@ -30,6 +31,7 @@ import { solvePlainBearingEngine } from "@/lib/machine/plain-bearings/engine";
 import { solvePlanetaryGearEngine } from "@/lib/machine/planetary-gears/engine";
 import { solveWormGearEngine } from "@/lib/machine/worm-gears/engine";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
+import { solveHousingEngine } from "@/lib/machine/housing/engine";
 import { solveShaftEngine } from "@/lib/machine/shafts/engine";
 import { solveCompositeEngine } from "@/lib/materials/composites/engine";
 import { solveCorrosionEngine } from "@/lib/materials/corrosion/engine";
@@ -98,6 +100,7 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   shafts: (i) => solveShaftEngine(i as never) as Record<string, unknown>,
   gears: (i) => solveGearEngine(i as never) as Record<string, unknown>,
   bearings: (i) => solveBearingEngine(i as never) as Record<string, unknown>,
+  housing: (i) => solveHousingEngine(i as never) as Record<string, unknown>,
   cams: (i) => solveCamEngine(i as never) as Record<string, unknown>,
   flywheels: (i) => solveFlywheelEngine(i as never) as Record<string, unknown>,
   "bevel-gears": (i) => solveBevelGearEngine(i as never) as Record<string, unknown>,
@@ -134,6 +137,7 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   "heat-exchangers": (i) => solveHeatExchangerEngine(i as never) as Record<string, unknown>,
   vibrations: (i) => solveVibrationEngine(i as never) as Record<string, unknown>,
   rotation: (i) => solveRotationEngine(i as never) as Record<string, unknown>,
+  motor: (i) => solveMotorEngine(i as never) as Record<string, unknown>,
   impact: (i) => solveImpactEngine(i as never) as Record<string, unknown>,
   suspension: (i) => solveSuspensionEngine(i as never) as Record<string, unknown>,
   tolerance: (i) => solveToleranceEngine(i as never) as Record<string, unknown>,

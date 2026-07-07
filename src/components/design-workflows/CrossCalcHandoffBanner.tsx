@@ -17,10 +17,18 @@ type Props = {
 /** Banner offering to import results published by an upstream calculator. */
 export default function CrossCalcHandoffBanner({ moduleId, onApply }: Props) {
   const [handoff, setHandoff] = useState<CalcHandoff | null>(null);
+  const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
-    setHandoff(peekHandoff(moduleId));
-  }, [moduleId]);
+    const pending = peekHandoff(moduleId);
+    setHandoff(pending);
+    if (pending?.autoApply && !autoApplied) {
+      onApply(pending.params, pending);
+      clearHandoff(moduleId);
+      setHandoff(null);
+      setAutoApplied(true);
+    }
+  }, [moduleId, onApply, autoApplied]);
 
   if (!handoff) return null;
 
@@ -30,10 +38,10 @@ export default function CrossCalcHandoffBanner({ moduleId, onApply }: Props) {
   };
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
-      <div className="text-sm text-indigo-950">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-950/40">
+      <div className="text-sm text-indigo-950 dark:text-indigo-100">
         <div className="font-semibold">Results available from {handoff.fromTitle}</div>
-        <div className="mt-0.5 text-indigo-900/80">{handoff.summary}</div>
+        <div className="mt-0.5 text-indigo-900/80 dark:text-indigo-200/80">{handoff.summary}</div>
       </div>
       <div className="flex gap-2">
         <button
@@ -51,7 +59,7 @@ export default function CrossCalcHandoffBanner({ moduleId, onApply }: Props) {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss import"
-          className="rounded-lg border border-indigo-200 bg-white p-1.5 text-indigo-700 hover:bg-indigo-100"
+          className="rounded-lg border border-indigo-200 bg-white p-1.5 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-700 dark:bg-slate-900 dark:text-indigo-300"
         >
           <X className="h-3.5 w-3.5" aria-hidden />
         </button>

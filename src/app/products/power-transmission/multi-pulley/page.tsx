@@ -17,9 +17,14 @@ import { toBase } from "@/lib/units/conversions";
 import { solveMultiPulley } from "@/lib/powerTransmission/multi-pulley/engine";
 import type { MultiPulleyResult } from "@/lib/powerTransmission/multi-pulley/types";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import { fromBase } from "@/lib/units/conversions";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
+  const completePowerTrainStep = usePowerTrainStepCompletion();
   const { wrapResult } = useStandardCalculation("multi-pulley", (units) =>
     applyUnitMap(units, { diameter: setLengthUnit, centerDistance: setLengthUnit })
   );
@@ -38,15 +43,26 @@ export default function Page() {
     const centerDistances = pulleys
       .slice(0, -1)
       .map((p) => toBase(p.centerDistance, "length", lengthUnit));
-    setResult(
-      wrapResult(
-        solveMultiPulley({
-          diameters,
-          centerDistances,
-          driveType,
-        })
-      )
-    );
+    const raw = solveMultiPulley({
+      diameters,
+      centerDistances,
+      driveType,
+    });
+    setResult(wrapResult(raw));
+
+    if (diameters.length >= 2) {
+      publishHandoff("v-belts", {
+        fromModuleId: "multi-pulley",
+        fromTitle: "Multi-Pulley Layout",
+        summary: `Driver Ø ${(diameters[0]! * 1000).toFixed(0)} mm, driven Ø ${(diameters[1]! * 1000).toFixed(0)} mm; C ≈ ${(centerDistances[0]! * 1000).toFixed(0)} mm.`,
+        params: {
+          diameterDriver: diameters[0]!,
+          diameterDriven: diameters[1]!,
+          centerDistance: centerDistances[0] ?? 0,
+        },
+      });
+    }
+    completePowerTrainStep("multi-pulley", `Belt length ${raw.totalBeltLength.toFixed(3)} m`);
   };
 
 
@@ -84,7 +100,8 @@ export default function Page() {
       moduleId="multi-pulley"
       title="Multi-Pulley Layout"
       inputs={
-        <MultiPulleyInputs
+        <div className="space-y-4">
+          <MultiPulleyInputs
           pulleys={pulleys}
           setPulleys={setPulleys}
           driveType={driveType}
@@ -93,6 +110,7 @@ export default function Page() {
           setLengthUnit={setLengthUnit}
           onCalculate={calculate}
         />
+        </div>
       }
       results={<MultiPulleyResults result={result} lengthUnit={lengthUnit} />}
     />

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { Suspense, ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
 import ApplicationPresetSelector from "@/components/shared/ApplicationPresetSelector";
 import { moduleSupportsApplicationPreset } from "@/lib/applications";
@@ -11,16 +11,20 @@ import ModuleDesignAdvisor from "@/components/design-workflows/ModuleDesignAdvis
 import ModuleCandidateStrategy from "@/components/design-workflows/ModuleCandidateStrategy";
 import ModuleReferenceDocumentation from "@/components/design-workflows/ModuleReferenceDocumentation";
 import ModuleContinueWorkflowBar from "@/components/design-workflows/ModuleContinueWorkflowBar";
+import PowerTrainWorkflowStepper from "@/components/design-workflows/PowerTrainWorkflowStepper";
+import PowerTrainAssemblyBootstrap from "@/components/design-workflows/PowerTrainAssemblyBootstrap";
 import WorkflowModeHelp from "@/components/design-workflows/WorkflowModeHelp";
 import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 import GuestHistoryBanner from "@/components/shared/GuestHistoryBanner";
 import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
+import { PowerTrainAssemblyProvider, usePowerTrainAssemblyOptional } from "@/contexts/PowerTrainAssemblyContext";
 import { CalculatorReportProvider, useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
 import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaults";
 import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
 import { computeReleaseTier } from "@/lib/qa/maturityGates";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
+import { stepIdForModule } from "@/lib/design-workflows/powerTrainAssembly";
 import { allModules } from "@/data/modules";
 import { calculatorWorkspaceClass } from "@/components/calculator/styles";
 
@@ -69,6 +73,9 @@ function CalculatorLayoutBody({
     ? computeReleaseTier(moduleId, benchmarkStats)
     : undefined;
   const designWorkflow = moduleId ? getModuleDesignWorkflow(moduleId) : undefined;
+  const powerTrainAssembly = usePowerTrainAssemblyOptional()?.assembly ?? null;
+  const showPowerTrainStepper =
+    Boolean(moduleId && powerTrainAssembly && stepIdForModule(moduleId));
   const isScreeningModule = moduleId
     ? allModules.find((m) => m.id === moduleId)?.category === "advanced-systems"
     : false;
@@ -140,6 +147,16 @@ function CalculatorLayoutBody({
 
           <GuestHistoryBanner />
 
+          {moduleId ? (
+            <Suspense fallback={null}>
+              <PowerTrainAssemblyBootstrap moduleId={moduleId} />
+            </Suspense>
+          ) : null}
+
+          {showPowerTrainStepper && powerTrainAssembly ? (
+            <PowerTrainWorkflowStepper moduleId={moduleId} assembly={powerTrainAssembly} />
+          ) : null}
+
           {/* Inputs left, results right */}
           <div
             className={`grid min-w-0 grid-cols-1 gap-4 ${
@@ -180,10 +197,12 @@ function CalculatorLayoutBody({
 
 export default function CalculatorLayout(props: Props) {
   return (
-    <DesignWorkflowProvider moduleId={props.moduleId}>
-      <CalculatorReportProvider moduleId={props.moduleId}>
-        <CalculatorLayoutBody {...props} />
-      </CalculatorReportProvider>
-    </DesignWorkflowProvider>
+    <PowerTrainAssemblyProvider>
+      <DesignWorkflowProvider moduleId={props.moduleId}>
+        <CalculatorReportProvider moduleId={props.moduleId}>
+          <CalculatorLayoutBody {...props} />
+        </CalculatorReportProvider>
+      </DesignWorkflowProvider>
+    </PowerTrainAssemblyProvider>
   );
 }

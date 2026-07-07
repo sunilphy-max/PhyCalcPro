@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-06T20:50:41.829Z",
-  "total": 70,
-  "passed": 70,
+  "ranAt": "2026-07-06T21:06:35.831Z",
+  "total": 72,
+  "passed": 72,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -524,6 +524,25 @@
       ]
     },
     {
+      "caseId": "housing-indicative-01",
+      "moduleId": "housing",
+      "pass": true,
+      "fields": [
+        {
+          "field": "boltShearPerBolt",
+          "expected": 1274.75,
+          "actual": 1274.7548783981963,
+          "pass": true
+        },
+        {
+          "field": "bodySafetyFactor",
+          "expected": 28.25,
+          "actual": 28.248275862068965,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "hydraulics-indicative-01",
       "moduleId": "hydraulics",
       "pass": true,
@@ -695,6 +714,37 @@
           "field": "storedEnergy",
           "expected": 2.5132741228718345,
           "actual": 2.5132741228718345,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "motor-indicative-01",
+      "moduleId": "motor",
+      "pass": true,
+      "fields": [
+        {
+          "field": "synchronousSpeedRpm",
+          "expected": 1800,
+          "actual": 1800,
+          "pass": true
+        },
+        {
+          "field": "ratedTorque",
+          "expected": 40.8,
+          "actual": 41.01931522986993,
+          "pass": true
+        },
+        {
+          "field": "electricalPower",
+          "expected": 8333.33,
+          "actual": 8333.333333333334,
+          "pass": true
+        },
+        {
+          "field": "serviceFactor",
+          "expected": 1.1,
+          "actual": 1.1,
           "pass": true
         }
       ]
@@ -1430,7 +1480,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468234,
+          "actual": 256.9198297468195,
           "pass": true
         }
       ]

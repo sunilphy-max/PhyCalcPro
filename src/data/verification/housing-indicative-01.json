@@ -1,0 +1,23 @@
+{
+  "id": "housing-indicative-01",
+  "moduleId": "housing",
+  "designCode": "INDICATIVE",
+  "description": "40 mm bore pillow block, 5 kN radial, 4 bolts",
+  "inputs": {
+    "boreDiameter": 0.04,
+    "radialLoad": 5000,
+    "axialLoad": 1000,
+    "speed": 1500,
+    "mountStyle": "pillow_block",
+    "boltCount": 4,
+    "boltCircleDiameter": 0.12,
+    "yieldStress": 250000000
+  },
+  "expected": {
+    "boltShearPerBolt": 1274.75,
+    "bodySafetyFactor": 28.25,
+    "recommendedBoltSize": "M6"
+  },
+  "tolerancePercent": 8,
+  "source": "Cantilever bracket screening model"
+}

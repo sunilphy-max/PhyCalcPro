@@ -339,6 +339,16 @@ export const categories: EngineeringCategory[] = [
         subGroup: "Bearings",
       },
       {
+        id: "housing",
+        title: "Bearing Housing",
+        description: "Housing body stress and mounting bolt loads",
+        route: "/products/machine/housing",
+        category: "machine",
+        icon: Building2,
+        subGroup: "Bearings",
+        tags: ["power train", "workflow"],
+      },
+      {
         id: "plain-bearings",
         title: "Plain Bearings",
         description: "Journal and thrust pad hydrodynamic screening",
@@ -612,6 +622,16 @@ export const categories: EngineeringCategory[] = [
         route: "/products/dynamics/rotation",
         category: "dynamics",
         icon: Orbit,
+      },
+      {
+        id: "motor",
+        title: "Motor Sizing",
+        description: "Indicative motor frame class, torque, and speed for power trains",
+        route: "/products/dynamics/motor",
+        category: "dynamics",
+        icon: Gauge,
+        featured: true,
+        tags: ["power train", "workflow"],
       },
       {
         id: "impact",

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Clock3, FolderOpen, Trash2 } from "lucide-react";
+import { Clock3, FolderOpen, GitBranch, Trash2 } from "lucide-react";
 import { deleteLocalProject, listAllLocalProjects, type SavedStudy } from "@/lib/localProjects";
 import {
   listCalculationHistory,
@@ -11,6 +11,12 @@ import {
 import { usePersistence } from "@/contexts/PersistenceContext";
 import { isSupabaseSignInReady, showGuestHistoryUx } from "@/lib/supabase/setupStatus";
 import { allModules } from "@/data/modules";
+import {
+  deletePowerTrainAssembly,
+  listPowerTrainAssemblies,
+  POWER_TRAIN_STEPS,
+  type PowerTrainAssembly,
+} from "@/lib/design-workflows/powerTrainAssembly";
 
 /** Saved-project namespaces that don't match a module id directly. */
 const NAMESPACE_TO_MODULE: Record<string, string> = {
@@ -53,7 +59,12 @@ function formatSummary(summary?: CalculationHistoryEntry["summary"]): string {
   return parts.length ? parts.join(" · ") : "—";
 }
 
-type TabId = "studies" | "history";
+type TabId = "studies" | "history" | "assemblies";
+
+function assemblyProgress(assembly: PowerTrainAssembly): string {
+  const complete = POWER_TRAIN_STEPS.filter((s) => assembly.steps[s.id].status === "complete").length;
+  return `${complete} / ${POWER_TRAIN_STEPS.length} steps`;
+}
 
 export default function ProjectsDashboardPage() {
   const { mode, canPersistAcrossSessions } = usePersistence();
@@ -62,12 +73,14 @@ export default function ProjectsDashboardPage() {
   const [tab, setTab] = useState<TabId>("studies");
   const [studies, setStudies] = useState<SavedStudy[]>([]);
   const [history, setHistory] = useState<CalculationHistoryEntry[]>([]);
+  const [assemblies, setAssemblies] = useState<PowerTrainAssembly[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
     setStudies(listAllLocalProjects());
     const entries = await listCalculationHistory();
     setHistory(entries);
+    setAssemblies(listPowerTrainAssemblies());
     setLoaded(true);
   }, []);
 
@@ -138,6 +151,17 @@ export default function ProjectsDashboardPage() {
         </button>
         <button
           type="button"
+          onClick={() => setTab("assemblies")}
+          className={`border-b-2 px-4 py-2 text-sm font-semibold ${
+            tab === "assemblies"
+              ? "border-slate-900 text-slate-900 dark:border-white dark:text-white"
+              : "border-transparent text-slate-500"
+          }`}
+        >
+          Power train assemblies
+        </button>
+        <button
+          type="button"
           onClick={() => setTab("history")}
           className={`border-b-2 px-4 py-2 text-sm font-semibold ${
             tab === "history"
@@ -149,7 +173,61 @@ export default function ProjectsDashboardPage() {
         </button>
       </div>
 
-      {!loaded ? null : tab === "studies" ? (
+      {tab === "assemblies" ? (
+        <div className="mt-8">
+          <Link
+            href="/products/dynamics/motor?assembly=new"
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700"
+          >
+            <GitBranch className="h-4 w-4" aria-hidden />
+            Start power train design
+          </Link>
+        </div>
+      ) : null}
+
+      {!loaded ? null : tab === "assemblies" ? (
+        assemblies.length === 0 ? (
+          <div className="mt-10 rounded-2xl border border-cyan-200 bg-cyan-50 p-10 text-center text-cyan-950 dark:border-cyan-900 dark:bg-cyan-950/30 dark:text-cyan-100">
+            No power train assemblies in this session. Start at Motor sizing and work through V-belt,
+            shaft, bearing, key, housing, fasteners, and frame.
+          </div>
+        ) : (
+          <ul className="mt-10 space-y-4">
+            {assemblies.map((assembly) => (
+              <li
+                key={assembly.id}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+              >
+                <div>
+                  <div className="font-semibold text-slate-900 dark:text-white">{assembly.name}</div>
+                  <div className="text-xs text-slate-500">
+                    Updated {formatDate(assembly.updatedAt)} · {assemblyProgress(assembly)}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/products/dynamics/motor?assembly=${assembly.id}`}
+                    className="rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950"
+                  >
+                    Resume
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      deletePowerTrainAssembly(assembly.id);
+                      void refresh();
+                    }}
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-slate-700"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      ) : tab === "studies" ? (
         studies.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-10 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900/40">
             No saved studies yet. Open a calculator and use &ldquo;Save project&rdquo; after running

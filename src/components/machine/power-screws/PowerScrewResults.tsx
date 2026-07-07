@@ -37,11 +37,11 @@ export default function PowerScrewResults({ result, projectName }: Props) {
       {result ? (
         <>
           <CalculatorMetricGrid cols={3}>
-            <CalculatorMetricCard label="Drive torque" numericValue={result.torque} unit="N·m" tone="blue" />
-            <CalculatorMetricCard label="Efficiency" numericValue={result.efficiency} tone="purple" />
+            <CalculatorMetricCard label="Drive torque" value={formatEngineeringValue(result.torque, "N·m")} tone="blue" />
+            <CalculatorMetricCard label="Efficiency" value={formatEngineeringValue(result.efficiency * 100, "%")} tone="purple" />
             <CalculatorMetricCard
               label="Safety factor"
-              value={formatEngineeringValue(result.safetyFactor)}
+              value={formatEngineeringValue(result.safetyFactor, "")}
               tone={result.safetyFactor >= 1.5 ? "green" : "amber"}
             />
           </CalculatorMetricGrid>

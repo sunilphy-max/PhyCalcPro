@@ -186,20 +186,35 @@ Design targets from the toolbar merge into `userInputs` for advisor and solver c
 
 ## Cross-module handoff
 
-`ModuleDesignAdvisor` renders **Continue workflow** links from `linkedWorkflowModuleIds`. Example machine chain:
+`ModuleDesignAdvisor` renders **Continue workflow** links from `linkedWorkflowModuleIds`. Canonical **power-train chain**:
+
+**motor** → **v-belts** → **multi-pulley** (optional) → **shafts** → **bearings** → **keys-splines** → **housing** → **bolts** → **frames**
+
+| Edge | Published params (SI) |
+|------|----------------------|
+| motor → v-belts | power (kW), speed (rpm), serviceFactor |
+| multi-pulley → v-belts | diameterDriver, diameterDriven, centerDistance |
+| v-belts → shafts | torque, radialForce, speed |
+| v-belts → bearings | radialLoad, speed |
+| shafts → keys-splines | torque, shaftDiameter |
+| shafts → bearings | radialLoad, axialLoad, speed |
+| bearings → housing | boreMm, radialLoad, axialLoad, speed |
+| housing → bolts | tension, shear, boltCount, patternDiameter |
+| bolts → frames | reactionForce |
+
+Implementation: `publishHandoff` in [`crossCalcHandoff.ts`](../src/lib/design-workflows/crossCalcHandoff.ts); param registry in [`handoffParamRegistry.ts`](../src/lib/design-workflows/handoffParamRegistry.ts). Target pages show **Apply to inputs** via `CrossCalcHandoffBanner`. Assembly workflow auto-applies when navigating from the power-train stepper.
+
+Other machine chains:
 
 - **gears** → gear-ratio-design, shafts, bearings, keys-splines
-- **shafts** → keys-splines, bearings, gears, fatigue
-- **bearings** → shafts, plain-bearings, fatigue
-
-Links are routes to the next calculator (manual handoff; automatic load propagation is planned).
+- **shafts** → keys-splines, bearings, housing, gears, fatigue
 
 ---
 
 ## Gaps and planned depth
 
 - **Tools**: No sizing candidates by design (Validate + advisor context only).
-- **Cross-module handoff**: Gear → shaft → bearing links wired; `publishHandoff` carries loads/stress to fatigue and downstream modules (manual Apply on target page).
+- **Cross-module handoff**: Full power-train chain wired; assembly stepper tracks progress across modules.
 - **Workflow maturity**: Some modules remain `workflow` until dedicated design solvers land.
 
 ---

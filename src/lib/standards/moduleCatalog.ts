@@ -165,6 +165,10 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   ], {
     standardsByCode: { ISO: [{ body: "ISO", document: "281", clause: "Rating life" }] },
   }),
+  housing: withCodeChecks("housing", "Bearing Housing", [
+    genericIndicativeCheck("body_stress", "Housing body bending stress", "utilization"),
+    genericIndicativeCheck("bolt_tension", "Mounting bolt tension", "utilization"),
+  ]),
   cams: withCodeChecks("cams", "Cam Design", [
     genericIndicativeCheck("pressure_angle", "Pressure angle limit", "other"),
     genericIndicativeCheck("contact_stress", "Cam contact stress", "stress"),
@@ -459,6 +463,10 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   }),
   rotation: withCodeChecks("rotation", "Rotational Systems", [
     genericIndicativeCheck("torque", "Torque capacity", "utilization"),
+  ]),
+  motor: withCodeChecks("motor", "Motor Sizing", [
+    genericIndicativeCheck("thermal_margin", "Thermal duty vs frame class", "utilization"),
+    genericIndicativeCheck("torque", "Rated torque", "other"),
   ]),
   impact: withCodeChecks("impact", "Impact & Shock", [
     genericIndicativeCheck("dynamic_factor", "Dynamic load factor", "safety_factor"),

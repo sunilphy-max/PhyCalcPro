@@ -99,6 +99,7 @@ export type ModuleUserInputs = {
   bearingSeries?: string;
   bearingType?: "deep_groove" | "angular_contact" | "cylindrical_roller";
   bore?: number;
+  diameter?: number;
   shaftDiameterMm?: number;
   energy?: number;
   requiredLife?: number;
@@ -146,6 +147,10 @@ export type ModuleUserInputs = {
   wheelbase?: number;
   lateralAcceleration?: number;
   cgHeight?: number;
+  efficiency?: number;
+  powerFactor?: number;
+  lineFrequencyHz?: number;
+  serviceClass?: string;
 
   // Advanced
   heatLeak?: number;

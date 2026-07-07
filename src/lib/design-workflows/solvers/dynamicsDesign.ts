@@ -1,5 +1,6 @@
 import { solveVibrationEngine } from "@/lib/dynamics/vibrations/engine";
 import { solveRotationEngine } from "@/lib/dynamics/rotation/engine";
+import { designMotorPoles } from "@/lib/dynamics/motor/engine";
 import { solveImpactEngine } from "@/lib/dynamics/impact/engine";
 import { solveSuspensionEngine } from "@/lib/dynamics/suspension/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
@@ -125,7 +126,37 @@ export function designSuspensionSpring(userInputs: ModuleUserInputs): ModuleDesi
   return fromSweep(sweepCatalogForUtilization(items), "Roll stiffness sweep for lateral stability.");
 }
 
+export function designMotorSelection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
+  const power = userInputs.power ?? 7500;
+  const { best, ranked } = designMotorPoles(
+    power,
+    (userInputs.lineFrequencyHz as 50 | 60) ?? 60,
+    (userInputs.serviceClass as "continuous" | "intermittent" | "short_time") ?? "continuous",
+    userInputs.serviceFactor ?? 2,
+    userInputs.efficiency ?? 0.9,
+    userInputs.powerFactor ?? 0.85
+  );
+  return {
+    method: "Pole-count sweep for rated torque and frame class at required power.",
+    best: best
+      ? {
+          label: `${best.poles}-pole · ${best.frameClass}`,
+          utilization: best.designStatus === "safe" ? 0.7 : 1.1,
+          fields: { poles: best.poles },
+          detail: `${best.ratedSpeedRpm.toFixed(0)} rpm · ${(best.ratedTorque).toFixed(1)} N·m`,
+        }
+      : null,
+    ranked: ranked.map((r) => ({
+      label: `${r.poles}-pole · ${r.frameClass}`,
+      utilization: r.designStatus === "safe" ? 0.7 : 1.1,
+      fields: { poles: r.poles },
+      detail: `${r.ratedSpeedRpm.toFixed(0)} rpm`,
+    })),
+  };
+}
+
 export function designDynamicsModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {
+  if (moduleId === "motor") return designMotorSelection(userInputs);
   if (moduleId === "vibrations") return designVibrationMargin(userInputs);
   if (moduleId === "rotation") return designRotationSystem(userInputs);
   if (moduleId === "impact") return designImpactAbsorber(userInputs);

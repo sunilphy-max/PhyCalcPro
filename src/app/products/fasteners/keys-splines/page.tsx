@@ -13,10 +13,12 @@ import KeysSplinesInputs from "@/components/fasteners/keys-splines/KeysSplinesIn
 import KeysSplinesResults from "@/components/fasteners/keys-splines/KeysSplinesResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { toBase } from "@/lib/units/conversions";
+import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveKeysSplinesEngine } from "@/lib/fasteners/keys-splines/engine";
 import type { KeysSplinesResult } from "@/lib/fasteners/keys-splines/types";
 import type { CalculationSpec } from "@/lib/standards/types";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -43,11 +45,10 @@ export default function Page() {
   const [keyType, setKeyType] = useState<"parallel" | "spline">("parallel");
   const [splineTeeth, setSplineTeeth] = useState(6);
   const [result, setResult] = useState<(KeysSplinesResult & { calculationSpec?: CalculationSpec }) | null>(null);
+  const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const runCheck = () => {
-    setResult(
-      wrapResult(
-        solveKeysSplinesEngine({
+    const raw = solveKeysSplinesEngine({
           torque: toBase(torque, "torque", torqueUnit),
           shaftDiameter: toBase(shaftDiameter, "length", lengthUnit),
           keyWidth: toBase(keyWidth, "length", lengthUnit),
@@ -56,9 +57,9 @@ export default function Page() {
           yieldStress: toBase(yieldStress, "stress", stressUnit),
           keyType,
           splineTeeth: keyType === "spline" ? Math.max(1, Math.round(splineTeeth)) : undefined,
-        })
-      )
-    );
+    });
+    setResult(wrapResult(raw));
+    completePowerTrainStep("keys-splines", `Shear SF ${raw.shearSafety.toFixed(2)}`);
   };
 
 
@@ -91,6 +92,17 @@ export default function Page() {
       title="Keys & Splines"
       inputs={
         <div className="space-y-4">
+          <CrossCalcHandoffBanner
+            moduleId="keys-splines"
+            onApply={(params) => {
+              if (params.torque != null) {
+                setTorque(fromBase(params.torque, "torque", torqueUnit));
+              }
+              if (params.shaftDiameter != null) {
+                setShaftDiameter(fromBase(params.shaftDiameter, "length", lengthUnit));
+              }
+            }}
+          />
           <KeysSplinesInputs
           torque={torque}
           setTorque={setTorque}

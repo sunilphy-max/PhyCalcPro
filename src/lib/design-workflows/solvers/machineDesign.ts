@@ -10,6 +10,7 @@ import { solveWormGearEngine } from "@/lib/machine/worm-gears/engine";
 import { solvePlanetaryGearEngine } from "@/lib/machine/planetary-gears/engine";
 import { solveGearRatioDesignEngine } from "@/lib/machine/gear-ratio-design/engine";
 import { solvePlainBearingEngine } from "@/lib/machine/plain-bearings/engine";
+import { designHousingBolts } from "@/lib/machine/housing/engine";
 import { solveBrakesClutchesEngine } from "@/lib/machine/brakes-clutches/engine";
 import { solveCamEngine } from "@/lib/machine/cams/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
@@ -493,10 +494,43 @@ export function designCamProfile(userInputs: ModuleUserInputs): ModuleDesignMode
   return fromSweep(sweepCatalogForUtilization(items), "Cam base-radius sweep for pressure angle limit.");
 }
 
+export function designHousingMount(userInputs: ModuleUserInputs): ModuleDesignModeResult {
+  const base = {
+    boreDiameter: userInputs.diameter ?? 0.04,
+    radialLoad: userInputs.maxForce ?? 5000,
+    axialLoad: userInputs.axialLoad ?? 0,
+    speed: userInputs.rpm ?? 1500,
+    mountStyle: "pillow_block" as const,
+    yieldStress: userInputs.yieldStress ?? 250e6,
+  };
+  const { best } = designHousingBolts(base);
+  if (!best) {
+    return { method: "Bolt pattern sweep for housing mount.", best: null, ranked: [] };
+  }
+  return {
+    method: "Bolt count and bolt-circle sweep for housing body and fastener margin.",
+    best: {
+      label: `${best.boltCount}× ${best.recommendedBoltSize}`,
+      utilization: best.designStatus === "safe" ? 0.72 : 1.05,
+      fields: { boltCount: best.boltCount, boltCircleDiameter: best.boltCircleDiameter * 1000 },
+      detail: `body SF ${best.bodySafetyFactor.toFixed(2)}`,
+    },
+    ranked: [
+      {
+        label: `${best.boltCount} bolts`,
+        utilization: best.designStatus === "safe" ? 0.72 : 1.05,
+        fields: { boltCount: best.boltCount },
+        detail: best.recommendedBoltSize,
+      },
+    ],
+  };
+}
+
 export function designMachineModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {
   if (moduleId === "gears") return designGearModule(userInputs);
   if (moduleId === "shafts") return designShaftDiameter(userInputs);
   if (moduleId === "bearings") return designBearingSelection(userInputs);
+  if (moduleId === "housing") return designHousingMount(userInputs);
   if (moduleId === "flywheels") return designFlywheelInertia(userInputs);
   if (moduleId === "bevel-gears") return designBevelGear(userInputs);
   if (moduleId === "worm-gears") return designWormGear(userInputs);

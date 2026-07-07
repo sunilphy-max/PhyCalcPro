@@ -30,6 +30,8 @@ import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/lo
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
+import { handoffSpeedRpm } from "@/lib/design-workflows/handoffParamRegistry";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 
 const MATERIALS: Record<string, ShaftMaterial> = {
   Steel: {
@@ -89,6 +91,8 @@ export default function Page() {
       force: setForceUnit,
     })
   );
+
+  const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const [diameter, setDiameter] = useState(0.05);
   const [length, setLength] = useState(1);
@@ -255,6 +259,19 @@ export default function Page() {
       });
     }
 
+    const shaftDiameterM = toBase(diameter, "length", lengthUnit);
+    if (raw.maxTorque > 0) {
+      publishHandoff("keys-splines", {
+        fromModuleId: "shafts",
+        fromTitle: "Shaft Analysis",
+        summary: `Key/spline torque ${raw.maxTorque.toFixed(0)} N·m on ${(shaftDiameterM * 1000).toFixed(0)} mm shaft.`,
+        params: {
+          torque: raw.maxTorque,
+          shaftDiameter: shaftDiameterM,
+        },
+      });
+    }
+
     const converted: ShaftResult = {
       ...raw,
       x: raw.x.map((v) => fromBase(v, "length", lengthUnit)),
@@ -271,6 +288,10 @@ export default function Page() {
     };
 
     setResult(wrapResult(converted));
+    completePowerTrainStep("shafts", `Max torque ${raw.maxTorque.toFixed(0)} N·m`, {
+      torque: raw.maxTorque,
+      shaftDiameter: shaftDiameterM,
+    });
   };
 
   const saveProject = () => {
@@ -375,18 +396,22 @@ export default function Page() {
               setLoads((current) => {
                 const midspan = length / 2;
                 const next = [...current];
+                const radial = params.radialForce ?? params.radialLoad;
                 const imported = {
                   position: midspan,
                   torque: params.torque != null ? fromBase(params.torque, "torque", torqueUnit) : undefined,
                   bendingMoment: params.bendingMoment != null
                     ? fromBase(params.bendingMoment, "moment", momentUnit)
                     : 0,
+                  transverseForce:
+                    radial != null ? fromBase(radial, "force", forceUnit) : undefined,
                 };
                 if (next.length > 0) next[0] = { ...next[0]!, ...imported };
                 else next.push(imported);
                 return next;
               });
-              if (params.rpm != null) setOperatingRpm(params.rpm);
+              const rpm = handoffSpeedRpm(params);
+              if (rpm != null) setOperatingRpm(rpm);
             }}
           />
           <ShaftInputs

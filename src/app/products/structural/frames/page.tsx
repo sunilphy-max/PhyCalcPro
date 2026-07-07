@@ -12,9 +12,11 @@ import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import FrameInputs from "@/components/structural/frames/FrameInputs";
 import FrameResults from "@/components/structural/frames/FrameResults";
-import { toBase } from "@/lib/units/conversions";
+import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveFrameEngine } from "@/lib/structural/frames/engine";
 import type { FrameResult } from "@/lib/structural/frames/types";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -34,6 +36,7 @@ export default function Page() {
   const [EUnit, setEUnit] = useState("Pa");
   const [sectionDesignation, setSectionDesignation] = useState("");
   const [result, setResult] = useState<FrameResult | null>(null);
+  const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const applySectionProperties = useCallback(
     (_designation: string, section: RolledSectionProps) => {
@@ -54,7 +57,9 @@ export default function Page() {
       load: toBase(load, "force", loadUnit),
     };
 
-    setResult(wrapResult(solveFrameEngine(config)));
+    const raw = solveFrameEngine(config);
+    setResult(wrapResult(raw));
+    completePowerTrainStep("frames", `Max moment ${(raw.maxMoment / 1000).toFixed(2)} kN·m`);
   };
 
 
@@ -93,7 +98,16 @@ export default function Page() {
       moduleId="frames"
       title="Frame Analysis"
       inputs={
-        <FrameInputs
+        <div className="space-y-4">
+          <CrossCalcHandoffBanner
+            moduleId="frames"
+            onApply={(params) => {
+              if (params.reactionForce != null) {
+                setLoad(fromBase(params.reactionForce, "force", loadUnit));
+              }
+            }}
+          />
+          <FrameInputs
           span={span}
           setSpan={setSpan}
           height={height}
@@ -125,6 +139,7 @@ export default function Page() {
           onSectionApplied={applySectionProperties}
           onCalculate={calculate}
         />
+        </div>
       }
       results={<FrameResults result={result} />}
     />

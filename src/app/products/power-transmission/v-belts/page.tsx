@@ -29,6 +29,9 @@ import type { CalculationSpec } from "@/lib/standards/types";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { designVBeltDrive } from "@/lib/design-workflows/solvers/vbeltDesign";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
+import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import { handoffSpeedRpm } from "@/lib/design-workflows/handoffParamRegistry";
+import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 
 type VBeltProjectData = {
@@ -61,6 +64,7 @@ export default function Page() {
     })
   );
   const { mode } = useDesignWorkflow();
+  const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const [applicationId, setApplicationId] = useState<VBeltApplicationId>(DEFAULT_APPLICATION);
   const [applicationOptions, setApplicationOptions] = useState<VBeltApplicationOptions>(() => ({
@@ -206,6 +210,11 @@ export default function Page() {
           speed: speedDriver,
         },
       });
+      completePowerTrainStep("v-belts", `Torque ${raw.driverTorque.toFixed(0)} N·m`, {
+        torque: raw.driverTorque,
+        radialForce: raw.radialLoadDriver,
+        speed: speedDriver,
+      });
     },
     [
       applicationId,
@@ -217,6 +226,7 @@ export default function Page() {
       speedDriven,
       useManualServiceFactor,
       wrapResult,
+      completePowerTrainStep,
     ]
   );
 
@@ -312,6 +322,29 @@ export default function Page() {
       }
       inputs={
         <div className="space-y-4">
+          <CrossCalcHandoffBanner
+            moduleId="v-belts"
+            onApply={(params) => {
+              if (params.power != null) {
+                setPower(params.power);
+                setPowerUnit("kW");
+              }
+              const rpm = handoffSpeedRpm(params);
+              if (rpm != null) setSpeedDriver(rpm);
+              if (params.serviceFactor != null) setServiceFactor(params.serviceFactor);
+              if (params.diameterDriver != null) {
+                setDiameterDriver(fromBase(params.diameterDriver, "length", lengthUnit));
+                setUseManualGeometry(true);
+              }
+              if (params.diameterDriven != null) {
+                setDiameterDriven(fromBase(params.diameterDriven, "length", lengthUnit));
+                setUseManualGeometry(true);
+              }
+              if (params.centerDistance != null) {
+                setCenterDistance(fromBase(params.centerDistance, "length", lengthUnit));
+              }
+            }}
+          />
           <VBeltsInputs
             applicationId={applicationId}
             setApplicationId={setApplicationId}
