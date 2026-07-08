@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { allModules, categories } from "@/data/modules";
+import { buildPageMetadata } from "@/lib/seo/site";
+
+export const metadata = buildPageMetadata({
+  title: "Documentation",
+  description:
+    "Engineering reference for PhyCalcPro calculator modules: governing formulas, numerical methods, design-code checks, assumptions, limitations, and known gaps.",
+  path: "/documentation",
+});
 
 export default function DocumentationPage() {
   const moduleCount = allModules.filter((module) => !module.comingSoon).length;

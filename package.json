@@ -11,6 +11,7 @@
     "validate:maturity-gates": "tsx scripts/validate-maturity-gates.ts",
     "generate:verification-template": "node scripts/generate-verification-template.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
+    "generate:product-seo-layouts": "node scripts/generate-product-seo-layouts.mjs",
     "test:verification": "tsx scripts/run-verification.ts && tsx scripts/validate-maturity-gates.ts",
     "test": "vitest run",
     "test:watch": "vitest"

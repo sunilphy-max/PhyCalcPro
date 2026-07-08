@@ -4,15 +4,9 @@ import ValidationModeBanner from "@/components/licensing/ValidationModeBanner";
 import { EntitlementProvider } from "@/contexts/EntitlementContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { PersistenceProvider } from "@/contexts/PersistenceContext";
+import { rootMetadata } from "@/lib/seo/site";
 
-export const metadata = {
-  title: "PhyCalcPro",
-  description: "Engineering Calculation & Design Platform",
-  icons: {
-    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
-    apple: "/phycalcpro-logo.png",
-  },
-};
+export const metadata = rootMetadata;
 
 export default function RootLayout({
   children,

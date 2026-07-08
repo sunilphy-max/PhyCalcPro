@@ -10,6 +10,7 @@ import {
   getModuleRoute,
 } from "@/lib/documentation/loadReference";
 import { allModules } from "@/data/modules";
+import { buildPageMetadata } from "@/lib/seo/site";
 
 type Props = {
   params: Promise<{ moduleId: string }>;
@@ -24,10 +25,11 @@ export async function generateMetadata({ params }: Props) {
   const doc = getModuleDoc(moduleId);
   const mod = allModules.find((m) => m.id === moduleId);
   const title = doc?.title ?? mod?.title ?? moduleId;
-  return {
+  return buildPageMetadata({
     title: `${title} — Module docs`,
     description: `Methods, formulas, assumptions, and limitations for ${title}.`,
-  };
+    path: `/documentation/modules/${moduleId}`,
+  });
 }
 
 export default async function ModuleDocumentationPage({ params }: Props) {

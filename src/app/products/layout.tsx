@@ -1,20 +1,12 @@
-﻿"use client";
+﻿import ProductsShell from "./ProductsShell";
+import { productsIndexMetadata } from "@/lib/seo/moduleMetadata";
 
-import Sidebar from "@/components/Sidebar";
-import { DesignCodeProvider } from "@/contexts/DesignCodeContext";
+export const metadata = productsIndexMetadata();
 
 export default function ProductsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <DesignCodeProvider>
-      {/* Stack on narrow viewports; minmax(0,1fr) keeps charts from spilling over the sidebar. */}
-      <div className="products-shell grid w-full min-w-0 grid-cols-1 items-start lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <Sidebar />
-        <div className="products-module-main min-w-0 overflow-x-clip">{children}</div>
-      </div>
-    </DesignCodeProvider>
-  );
+  return <ProductsShell>{children}</ProductsShell>;
 }
