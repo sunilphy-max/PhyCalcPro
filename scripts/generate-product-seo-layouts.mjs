@@ -12,6 +12,8 @@ const MODULES_FILE = path.join(ROOT, "src", "data", "modules.ts");
 const APP_PRODUCTS = path.join(ROOT, "src", "app", "products");
 
 const LAYOUT_TEMPLATE = (route) => `import { moduleMetadata } from "@/lib/seo/moduleMetadata";
+import { moduleJsonLd } from "@/lib/seo/moduleJsonLd";
+import JsonLd from "@/components/seo/JsonLd";
 
 export const metadata = moduleMetadata("${route}");
 
@@ -20,7 +22,12 @@ export default function Layout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      <JsonLd data={moduleJsonLd("${route}")} />
+      {children}
+    </>
+  );
 }
 `;
 

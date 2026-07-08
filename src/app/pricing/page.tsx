@@ -3,11 +3,13 @@ import { redirect } from "next/navigation";
 import CheckoutButton from "@/components/licensing/CheckoutButton";
 import { plans } from "@/lib/licensing/plans";
 import { isFreeLaunch } from "@/lib/licensing/validationMode";
+import { buildPageMetadata } from "@/lib/seo/site";
 
-export const metadata = {
-  title: "Pricing — PhyCalcPro",
+export const metadata = buildPageMetadata({
+  title: "Pricing",
   description: "Free engineering tools, Supporter donations, and Pro licenses for US/EU/ISO standards.",
-};
+  path: "/pricing",
+});
 
 export default function PricingPage() {
   if (isFreeLaunch()) {

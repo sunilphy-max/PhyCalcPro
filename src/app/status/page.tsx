@@ -9,12 +9,14 @@ import {
 import { getBenchmarkStatsFromLastRun, getLastVerificationReport } from "@/lib/qa/lastRun";
 import { supportedBenchmarkModules } from "@/lib/qa/benchmarkRunner";
 import { getModuleDesignWorkflowCoverage } from "@/lib/design-workflows/moduleDesignWorkflows";
+import { buildPageMetadata } from "@/lib/seo/site";
 import type { ReleaseTier } from "@/lib/qa/types";
 
-export const metadata = {
-  title: "Quality & maturity — PhyCalcPro",
+export const metadata = buildPageMetadata({
+  title: "Quality & maturity",
   description: "Module release tiers, verification status, and export audit matrix.",
-};
+  path: "/status",
+});
 
 export default function StatusPage() {
   const stats = getBenchmarkStatsFromLastRun();

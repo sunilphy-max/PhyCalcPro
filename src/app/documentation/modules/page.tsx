@@ -2,11 +2,13 @@ import Link from "next/link";
 import { categories } from "@/data/modules";
 import { getModuleDocSections } from "@/lib/documentation/loadReference";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
+import { buildPageMetadata } from "@/lib/seo/site";
 
-export const metadata = {
-  title: "Module documentation — PhyCalcPro",
-  description: "Per-module engineering documentation index.",
-};
+export const metadata = buildPageMetadata({
+  title: "Module documentation",
+  description: "Per-module engineering documentation index with formulas, methods, and limitations.",
+  path: "/documentation/modules",
+});
 
 export default function DocumentationModulesIndexPage() {
   const sections = getModuleDocSections();

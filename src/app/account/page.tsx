@@ -1,8 +1,9 @@
 import AccountClient from "./AccountClient";
 
 export const metadata = {
-  title: "Account — PhyCalcPro",
+  title: "Account",
   description: "Manage your PhyCalcPro plan and optional cloud sign-in.",
+  robots: { index: false, follow: true },
 };
 
 export default function AccountPage() {

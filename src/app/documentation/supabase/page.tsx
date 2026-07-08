@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { buildPageMetadata } from "@/lib/seo/site";
 
-export const metadata = {
-  title: "Supabase setup — PhyCalcPro",
+export const metadata = buildPageMetadata({
+  title: "Supabase setup",
   description: "Enable cloud sign-in and calculation history with Supabase.",
-};
+  path: "/documentation/supabase",
+});
 
 const ENV_BLOCK = `NEXT_PUBLIC_SUPABASE_ENABLED=true
 NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co

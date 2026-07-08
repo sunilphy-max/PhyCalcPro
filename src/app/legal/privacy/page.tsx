@@ -1,4 +1,10 @@
-export const metadata = { title: "Privacy Policy — PhyCalcPro" };
+import { buildPageMetadata } from "@/lib/seo/site";
+
+export const metadata = buildPageMetadata({
+  title: "Privacy Policy",
+  description: "How PhyCalcPro collects, uses, and protects your data.",
+  path: "/legal/privacy",
+});
 
 export default function PrivacyPage() {
   return (

@@ -15,12 +15,13 @@ const CATEGORY_IDS = new Set([
   "tools",
 ]);
 
-/** Marketing and utility routes not covered by module catalog alone. */
+/**
+ * Marketing and utility routes not covered by module catalog alone.
+ * Low-value routes (account, billing, projects, copilot) are intentionally
+ * excluded to focus crawl budget on indexable content.
+ */
 const STATIC_ROUTES = [
   "/",
-  "/account",
-  "/billing/cancel",
-  "/billing/success",
   "/documentation",
   "/documentation/modules",
   "/documentation/reference",

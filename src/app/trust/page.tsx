@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { isFreeLaunch } from "@/lib/licensing/validationMode";
+import { buildPageMetadata } from "@/lib/seo/site";
 
-export const metadata = {
-  title: "Trust & engineering responsibility — PhyCalcPro",
+export const metadata = buildPageMetadata({
+  title: "Trust & engineering responsibility",
   description: "How PhyCalcPro handles standards, verification, and professional responsibility.",
-};
+  path: "/trust",
+});
 
 export default function TrustPage() {
   return (

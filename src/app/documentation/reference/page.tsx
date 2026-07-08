@@ -1,11 +1,13 @@
 import Link from "next/link";
 import MarkdownContent from "@/components/documentation/MarkdownContent";
 import { loadTechnicalReference, parseMajorSections } from "@/lib/documentation/loadReference";
+import { buildPageMetadata } from "@/lib/seo/site";
 
-export const metadata = {
-  title: "Technical reference — PhyCalcPro",
+export const metadata = buildPageMetadata({
+  title: "Technical reference",
   description: "Full engineering module manual with formulas, methods, and limitations.",
-};
+  path: "/documentation/reference",
+});
 
 export default function DocumentationReferencePage() {
   const markdown = loadTechnicalReference();

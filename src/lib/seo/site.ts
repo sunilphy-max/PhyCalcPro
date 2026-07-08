@@ -14,6 +14,15 @@ export const defaultDescription =
 
 export const titleTemplate = "%s — PhyCalcPro";
 
+/** Stable OG/Twitter image routes (rendered by opengraph-image.tsx / twitter-image.tsx). */
+export const OG_IMAGE = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: defaultTitle,
+};
+export const TWITTER_IMAGE = "/twitter-image";
+
 type BuildPageMetadataOptions = {
   title?: string | Metadata["title"];
   description?: string;
@@ -53,15 +62,20 @@ export function buildPageMetadata({
       siteName: SITE_NAME,
       type: "website",
       locale: "en_US",
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: pageTitle,
       description,
+      images: [TWITTER_IMAGE],
     },
     robots,
   };
 }
+
+const googleSiteVerification =
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined;
 
 export const rootMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -81,14 +95,19 @@ export const rootMetadata: Metadata = {
     siteName: SITE_NAME,
     type: "website",
     locale: "en_US",
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: defaultTitle,
     description: defaultDescription,
+    images: [TWITTER_IMAGE],
   },
   robots: {
     index: true,
     follow: true,
   },
+  ...(googleSiteVerification
+    ? { verification: { google: googleSiteVerification } }
+    : {}),
 };
