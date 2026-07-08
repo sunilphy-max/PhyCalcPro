@@ -161,7 +161,7 @@ function CalculatorLayoutBody({
           <div
             className={`grid min-w-0 grid-cols-1 gap-4 ${
               inputColumn && resultColumn
-                ? "xl:grid-cols-[minmax(280px,340px)_minmax(0,1fr)]"
+                ? "xl:grid-cols-[minmax(320px,420px)_minmax(0,1fr)]"
                 : ""
             }`}
           >

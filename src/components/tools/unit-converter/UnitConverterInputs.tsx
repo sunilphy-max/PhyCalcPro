@@ -49,7 +49,7 @@ export default function UnitConverterInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Convert" designAware />}
     >
       <div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">
+        <label className="space-y-2 text-sm text-slate-700">
           <span>Physical dimension</span>
           <select
             value={dimensionKey}
@@ -89,7 +89,7 @@ export default function UnitConverterInputs({
         </label>
 
         {profile ? (
-          <p className="sm:col-span-2 text-xs text-slate-500">
+          <p className="text-xs text-slate-500">
             Base SI dimension: {profile.dimension}. Available units: {profile.units.join(", ")}.
           </p>
         ) : null}

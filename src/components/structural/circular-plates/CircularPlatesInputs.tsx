@@ -119,7 +119,7 @@ export default function CircularPlatesInputs({
             className={calculatorNumberInputClass}
           />
         </label>
-        <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">
+        <label className="space-y-2 text-sm text-slate-700">
           <span>Edge support</span>
           <select
             value={boundary}

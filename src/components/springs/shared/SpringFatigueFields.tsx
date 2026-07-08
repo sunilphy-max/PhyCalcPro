@@ -43,7 +43,7 @@ export default function SpringFatigueFields({
         EN 13906 fatigue screening
       </label>
       {enableFatigueCheck ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3">
           <CalculatorSelectField
             label="Life class"
             value={lifeClass}

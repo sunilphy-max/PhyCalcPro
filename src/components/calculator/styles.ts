@@ -5,8 +5,8 @@ export const calculatorPanelClass =
 
 export const calculatorWorkspaceClass = "calculator-workspace min-w-0 space-y-4";
 
-/** Single-column field grid for the narrow module input sidebar (280–340px). */
-export const calculatorInputGridClass = "grid min-w-0 grid-cols-1 gap-4";
+/** Single-column field grid for the module input sidebar (320–420px). */
+export const calculatorInputGridClass = "calculator-input-grid grid min-w-0 grid-cols-1 gap-4";
 
 export const calculatorInputGridTightClass = "grid min-w-0 grid-cols-1 gap-3";
 

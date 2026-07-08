@@ -142,7 +142,7 @@ export default function VibrationInputs({
         <p className="text-xs text-slate-500">
           Light damping (ζ ≈ 0.02–0.05) for damped natural frequency estimate.
         </p>
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2 sm:col-span-2">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
           <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>
           <MeshControls elements={segments} onChangeElements={setSegments} refine />
         </div>

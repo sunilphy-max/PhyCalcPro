@@ -16,6 +16,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
 import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
+import { calculatorInputGridTightClass } from "@/components/calculator/styles";
 
 export type SupportPreset = "fixed_left" | "simply_supported" | "custom";
 
@@ -425,7 +426,7 @@ export default function ShaftInputs({
         title="DIN 743 coefficients"
         description="Influence and fatigue reduction factors for EU shaft worksheets (K_σ, K_τ, γ_F)."
       >
-        <div className="grid grid-cols-3 gap-2">
+        <div className={calculatorInputGridTightClass}>
           <CalculatorNumberField
             label="K_σ bending"
             value={din743K_sigma}

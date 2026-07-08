@@ -89,7 +89,7 @@ export default function Vdi2230Inputs({
             <option value="12.9">12.9 (Rp0.2 = 1100 MPa)</option>
           </select>
         </label>
-        <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">
+        <label className="space-y-2 text-sm text-slate-700">
           <span>Tightening method (scatter αA)</span>
           <select
             value={tighteningMethod}

@@ -51,7 +51,7 @@ export default function GearRatioDesignInputs({
             className={calculatorNumberInputClass}
           />
         </label>
-        <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">
+        <label className="space-y-2 text-sm text-slate-700">
           <span>Minimum pinion teeth</span>
           <input
             type="number"

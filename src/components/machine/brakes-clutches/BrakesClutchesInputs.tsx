@@ -120,7 +120,7 @@ export default function BrakesClutchesInputs({
             className={calculatorNumberInputClass}
           />
         </label>
-        <label className="space-y-2 text-sm text-slate-700 sm:col-span-2">
+        <label className="space-y-2 text-sm text-slate-700">
           <span>Target safety factor</span>
           <input
             type="number"

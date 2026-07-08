@@ -114,6 +114,14 @@
   }
 
   /*
+   * Module input sidebars use a single-column grid. Legacy sm:col-span-2 on children
+   * would otherwise create implicit multi-column tracks and overlap paired fields.
+   */
+  .calculator-input-grid > * {
+    grid-column: 1 / -1;
+  }
+
+  /*
    * Form controls inside calculator panels: explicit fg/bg so numeric values stay
    * visible when the OS uses dark mode (inherited light text on white field bg).
    */

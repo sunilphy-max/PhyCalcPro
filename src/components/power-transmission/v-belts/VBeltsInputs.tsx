@@ -277,7 +277,7 @@ export default function VBeltsInputs({
                     <option value="high">High</option>
                   </select>
                 </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                   <input
                     type="checkbox"
                     checked={applicationOptions.outdoorEnvironment ?? true}
@@ -380,7 +380,7 @@ export default function VBeltsInputs({
         <section className="space-y-3">
           <SectionHeading>Duty & belt selection</SectionHeading>
           <div className={`${calculatorInputGridClass}`}>
-            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+            <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
               <input
                 type="checkbox"
                 checked={useManualServiceFactor}
@@ -390,7 +390,7 @@ export default function VBeltsInputs({
               Override application service factor manually
             </label>
             {!useManualServiceFactor ? (
-              <div className="sm:col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-300">
                 Using application service factor: <strong>{serviceFactor.toFixed(2)}</strong>
               </div>
             ) : (
@@ -431,7 +431,7 @@ export default function VBeltsInputs({
               </>
             )}
             {!isDesignMode ? (
-              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                 <input
                   type="checkbox"
                   checked={useManualGeometry}
@@ -471,7 +471,7 @@ export default function VBeltsInputs({
                 />
               </>
             ) : null}
-            <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300 sm:col-span-2">
+            <label className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <span>Belt section</span>
               <select
                 value={beltSection}
