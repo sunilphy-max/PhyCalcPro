@@ -25,10 +25,16 @@ import type {
   BearingType,
   BearingReliability,
   LubricationClass,
+  BearingManufacturer,
   BearingCatalogTier,
   BearingArrangement,
 } from "@/lib/machine/bearings/types";
-import { bearingsOfType, findBearing } from "@/data/catalogs/bearingCatalog";
+import {
+  bearingsOfType,
+  findBearing,
+  equivalentDesignation,
+  catalogTierToManufacturer,
+} from "@/data/catalogs/bearingCatalog";
 
 type BearingProjectData = {
   radialLoad: number;
@@ -40,7 +46,9 @@ type BearingProjectData = {
   designation: string;
   reliability: BearingReliability;
   lubricationClass: LubricationClass | "";
-  catalogTier: BearingCatalogTier;
+  manufacturer: BearingManufacturer;
+  /** @deprecated migrated to manufacturer on load */
+  catalogTier?: BearingCatalogTier;
   arrangement: BearingArrangement;
   maxBoreMm: number | "";
 };
@@ -66,7 +74,7 @@ export default function Page() {
   const [designation, setDesignation] = useState("6205");
   const [reliability, setReliability] = useState<BearingReliability>(90);
   const [lubricationClass, setLubricationClass] = useState<LubricationClass | "">("");
-  const [catalogTier, setCatalogTier] = useState<BearingCatalogTier>("skf_metric");
+  const [manufacturer, setManufacturer] = useState<BearingManufacturer>("SKF");
   const [arrangement, setArrangement] = useState<BearingArrangement>("single");
   const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
   const [result, setResult] = useState<BearingResult | null>(null);
@@ -89,7 +97,7 @@ export default function Page() {
       limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
       reliabilityPercent: reliability,
       lubricationClass: lubricationClass || undefined,
-      catalogTier,
+      manufacturer,
       arrangement,
       material: LEGACY_MATERIAL,
     };
@@ -124,13 +132,15 @@ export default function Page() {
     requiredLife: lifeHours,
     targetSafetyFactor: safetyFactor,
     bearingType,
+    bearingManufacturer: manufacturer,
     shaftDiameterMm: maxBoreMm === "" ? undefined : maxBoreMm,
-  }), [radialLoad, radialUnit, axialLoad, axialUnit, speed, lifeHours, safetyFactor, bearingType, maxBoreMm]);
+  }), [radialLoad, radialUnit, axialLoad, axialUnit, speed, lifeHours, safetyFactor, bearingType, manufacturer, maxBoreMm]);
 
   useSyncDesignInputs("bearings", designUserInputs);
 
   const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
     if (fields.bearingType != null) setBearingType(fields.bearingType as BearingType);
+    if (fields.manufacturer != null) setManufacturer(fields.manufacturer as BearingManufacturer);
     if (fields.designation != null && findBearing(String(fields.designation))) {
       setDesignation(String(fields.designation));
     }
@@ -157,7 +167,11 @@ export default function Page() {
     setDesignation(p.designation);
     setReliability(p.reliability);
     setLubricationClass(p.lubricationClass ?? "");
-    if (p.catalogTier) setCatalogTier(p.catalogTier);
+    if (p.manufacturer) {
+      setManufacturer(p.manufacturer);
+    } else if (p.catalogTier) {
+      setManufacturer(catalogTierToManufacturer(p.catalogTier));
+    }
     if (p.arrangement) setArrangement(p.arrangement);
     setMaxBoreMm(p.maxBoreMm ?? "");
   };
@@ -204,7 +218,7 @@ export default function Page() {
             bearingType={bearingType}
             setBearingType={(type) => {
               setBearingType(type);
-              const candidates = bearingsOfType(type, catalogTier);
+              const candidates = bearingsOfType(type, manufacturer);
               if (candidates.length && !candidates.some((b) => b.designation === designation)) {
                 setDesignation(candidates[0]!.designation);
               }
@@ -215,11 +229,16 @@ export default function Page() {
             setReliability={setReliability}
             lubricationClass={lubricationClass}
             setLubricationClass={setLubricationClass}
-            catalogTier={catalogTier}
-            setCatalogTier={(tier) => {
-              setCatalogTier(tier);
-              const candidates = bearingsOfType(bearingType, tier);
-              if (candidates.length) setDesignation(candidates[0]!.designation);
+            manufacturer={manufacturer}
+            setManufacturer={(mfr) => {
+              setManufacturer(mfr);
+              const mapped = equivalentDesignation(designation, mfr);
+              if (mapped) {
+                setDesignation(mapped);
+              } else {
+                const candidates = bearingsOfType(bearingType, mfr);
+                if (candidates.length) setDesignation(candidates[0]!.designation);
+              }
             }}
             arrangement={arrangement}
             setArrangement={setArrangement}
@@ -237,7 +256,7 @@ export default function Page() {
                 designation,
                 reliability,
                 lubricationClass,
-                catalogTier,
+                manufacturer,
                 arrangement,
                 maxBoreMm,
               })

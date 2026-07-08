@@ -2,7 +2,11 @@
  * Catalog search and ranking for bearing auto-selection.
  */
 
-import type { BearingCatalogEntry, CatalogBearingType } from "@/data/catalogs/bearingCatalog";
+import type {
+  BearingCatalogEntry,
+  BearingManufacturer,
+  CatalogBearingType,
+} from "@/data/catalogs/bearingCatalog";
 import { bearingCatalog } from "@/data/catalogs/bearingCatalog";
 
 export type BearingSelectionCriteria = {
@@ -10,6 +14,8 @@ export type BearingSelectionCriteria = {
   requiredDynamicRatingN: number;
   requiredStaticRatingN?: number;
   speedRpm: number;
+  /** Limit search to one manufacturer (e.g. SKF, NSK) */
+  manufacturer?: BearingManufacturer;
   /** Maximum bore (mm) from shaft diameter */
   boreMaxMm?: number;
   /** Maximum outside diameter (mm) */
@@ -32,6 +38,7 @@ export function rankCatalogBearings(criteria: BearingSelectionCriteria): RankedB
     requiredDynamicRatingN,
     requiredStaticRatingN = 0,
     speedRpm,
+    manufacturer,
     boreMaxMm,
     outerMaxMm,
     boreMinMm,
@@ -39,6 +46,7 @@ export function rankCatalogBearings(criteria: BearingSelectionCriteria): RankedB
 
   return bearingCatalog
     .filter((b) => b.type === bearingType)
+    .filter((b) => manufacturer == null || b.manufacturer === manufacturer)
     .filter((b) => (boreMaxMm == null || b.boreMm <= boreMaxMm + 0.01))
     .filter((b) => (boreMinMm == null || b.boreMm >= boreMinMm - 0.01))
     .filter((b) => (outerMaxMm == null || b.outerDiameterMm <= outerMaxMm + 0.01))

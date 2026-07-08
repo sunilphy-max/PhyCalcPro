@@ -98,6 +98,7 @@ export type ModuleUserInputs = {
   faceWidth?: number;
   bearingSeries?: string;
   bearingType?: "deep_groove" | "angular_contact" | "cylindrical_roller";
+  bearingManufacturer?: "SKF" | "FAG" | "NSK" | "TIMKEN" | "NTN";
   bore?: number;
   diameter?: number;
   shaftDiameterMm?: number;

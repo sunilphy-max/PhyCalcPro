@@ -201,6 +201,8 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
   const speed = userInputs.speedDriver ?? 1500;
   const lifeHours = userInputs.requiredLife ?? 20000;
   const bearingType = (userInputs.bearingType as "deep_groove" | "angular_contact" | "cylindrical_roller") ?? "deep_groove";
+  const manufacturer =
+    (userInputs.bearingManufacturer as "SKF" | "FAG" | "NSK" | "TIMKEN" | "NTN" | undefined) ?? "SKF";
   const targetSf = userInputs.targetSafetyFactor ?? 1.5;
 
   try {
@@ -219,14 +221,15 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
       requiredDynamicRatingN: req.requiredDynamicRating,
       requiredStaticRatingN: req.requiredStaticRating,
       speedRpm: speed,
+      manufacturer,
       boreMaxMm: userInputs.shaftDiameterMm as number | undefined,
     });
 
     const items = ranked.slice(0, 12).map((r) => ({
       label: r.entry.designation,
       utilization: r.dynamicUtilization,
-      fields: { designation: r.entry.designation, bearingType },
-      detail: `C ${(r.entry.dynamicRatingN / 1000).toFixed(1)} kN · s₀ ${r.staticUtilization > 0 ? (1 / r.staticUtilization).toFixed(1) : "—"} · n_lim/n ${r.speedMargin.toFixed(2)}`,
+      fields: { designation: r.entry.designation, bearingType, manufacturer: r.entry.manufacturer },
+      detail: `${r.entry.manufacturer} · C ${(r.entry.dynamicRatingN / 1000).toFixed(1)} kN · s₀ ${r.staticUtilization > 0 ? (1 / r.staticUtilization).toFixed(1) : "—"} · n_lim/n ${r.speedMargin.toFixed(2)}`,
     }));
 
     return fromSweep(

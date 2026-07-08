@@ -4,8 +4,8 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
-import type { BearingType, BearingReliability, LubricationClass, BearingCatalogTier, BearingArrangement } from "@/lib/machine/bearings/types";
-import { bearingsOfType, findBearing } from "@/data/catalogs/bearingCatalog";
+import type { BearingType, BearingReliability, LubricationClass, BearingManufacturer, BearingArrangement } from "@/lib/machine/bearings/types";
+import { bearingsOfType, findBearing, BEARING_MANUFACTURERS, BEARING_MANUFACTURER_LABELS } from "@/data/catalogs/bearingCatalog";
 
 type Props = {
   radialLoad: number;
@@ -30,8 +30,8 @@ type Props = {
   setReliability: (reliability: BearingReliability) => void;
   lubricationClass: LubricationClass | "";
   setLubricationClass: (v: LubricationClass | "") => void;
-  catalogTier: BearingCatalogTier;
-  setCatalogTier: (tier: BearingCatalogTier) => void;
+  manufacturer: BearingManufacturer;
+  setManufacturer: (manufacturer: BearingManufacturer) => void;
   arrangement: BearingArrangement;
   setArrangement: (a: BearingArrangement) => void;
   maxBoreMm: number | "";
@@ -66,8 +66,8 @@ export default function BearingInputs({
   setReliability,
   lubricationClass,
   setLubricationClass,
-  catalogTier,
-  setCatalogTier,
+  manufacturer,
+  setManufacturer,
   arrangement,
   setArrangement,
   maxBoreMm,
@@ -78,7 +78,7 @@ export default function BearingInputs({
   projectName,
   setProjectName,
 }: Props) {
-  const catalogOptions = bearingsOfType(bearingType, catalogTier);
+  const catalogOptions = bearingsOfType(bearingType, manufacturer);
   const selected = findBearing(designation);
 
   return (
@@ -169,6 +169,21 @@ export default function BearingInputs({
       </div>
 
       <label className="block space-y-2 text-sm text-slate-700">
+        <span>Manufacturer</span>
+        <select
+          value={manufacturer}
+          onChange={(event) => setManufacturer(event.target.value as BearingManufacturer)}
+          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+        >
+          {BEARING_MANUFACTURERS.map((mfr) => (
+            <option key={mfr} value={mfr}>
+              {BEARING_MANUFACTURER_LABELS[mfr]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="block space-y-2 text-sm text-slate-700">
         <span>Catalog bearing</span>
         <select
           value={designation}
@@ -186,24 +201,12 @@ export default function BearingInputs({
 
       {selected && (
         <p className="text-xs text-slate-500">
-          {selected.designation}: d={selected.boreMm} D={selected.outerDiameterMm} B={selected.widthMm} mm · n_lim=
-          {selected.limitingSpeedRpm} RPM
+          {BEARING_MANUFACTURER_LABELS[selected.manufacturer]} · {selected.designation}: d={selected.boreMm} D=
+          {selected.outerDiameterMm} B={selected.widthMm} mm · n_lim={selected.limitingSpeedRpm} RPM
         </p>
       )}
 
       <div className={`${calculatorInputGridClass}`}>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Catalog tier (MITCalc I / II / III)</span>
-          <select
-            value={catalogTier}
-            onChange={(event) => setCatalogTier(event.target.value as BearingCatalogTier)}
-            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-          >
-            <option value="skf_metric">Rolling bearings I — SKF metric</option>
-            <option value="inch">Rolling bearings II — inch series</option>
-            <option value="ina_fag">Rolling bearings III — INA/FAG</option>
-          </select>
-        </label>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Mounting arrangement</span>
           <select

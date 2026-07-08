@@ -77,11 +77,32 @@ describe("bearing ISO 281 regression", () => {
       bearingType: "deep_groove",
       requiredDynamicRatingN: 20000,
       speedRpm: 1500,
+      manufacturer: "SKF",
     });
     expect(ranked.length).toBeGreaterThan(0);
+    expect(ranked.every((r) => r.entry.manufacturer === "SKF")).toBe(true);
     expect(ranked[0]!.dynamicUtilization).toBeLessThanOrEqual(
       ranked[1]?.dynamicUtilization ?? Infinity
     );
+  });
+
+  it("filters catalog ranking by manufacturer", () => {
+    const skf = rankCatalogBearings({
+      bearingType: "deep_groove",
+      requiredDynamicRatingN: 14800,
+      speedRpm: 1200,
+      manufacturer: "SKF",
+    });
+    const nsk = rankCatalogBearings({
+      bearingType: "deep_groove",
+      requiredDynamicRatingN: 14800,
+      speedRpm: 1200,
+      manufacturer: "NSK",
+    });
+    expect(skf.every((r) => r.entry.manufacturer === "SKF")).toBe(true);
+    expect(nsk.every((r) => r.entry.manufacturer === "NSK")).toBe(true);
+    expect(skf.some((r) => r.entry.designation === "6205")).toBe(true);
+    expect(nsk.some((r) => r.entry.designation === "NSK 6205")).toBe(true);
   });
 });
 

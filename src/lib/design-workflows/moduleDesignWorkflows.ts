@@ -312,12 +312,12 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   bearings: {
     maturity: "solver-backed",
-    designInputs: ["Radial/axial load", "Speed", "Required life", "Reliability", "Bore/space limits", "Lubrication class"],
+    designInputs: ["Radial/axial load", "Speed", "Required life", "Reliability", "Manufacturer", "Bore/space limits", "Lubrication class"],
     autoSizingTargets: ["Required dynamic rating", "Catalog designation", "L10/Lnm life", "Static C₀/P₀", "Speed margin"],
-    catalogTables: ["ISO 281 life factors", "ISO 76 static ratings", "Deep groove / angular / NU catalog", "Lubrication a_ISO screening"],
+    catalogTables: ["ISO 281 life factors", "ISO 76 static ratings", "SKF/FAG/NSK/Timken/NTN metric catalog", "Lubrication a_ISO screening"],
     linkedWorkflowModuleIds: ["housing", "shafts", "plain-bearings", "fatigue"],
     expertNotes: ["Shaft FEM handoff imports Fr, Fa, and speed. Publishes bore and loads to Bearing Housing."],
-    gaps: ["Full SKF/INA database, paired bearing arrangements, and ISO 281 a_ISO from κ/ηc still need integration."],
+    gaps: ["Full manufacturer designation tables beyond representative series, paired bearing arrangements, and ISO 281 a_ISO from κ/ηc still need integration."],
   },
   housing: {
     maturity: "solver-backed",
