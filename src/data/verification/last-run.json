@@ -1,8 +1,8 @@
 {
-  "ranAt": "2026-07-09T00:17:07.090Z",
+  "ranAt": "2026-07-09T04:01:49.744Z",
   "total": 75,
-  "passed": 75,
-  "failed": 0,
+  "passed": 73,
+  "failed": 2,
   "skipped": 0,
   "results": [
     {
@@ -834,50 +834,50 @@
     {
       "caseId": "plain-bearings-indicative-01",
       "moduleId": "plain-bearings",
-      "pass": true,
+      "pass": false,
       "fields": [
         {
           "field": "sommerfeldNumber",
           "expected": 0.00037699111843077514,
-          "actual": 0.00037699111843077514,
+          "actual": 0.0003769911184307752,
           "pass": true
         },
         {
           "field": "eccentricityRatio",
           "expected": 0.95,
-          "actual": 0.95,
-          "pass": true
+          "actual": 0.5,
+          "pass": false
         },
         {
           "field": "minFilmThickness",
           "expected": 0.0000012500000000000012,
-          "actual": 0.0000012500000000000012,
-          "pass": true
+          "actual": 0.0000125,
+          "pass": false
         }
       ]
     },
     {
       "caseId": "plain-bearings-indicative-journal-01",
       "moduleId": "plain-bearings",
-      "pass": true,
+      "pass": false,
       "fields": [
         {
           "field": "sommerfeldNumber",
           "expected": 0.00037699111843077514,
-          "actual": 0.00037699111843077514,
+          "actual": 0.0003769911184307752,
           "pass": true
         },
         {
           "field": "eccentricityRatio",
           "expected": 0.95,
-          "actual": 0.95,
-          "pass": true
+          "actual": 0.5,
+          "pass": false
         },
         {
           "field": "minFilmThickness",
           "expected": 0.0000012500000000000012,
-          "actual": 0.0000012500000000000012,
-          "pass": true
+          "actual": 0.0000125,
+          "pass": false
         }
       ]
     },

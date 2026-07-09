@@ -35,14 +35,14 @@ type RegisterMetricInput = {
   status?: MetricStatus;
 };
 
-type ResultsTableContextValue = {
+type ResultsTableActions = {
   registerMetric: (id: string, order: number, row: RegisterMetricInput) => void;
   unregister: (id: string) => void;
   registerSection: (id: string, order: number, title: string) => void;
-  rows: ResultTableRow[];
 };
 
-const ResultsTableContext = createContext<ResultsTableContextValue | null>(null);
+const ResultsTableActionsContext = createContext<ResultsTableActions | null>(null);
+const ResultsTableRowsContext = createContext<ResultTableRow[]>([]);
 
 let orderCounter = 0;
 
@@ -63,6 +63,21 @@ export function ResultsTableProvider({ children }: { children: ReactNode }) {
 
   const registerMetric = useCallback((id: string, order: number, row: RegisterMetricInput) => {
     setRows((prev) => {
+      const existing = prev.find((item) => item.id === id);
+      if (
+        existing &&
+        existing.kind === "metric" &&
+        existing.order === order &&
+        existing.label === row.label &&
+        existing.value === row.value &&
+        existing.numericValue === row.numericValue &&
+        existing.unit === row.unit &&
+        existing.tone === row.tone &&
+        existing.status === row.status
+      ) {
+        return prev;
+      }
+
       const without = prev.filter((item) => item.id !== id);
       return [
         ...without,
@@ -83,6 +98,11 @@ export function ResultsTableProvider({ children }: { children: ReactNode }) {
 
   const registerSection = useCallback((id: string, order: number, title: string) => {
     setRows((prev) => {
+      const existing = prev.find((item) => item.id === id);
+      if (existing && existing.kind === "section" && existing.order === order && existing.label === title) {
+        return prev;
+      }
+
       const without = prev.filter((item) => item.id !== id);
       return [
         ...without,
@@ -92,52 +112,65 @@ export function ResultsTableProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const unregister = useCallback((id: string) => {
-    setRows((prev) => prev.filter((item) => item.id !== id));
+    setRows((prev) => (prev.some((item) => item.id === id) ? prev.filter((item) => item.id !== id) : prev));
   }, []);
 
-  const value = useMemo(
-    () => ({ registerMetric, unregister, registerSection, rows }),
-    [registerMetric, unregister, registerSection, rows]
+  const actions = useMemo(
+    () => ({ registerMetric, unregister, registerSection }),
+    [registerMetric, unregister, registerSection]
   );
 
-  return <ResultsTableContext.Provider value={value}>{children}</ResultsTableContext.Provider>;
+  return (
+    <ResultsTableActionsContext.Provider value={actions}>
+      <ResultsTableRowsContext.Provider value={rows}>{children}</ResultsTableRowsContext.Provider>
+    </ResultsTableActionsContext.Provider>
+  );
+}
+
+export function useResultsTableActionsOptional() {
+  return useContext(ResultsTableActionsContext);
+}
+
+export function useResultsTableRows() {
+  return useContext(ResultsTableRowsContext);
 }
 
 export function useResultsTableOptional() {
-  return useContext(ResultsTableContext);
+  return useContext(ResultsTableActionsContext);
 }
 
 export function useResultsTableMetricRegistration(input: RegisterMetricInput) {
-  const context = useResultsTableOptional();
+  const actions = useResultsTableActionsOptional();
   const reactId = useId();
   const orderRef = useRef<number | null>(null);
+  const inputRef = useRef(input);
+  inputRef.current = input;
 
-  const { label, value, numericValue, unit, tone, status } = input;
+  const { label, numericValue, unit, tone, status } = input;
+  const valueKey =
+    typeof input.value === "string" || typeof input.value === "number"
+      ? String(input.value)
+      : input.value == null
+        ? ""
+        : reactId;
 
   useLayoutEffect(() => {
-    if (!context) return;
+    if (!actions) return;
     if (orderRef.current === null) orderRef.current = nextOrder();
-    context.registerMetric(reactId, orderRef.current, {
-      label,
-      value,
-      numericValue,
-      unit,
-      tone,
-      status,
-    });
-    return () => context.unregister(reactId);
-  }, [context, label, value, numericValue, unit, tone, status, reactId]);
+    actions.registerMetric(reactId, orderRef.current, inputRef.current);
+    return () => actions.unregister(reactId);
+  }, [actions, label, valueKey, numericValue, unit, tone, status, reactId]);
 }
 
 export function useResultsTableSectionRegistration(title: string | undefined) {
-  const context = useResultsTableOptional();
+  const actions = useResultsTableActionsOptional();
   const reactId = useId();
   const orderRef = useRef<number | null>(null);
 
   useInsertionEffect(() => {
-    if (!context || !title) return;
+    if (!actions || !title) return;
     if (orderRef.current === null) orderRef.current = nextOrder();
-    context.registerSection(reactId, orderRef.current, title);
-    return () => context.unregister(reactId);
-  }, [context, title, reactId]);
+    actions.registerSection(reactId, orderRef.current, title);
+    return () => actions.unregister(reactId);
+  }, [actions, title, reactId]);
 }

@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
-import { useResultsTableOptional } from "./ResultsTableContext";
+import { useResultsTableActionsOptional, useResultsTableRows } from "./ResultsTableContext";
 import type { MetricStatus, MetricTone } from "./CalculatorMetricCard";
 
 const toneValueClass: Record<MetricTone, string> = {
@@ -45,8 +45,7 @@ function formatUnitCell(row: { unit?: string; numericValue?: number | null; valu
 
 /** Unified results table — populated automatically from CalculatorMetricCard children. */
 export default function CalculatorResultsTable() {
-  const context = useResultsTableOptional();
-  const rows = context?.rows ?? [];
+  const rows = useResultsTableRows();
 
   if (!rows.length) return null;
 

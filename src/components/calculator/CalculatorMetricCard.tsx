@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
-import { useResultsTableMetricRegistration, useResultsTableOptional } from "./ResultsTableContext";
+import { useResultsTableActionsOptional, useResultsTableMetricRegistration } from "./ResultsTableContext";
 
 export type MetricTone =
   | "default"
@@ -67,7 +67,7 @@ export default function CalculatorMetricCard({
   size = "sm",
   className = "",
 }: Props) {
-  const tableContext = useResultsTableOptional();
+  const tableContext = useResultsTableActionsOptional();
 
   useResultsTableMetricRegistration({
     label,

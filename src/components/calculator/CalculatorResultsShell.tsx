@@ -44,9 +44,11 @@ export default function CalculatorResultsShell({
 }: Props) {
   const reportContext = useCalculatorReportOptional();
 
+  const setResultsStageActive = reportContext?.setResultsStageActive;
+
   useLayoutEffect(() => {
-    reportContext?.setResultsStageActive(!empty);
-  }, [empty, reportContext]);
+    setResultsStageActive?.(!empty);
+  }, [empty, setResultsStageActive]);
 
   return (
     <ExportableReport moduleId={moduleId} {...rest}>
