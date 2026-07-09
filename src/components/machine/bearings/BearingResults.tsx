@@ -276,7 +276,7 @@ export default function BearingResults({
             />
             <CalculatorMetricCard
               label="Friction torque"
-              value={formatEngineeringValue(result.frictionTorqueNm, { unit: "N·m", decimals: 4 })}
+              value={formatEngineeringValue(result.frictionTorqueNm, "N·m", { digits: 4 })}
             />
             <CalculatorMetricCard label="Power loss" value={formatEngineeringValue(result.powerLossW, "W")} />
             <CalculatorMetricCard
@@ -305,7 +305,7 @@ export default function BearingResults({
           ) : null}
 
           {result.pairedStations && result.pairedStations.length > 1 ? (
-            <CalculatorMetricGrid cols={1}>
+            <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label={`Paired arrangement (${result.arrangement})`}
                 value={result.pairedStations
@@ -339,12 +339,12 @@ export default function BearingResults({
           </CalculatorMetricGrid>
 
           {result.geometry ? (
-            <CalculatorMetricGrid cols={1}>
+            <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label="Catalog geometry"
                 value={`${result.designation} · d = ${result.geometry.boreMm} mm · D = ${result.geometry.outerDiameterMm} mm · B = ${result.geometry.widthMm} mm${
                   result.limitingSpeedRpm != null
-                    ? ` · n_lim = ${formatEngineeringValue(result.limitingSpeedRpm, { decimals: 0 })} RPM`
+                    ? ` · n_lim = ${formatEngineeringValue(result.limitingSpeedRpm, "RPM", { digits: 0 })}`
                     : ""
                 }${catalogEntry?.series ? ` · series ${catalogEntry.series}` : ""}`}
               />

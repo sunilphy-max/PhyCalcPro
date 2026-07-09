@@ -20,6 +20,7 @@ export type {
   BearingCatalogTier,
   BearingApplicationProfile,
   BearingSealType,
+  BearingClearance,
   ContaminationLevel,
   LoadSpectrumStep,
 };

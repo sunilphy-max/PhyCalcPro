@@ -21,11 +21,11 @@ const RAIMONDI_BOYD: [number, number][] = [
 
 export function eccentricityFromSommerfeld(S: number): number {
   if (S <= 0) return 0;
-  const maxS = RAImONDI_BOYD[RAImONDI_BOYD.length - 1]![0];
+  const maxS = RAIMONDI_BOYD[RAIMONDI_BOYD.length - 1]![0];
   if (S >= maxS) return 0.99;
-  for (let i = 0; i < RAImONDI_BOYD.length - 1; i++) {
-    const [s0, e0] = RAImONDI_BOYD[i]!;
-    const [s1, e1] = RAImONDI_BOYD[i + 1]!;
+  for (let i = 0; i < RAIMONDI_BOYD.length - 1; i++) {
+    const [s0, e0] = RAIMONDI_BOYD[i]!;
+    const [s1, e1] = RAIMONDI_BOYD[i + 1]!;
     if (S >= s0 && S <= s1) {
       const t = (S - s0) / (s1 - s0);
       return e0 + t * (e1 - e0);

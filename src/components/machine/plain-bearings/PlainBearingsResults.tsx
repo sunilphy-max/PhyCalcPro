@@ -78,7 +78,7 @@ export default function PlainBearingsResults({ result, lengthUnit }: Props) {
             {result.temperatureRiseC != null ? (
               <CalculatorMetricCard
                 label="Temperature rise"
-                value={`${formatEngineeringValue(result.temperatureRiseC, { decimals: 1 })} °C`}
+                value={`${formatEngineeringValue(result.temperatureRiseC, "°C", { digits: 1 })}`}
               />
             ) : null}
             {result.outletTempC != null ? (
