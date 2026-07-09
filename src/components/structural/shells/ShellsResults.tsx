@@ -3,7 +3,6 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import type { ShellResult } from "@/lib/structural/shells/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: (ShellResult & { calculationSpec?: CalculationSpec }) | null;
@@ -12,8 +11,6 @@ type Props = {
 };
 
 export default function ShellsResults({ result, lengthUnit, stressUnit }: Props) {
-  const formatStress = (v: number) => formatEngineeringValue(fromBase(v, "stress", stressUnit), stressUnit);
-
   return (
     <CalculatorResultsShell
       moduleId="shells"
@@ -38,20 +35,41 @@ export default function ShellsResults({ result, lengthUnit, stressUnit }: Props)
       {result ? (
         <>
           <CalculatorMetricGrid cols={2}>
-            <CalculatorMetricCard label="Hoop stress" value={formatStress(result.hoopStress)} tone="purple" />
-            <CalculatorMetricCard label="Axial stress" value={formatStress(result.axialStress)} tone="blue" />
-            <CalculatorMetricCard label="Bending stress" value={formatStress(result.bendingStress)} tone="orange" />
-            <CalculatorMetricCard label="von Mises stress" value={formatStress(result.vonMisesStress)} tone="red" />
+            <CalculatorMetricCard
+              label="Hoop stress"
+              numericValue={fromBase(result.hoopStress, "stress", stressUnit)}
+              unit={stressUnit}
+              tone="purple"
+            />
+            <CalculatorMetricCard
+              label="Axial stress"
+              numericValue={fromBase(result.axialStress, "stress", stressUnit)}
+              unit={stressUnit}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Bending stress"
+              numericValue={fromBase(result.bendingStress, "stress", stressUnit)}
+              unit={stressUnit}
+              tone="orange"
+            />
+            <CalculatorMetricCard
+              label="von Mises stress"
+              numericValue={fromBase(result.vonMisesStress, "stress", stressUnit)}
+              unit={stressUnit}
+              tone="red"
+            />
           </CalculatorMetricGrid>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Safety factor"
               numericValue={result.safetyFactor}
+              unit="—"
               tone={result.safetyFactor >= 2 ? "green" : result.safetyFactor >= 1 ? "orange" : "red"}
             />
             <CalculatorMetricCard
               label="Max deflection (indicative)"
-              value={formatEngineeringValue(fromBase(result.maxDeflection, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.maxDeflection, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
           </CalculatorMetricGrid>

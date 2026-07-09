@@ -41,7 +41,8 @@ export default function FormulaReferenceResults({ result }: Props) {
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Result"
-            value={formatEngineeringValue(result.result, result.unit)}
+            numericValue={result.result}
+            unit={result.unit}
             tone="green"
             size="lg"
           />

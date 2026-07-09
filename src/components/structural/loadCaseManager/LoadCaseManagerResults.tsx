@@ -34,17 +34,17 @@ export default function LoadCaseManagerResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Envelope axial force"
-              value={formatEngineeringValue(result.envelopeAxial, "N")}
+              numericValue={result.envelopeAxial} unit="N"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Envelope bending moment"
-              value={formatEngineeringValue(result.envelopeMoment, "N·m")}
+              numericValue={result.envelopeMoment} unit="N·m"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Combined stress"
-              value={formatEngineeringValue(result.combinedStress, "MPa")}
+              numericValue={result.combinedStress} unit="MPa"
               tone="purple"
             />
           </CalculatorMetricGrid>

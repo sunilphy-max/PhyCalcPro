@@ -38,60 +38,60 @@ export default function CompositeResults({ result, stressUnit, densityUnit }: Pr
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Fiber volume fraction"
-              value={formatEngineeringValue(result.fiberVolumeFraction * 100, "%")}
+              numericValue={result.fiberVolumeFraction * 100} unit="%"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Matrix volume fraction"
-              value={formatEngineeringValue(result.matrixVolumeFraction * 100, "%")}
+              numericValue={result.matrixVolumeFraction * 100} unit="%"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Density"
-              value={formatEngineeringValue(fromBase(result.density, "density", densityUnit), densityUnit)}
+              numericValue={fromBase(result.density, "density", densityUnit)} unit={densityUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Poisson's ratio"
-              numericValue={result.poissonRatio}
+              numericValue={result.poissonRatio} unit="—"
               tone="purple"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Longitudinal modulus"
-              value={formatEngineeringValue(fromBase(result.E_longitudinal, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.E_longitudinal, "stress", stressUnit)} unit={stressUnit}
               tone="green"
             />
             <CalculatorMetricCard
               label="Transverse modulus"
-              value={formatEngineeringValue(fromBase(result.E_transverse, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.E_transverse, "stress", stressUnit)} unit={stressUnit}
               tone="green"
             />
             <CalculatorMetricCard
               label="Longitudinal strength"
-              value={formatEngineeringValue(fromBase(result.strength_longitudinal, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.strength_longitudinal, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Transverse strength"
-              value={formatEngineeringValue(fromBase(result.strength_transverse, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.strength_transverse, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Modulus at ply angle"
-              value={formatEngineeringValue(fromBase(result.E_atPlyAngle, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.E_atPlyAngle, "stress", stressUnit)} unit={stressUnit}
               tone="green"
             />
             <CalculatorMetricCard
               label="Tsai-Hill utilization"
-              numericValue={result.tsaiHillUtilization}
+              numericValue={result.tsaiHillUtilization} unit="—"
               tone={result.tsaiHillUtilization > 1 ? "red" : "green"}
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Stiffness ratio vs matrix"
-            numericValue={result.stiffnessRatio}
+            numericValue={result.stiffnessRatio} unit="—"
             tone="red"
             size="lg"
           />

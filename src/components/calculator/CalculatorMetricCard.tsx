@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
+import { useResultsTableMetricRegistration, useResultsTableOptional } from "./ResultsTableContext";
 
 export type MetricTone =
   | "default"
@@ -19,6 +20,8 @@ type Props = {
   value?: ReactNode;
   /** When set, value is auto-formatted (scientific for large/small magnitudes). */
   numericValue?: number | null;
+  /** Display unit in the results table unit column. */
+  unit?: string;
   tone?: MetricTone;
   status?: MetricStatus;
   size?: "sm" | "lg";
@@ -53,15 +56,30 @@ const statusStyles: Record<
   },
 };
 
+/** Registers a row in the unified results table when inside CalculatorResultsPanel. */
 export default function CalculatorMetricCard({
   label,
   value,
   numericValue,
+  unit,
   tone = "default",
   status,
   size = "sm",
   className = "",
 }: Props) {
+  const tableContext = useResultsTableOptional();
+
+  useResultsTableMetricRegistration({
+    label,
+    value,
+    numericValue,
+    unit,
+    tone,
+    status,
+  });
+
+  if (tableContext) return null;
+
   const cardStyle = status
     ? statusStyles[status].card
     : "border-slate-200/70 bg-gradient-to-br from-slate-50/90 to-white dark:border-slate-700/60 dark:from-slate-800/40 dark:to-slate-900/30";
@@ -76,7 +94,7 @@ export default function CalculatorMetricCard({
 
   return (
     <div
-      className={`min-w-0 rounded-xl border p-4 shadow-sm transition hover:shadow-md ${cardStyle} ${className}`.trim()}
+      className={`min-w-0 rounded-xl border p-4 shadow-sm ${cardStyle} ${className}`.trim()}
     >
       <div className="mb-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
         {label}
@@ -85,6 +103,7 @@ export default function CalculatorMetricCard({
         className={`break-all font-semibold tabular-nums leading-tight ${valueSize} ${valueStyle}`}
       >
         {display}
+        {unit ? ` ${unit}` : null}
       </div>
     </div>
   );

@@ -1,30 +1,23 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useResultsTableSectionRegistration } from "./ResultsTableContext";
 
 type Props = {
   children: ReactNode;
   cols?: 2 | 3 | 4;
   className?: string;
+  /** Optional section heading row in the unified results table. */
+  section?: string;
 };
 
-/** Container-query columns — viewport breakpoints ignore sidebar + input column width. */
-const colClass: Record<2 | 3 | 4, string> = {
-  2: "@results/sm:grid-cols-2",
-  3: "@results/sm:grid-cols-2 @results/3xl:grid-cols-3",
-  4: "@results/sm:grid-cols-2 @results/3xl:grid-cols-3 @results/5xl:grid-cols-4",
-};
-
+/** Groups metrics for the unified results table; renders no layout chrome. */
 export default function CalculatorMetricGrid({
   children,
-  cols = 4,
+  section,
   className = "",
 }: Props) {
-  return (
-    <div
-      className={`grid min-w-0 grid-cols-1 gap-4 ${colClass[cols]} ${className}`.trim()}
-    >
-      {children}
-    </div>
-  );
+  useResultsTableSectionRegistration(section);
+
+  return <div className={`contents ${className}`.trim()}>{children}</div>;
 }

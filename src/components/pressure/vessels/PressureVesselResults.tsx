@@ -102,19 +102,19 @@ export default function PressureVesselResults({ result }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Max radial displacement"
-              value={formatEngineeringValue(result.maxRadialDisplacement, "m")}
+              numericValue={result.maxRadialDisplacement} unit="m"
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max hoop stress"
-              value={formatEngineeringValue(result.maxHoopStress, "Pa")}
+              numericValue={result.maxHoopStress} unit="Pa"
               tone="orange"
               size="lg"
             />
             <CalculatorMetricCard
               label="Internal pressure"
-              value={formatEngineeringValue(result.pressure, "Pa")}
+              numericValue={result.pressure} unit="Pa"
               tone="purple"
               size="lg"
             />

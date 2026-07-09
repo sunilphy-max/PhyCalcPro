@@ -50,15 +50,15 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Diameter"
-              value={formatEngineeringValue(fromBase(result.rivetDiameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.rivetDiameter, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Plate thickness"
-              value={formatEngineeringValue(fromBase(result.plateThickness, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.plateThickness, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
-            <CalculatorMetricCard label="Quantity" numericValue={result.quantity} tone="blue" />
+            <CalculatorMetricCard label="Quantity" numericValue={result.quantity} unit="—" tone="blue" />
             <CalculatorMetricCard
               label="Rivet type"
               value={result.rivetType.replace("_", " ")}
@@ -69,22 +69,22 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Shear stress"
-              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.shearStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Axial stress"
-              value={formatEngineeringValue(fromBase(result.axialStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.axialStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Bearing stress"
-              value={formatEngineeringValue(fromBase(result.bearingStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.bearingStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Von Mises stress"
-              value={formatEngineeringValue(fromBase(result.vonMisesStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.vonMisesStress, "stress", stressUnit)} unit={stressUnit}
               tone="red"
               size="lg"
             />
@@ -93,18 +93,18 @@ export default function RivetResults({ result, lengthUnit, forceUnit, stressUnit
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Overall safety factor"
-              numericValue={result.safetyFactorOverall}
+              numericValue={result.safetyFactorOverall} unit="—"
               tone={safetyTone(result.safetyFactorOverall)}
               size="lg"
             />
             <CalculatorMetricCard
               label="Shear SF"
-              numericValue={result.safetyFactorShear}
+              numericValue={result.safetyFactorShear} unit="—"
               tone={safetyTone(result.safetyFactorShear)}
             />
             <CalculatorMetricCard
               label="Bearing SF"
-              numericValue={result.safetyFactorBearing}
+              numericValue={result.safetyFactorBearing} unit="—"
               tone={safetyTone(result.safetyFactorBearing)}
             />
           </CalculatorMetricGrid>

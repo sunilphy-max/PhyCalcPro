@@ -41,40 +41,40 @@ export default function BevelGearsResults({ result, lengthUnit, stressUnit }: Pr
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Gear teeth"
-              value={formatDisplayNumber(result.gearTeeth)}
+              numericValue={result.gearTeeth} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Pinion pitch diameter"
-              value={formatEngineeringValue(fromBase(result.pitchDiameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.pitchDiameter, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Tangential force"
-              value={formatEngineeringValue(result.tangentialForce, "N")}
+              numericValue={result.tangentialForce} unit="N"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Bending stress"
-              value={formatEngineeringValue(fromBase(result.bendingStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.bendingStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Contact stress"
-            value={formatEngineeringValue(fromBase(result.contactStress, "stress", stressUnit), stressUnit)}
+            numericValue={fromBase(result.contactStress, "stress", stressUnit)} unit={stressUnit}
             tone="orange"
             size="lg"
           />
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Bending safety"
-              numericValue={result.bendingSafety}
+              numericValue={result.bendingSafety} unit="—"
               tone={result.bendingSafety >= 1.5 ? "green" : result.bendingSafety >= 1 ? "orange" : "red"}
             />
             <CalculatorMetricCard
               label="Contact safety"
-              numericValue={result.contactSafety}
+              numericValue={result.contactSafety} unit="—"
               tone={result.contactSafety >= 1.5 ? "green" : result.contactSafety >= 1 ? "orange" : "red"}
             />
           </CalculatorMetricGrid>

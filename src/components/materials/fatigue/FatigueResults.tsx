@@ -117,7 +117,7 @@ export default function FatigueResults({ result, alternatingUnit, chartInputs }:
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Allowable alternating stress"
-              value={formatEngineeringValue(result.allowableStress, alternatingUnit)}
+              numericValue={result.allowableStress} unit={alternatingUnit}
               tone="blue"
               size="lg"
             />
@@ -131,12 +131,12 @@ export default function FatigueResults({ result, alternatingUnit, chartInputs }:
               tone="purple"
               size="lg"
             />
-            <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} tone="orange" size="lg" />
+            <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} unit="—" tone="orange" size="lg" />
           </CalculatorMetricGrid>
           <CalculatorMetricGrid cols={3}>
-            <CalculatorMetricCard label="Surface factor ka" numericValue={result.surfaceFactor} tone="blue" />
-            <CalculatorMetricCard label="Size factor kb" numericValue={result.sizeFactor} tone="blue" />
-            <CalculatorMetricCard label="Load factor kc" numericValue={result.loadFactor} tone="blue" />
+            <CalculatorMetricCard label="Surface factor ka" numericValue={result.surfaceFactor} unit="—" tone="blue" />
+            <CalculatorMetricCard label="Size factor kb" numericValue={result.sizeFactor} unit="—" tone="blue" />
+            <CalculatorMetricCard label="Load factor kc" numericValue={result.loadFactor} unit="—" tone="blue" />
           </CalculatorMetricGrid>
           <CalculatorMetricCard label="Design status" value={result.designStatus} status={status} size="lg" />
           {plotTabs.length > 0 ? (

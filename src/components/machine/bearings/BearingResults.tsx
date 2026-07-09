@@ -195,18 +195,18 @@ export default function BearingResults({
         <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
         <CalculatorMetricCard
           label="Equivalent load P"
-          value={`${formatDisplayNumber(fromBase(result.equivalentLoad, "force", loadUnit))} ${loadUnit}`}
+          numericValue={fromBase(result.equivalentLoad, "force", loadUnit)} unit={loadUnit}
           tone="orange"
         />
         <CalculatorMetricCard
           label={`Basic L10 life (a1=${result.a1})`}
-          value={`${formatDisplayNumber(result.expectedLife)} h`}
+          numericValue={result.expectedLife} unit="h"
           tone="blue"
           size="lg"
         />
         <CalculatorMetricCard
           label="Modified life Lnm"
-          value={`${formatDisplayNumber(result.modifiedLife)} h`}
+          numericValue={result.modifiedLife} unit="h"
           tone="purple"
         />
       </CalculatorMetricGrid>
@@ -214,12 +214,12 @@ export default function BearingResults({
       <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Dynamic utilization P/C"
-              numericValue={result.dynamicUtilization}
+              numericValue={result.dynamicUtilization} unit="—"
               status={utilizationStatus(result.dynamicUtilization, 1, false)}
             />
             <CalculatorMetricCard
               label="Static safety s₀ = C₀/P₀"
-              numericValue={result.staticSafetyFactor}
+              numericValue={result.staticSafetyFactor} unit="—"
               status={utilizationStatus(result.staticSafetyFactor, 1, true)}
             />
             <CalculatorMetricCard
@@ -231,15 +231,15 @@ export default function BearingResults({
             />
             <CalculatorMetricCard
               label="Life utilization L_req/L10"
-              numericValue={result.lifeUtilization}
+              numericValue={result.lifeUtilization} unit="—"
               status={utilizationStatus(result.lifeUtilization, 1, false)}
             />
           </CalculatorMetricGrid>
 
           <CalculatorMetricGrid cols={4}>
-            <CalculatorMetricCard label="Viscosity ratio κ" numericValue={result.modifiedLifeFactors.kappa} tone="purple" />
+            <CalculatorMetricCard label="Viscosity ratio κ" numericValue={result.modifiedLifeFactors.kappa} unit="—" tone="purple" />
             <CalculatorMetricCard label="Contamination eC" numericValue={result.modifiedLifeFactors.eC} />
-            <CalculatorMetricCard label="Life factor aISO" numericValue={result.aIso} tone="blue" />
+            <CalculatorMetricCard label="Life factor aISO" numericValue={result.aIso} unit="—" tone="blue" />
             <CalculatorMetricCard
               label="Pu / P"
               numericValue={result.modifiedLifeFactors.puOverP}
@@ -249,17 +249,17 @@ export default function BearingResults({
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Minimum radial load"
-              value={`${formatDisplayNumber(fromBase(result.minimumRadialLoadN, "force", loadUnit))} ${loadUnit}`}
+              numericValue={fromBase(result.minimumRadialLoadN, "force", loadUnit)} unit={loadUnit}
               status={result.minLoadSatisfied ? "safe" : "danger"}
             />
             <CalculatorMetricCard
               label="Friction torque"
-              value={formatEngineeringValue(result.frictionTorqueNm, "N·m", { digits: 4 })}
+              numericValue={result.frictionTorqueNm} unit="N·m"
             />
-            <CalculatorMetricCard label="Power loss" value={formatEngineeringValue(result.powerLossW, "W")} />
+            <CalculatorMetricCard label="Power loss" numericValue={result.powerLossW} unit="W" />
             <CalculatorMetricCard
               label="Temp. derating on C"
-              value={`${(result.temperatureDeratingFactor * 100).toFixed(1)}%`}
+              numericValue={Number((result.temperatureDeratingFactor ) * 100)} unit="%"
             />
           </CalculatorMetricGrid>
 
@@ -277,7 +277,7 @@ export default function BearingResults({
               />
               <CalculatorMetricCard
                 label="Est. operating clearance"
-                value={`${result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0)} µm`}
+                numericValue={Number(result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0))} unit="µm"
               />
             </CalculatorMetricGrid>
           ) : null}
@@ -299,7 +299,7 @@ export default function BearingResults({
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Required dynamic C"
-              value={`${formatDisplayNumber(fromBase(result.requiredDynamicRating, "force", loadUnit))} ${loadUnit}`}
+              numericValue={fromBase(result.requiredDynamicRating, "force", loadUnit)} unit={loadUnit}
               tone="amber"
             />
             <CalculatorMetricCard

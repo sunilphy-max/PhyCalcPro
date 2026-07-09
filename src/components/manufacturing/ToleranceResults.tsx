@@ -1,7 +1,6 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { ToleranceResult } from "@/lib/manufacturing/types";
 
 type Props = {
@@ -9,10 +8,11 @@ type Props = {
   displayUnit: string;
 };
 
-export default function ToleranceResults({ result, displayUnit }: Props) {
-  const format = (value: number | undefined) =>
-    value === undefined ? "—" : formatEngineeringValue(value, displayUnit);
+function metricValue(value: number | undefined) {
+  return value === undefined ? undefined : value;
+}
 
+export default function ToleranceResults({ result, displayUnit }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="tolerance"
@@ -40,32 +40,82 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
         <>
           <p className="text-sm text-slate-500">Computed from {result.count} X-axis tolerance elements.</p>
           <CalculatorMetricGrid cols={2}>
-            <CalculatorMetricCard label="Worst-case (X)" value={format(result.worstCase)} tone="orange" />
-            <CalculatorMetricCard label="RSS (X)" value={format(result.rss)} tone="blue" />
+            <CalculatorMetricCard
+              label="Worst-case (X)"
+              numericValue={metricValue(result.worstCase)}
+              unit={displayUnit}
+              tone="orange"
+            />
+            <CalculatorMetricCard label="RSS (X)" numericValue={metricValue(result.rss)} unit={displayUnit} tone="blue" />
             {result.worstCaseY !== undefined ? (
               <>
-                <CalculatorMetricCard label="Worst-case (Y)" value={format(result.worstCaseY)} tone="orange" />
-                <CalculatorMetricCard label="RSS (Y)" value={format(result.rssY)} tone="blue" />
+                <CalculatorMetricCard
+                  label="Worst-case (Y)"
+                  numericValue={metricValue(result.worstCaseY)}
+                  unit={displayUnit}
+                  tone="orange"
+                />
+                <CalculatorMetricCard
+                  label="RSS (Y)"
+                  numericValue={metricValue(result.rssY)}
+                  unit={displayUnit}
+                  tone="blue"
+                />
               </>
             ) : null}
             {result.worstCaseZ !== undefined ? (
               <>
-                <CalculatorMetricCard label="Worst-case (Z)" value={format(result.worstCaseZ)} tone="orange" />
-                <CalculatorMetricCard label="RSS (Z)" value={format(result.rssZ)} tone="blue" />
+                <CalculatorMetricCard
+                  label="Worst-case (Z)"
+                  numericValue={metricValue(result.worstCaseZ)}
+                  unit={displayUnit}
+                  tone="orange"
+                />
+                <CalculatorMetricCard
+                  label="RSS (Z)"
+                  numericValue={metricValue(result.rssZ)}
+                  unit={displayUnit}
+                  tone="blue"
+                />
               </>
             ) : null}
           </CalculatorMetricGrid>
           {result.worstCase3d !== undefined ? (
             <CalculatorMetricGrid cols={2}>
-              <CalculatorMetricCard label="3D worst-case magnitude" value={format(result.worstCase3d)} tone="red" />
-              <CalculatorMetricCard label="3D RSS magnitude" value={format(result.rss3d)} tone="purple" />
+              <CalculatorMetricCard
+                label="3D worst-case magnitude"
+                numericValue={metricValue(result.worstCase3d)}
+                unit={displayUnit}
+                tone="red"
+              />
+              <CalculatorMetricCard
+                label="3D RSS magnitude"
+                numericValue={metricValue(result.rss3d)}
+                unit={displayUnit}
+                tone="purple"
+              />
             </CalculatorMetricGrid>
           ) : null}
-          <CalculatorMetricCard label="Total absolute (X)" value={format(result.totalTolerance)} tone="purple" />
+          <CalculatorMetricCard
+            label="Total absolute (X)"
+            numericValue={metricValue(result.totalTolerance)}
+            unit={displayUnit}
+            tone="purple"
+          />
           {result.monteCarloMean !== undefined ? (
             <CalculatorMetricGrid cols={2}>
-              <CalculatorMetricCard label="Monte Carlo mean (3D mag.)" value={format(result.monteCarloMean)} tone="blue" />
-              <CalculatorMetricCard label="Monte Carlo σ" value={format(result.monteCarloStdDev)} tone="blue" />
+              <CalculatorMetricCard
+                label="Monte Carlo mean (3D mag.)"
+                numericValue={metricValue(result.monteCarloMean)}
+                unit={displayUnit}
+                tone="blue"
+              />
+              <CalculatorMetricCard
+                label="Monte Carlo σ"
+                numericValue={metricValue(result.monteCarloStdDev)}
+                unit={displayUnit}
+                tone="blue"
+              />
             </CalculatorMetricGrid>
           ) : null}
         </>

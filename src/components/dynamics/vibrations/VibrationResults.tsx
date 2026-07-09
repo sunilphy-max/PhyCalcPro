@@ -120,20 +120,20 @@ export default function VibrationResults({ result }: Props) {
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="1st natural frequency"
-              value={formatEngineeringValue(result.frequencies[0], "Hz")}
+              numericValue={result.frequencies[0]} unit="Hz"
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label={`1st damped (ζ=${result.dampingRatio})`}
-              value={formatEngineeringValue(result.dampedNaturalFrequencies[0] ?? 0, "Hz")}
+              numericValue={result.dampedNaturalFrequencies[0] ?? 0} unit="Hz"
               tone="green"
               size="lg"
             />
-            <CalculatorMetricCard label="Mesh segments" numericValue={result.segments} tone="purple" size="lg" />
+            <CalculatorMetricCard label="Mesh segments" numericValue={result.segments} unit="—" tone="purple" size="lg" />
             <CalculatorMetricCard
               label="Beam length"
-              value={formatEngineeringValue(result.length, "m")}
+              numericValue={result.length} unit="m"
               tone="orange"
               size="lg"
             />
@@ -143,7 +143,7 @@ export default function VibrationResults({ result }: Props) {
               <CalculatorMetricCard
                 key={index}
                 label={`Mode ${index + 1}`}
-                value={formatEngineeringValue(freq, "Hz")}
+                numericValue={freq} unit="Hz"
                 tone={index === 0 ? "blue" : index === 1 ? "purple" : "green"}
               />
             ))}

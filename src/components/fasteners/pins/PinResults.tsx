@@ -3,7 +3,6 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import type { PinResult } from "@/lib/fasteners/pins/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: (PinResult & { calculationSpec?: CalculationSpec }) | null;
@@ -39,32 +38,32 @@ export default function PinResults({ result, stressUnit }: Props) {
       }
     >
       {result ? (
-        <>
-          <CalculatorMetricGrid cols={2}>
-            <CalculatorMetricCard
-              label="Shear stress"
-              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
-              tone="blue"
-            />
-            <CalculatorMetricCard
-              label="Bearing stress"
-              value={formatEngineeringValue(fromBase(result.bearingStress, "stress", stressUnit), stressUnit)}
-              tone="blue"
-            />
-          </CalculatorMetricGrid>
+        <CalculatorMetricGrid section="Stress & safety">
+          <CalculatorMetricCard
+            label="Shear stress"
+            numericValue={fromBase(result.shearStress, "stress", stressUnit)}
+            unit={stressUnit}
+            tone="blue"
+          />
+          <CalculatorMetricCard
+            label="Bearing stress"
+            numericValue={fromBase(result.bearingStress, "stress", stressUnit)}
+            unit={stressUnit}
+            tone="blue"
+          />
           <CalculatorMetricCard
             label="Shear safety factor"
             numericValue={result.shearSafety}
+            unit="—"
             tone={safetyTone(result.shearSafety)}
-            size="lg"
           />
           <CalculatorMetricCard
             label="Bearing safety factor"
             numericValue={result.bearingSafety}
+            unit="—"
             tone={safetyTone(result.bearingSafety)}
-            size="lg"
           />
-        </>
+        </CalculatorMetricGrid>
       ) : null}
     </CalculatorResultsShell>
   );

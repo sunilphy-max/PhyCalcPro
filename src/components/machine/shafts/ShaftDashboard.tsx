@@ -189,7 +189,7 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
           value={result.isSafe ? "Safe" : "Check required"}
           status={status}
         />
-        <CalculatorMetricCard label="Static safety factor" numericValue={result.safetyFactor} tone="blue" />
+        <CalculatorMetricCard label="Static safety factor" numericValue={result.safetyFactor} unit="—" tone="blue" />
         <CalculatorMetricCard
           label="Governing check"
           value={result.governingFailureMode}
@@ -197,7 +197,8 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
         />
         <CalculatorMetricCard
           label="Critical section"
-          value={`@ ${formatEngineeringValue(result.criticalSection, lengthUnit)}`}
+          numericValue={result.criticalSection}
+          unit={lengthUnit}
           tone="purple"
         />
       </CalculatorMetricGrid>
@@ -205,7 +206,7 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Max von Mises stress"
-          value={formatEngineeringValue(result.maxStress, "Pa")}
+          numericValue={result.maxStress} unit="Pa"
           tone="red"
         />
         <CalculatorMetricCard
@@ -219,7 +220,7 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
         />
         <CalculatorMetricCard
           label="1st critical speed"
-          value={`${result.criticalSpeed.toFixed(0)} RPM`}
+          numericValue={Number(result.criticalSpeed.toFixed(0))} unit="RPM"
           tone="blue"
         />
         <CalculatorMetricCard
@@ -246,19 +247,20 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Max deflection"
-          value={formatEngineeringValue(result.maxDeflection, lengthUnit)}
+          numericValue={result.maxDeflection} unit={lengthUnit}
         />
         <CalculatorMetricCard
           label="Deflection utilization"
-          value={`${(result.deflectionUtilization * 100).toFixed(0)}%`}
+          numericValue={Number((result.deflectionUtilization ) * 100)} unit="%"
         />
         <CalculatorMetricCard
           label="Max bearing slope"
-          value={`${formatDisplayNumber((result.maxSlope || 0) * 1000)} mrad`}
+          numericValue={(result.maxSlope || 0) * 1000}
+          unit="mrad"
         />
         <CalculatorMetricCard
           label="Slope utilization"
-          value={`${(result.slopeUtilization * 100).toFixed(0)}%`}
+          numericValue={Number((result.slopeUtilization ) * 100)} unit="%"
         />
       </CalculatorMetricGrid>
 

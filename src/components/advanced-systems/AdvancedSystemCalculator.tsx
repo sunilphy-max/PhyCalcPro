@@ -12,7 +12,6 @@ import {
 import CalculatorExportButton from "@/components/calculator/CalculatorExportButton";
 import { calculatorPanelClass, calculatorPrimaryButtonClass } from "@/components/calculator/styles";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import { metricsModuleQuality } from "@/lib/calculator/qualityOverrides";
 import {
   getAdvancedSystemCalculator,
@@ -43,8 +42,9 @@ function buildInitialValues(fields: ReturnType<typeof getAdvancedSystemCalculato
 function MetricCard({ metric }: { metric: AdvancedMetric }) {
   return (
     <CalculatorMetricCard
-      label={`${metric.label} (${metric.unit})`}
-      value={formatEngineeringValue(metric.value, metric.unit, { useExponential: true })}
+      label={metric.label}
+      numericValue={metric.value}
+      unit={metric.unit}
       tone={metric.tone ?? "blue"}
     />
   );

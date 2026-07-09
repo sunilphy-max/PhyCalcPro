@@ -43,17 +43,17 @@ export default function PlanetaryGearsResults({ result, lengthUnit, targetRatio 
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Ring teeth"
-              value={formatDisplayNumber(result.ringTeeth)}
+              numericValue={result.ringTeeth} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Actual ratio"
-              value={formatDisplayNumber(result.actualRatio)}
+              numericValue={result.actualRatio} unit="—"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Planet count"
-              value={formatDisplayNumber(result.planetCount)}
+              numericValue={result.planetCount} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
@@ -65,17 +65,17 @@ export default function PlanetaryGearsResults({ result, lengthUnit, targetRatio 
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Sun pitch diameter"
-              value={formatEngineeringValue(fromBase(result.sunDiameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.sunDiameter, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Planet pitch diameter"
-              value={formatEngineeringValue(fromBase(result.planetDiameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.planetDiameter, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Ring pitch diameter"
-              value={formatEngineeringValue(fromBase(result.ringDiameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.ringDiameter, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
           </CalculatorMetricGrid>

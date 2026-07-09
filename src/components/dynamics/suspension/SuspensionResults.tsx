@@ -34,17 +34,17 @@ export default function SuspensionResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Lateral force"
-              value={formatEngineeringValue(result.lateralForce, "N")}
+              numericValue={result.lateralForce} unit="N"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Roll moment"
-              value={formatEngineeringValue(result.rollMoment, "N·m")}
+              numericValue={result.rollMoment} unit="N·m"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Roll angle"
-              value={formatEngineeringValue(result.rollAngleDegrees, "°")}
+              numericValue={result.rollAngleDegrees} unit="°"
               tone="orange"
             />
           </CalculatorMetricGrid>

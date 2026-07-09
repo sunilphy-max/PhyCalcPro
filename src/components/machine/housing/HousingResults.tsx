@@ -34,28 +34,28 @@ export default function HousingResults({ result }: Props) {
         <CalculatorMetricGrid cols={2}>
           <CalculatorMetricCard
             label="Body safety factor"
-            numericValue={result.bodySafetyFactor}
+            numericValue={result.bodySafetyFactor} unit="—"
             tone={result.designStatus === "safe" ? "green" : result.designStatus === "warning" ? "orange" : "red"}
           />
           <CalculatorMetricCard label="Recommended bolt" value={result.recommendedBoltSize} tone="blue" />
           <CalculatorMetricCard
             label="Bolt tension / bolt"
-            value={formatEngineeringValue(result.boltTensionPerBolt, "N")}
+            numericValue={result.boltTensionPerBolt} unit="N"
             tone="purple"
           />
           <CalculatorMetricCard
             label="Bolt shear / bolt"
-            value={formatEngineeringValue(result.boltShearPerBolt, "N")}
+            numericValue={result.boltShearPerBolt} unit="N"
             tone="purple"
           />
           <CalculatorMetricCard
             label="Body stress"
-            value={formatEngineeringValue(result.bodyStress / 1e6, "MPa")}
+            numericValue={result.bodyStress / 1e6} unit="MPa"
             tone="blue"
           />
           <CalculatorMetricCard
             label="Housing deflection"
-            value={formatEngineeringValue(result.housingDeflection * 1000, "mm")}
+            numericValue={result.housingDeflection * 1000} unit="mm"
             tone="blue"
           />
           <CalculatorMetricCard
@@ -70,7 +70,7 @@ export default function HousingResults({ result }: Props) {
           />
           <CalculatorMetricCard
             label="Est. operating clearance"
-            value={`${result.estimatedOperatingClearanceUm.toFixed(0)} µm`}
+            numericValue={Number(result.estimatedOperatingClearanceUm.toFixed(0))} unit="µm"
           />
         </CalculatorMetricGrid>
       ) : null}

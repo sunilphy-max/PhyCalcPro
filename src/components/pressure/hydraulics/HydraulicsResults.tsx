@@ -40,32 +40,32 @@ export default function HydraulicsResults({ result, lengthUnit, pressureUnit, fo
         <CalculatorMetricGrid cols={2}>
           <CalculatorMetricCard
             label="Extend force"
-            value={`${formatDisplayNumber(fromBase(result.extendForce, "force", forceUnit))} ${forceUnit}`}
+            numericValue={fromBase(result.extendForce, "force", forceUnit)} unit={forceUnit}
             tone="blue"
           />
           <CalculatorMetricCard
             label="Retract force"
-            value={`${formatDisplayNumber(fromBase(result.retractForce, "force", forceUnit))} ${forceUnit}`}
+            numericValue={fromBase(result.retractForce, "force", forceUnit)} unit={forceUnit}
             tone="blue"
           />
           <CalculatorMetricCard
             label="Required pressure"
-            value={`${formatDisplayNumber(fromBase(result.requiredPressure, "pressure", pressureUnit))} ${pressureUnit}`}
+            numericValue={fromBase(result.requiredPressure, "pressure", pressureUnit)} unit={pressureUnit}
             tone="default"
           />
           <CalculatorMetricCard
             label="Rod stress"
-            value={formatEngineeringValue(fromBase(result.rodStress, "stress", pressureUnit), pressureUnit)}
+            numericValue={fromBase(result.rodStress, "stress", pressureUnit)} unit={pressureUnit}
             tone={utilTone}
           />
           <CalculatorMetricCard
             label="Pressure utilization"
-            numericValue={result.pressureUtilization}
+            numericValue={result.pressureUtilization} unit="—"
             tone={utilTone}
           />
           <CalculatorMetricCard
             label="Fluid volume"
-            value={formatEngineeringValue(result.fluidVolume, "m³")}
+            numericValue={result.fluidVolume} unit="m³"
             tone="default"
           />
         </CalculatorMetricGrid>

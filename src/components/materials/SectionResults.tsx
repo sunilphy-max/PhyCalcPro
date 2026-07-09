@@ -46,22 +46,22 @@ export default function SectionResults({ result, linearUnit, areaUnit, inertiaUn
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Area"
-              value={formatEngineeringValue(result.area, areaUnit)}
+              numericValue={result.area} unit={areaUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Centroid Y"
-              value={formatEngineeringValue(result.centroidY, linearUnit)}
+              numericValue={result.centroidY} unit={linearUnit}
               tone="green"
             />
             <CalculatorMetricCard
               label="Ixx"
-              value={formatEngineeringValue(result.Ixx, inertiaUnit)}
+              numericValue={result.Ixx} unit={inertiaUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Iyy"
-              value={formatEngineeringValue(result.Iyy, inertiaUnit)}
+              numericValue={result.Iyy} unit={inertiaUnit}
               tone="orange"
             />
           </CalculatorMetricGrid>

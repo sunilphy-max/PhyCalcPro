@@ -35,12 +35,13 @@ export default function UnitConverterResults({ result, inputValue, fromUnit }: P
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Input"
-              value={formatEngineeringValue(inputValue, fromUnit)}
+              numericValue={inputValue} unit={fromUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Converted"
-              value={formatEngineeringValue(result.convertedValue, result.toUnit)}
+              numericValue={result.convertedValue}
+              unit={result.toUnit}
               tone="green"
             />
           </CalculatorMetricGrid>

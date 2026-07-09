@@ -55,17 +55,17 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
             />
             <CalculatorMetricCard
               label="Weld size"
-              value={formatEngineeringValue(fromBase(result.weldSize, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.weldSize, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Throat size"
-              value={formatEngineeringValue(fromBase(result.throatSize, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.throatSize, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Throat area"
-              value={formatEngineeringValue(result.totalThroatArea, "m²")}
+              numericValue={result.totalThroatArea} unit="m²"
               tone="blue"
             />
           </CalculatorMetricGrid>
@@ -73,27 +73,27 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Direct shear"
-              value={formatEngineeringValue(fromBase(result.directShearStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.directShearStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Moment shear"
-              value={formatEngineeringValue(fromBase(result.momentShearStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.momentShearStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Combined shear"
-              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.shearStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Axial stress"
-              value={formatEngineeringValue(fromBase(result.axialStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.axialStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Resultant stress"
-              value={formatEngineeringValue(fromBase(result.resultantStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.resultantStress, "stress", stressUnit)} unit={stressUnit}
               tone="red"
               size="lg"
             />
@@ -102,18 +102,18 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Overall safety factor"
-              numericValue={result.safetyFactorOverall}
+              numericValue={result.safetyFactorOverall} unit="—"
               tone={safetyTone(result.safetyFactorOverall)}
               size="lg"
             />
             <CalculatorMetricCard
               label="Shear SF"
-              numericValue={result.safetyFactorShear}
+              numericValue={result.safetyFactorShear} unit="—"
               tone={safetyTone(result.safetyFactorShear)}
             />
             <CalculatorMetricCard
               label="Axial SF"
-              numericValue={result.safetyFactorAxial}
+              numericValue={result.safetyFactorAxial} unit="—"
               tone={safetyTone(result.safetyFactorAxial)}
             />
           </CalculatorMetricGrid>

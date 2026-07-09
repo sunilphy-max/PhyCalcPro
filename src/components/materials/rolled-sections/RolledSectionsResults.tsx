@@ -49,42 +49,42 @@ export default function RolledSectionsResults({
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Depth"
-              value={formatEngineeringValue(fromBase(result.depth, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.depth, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Flange width"
-              value={formatEngineeringValue(fromBase(result.flangeWidth, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.flangeWidth, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Area"
-              value={formatEngineeringValue(fromBase(result.area, "area", areaUnit), areaUnit)}
+              numericValue={fromBase(result.area, "area", areaUnit)} unit={areaUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Mass per unit length"
-              value={`${formatDisplayNumber(result.weight)} kg/m`}
+              numericValue={result.weight} unit="kg/m"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Ix (strong axis)"
-              value={formatEngineeringValue(fromBase(result.ix, "inertia", inertiaUnit), inertiaUnit)}
+              numericValue={fromBase(result.ix, "inertia", inertiaUnit)} unit={inertiaUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Iy (weak axis)"
-              value={formatEngineeringValue(fromBase(result.iy, "inertia", inertiaUnit), inertiaUnit)}
+              numericValue={fromBase(result.iy, "inertia", inertiaUnit)} unit={inertiaUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Sx (elastic section modulus)"
-              value={formatEngineeringValue(result.sx, "m³")}
+              numericValue={result.sx} unit="m³"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Sy (elastic section modulus)"
-              value={formatEngineeringValue(result.sy, "m³")}
+              numericValue={result.sy} unit="m³"
               tone="purple"
             />
           </CalculatorMetricGrid>

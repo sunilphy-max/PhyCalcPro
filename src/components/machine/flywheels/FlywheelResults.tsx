@@ -45,45 +45,45 @@ export default function FlywheelResults({ result, lengthUnit, densityUnit, stres
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Outer diameter"
-              value={formatEngineeringValue(fromBase(result.outerDiameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.outerDiameter, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Thickness"
-              value={formatEngineeringValue(fromBase(result.thickness, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.thickness, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Mass"
-              value={formatEngineeringValue(result.mass, "kg")}
+              numericValue={result.mass} unit="kg"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Inertia"
-              value={formatEngineeringValue(result.inertia, "kg·m²")}
+              numericValue={result.inertia} unit="kg·m²"
               tone="blue"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Stored energy"
-              value={formatEngineeringValue(result.storedEnergy, "J")}
+              numericValue={result.storedEnergy} unit="J"
               tone="green"
               size="lg"
             />
             <CalculatorMetricCard
               label="Angular speed"
-              value={formatEngineeringValue(result.angularSpeed, "rad/s")}
+              numericValue={result.angularSpeed} unit="rad/s"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Hoop stress"
-              value={formatEngineeringValue(fromBase(result.hoopStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.hoopStress, "stress", stressUnit)} unit={stressUnit}
               tone="red"
             />
             <CalculatorMetricCard
               label="Safety factor"
-              numericValue={result.safetyFactor}
+              numericValue={result.safetyFactor} unit="—"
               tone={safetyTone(result.safetyFactor)}
               size="lg"
             />

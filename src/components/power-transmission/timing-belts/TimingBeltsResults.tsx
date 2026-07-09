@@ -35,33 +35,33 @@ export default function TimingBeltsResults({ result, lengthUnit }: Props) {
       {result ? (
         <>
           <CalculatorMetricGrid cols={2}>
-            <CalculatorMetricCard label="Speed ratio" value={formatDisplayNumber(result.ratio)} tone="purple" />
-            <CalculatorMetricCard label="Driven speed" value={`${formatDisplayNumber(result.drivenSpeed)} rpm`} tone="blue" />
+            <CalculatorMetricCard label="Speed ratio" numericValue={result.ratio} unit="—" tone="purple" />
+            <CalculatorMetricCard label="Driven speed" numericValue={result.drivenSpeed} unit="rpm" tone="blue" />
             <CalculatorMetricCard
               label="Pitch diameter (driver)"
-              value={formatEngineeringValue(fromBase(result.pitchDiameterDriver, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.pitchDiameterDriver, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Pitch diameter (driven)"
-              value={formatEngineeringValue(fromBase(result.pitchDiameterDriven, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.pitchDiameterDriven, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Center distance"
-              value={formatEngineeringValue(fromBase(result.centerDistance, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.centerDistance, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
-            <CalculatorMetricCard label="Belt length (teeth)" value={formatDisplayNumber(result.beltLengthTeeth)} tone="blue" />
+            <CalculatorMetricCard label="Belt length (teeth)" numericValue={result.beltLengthTeeth} unit="—" tone="blue" />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Power utilization"
-            numericValue={result.powerUtilization}
+            numericValue={result.powerUtilization} unit="—"
             tone={result.powerUtilization > 1 ? "red" : "green"}
             size="lg"
           />
-          <CalculatorMetricCard label="Tangential force" value={formatEngineeringValue(result.tangentialForce, "N")} tone="orange" />
-          <CalculatorMetricCard label="Shaft load (est.)" value={formatEngineeringValue(result.shaftLoadEstimate, "N")} tone="orange" />
+          <CalculatorMetricCard label="Tangential force" numericValue={result.tangentialForce} unit="N" tone="orange" />
+          <CalculatorMetricCard label="Shaft load (est.)" numericValue={result.shaftLoadEstimate} unit="N" tone="orange" />
         </>
       ) : null}
     </CalculatorResultsShell>

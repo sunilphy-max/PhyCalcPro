@@ -100,10 +100,10 @@ export default function ExtensionSpringResults({ result, lengthUnit, stressUnit,
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard label="Status" value={result.isSafe ? "Pass" : "Check"} status={status} />
             <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
-            <CalculatorMetricCard label="Spring rate" value={formatEngineeringValue(result.springRate, "N/m")} tone="blue" />
+            <CalculatorMetricCard label="Spring rate" numericValue={result.springRate} unit="N/m" tone="blue" />
             <CalculatorMetricCard
               label="Initial tension Fi"
-              value={formatEngineeringValue(result.initialTension, "N")}
+              numericValue={result.initialTension} unit="N"
               tone={result.initialTensionValid ? "purple" : "red"}
             />
           </CalculatorMetricGrid>
@@ -111,22 +111,22 @@ export default function ExtensionSpringResults({ result, lengthUnit, stressUnit,
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Force at extension"
-              value={formatEngineeringValue(result.forceAtExtension, "N")}
+              numericValue={result.forceAtExtension} unit="N"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Body SF τ_zul/τ"
-              numericValue={result.bodySafetyFactor}
+              numericValue={result.bodySafetyFactor} unit="—"
               status={result.bodySafetyFactor >= 1.5 ? "safe" : "danger"}
             />
             <CalculatorMetricCard
               label={`Hook SF (${result.hookType})`}
-              numericValue={result.hookSafetyFactor}
+              numericValue={result.hookSafetyFactor} unit="—"
               status={result.hookSafetyFactor >= 1.5 ? "safe" : "danger"}
             />
             <CalculatorMetricCard
               label="Max manufacturable Fi"
-              value={formatEngineeringValue(result.maxInitialTension, "N")}
+              numericValue={result.maxInitialTension} unit="N"
               tone="blue"
             />
           </CalculatorMetricGrid>
@@ -134,17 +134,17 @@ export default function ExtensionSpringResults({ result, lengthUnit, stressUnit,
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Extended length"
-              value={formatEngineeringValue(fromBase(result.extendedLength, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.extendedLength, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Coil bind length"
-              value={formatEngineeringValue(fromBase(result.coilBindLength, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.coilBindLength, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Surge frequency"
-              value={`${formatDisplayNumber(result.naturalFrequency)} Hz`}
+              numericValue={result.naturalFrequency} unit="Hz"
               tone="blue"
             />
           </CalculatorMetricGrid>
@@ -153,12 +153,12 @@ export default function ExtensionSpringResults({ result, lengthUnit, stressUnit,
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label={`Body fatigue SF (${result.lifeClass ?? "VL"})`}
-                numericValue={result.fatigueSafetyFactor}
+                numericValue={result.fatigueSafetyFactor} unit="—"
                 status={result.fatiguePass ? "safe" : "danger"}
               />
               <CalculatorMetricCard
                 label="Fatigue utilization"
-                numericValue={result.fatigueUtilization ?? undefined}
+                numericValue={result.fatigueUtilization ?? undefined} unit="—"
                 tone={result.fatiguePass ? "green" : "orange"}
               />
             </CalculatorMetricGrid>

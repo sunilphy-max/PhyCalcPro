@@ -132,12 +132,12 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
             <CalculatorMetricGrid cols={3}>
               <CalculatorMetricCard
                 label="Speed ratio"
-                value={formatDisplayNumber(result.ratio)}
+                numericValue={result.ratio} unit="—"
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Belt speed"
-                value={formatEngineeringValue(result.beltSpeed, "m/s")}
+                numericValue={result.beltSpeed} unit="m/s"
                 tone="blue"
               />
               <CalculatorMetricCard
@@ -149,28 +149,28 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label="Driver pulley"
-                value={`${formatDisplayNumber(fromBase(result.diameterDriver, "length", lengthUnit))} ${lengthUnit}`}
+                numericValue={fromBase(result.diameterDriver, "length", lengthUnit)} unit={lengthUnit}
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Driven pulley"
-                value={`${formatDisplayNumber(fromBase(result.diameterDriven, "length", lengthUnit))} ${lengthUnit}`}
+                numericValue={fromBase(result.diameterDriven, "length", lengthUnit)} unit={lengthUnit}
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Belt length (calc.)"
-                value={`${formatDisplayNumber(fromBase(result.beltLength, "length", lengthUnit))} ${lengthUnit}`}
+                numericValue={fromBase(result.beltLength, "length", lengthUnit)} unit={lengthUnit}
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Nominal belt length"
-                value={`${formatDisplayNumber(result.standardBeltLengthMm)} mm`}
+                numericValue={result.standardBeltLengthMm} unit="mm"
                 tone="blue"
               />
             </CalculatorMetricGrid>
             <CalculatorMetricCard
               label="Driver shaft radial load"
-              value={formatEngineeringValue(result.radialLoadDriver, "N")}
+              numericValue={result.radialLoadDriver} unit="N"
               tone="red"
               size="lg"
             />
@@ -185,34 +185,35 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
               />
               <CalculatorMetricCard
                 label="Service factor"
-                value={formatDisplayNumber(serviceFactor)}
+                numericValue={serviceFactor} unit="—"
                 tone="orange"
               />
               <CalculatorMetricCard
                 label="Wrap angle (driver)"
-                value={`${formatDisplayNumber(result.wrapAngleDriver)}°`}
+                numericValue={result.wrapAngleDriver}
+                unit="°"
                 tone="blue"
               />
             </CalculatorMetricGrid>
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label="Tight side tension (T₁)"
-                value={formatEngineeringValue(result.tightSideTension, "N")}
+                numericValue={result.tightSideTension} unit="N"
                 tone="orange"
               />
               <CalculatorMetricCard
                 label="Slack side tension (T₂)"
-                value={formatEngineeringValue(result.slackSideTension, "N")}
+                numericValue={result.slackSideTension} unit="N"
                 tone="orange"
               />
               <CalculatorMetricCard
                 label="Center distance"
-                value={`${formatDisplayNumber(fromBase(result.centerDistance, "length", lengthUnit))} ${lengthUnit}`}
+                numericValue={fromBase(result.centerDistance, "length", lengthUnit)} unit={lengthUnit}
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Power utilization"
-                value={formatDisplayNumber(result.powerUtilization)}
+                numericValue={result.powerUtilization} unit="—"
                 status={result.powerUtilization > 1 ? "danger" : result.powerUtilization > 0.85 ? "warning" : "safe"}
               />
             </CalculatorMetricGrid>
@@ -222,22 +223,22 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label="Estimated belt life"
-                value={`${formatDisplayNumber(insights?.estimatedBeltLifeHours ?? 0)} h`}
+                numericValue={insights?.estimatedBeltLifeHours ?? 0} unit="h"
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Maintenance interval"
-                value={`${formatDisplayNumber(insights?.maintenanceIntervalHours ?? 0)} h`}
+                numericValue={insights?.maintenanceIntervalHours ?? 0} unit="h"
                 tone="blue"
               />
               <CalculatorMetricCard
                 label="Efficiency loss (screening)"
-                value={`${formatDisplayNumber(insights?.efficiencyLossPercent ?? 0)}%`}
+                numericValue={insights?.efficiencyLossPercent ?? 0} unit="%"
                 tone="orange"
               />
               <CalculatorMetricCard
                 label="Driven shaft load"
-                value={formatEngineeringValue(result.radialLoadDriven, "N")}
+                numericValue={result.radialLoadDriven} unit="N"
                 tone="red"
               />
             </CalculatorMetricGrid>

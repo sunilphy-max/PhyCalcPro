@@ -2,15 +2,10 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { CostEstimatorResult } from "@/lib/manufacturing/costEstimator/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<CostEstimatorResult> | null;
 };
-
-function currency(value: number) {
-  return formatEngineeringValue(value, "USD");
-}
 
 export default function CostEstimatorResults({ result }: Props) {
   return (
@@ -38,41 +33,45 @@ export default function CostEstimatorResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Material mass"
-              value={formatEngineeringValue(result.materialMass, "kg")}
+              numericValue={result.materialMass} unit="kg"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Scrap mass"
-              value={formatEngineeringValue(result.scrapMass, "kg")}
+              numericValue={result.scrapMass} unit="kg"
               tone="blue"
             />
-            <CalculatorMetricCard label="Material cost" value={currency(result.materialCost)} tone="purple" />
-            <CalculatorMetricCard label="Machining cost" value={currency(result.machiningCost)} tone="orange" />
-            <CalculatorMetricCard label="Labor cost" value={currency(result.laborCost)} tone="orange" />
-            <CalculatorMetricCard label="Finish cost" value={currency(result.finishCost)} tone="orange" />
-            <CalculatorMetricCard label="Overhead cost" value={currency(result.overheadCost)} tone="orange" />
+            <CalculatorMetricCard label="Material cost" numericValue={result.materialCost} unit="USD" tone="purple" />
+            <CalculatorMetricCard label="Machining cost" numericValue={result.machiningCost} unit="USD" tone="orange" />
+            <CalculatorMetricCard label="Labor cost" numericValue={result.laborCost} unit="USD" tone="orange" />
+            <CalculatorMetricCard label="Finish cost" numericValue={result.finishCost} unit="USD" tone="orange" />
+            <CalculatorMetricCard label="Overhead cost" numericValue={result.overheadCost} unit="USD" tone="orange" />
           </CalculatorMetricGrid>
 
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Total manufacturing cost"
-              value={currency(result.totalCost)}
+              numericValue={result.totalCost}
+              unit="USD"
               tone="green"
               size="lg"
             />
             <CalculatorMetricCard
               label="Cost per volume"
-              value={`${currency(result.costPerVolume)} /m³`}
+              numericValue={result.costPerVolume}
+              unit="USD/m³"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Cost per mass"
-              value={`${currency(result.costPerMass)} /kg`}
+              numericValue={result.costPerMass}
+              unit="USD/kg"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Effective material cost"
-              value={currency(result.effectiveMaterialCost)}
+              numericValue={result.effectiveMaterialCost}
+              unit="USD"
               tone="purple"
             />
           </CalculatorMetricGrid>

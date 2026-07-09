@@ -1,7 +1,6 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { MotorResult } from "@/lib/dynamics/motor/types";
 
 type Props = {
@@ -41,37 +40,38 @@ export default function MotorResults({ result }: Props) {
           />
           <CalculatorMetricCard
             label="Rated speed"
-            value={formatEngineeringValue(result.ratedSpeedRpm, "rpm")}
+            numericValue={result.ratedSpeedRpm} unit="rpm"
             tone="blue"
           />
           <CalculatorMetricCard
             label="Synchronous speed"
-            value={formatEngineeringValue(result.synchronousSpeedRpm, "rpm")}
+            numericValue={result.synchronousSpeedRpm} unit="rpm"
             tone="blue"
           />
           <CalculatorMetricCard
             label="Slip"
-            value={formatEngineeringValue(result.slipPercent, "%")}
+            numericValue={result.slipPercent} unit="%"
             tone="blue"
           />
           <CalculatorMetricCard
             label="Rated torque"
-            value={formatEngineeringValue(result.ratedTorque, "N·m")}
+            numericValue={result.ratedTorque} unit="N·m"
             tone="purple"
           />
           <CalculatorMetricCard
             label="Starting torque"
-            value={formatEngineeringValue(result.startingTorque, "N·m")}
+            numericValue={result.startingTorque} unit="N·m"
             tone="purple"
           />
           <CalculatorMetricCard
             label="Electrical power"
-            value={formatEngineeringValue(result.electricalPower / 1000, "kW")}
+            numericValue={result.electricalPower / 1000} unit="kW"
             tone="orange"
           />
           <CalculatorMetricCard
             label="Belt service factor"
-            value={formatEngineeringValue(result.serviceFactor, "")}
+            numericValue={result.serviceFactor}
+            unit="—"
             tone="blue"
           />
         </CalculatorMetricGrid>

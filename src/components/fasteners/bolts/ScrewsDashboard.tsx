@@ -26,7 +26,7 @@ export default function ScrewsDashboard({ result }: Props) {
         />
         <CalculatorMetricCard
           label="Safety factor"
-          numericValue={result.safetyFactor}
+          numericValue={result.safetyFactor} unit="—"
           tone="blue"
           size="lg"
         />
@@ -40,17 +40,17 @@ export default function ScrewsDashboard({ result }: Props) {
         />
         <CalculatorMetricCard
           label="Major diameter"
-          value={formatEngineeringValue(result.majorDiameter, "m")}
+          numericValue={result.majorDiameter} unit="m"
           tone="green"
         />
         <CalculatorMetricCard
           label="Pitch"
-          value={formatEngineeringValue(result.pitch, "m")}
+          numericValue={result.pitch} unit="m"
           tone="purple"
         />
         <CalculatorMetricCard
           label="Helix angle"
-          value={formatEngineeringValue(result.helixAngle, "°")}
+          numericValue={result.helixAngle} unit="°"
           tone="orange"
         />
       </CalculatorMetricGrid>
@@ -58,77 +58,77 @@ export default function ScrewsDashboard({ result }: Props) {
       <CalculatorMetricGrid cols={2}>
         <CalculatorMetricCard
           label="Axial force"
-          value={formatEngineeringValue(result.axialForce, "N")}
+          numericValue={result.axialForce} unit="N"
           tone="blue"
         />
         <CalculatorMetricCard
           label="Torque"
-          value={formatEngineeringValue(result.torque, "N·m")}
+          numericValue={result.torque} unit="N·m"
           tone="blue"
         />
         <CalculatorMetricCard
           label="Efficiency"
-          value={formatEngineeringValue(result.efficiency, "%")}
+          numericValue={result.efficiency} unit="%"
           tone="purple"
         />
         {result.power > 0 ? (
           <CalculatorMetricCard
             label="Power"
-            value={formatEngineeringValue(result.power, "W")}
+            numericValue={result.power} unit="W"
             tone="purple"
           />
         ) : null}
         <CalculatorMetricCard
           label="Shear stress"
-          value={formatEngineeringValue(result.shearStress, "Pa")}
+          numericValue={result.shearStress} unit="Pa"
           tone="orange"
         />
         <CalculatorMetricCard
           label="Compressive stress"
-          value={formatEngineeringValue(result.compressiveStress, "Pa")}
+          numericValue={result.compressiveStress} unit="Pa"
           tone="orange"
         />
         <CalculatorMetricCard
           label="Von Mises stress"
-          value={formatEngineeringValue(result.vonMisesStress, "Pa")}
+          numericValue={result.vonMisesStress} unit="Pa"
           tone="red"
         />
         <CalculatorMetricCard
           label="Fatigue safety factor"
-          numericValue={result.fatigueSafetyFactor}
+          numericValue={result.fatigueSafetyFactor} unit="—"
           tone="green"
         />
       </CalculatorMetricGrid>
 
       {result.screwType === "ball_screw" && result.ballCirculation ? (
         <CalculatorMetricGrid cols={2}>
-          <CalculatorMetricCard label="Balls per circuit" numericValue={result.ballCirculation} tone="blue" />
+          <CalculatorMetricCard label="Balls per circuit" numericValue={result.ballCirculation} unit="—" tone="blue" />
           <CalculatorMetricCard label="Recirculation" value={result.recirculationPath} tone="blue" />
           {result.dynamicLoadRating ? (
             <CalculatorMetricCard
               label="Dynamic load rating"
-              value={formatEngineeringValue(result.dynamicLoadRating, "N")}
+              numericValue={result.dynamicLoadRating} unit="N"
               tone="purple"
             />
           ) : null}
           {result.speed ? (
             <CalculatorMetricCard
               label="Operating speed"
-              value={formatEngineeringValue(result.speed, "rpm")}
+              numericValue={result.speed} unit="rpm"
               tone="green"
             />
           ) : null}
           {result.criticalSpeed ? (
             <CalculatorMetricCard
               label="Critical speed"
-              value={formatEngineeringValue(result.criticalSpeed, "rpm")}
+              numericValue={result.criticalSpeed} unit="rpm"
               tone="orange"
             />
           ) : null}
           {result.bucklingLoad ? (
             <CalculatorMetricCard
               label="Buckling load"
-              value={formatEngineeringValue(result.bucklingLoad, "N")}
+              numericValue={result.bucklingLoad} unit="N"
               tone="red"
             />
           ) : null}
@@ -140,20 +140,20 @@ export default function ScrewsDashboard({ result }: Props) {
           <CalculatorMetricCard label="Thread type" value={result.threadType} tone="blue" />
           <CalculatorMetricCard
             label="Lead"
-            value={formatEngineeringValue(result.lead ?? 0, "m")}
+            numericValue={result.lead ?? 0} unit="m"
             tone="purple"
           />
           {result.criticalSpeed ? (
             <CalculatorMetricCard
               label="Critical speed"
-              value={formatEngineeringValue(result.criticalSpeed, "rpm")}
+              numericValue={result.criticalSpeed} unit="rpm"
               tone="orange"
             />
           ) : null}
           {result.bucklingLoad ? (
             <CalculatorMetricCard
               label="Buckling load"
-              value={formatEngineeringValue(result.bucklingLoad, "N")}
+              numericValue={result.bucklingLoad} unit="N"
               tone="red"
             />
           ) : null}

@@ -45,22 +45,22 @@ export default function CombinedLoadingResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Von Mises stress"
-              value={formatEngineeringValue(result.vonMisesStress, "MPa")}
+              numericValue={result.vonMisesStress} unit="MPa"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Safety factor"
-              numericValue={result.safetyFactor}
+              numericValue={result.safetyFactor} unit="—"
               tone={result.safetyFactor >= 1 ? "green" : "red"}
             />
             <CalculatorMetricCard
               label="Axial stress"
-              value={formatEngineeringValue(result.axialStress, "MPa")}
+              numericValue={result.axialStress} unit="MPa"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Bending stress"
-              value={formatEngineeringValue(result.bendingStress, "MPa")}
+              numericValue={result.bendingStress} unit="MPa"
               tone="blue"
             />
           </CalculatorMetricGrid>

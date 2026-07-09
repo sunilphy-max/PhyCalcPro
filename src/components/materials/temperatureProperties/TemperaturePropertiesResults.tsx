@@ -34,17 +34,17 @@ export default function TemperaturePropertiesResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Adjusted yield strength"
-              value={formatEngineeringValue(result.adjustedYield, "MPa")}
+              numericValue={result.adjustedYield} unit="MPa"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Adjusted modulus"
-              value={formatEngineeringValue(result.adjustedModulus, "GPa")}
+              numericValue={result.adjustedModulus} unit="GPa"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Thermal expansion per meter"
-              value={formatEngineeringValue(result.expansionPerMeter, "/°C")}
+              numericValue={result.expansionPerMeter} unit="/°C"
               tone="orange"
             />
           </CalculatorMetricGrid>

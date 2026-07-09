@@ -3,7 +3,6 @@ import { fromBase } from "@/lib/units/conversions";
 import type { CamResult } from "@/lib/machine/cams/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import { metricsModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
@@ -39,17 +38,17 @@ export default function CamResults({ result, lengthUnit }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Lift"
-              value={formatEngineeringValue(fromBase(result.lift, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.lift, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Base circle"
-              value={formatEngineeringValue(fromBase(result.baseCircle, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.baseCircle, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Follower radius"
-              value={formatEngineeringValue(fromBase(result.radius, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.radius, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
@@ -61,23 +60,25 @@ export default function CamResults({ result, lengthUnit }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Peak velocity"
-              value={formatEngineeringValue(result.peakVelocity, `${lengthUnit}/rad`)}
+              numericValue={result.peakVelocity}
+              unit={`${lengthUnit}/rad`}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Peak acceleration"
-              value={formatEngineeringValue(result.peakAcceleration, `${lengthUnit}/rad²`)}
+              numericValue={result.peakAcceleration}
+              unit={`${lengthUnit}/rad²`}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Peak pressure angle"
-              value={formatEngineeringValue(result.peakPressureAngle * (180 / Math.PI), "°")}
+              numericValue={result.peakPressureAngle * (180 / Math.PI)} unit="°"
               tone="red"
               size="lg"
             />
             <CalculatorMetricCard
               label="Rise angle"
-              value={formatEngineeringValue(result.riseAngle, "°")}
+              numericValue={result.riseAngle} unit="°"
               tone="green"
             />
           </CalculatorMetricGrid>

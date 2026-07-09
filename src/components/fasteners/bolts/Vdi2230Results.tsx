@@ -68,35 +68,35 @@ export default function Vdi2230Results({ result, clampLengthM }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Assembly preload FM,zul"
-              value={formatEngineeringValue(result.assemblyPreloadMax / 1000, "kN")}
+              numericValue={result.assemblyPreloadMax / 1000} unit="kN"
               tone="blue"
             />
             <CalculatorMetricCard
               label={`Min preload after scatter (αA = ${result.tighteningFactor})`}
-              value={formatEngineeringValue(result.assemblyPreloadMin / 1000, "kN")}
+              numericValue={result.assemblyPreloadMin / 1000} unit="kN"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Tightening torque MA"
-              value={formatEngineeringValue(result.tighteningTorque, "N·m")}
+              numericValue={result.tighteningTorque} unit="N·m"
               tone="purple"
             />
-            <CalculatorMetricCard label="Load factor Φ" numericValue={result.loadFactor} tone="blue" />
+            <CalculatorMetricCard label="Load factor Φ" numericValue={result.loadFactor} unit="—" tone="blue" />
             <CalculatorMetricCard
               label="Embedding loss FZ"
-              value={formatEngineeringValue(result.embeddingLoss / 1000, "kN")}
+              numericValue={result.embeddingLoss / 1000} unit="kN"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Residual clamp force FKR"
-              value={formatEngineeringValue(result.residualClampForce / 1000, "kN")}
+              numericValue={result.residualClampForce / 1000} unit="kN"
               tone={result.residualClampForce > 0 ? "green" : "red"}
             />
           </CalculatorMetricGrid>
           {Number.isFinite(result.slipSafetyFactor) ? (
             <CalculatorMetricCard
               label="Slip safety (FKR · μT / FQ)"
-              numericValue={result.slipSafetyFactor}
+              numericValue={result.slipSafetyFactor} unit="—"
               status={
                 result.slipSafetyFactor >= 1.2 ? "safe" : result.slipSafetyFactor >= 1 ? "warning" : "danger"
               }
@@ -105,7 +105,7 @@ export default function Vdi2230Results({ result, clampLengthM }: Props) {
           ) : null}
           <CalculatorMetricCard
             label="Working stress utilization σred,B / Rp0.2"
-            numericValue={result.workingStressUtilization}
+            numericValue={result.workingStressUtilization} unit="—"
             status={result.workingStressUtilization <= 1 ? "safe" : "danger"}
             size="lg"
           />
@@ -113,22 +113,22 @@ export default function Vdi2230Results({ result, clampLengthM }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Thread stress amplitude σa"
-              value={formatEngineeringValue(result.stressAmplitude / 1e6, "MPa")}
+              numericValue={result.stressAmplitude / 1e6} unit="MPa"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Endurance σASV (rolled thread)"
-              value={formatEngineeringValue(result.enduranceLimit / 1e6, "MPa")}
+              numericValue={result.enduranceLimit / 1e6} unit="MPa"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Fatigue safety SD"
-              numericValue={result.fatigueSafetyFactor}
+              numericValue={result.fatigueSafetyFactor} unit="—"
               tone={result.fatigueSafetyFactor >= 1.2 ? "green" : result.fatigueSafetyFactor >= 1 ? "orange" : "red"}
             />
             <CalculatorMetricCard
               label={`Head bearing pressure (${formatDisplayNumber(result.surfacePressureUtilization * 100)}% of allowable)`}
-              value={formatEngineeringValue(result.surfacePressure / 1e6, "MPa")}
+              numericValue={result.surfacePressure / 1e6} unit="MPa"
               tone={result.surfacePressureUtilization <= 1 ? "green" : "red"}
             />
           </CalculatorMetricGrid>

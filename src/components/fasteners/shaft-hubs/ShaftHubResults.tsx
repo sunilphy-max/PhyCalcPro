@@ -37,18 +37,18 @@ export default function ShaftHubResults({ result, stressUnit, torqueUnit }: Prop
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Contact pressure"
-              value={formatEngineeringValue(fromBase(result.contactPressure, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.contactPressure, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Friction torque capacity"
-              value={formatEngineeringValue(fromBase(result.frictionTorque, "torque", torqueUnit), torqueUnit)}
+              numericValue={fromBase(result.frictionTorque, "torque", torqueUnit)} unit={torqueUnit}
               tone="purple"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Required assembly force"
-            value={formatEngineeringValue(result.requiredAssemblyForce, "N")}
+            numericValue={result.requiredAssemblyForce} unit="N"
             tone="orange"
             size="lg"
           />

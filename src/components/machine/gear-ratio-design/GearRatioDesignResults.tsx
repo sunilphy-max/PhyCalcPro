@@ -36,28 +36,28 @@ export default function GearRatioDesignResults({ result, targetRatio }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Pinion teeth"
-              value={formatDisplayNumber(result.pinionTeeth)}
+              numericValue={result.pinionTeeth} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Gear teeth"
-              value={formatDisplayNumber(result.gearTeeth)}
+              numericValue={result.gearTeeth} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Actual ratio"
-              value={formatDisplayNumber(result.actualRatio)}
+              numericValue={result.actualRatio} unit="—"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Target ratio"
-              value={formatDisplayNumber(targetRatio)}
+              numericValue={targetRatio} unit="—"
               tone="blue"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Ratio error"
-            numericValue={result.error}
+            numericValue={result.error} unit="—"
             tone={result.error < 0.01 ? "green" : result.error < 0.05 ? "orange" : "red"}
             size="lg"
           />

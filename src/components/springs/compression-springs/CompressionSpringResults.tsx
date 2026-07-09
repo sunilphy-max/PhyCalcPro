@@ -133,10 +133,10 @@ export default function CompressionSpringResults({
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard label="Status" value={result.isSafe ? "Pass" : "Check"} status={status} />
             <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
-            <CalculatorMetricCard label="Spring rate" value={formatEngineeringValue(result.springRate, "N/m")} tone="blue" />
+            <CalculatorMetricCard label="Spring rate" numericValue={result.springRate} unit="N/m" tone="blue" />
             <CalculatorMetricCard
               label="Static safety τ_zul/τ"
-              numericValue={result.safetyFactor}
+              numericValue={result.safetyFactor} unit="—"
               status={result.safetyFactor >= 1.5 ? "safe" : "danger"}
             />
           </CalculatorMetricGrid>
@@ -144,12 +144,12 @@ export default function CompressionSpringResults({
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Solid height clearance"
-              value={formatEngineeringValue(fromBase(result.solidHeightClearance, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.solidHeightClearance, "length", lengthUnit)} unit={lengthUnit}
               tone={result.solidHeightClearance >= 0 ? "blue" : "red"}
             />
             <CalculatorMetricCard
               label="Surge frequency"
-              value={`${formatDisplayNumber(result.naturalFrequency)} Hz`}
+              numericValue={result.naturalFrequency} unit="Hz"
               tone="blue"
             />
             <CalculatorMetricCard
@@ -157,19 +157,19 @@ export default function CompressionSpringResults({
               value={result.surgeMargin != null ? `${result.surgeMargin.toFixed(1)}×` : "Set operating Hz"}
               tone={result.surgeMargin == null || result.surgeMargin >= 10 ? "blue" : "orange"}
             />
-            <CalculatorMetricCard label="Spring index C" numericValue={result.springIndex} tone="blue" />
+            <CalculatorMetricCard label="Spring index C" numericValue={result.springIndex} unit="—" tone="blue" />
           </CalculatorMetricGrid>
 
           {result.fatigueSafetyFactor != null ? (
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label={`Fatigue SF (${result.lifeClass ?? "VL"})`}
-                numericValue={result.fatigueSafetyFactor}
+                numericValue={result.fatigueSafetyFactor} unit="—"
                 status={result.fatiguePass ? "safe" : "danger"}
               />
               <CalculatorMetricCard
                 label="Fatigue utilization"
-                numericValue={result.fatigueUtilization ?? undefined}
+                numericValue={result.fatigueUtilization ?? undefined} unit="—"
                 tone={result.fatiguePass ? "green" : "orange"}
               />
             </CalculatorMetricGrid>

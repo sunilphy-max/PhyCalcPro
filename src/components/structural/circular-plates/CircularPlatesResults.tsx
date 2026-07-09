@@ -3,7 +3,7 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import type { CircularPlateResult } from "@/lib/structural/circular-plates/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: (CircularPlateResult & { calculationSpec?: CalculationSpec }) | null;
@@ -37,36 +37,32 @@ export default function CircularPlatesResults({ result, lengthUnit, stressUnit }
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Max deflection (center)"
-              value={formatEngineeringValue(
-                fromBase(result.maxDeflection, "length", lengthUnit),
-                lengthUnit
-              )}
+              numericValue={fromBase(result.maxDeflection, "length", lengthUnit)}
+              unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Max bending stress"
-              value={formatEngineeringValue(fromBase(result.maxStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.maxStress, "stress", stressUnit)} unit={stressUnit}
               tone="purple"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Flexural rigidity D"
-            value={formatEngineeringValue(result.rigidity, "N·m")}
+            numericValue={result.rigidity} unit="N·m"
             tone="blue"
             size="lg"
           />
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Roark deflection (reference)"
-              value={formatEngineeringValue(
-                fromBase(result.roarkMaxDeflection, "length", lengthUnit),
-                lengthUnit
-              )}
+              numericValue={fromBase(result.roarkMaxDeflection, "length", lengthUnit)}
+              unit={lengthUnit}
               tone="green"
             />
             <CalculatorMetricCard
               label="FDM vs Roark error"
-              value={`${formatDisplayNumber(result.femDeflectionErrorPercent)}%`}
+              numericValue={result.femDeflectionErrorPercent} unit="%"
               tone={result.femDeflectionErrorPercent < 15 ? "green" : "orange"}
             />
           </CalculatorMetricGrid>

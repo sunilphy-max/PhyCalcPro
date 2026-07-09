@@ -37,19 +37,19 @@ export default function BoltPatternResults({ result, forceUnit }: Props) {
           <CalculatorMetricGrid>
             <CalculatorMetricCard
               label="Max bolt force"
-              value={formatEngineeringValue(result.maxBoltForce, forceUnit)}
+              numericValue={result.maxBoltForce} unit={forceUnit}
             />
             <CalculatorMetricCard
               label="Min bolt force"
-              value={formatEngineeringValue(result.minBoltForce, forceUnit)}
+              numericValue={result.minBoltForce} unit={forceUnit}
             />
             <CalculatorMetricCard
               label="Mean bolt force"
-              value={formatEngineeringValue(result.meanBoltForce, forceUnit)}
+              numericValue={result.meanBoltForce} unit={forceUnit}
             />
             <CalculatorMetricCard
               label="Applied moment"
-              value={formatEngineeringValue(result.appliedMoment, "N·m")}
+              numericValue={result.appliedMoment} unit="N·m"
             />
           </CalculatorMetricGrid>
           <div className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">

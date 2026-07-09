@@ -96,13 +96,13 @@ export default function PlateResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Max deflection"
-              value={formatEngineeringValue(result.maxDeflection, "m")}
+              numericValue={result.maxDeflection} unit="m"
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Peak bending moment"
-              value={formatEngineeringValue(result.maxMoment, "N·m")}
+              numericValue={result.maxMoment} unit="N·m"
               tone="orange"
               size="lg"
             />

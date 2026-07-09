@@ -44,17 +44,17 @@ export default function CorrosionResults({ result, thicknessUnit }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Corrosion allowance"
-              value={formatEngineeringValue(result.corrosionAllowance, thicknessUnit)}
+              numericValue={result.corrosionAllowance} unit={thicknessUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Required thickness"
-              value={formatEngineeringValue(result.requiredThickness, thicknessUnit)}
+              numericValue={result.requiredThickness} unit={thicknessUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Remaining thickness after life"
-              value={formatEngineeringValue(result.remainingThickness, thicknessUnit)}
+              numericValue={result.remainingThickness} unit={thicknessUnit}
               tone="orange"
             />
           </CalculatorMetricGrid>

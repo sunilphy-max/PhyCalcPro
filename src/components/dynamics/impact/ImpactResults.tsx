@@ -38,25 +38,25 @@ export default function ImpactResults({ result }: Props) {
         <CalculatorMetricGrid cols={2}>
           <CalculatorMetricCard
             label="Impulse"
-            value={formatEngineeringValue(result.impulse, "N·s")}
+            numericValue={result.impulse} unit="N·s"
             tone="blue"
             size="lg"
           />
           <CalculatorMetricCard
             label="Average force"
-            value={formatEngineeringValue(result.averageForce, "N")}
+            numericValue={result.averageForce} unit="N"
             tone="purple"
             size="lg"
           />
           <CalculatorMetricCard
             label="Dynamic stress"
-            value={formatEngineeringValue(result.dynamicStress, "MPa")}
+            numericValue={result.dynamicStress} unit="MPa"
             tone="orange"
             size="lg"
           />
           <CalculatorMetricCard
             label="Safety factor"
-            numericValue={result.safetyFactor}
+            numericValue={result.safetyFactor} unit="—"
             tone="green"
             size="lg"
           />

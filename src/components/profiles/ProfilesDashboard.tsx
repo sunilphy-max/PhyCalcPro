@@ -120,20 +120,20 @@ export default function ProfilesDashboard({ result }: Props) {
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Cross-sectional area"
-          value={formatEngineeringValue(result.area, "m²")}
+          numericValue={result.area} unit="m²"
           tone="blue"
         />
         <CalculatorMetricCard
           label="Centroid X"
-          value={formatEngineeringValue(result.centroid.x, "m")}
+          numericValue={result.centroid.x} unit="m"
           tone="green"
         />
         <CalculatorMetricCard
           label="Centroid Y"
-          value={formatEngineeringValue(result.centroid.y, "m")}
+          numericValue={result.centroid.y} unit="m"
           tone="green"
         />
-        <CalculatorMetricCard label="Polar moment" value={formatInertia(result.j)} tone="purple" />
+        <CalculatorMetricCard label="Polar moment" numericValue={result.j} unit="m⁴" tone="purple" />
       </CalculatorMetricGrid>
 
       <EngineeringPlotPicker tabs={plotTabs} defaultTabId="visualization" label="Section view" />

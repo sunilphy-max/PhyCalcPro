@@ -36,28 +36,28 @@ export default function RollerChainsResults({ result, lengthUnit, powerUnit }: P
       {result ? (
         <>
           <CalculatorMetricGrid cols={2}>
-            <CalculatorMetricCard label="Speed ratio" value={formatDisplayNumber(result.ratio)} tone="purple" />
-            <CalculatorMetricCard label="Driven speed" value={`${formatDisplayNumber(result.drivenSpeed)} rpm`} tone="blue" />
-            <CalculatorMetricCard label="Chain speed" value={formatEngineeringValue(result.chainSpeed, "m/s")} tone="blue" />
+            <CalculatorMetricCard label="Speed ratio" numericValue={result.ratio} unit="—" tone="purple" />
+            <CalculatorMetricCard label="Driven speed" numericValue={result.drivenSpeed} unit="rpm" tone="blue" />
+            <CalculatorMetricCard label="Chain speed" numericValue={result.chainSpeed} unit="m/s" tone="blue" />
             <CalculatorMetricCard
               label="Center distance"
-              value={formatEngineeringValue(fromBase(result.centerDistance, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.centerDistance, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Power utilization"
-            numericValue={result.powerUtilization}
+            numericValue={result.powerUtilization} unit="—"
             tone={result.powerUtilization > 1 ? "red" : "green"}
             size="lg"
           />
-          <CalculatorMetricCard label="Chain tension" value={formatEngineeringValue(result.chainTension, "N")} tone="orange" />
+          <CalculatorMetricCard label="Chain tension" numericValue={result.chainTension} unit="N" tone="orange" />
           <CalculatorMetricCard
             label="Power capacity (est.)"
-            value={formatEngineeringValue(result.powerCapacity / (powerUnit === "kW" ? 1000 : 1), powerUnit)}
+            numericValue={result.powerCapacity / (powerUnit === "kW" ? 1000 : 1)} unit={powerUnit}
             tone="blue"
           />
-          <CalculatorMetricCard label="Estimated life" value={`${formatDisplayNumber(result.estimatedLifeHours)} hr`} tone="blue" />
+          <CalculatorMetricCard label="Estimated life" numericValue={result.estimatedLifeHours} unit="hr" tone="blue" />
         </>
       ) : null}
     </CalculatorResultsShell>

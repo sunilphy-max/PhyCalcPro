@@ -36,23 +36,23 @@ export default function BrakesClutchesResults({ result, safetyFactorTarget }: Pr
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Friction torque"
-              value={formatEngineeringValue(result.frictionTorque, "N·m")}
+              numericValue={result.frictionTorque} unit="N·m"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Power dissipated"
-              value={formatEngineeringValue(result.powerDissipated, "W")}
+              numericValue={result.powerDissipated} unit="W"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Energy per stop"
-              value={formatEngineeringValue(result.energyPerStop, "J")}
+              numericValue={result.energyPerStop} unit="J"
               tone="purple"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Safety factor"
-            numericValue={result.safetyFactor}
+            numericValue={result.safetyFactor} unit="—"
             tone={
               result.safetyFactor >= safetyFactorTarget
                 ? "green"

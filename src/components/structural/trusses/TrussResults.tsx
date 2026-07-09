@@ -84,13 +84,13 @@ export default function TrussResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Peak displacement"
-              value={formatEngineeringValue(result.maxDisplacement, "m")}
+              numericValue={result.maxDisplacement} unit="m"
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max axial force"
-              value={formatEngineeringValue(result.maxForce, "N")}
+              numericValue={result.maxForce} unit="N"
               tone="orange"
               size="lg"
             />
@@ -99,12 +99,12 @@ export default function TrussResults({ result }: Props) {
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label={`Highest tension (${highestTension.id})`}
-                value={formatEngineeringValue(highestTension.force, "N")}
+                numericValue={highestTension.force} unit="N"
                 tone="green"
               />
               <CalculatorMetricCard
                 label={`Highest compression (${highestCompression.id})`}
-                value={formatEngineeringValue(highestCompression.force, "N")}
+                numericValue={highestCompression.force} unit="N"
                 tone="red"
               />
             </CalculatorMetricGrid>

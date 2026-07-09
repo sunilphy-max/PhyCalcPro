@@ -45,28 +45,28 @@ export default function KeysSplinesResults({ result, stressUnit, torqueUnit }: P
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Shear stress"
-              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.shearStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Bearing stress"
-              value={formatEngineeringValue(fromBase(result.bearingStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.bearingStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Shear safety factor"
-              numericValue={result.shearSafety}
+              numericValue={result.shearSafety} unit="—"
               tone={safetyTone(result.shearSafety)}
             />
             <CalculatorMetricCard
               label="Bearing safety factor"
-              numericValue={result.bearingSafety}
+              numericValue={result.bearingSafety} unit="—"
               tone={safetyTone(result.bearingSafety)}
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Capacity torque"
-            value={formatEngineeringValue(fromBase(result.capacityTorque, "torque", torqueUnit), torqueUnit)}
+            numericValue={fromBase(result.capacityTorque, "torque", torqueUnit)} unit={torqueUnit}
             tone="purple"
             size="lg"
           />

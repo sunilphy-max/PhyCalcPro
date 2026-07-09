@@ -240,6 +240,10 @@
     grid-column: 1 / -1;
   }
 
+  .calculator-results-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
   /*
    * Form controls inside calculator panels: explicit fg/bg so numeric values stay
    * visible when the OS uses dark mode (inherited light text on white field bg).

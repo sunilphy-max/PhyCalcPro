@@ -10,7 +10,7 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import type { BucklingResult } from "@/lib/structural/columns/types";
 
 type Props = {
@@ -62,15 +62,15 @@ export default function BucklingDashboard({ result }: Props) {
   }, [result]);
 
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <CalculatorMetricGrid cols={4}>
+    <div className="grid grid-cols-1 gap-5">
+      <CalculatorMetricGrid section="Summary">
         <CalculatorMetricCard
           label="Status"
           value={result.isSafe ? "Safe" : "At Risk"}
           status={status}
         />
-        <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} tone="blue" />
-        <CalculatorMetricCard label="Slenderness ratio" numericValue={result.slenderness} tone="purple" />
+        <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} unit="—" tone="blue" />
+        <CalculatorMetricCard label="Slenderness ratio" numericValue={result.slenderness} unit="—" tone="purple" />
         <CalculatorMetricCard
           label="Buckling mode"
           value={result.bucklingMode.charAt(0).toUpperCase() + result.bucklingMode.slice(1)}
@@ -78,33 +78,18 @@ export default function BucklingDashboard({ result }: Props) {
         />
       </CalculatorMetricGrid>
 
-      <CalculatorMetricGrid cols={3}>
-        <CalculatorMetricCard
-          label="Critical load (Pcr)"
-          value={formatEngineeringValue(result.Pcr, "N")}
-          tone="blue"
-          size="lg"
-        />
-        <CalculatorMetricCard
-          label="Critical stress"
-          value={formatEngineeringValue(result.criticalStress, "Pa")}
-          tone="blue"
-          size="lg"
-        />
-        <CalculatorMetricCard
-          label="Applied stress"
-          value={formatEngineeringValue(result.stress, "Pa")}
-          tone="orange"
-          size="lg"
-        />
+      <CalculatorMetricGrid section="Critical values">
+        <CalculatorMetricCard label="Critical load (Pcr)" numericValue={result.Pcr} unit="N" tone="blue" />
+        <CalculatorMetricCard label="Critical stress" numericValue={result.criticalStress} unit="Pa" tone="blue" />
+        <CalculatorMetricCard label="Applied stress" numericValue={result.stress} unit="Pa" tone="orange" />
       </CalculatorMetricGrid>
 
       <EngineeringPlotPicker tabs={plotTabs} defaultTabId="mode-shape" label="Result chart" />
 
-      <CalculatorMetricGrid cols={4}>
-        <CalculatorMetricCard label="Effective length" value={formatEngineeringValue(result.Le, "m")} />
-        <CalculatorMetricCard label="Radius of gyration" value={formatEngineeringValue(result.radius, "m")} />
-        <CalculatorMetricCard label="Effective length factor (k)" numericValue={result.k} />
+      <CalculatorMetricGrid section="Geometry & method">
+        <CalculatorMetricCard label="Effective length" numericValue={result.Le} unit="m" />
+        <CalculatorMetricCard label="Radius of gyration" numericValue={result.radius} unit="m" />
+        <CalculatorMetricCard label="Effective length factor (k)" numericValue={result.k} unit="—" />
         <CalculatorMetricCard label="Buckling formula" value="Euler" />
       </CalculatorMetricGrid>
     </div>

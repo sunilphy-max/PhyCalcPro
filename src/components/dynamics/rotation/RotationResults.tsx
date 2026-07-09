@@ -45,32 +45,32 @@ export default function RotationResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Inertia"
-              value={formatEngineeringValue(result.inertia, "kg·m²")}
+              numericValue={result.inertia} unit="kg·m²"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Angular speed"
-              value={formatEngineeringValue(result.omega, "rad/s")}
+              numericValue={result.omega} unit="rad/s"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Kinetic energy"
-              value={formatEngineeringValue(result.kineticEnergy, "J")}
+              numericValue={result.kineticEnergy} unit="J"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Torque"
-              value={formatEngineeringValue(result.torque, "N·m")}
+              numericValue={result.torque} unit="N·m"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Centripetal acceleration"
-              value={formatEngineeringValue(result.centripetalAcceleration, "m/s²")}
+              numericValue={result.centripetalAcceleration} unit="m/s²"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Centripetal force"
-              value={formatEngineeringValue(result.centripetalForce, "N")}
+              numericValue={result.centripetalForce} unit="N"
               tone="orange"
             />
           </CalculatorMetricGrid>

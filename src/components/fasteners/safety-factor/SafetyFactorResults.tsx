@@ -59,17 +59,17 @@ export default function SafetyFactorResults({
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Diameter"
-              value={formatEngineeringValue(fromBase(result.diameter, "length", lengthUnit), lengthUnit)}
+              numericValue={fromBase(result.diameter, "length", lengthUnit)} unit={lengthUnit}
               tone="purple"
             />
             <CalculatorMetricCard
               label="Gross area"
-              value={formatEngineeringValue(result.area, "m²")}
+              numericValue={result.area} unit="m²"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Polar moment"
-              value={formatEngineeringValue(result.polarMoment, "m⁴")}
+              numericValue={result.polarMoment} unit="m⁴"
               tone="blue"
             />
           </CalculatorMetricGrid>
@@ -77,27 +77,27 @@ export default function SafetyFactorResults({
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Axial stress"
-              value={formatEngineeringValue(fromBase(result.axialStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.axialStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Bending stress"
-              value={formatEngineeringValue(fromBase(result.bendingStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.bendingStress, "stress", stressUnit)} unit={stressUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Torsional shear"
-              value={formatEngineeringValue(fromBase(result.torsionalStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.torsionalStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Shear stress"
-              value={formatEngineeringValue(fromBase(result.shearStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.shearStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
             <CalculatorMetricCard
               label="Von Mises stress"
-              value={formatEngineeringValue(fromBase(result.vonMisesStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.vonMisesStress, "stress", stressUnit)} unit={stressUnit}
               tone="red"
               size="lg"
             />
@@ -106,18 +106,18 @@ export default function SafetyFactorResults({
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Governing safety factor"
-              numericValue={result.governingFactor}
+              numericValue={result.governingFactor} unit="—"
               tone={safetyTone(result.governingFactor)}
               size="lg"
             />
             <CalculatorMetricCard
               label="Yield factor"
-              numericValue={result.safetyFactorYield}
+              numericValue={result.safetyFactorYield} unit="—"
               tone={safetyTone(result.safetyFactorYield)}
             />
             <CalculatorMetricCard
               label="Ultimate factor"
-              numericValue={result.safetyFactorUltimate}
+              numericValue={result.safetyFactorUltimate} unit="—"
               tone={safetyTone(result.safetyFactorUltimate)}
             />
           </CalculatorMetricGrid>

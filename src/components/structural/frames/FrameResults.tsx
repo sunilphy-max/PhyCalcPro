@@ -85,19 +85,19 @@ export default function FrameResults({ result }: Props) {
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Max displacement"
-              value={formatEngineeringValue(result.maxDisplacement, "m")}
+              numericValue={result.maxDisplacement} unit="m"
               tone="blue"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max axial"
-              value={formatEngineeringValue(result.maxAxial, "N")}
+              numericValue={result.maxAxial} unit="N"
               tone="purple"
               size="lg"
             />
             <CalculatorMetricCard
               label="Max moment"
-              value={formatEngineeringValue(result.maxMoment, "N·m")}
+              numericValue={result.maxMoment} unit="N·m"
               tone="orange"
               size="lg"
             />

@@ -39,34 +39,34 @@ export default function WormGearsResults({ result, stressUnit }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Speed ratio"
-              value={formatDisplayNumber(result.ratio)}
+              numericValue={result.ratio} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Efficiency"
-              value={`${formatDisplayNumber(result.efficiency * 100)}%`}
+              numericValue={result.efficiency * 100} unit="%"
               tone={result.efficiency < 0.5 ? "orange" : "purple"}
             />
             <CalculatorMetricCard
               label="Worm torque"
-              value={formatEngineeringValue(result.wormTorque, "N·m")}
+              numericValue={result.wormTorque} unit="N·m"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Axial force"
-              value={formatEngineeringValue(result.axialForce, "N")}
+              numericValue={result.axialForce} unit="N"
               tone="blue"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Contact stress"
-            value={formatEngineeringValue(fromBase(result.contactStress, "stress", stressUnit), stressUnit)}
+            numericValue={fromBase(result.contactStress, "stress", stressUnit)} unit={stressUnit}
             tone="orange"
             size="lg"
           />
           <CalculatorMetricCard
             label="Contact safety"
-            numericValue={result.contactSafety}
+            numericValue={result.contactSafety} unit="—"
             tone={result.contactSafety >= 1.5 ? "green" : result.contactSafety >= 1 ? "orange" : "red"}
             size="lg"
           />

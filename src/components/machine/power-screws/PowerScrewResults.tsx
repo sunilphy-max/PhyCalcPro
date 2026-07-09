@@ -2,10 +2,9 @@
 
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { ScrewResult } from "@/lib/fasteners/bolts/types";
-import ScrewsDashboard from "@/components/fasteners/bolts/ScrewsDashboard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import ScrewsDashboard from "@/components/fasteners/bolts/ScrewsDashboard";
 
 type Props = {
   result: WithCalculationSpec<ScrewResult> | null;
@@ -37,11 +36,12 @@ export default function PowerScrewResults({ result, projectName }: Props) {
       {result ? (
         <>
           <CalculatorMetricGrid cols={3}>
-            <CalculatorMetricCard label="Drive torque" value={formatEngineeringValue(result.torque, "N·m")} tone="blue" />
-            <CalculatorMetricCard label="Efficiency" value={formatEngineeringValue(result.efficiency * 100, "%")} tone="purple" />
+            <CalculatorMetricCard label="Drive torque" numericValue={result.torque} unit="N·m" tone="blue" />
+            <CalculatorMetricCard label="Efficiency" numericValue={result.efficiency * 100} unit="%" tone="purple" />
             <CalculatorMetricCard
               label="Safety factor"
-              value={formatEngineeringValue(result.safetyFactor, "")}
+              numericValue={result.safetyFactor}
+              unit="—"
               tone={result.safetyFactor >= 1.5 ? "green" : "amber"}
             />
           </CalculatorMetricGrid>

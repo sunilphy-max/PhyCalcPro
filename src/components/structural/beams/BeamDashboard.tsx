@@ -11,7 +11,6 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type {
   BeamApplicationContext,
   BeamResult,
@@ -196,26 +195,22 @@ export default function BeamDashboard({
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label={`Max moment (${units.moment})`}
-          value={formatEngineeringValue(result.maxMoment, units.moment)}
+          numericValue={result.maxMoment} unit={units.moment}
           tone="purple"
         />
         <CalculatorMetricCard
           label={`Max shear (${units.force})`}
-          value={formatEngineeringValue(result.maxShear, units.force)}
+          numericValue={result.maxShear} unit={units.force}
           tone="blue"
         />
         <CalculatorMetricCard
           label={`Max stress (${units.stress})`}
-          value={formatEngineeringValue(result.maxStress, units.stress, {
-            useExponential: true,
-          })}
+          numericValue={result.maxStress} unit={units.stress}
           tone="orange"
         />
         <CalculatorMetricCard
           label={`Max deflection (${units.length})`}
-          value={formatEngineeringValue(result.maxDeflection, units.length, {
-            useExponential: true,
-          })}
+          numericValue={result.maxDeflection} unit={units.length}
           tone="green"
         />
       </CalculatorMetricGrid>
@@ -224,28 +219,24 @@ export default function BeamDashboard({
         <CalculatorMetricGrid cols={4}>
           <CalculatorMetricCard
             label="Application stress utilization"
-            numericValue={application.stressUtilization}
+            numericValue={application.stressUtilization} unit="—"
             status={application.stressUtilization <= 1 ? "safe" : "danger"}
             tone="orange"
           />
           <CalculatorMetricCard
             label="Application deflection utilization"
-            numericValue={application.deflectionUtilization}
+            numericValue={application.deflectionUtilization} unit="—"
             status={application.deflectionUtilization <= 1 ? "safe" : "danger"}
             tone="blue"
           />
           <CalculatorMetricCard
             label={`Allowable stress (${units.stress})`}
-            value={formatEngineeringValue(application.allowableStress, units.stress, {
-              useExponential: true,
-            })}
+            numericValue={application.allowableStress} unit={units.stress}
             tone="purple"
           />
           <CalculatorMetricCard
             label={`Deflection limit (${units.length})`}
-            value={formatEngineeringValue(application.deflectionLimit, units.length, {
-              useExponential: true,
-            })}
+            numericValue={application.deflectionLimit} unit={units.length}
             tone="green"
           />
         </CalculatorMetricGrid>
@@ -257,28 +248,28 @@ export default function BeamDashboard({
           value={caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active")}
         />
         <CalculatorMetricCard
-          label={`Position (${units.length})`}
-          value={
-            probeData
-              ? formatEngineeringValue(probeData.x, units.length, { digits: 3 })
-              : "Click beam model"
-          }
+          label={`Position`}
+          numericValue={probeData ? probeData.x : undefined}
+          unit={probeData ? units.length : undefined}
+          value={probeData ? undefined : "Click beam model"}
         />
         <CalculatorMetricCard
-          label={`Shear (${units.force})`}
-          value={probeData ? formatEngineeringValue(probeData.shear, units.force) : "—"}
+          label={`Shear`}
+          numericValue={probeData ? probeData.shear : undefined}
+          unit={probeData ? units.force : undefined}
+          value={probeData ? undefined : "—"}
         />
         <CalculatorMetricCard
-          label={`Moment (${units.moment})`}
-          value={probeData ? formatEngineeringValue(probeData.moment, units.moment) : "—"}
+          label={`Moment`}
+          numericValue={probeData ? probeData.moment : undefined}
+          unit={probeData ? units.moment : undefined}
+          value={probeData ? undefined : "—"}
         />
         <CalculatorMetricCard
-          label={`Deflection (${units.length})`}
-          value={
-            probeData
-              ? formatEngineeringValue(probeData.deflection, units.length, { useExponential: true })
-              : "—"
-          }
+          label={`Deflection`}
+          numericValue={probeData ? probeData.deflection : undefined}
+          unit={probeData ? units.length : undefined}
+          value={probeData ? undefined : "—"}
         />
       </CalculatorMetricGrid>
 

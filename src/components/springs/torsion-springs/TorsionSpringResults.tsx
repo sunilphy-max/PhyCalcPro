@@ -98,32 +98,32 @@ export default function TorsionSpringResults({ result, stressUnit, projectName }
             <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
             <CalculatorMetricCard
               label="Spring rate"
-              value={formatEngineeringValue(result.springRate, "N·m/rad")}
+              numericValue={result.springRate} unit="N·m/rad"
               tone="blue"
             />
-            <CalculatorMetricCard label="Torque at angle" value={formatEngineeringValue(result.torque, "N·m")} tone="purple" />
+            <CalculatorMetricCard label="Torque at angle" numericValue={result.torque} unit="N·m" tone="purple" />
           </CalculatorMetricGrid>
 
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Coil bending stress"
-              value={formatEngineeringValue(fromBase(result.bendingStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.bendingStress, "stress", stressUnit)} unit={stressUnit}
               tone={result.safetyFactor < 1.5 ? "red" : "orange"}
             />
             <CalculatorMetricCard
               label="Static SF σ_zul/σ"
-              numericValue={result.safetyFactor}
+              numericValue={result.safetyFactor} unit="—"
               status={result.safetyFactor >= 1.5 ? "safe" : "danger"}
             />
-            <CalculatorMetricCard label="Curvature factor Kb" numericValue={result.curvatureFactor} tone="blue" />
-            <CalculatorMetricCard label="Spring index C" numericValue={result.springIndex} tone="blue" />
+            <CalculatorMetricCard label="Curvature factor Kb" numericValue={result.curvatureFactor} unit="—" tone="blue" />
+            <CalculatorMetricCard label="Spring index C" numericValue={result.springIndex} unit="—" tone="blue" />
           </CalculatorMetricGrid>
 
           <CalculatorMetricGrid cols={2}>
-            <CalculatorMetricCard label="Leg force" value={formatEngineeringValue(result.legForce, "N")} tone="blue" />
+            <CalculatorMetricCard label="Leg force" numericValue={result.legForce} unit="N" tone="blue" />
             <CalculatorMetricCard
               label="Leg bending stress (est.)"
-              value={formatEngineeringValue(fromBase(result.legBendingStress, "stress", stressUnit), stressUnit)}
+              numericValue={fromBase(result.legBendingStress, "stress", stressUnit)} unit={stressUnit}
               tone="orange"
             />
           </CalculatorMetricGrid>
@@ -132,12 +132,12 @@ export default function TorsionSpringResults({ result, stressUnit, projectName }
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label={`Coil fatigue SF (${result.lifeClass ?? "VL"})`}
-                numericValue={result.fatigueSafetyFactor}
+                numericValue={result.fatigueSafetyFactor} unit="—"
                 status={result.fatiguePass ? "safe" : "danger"}
               />
               <CalculatorMetricCard
                 label="Fatigue utilization"
-                numericValue={result.fatigueUtilization ?? undefined}
+                numericValue={result.fatigueUtilization ?? undefined} unit="—"
                 tone={result.fatiguePass ? "green" : "orange"}
               />
             </CalculatorMetricGrid>

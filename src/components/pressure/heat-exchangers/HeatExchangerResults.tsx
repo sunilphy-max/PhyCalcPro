@@ -36,42 +36,42 @@ export default function HeatExchangerResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Heat transfer rate"
-              value={formatEngineeringValue(fromBase(result.heatTransferRate, "power", "W"), "W")}
+              numericValue={fromBase(result.heatTransferRate, "power", "W")} unit="W"
               tone="red"
             />
             <CalculatorMetricCard
               label="Log mean TD"
-              value={formatEngineeringValue(result.LMTD, "K")}
+              numericValue={result.LMTD} unit="K"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Effectiveness"
-              value={formatEngineeringValue(result.effectiveness * 100, "%")}
+              numericValue={result.effectiveness * 100} unit="%"
               tone="purple"
             />
             <CalculatorMetricCard
               label="NTU"
-              numericValue={result.NTU}
+              numericValue={result.NTU} unit="—"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Design area"
-              value={formatEngineeringValue(result.area, "m²")}
+              numericValue={result.area} unit="m²"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Required area"
-              value={formatEngineeringValue(result.requiredArea, "m²")}
+              numericValue={result.requiredArea} unit="m²"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Cold outlet temp"
-              value={formatEngineeringValue(result.coldOutletTemp, "°C")}
+              numericValue={result.coldOutletTemp} unit="°C"
               tone="green"
             />
             <CalculatorMetricCard
               label="Q maximum"
-              value={formatEngineeringValue(fromBase(result.Qmax, "power", "W"), "W")}
+              numericValue={fromBase(result.Qmax, "power", "W")} unit="W"
               tone="orange"
             />
           </CalculatorMetricGrid>

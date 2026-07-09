@@ -67,40 +67,40 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Pinion pitch diameter"
-              value={`${formatDisplayNumber(fromBase(result.pitchDiameterPinion, "length", lengthUnit))} ${lengthUnit}`}
+              numericValue={fromBase(result.pitchDiameterPinion, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
             <CalculatorMetricCard
               label="Gear pitch diameter"
-              value={`${formatDisplayNumber(fromBase(result.pitchDiameterGear, "length", lengthUnit))} ${lengthUnit}`}
+              numericValue={fromBase(result.pitchDiameterGear, "length", lengthUnit)} unit={lengthUnit}
               tone="blue"
             />
-            <CalculatorMetricCard label="Actual ratio" numericValue={result.actualRatio} tone="purple" />
-            <CalculatorMetricCard label="Lewis factor" numericValue={result.lewisY} tone="purple" />
+            <CalculatorMetricCard label="Actual ratio" numericValue={result.actualRatio} unit="—" tone="purple" />
+            <CalculatorMetricCard label="Lewis factor" numericValue={result.lewisY} unit="—" tone="purple" />
             <CalculatorMetricCard
               label="Torque"
-              value={`${formatDisplayNumber(result.torque)} N·m`}
+              numericValue={result.torque} unit="N·m"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Tangential force"
-              value={`${formatDisplayNumber(result.tangentialForce)} N`}
+              numericValue={result.tangentialForce} unit="N"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Root bending stress"
-              value={`${formatDisplayNumber(fromBase(result.bendingStress, "stress", stressUnit))} ${stressUnit}`}
+              numericValue={fromBase(result.bendingStress, "stress", stressUnit)} unit={stressUnit}
               tone="amber"
             />
             <CalculatorMetricCard
               label="Allowable stress"
-              value={`${formatDisplayNumber(fromBase(result.allowableStress, "stress", stressUnit))} ${stressUnit}`}
+              numericValue={fromBase(result.allowableStress, "stress", stressUnit)} unit={stressUnit}
               tone="amber"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricCard
             label="Bending safety factor"
-            numericValue={result.safetyFactor}
+            numericValue={result.safetyFactor} unit="—"
             status={result.safetyFactor >= 1.5 ? "safe" : "danger"}
             size="lg"
           />
@@ -108,25 +108,25 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
                 label="ISO 6336 bending S_F"
-                numericValue={result.iso6336BendingSafetyFactor}
+                numericValue={result.iso6336BendingSafetyFactor} unit="—"
                 tone="green"
               />
               <CalculatorMetricCard
                 label="ISO 6336 pitting S_H"
-                numericValue={result.iso6336ContactSafetyFactor ?? 0}
+                numericValue={result.iso6336ContactSafetyFactor ?? 0} unit="—"
                 tone="green"
               />
               {result.scuffingSafetyFactor != null ? (
                 <CalculatorMetricCard
                   label="Scuffing screening"
-                  numericValue={result.scuffingSafetyFactor}
+                  numericValue={result.scuffingSafetyFactor} unit="—"
                   tone="purple"
                 />
               ) : null}
               {result.micropittingSafetyFactor != null ? (
                 <CalculatorMetricCard
                   label="Micropitting screening"
-                  numericValue={result.micropittingSafetyFactor}
+                  numericValue={result.micropittingSafetyFactor} unit="—"
                   tone="purple"
                 />
               ) : null}

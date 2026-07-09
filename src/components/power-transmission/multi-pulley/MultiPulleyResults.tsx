@@ -3,7 +3,6 @@ import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShe
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import type { MultiPulleyResult } from "@/lib/powerTransmission/multi-pulley/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: (MultiPulleyResult & { calculationSpec?: CalculationSpec }) | null;
@@ -34,7 +33,7 @@ export default function MultiPulleyResults({ result, lengthUnit }: Props) {
         <>
           <CalculatorMetricCard
             label="Total belt length"
-            value={formatEngineeringValue(fromBase(result.totalBeltLength, "length", lengthUnit), lengthUnit)}
+            numericValue={fromBase(result.totalBeltLength, "length", lengthUnit)} unit={lengthUnit}
             tone="blue"
             size="lg"
           />
@@ -43,7 +42,8 @@ export default function MultiPulleyResults({ result, lengthUnit }: Props) {
               <CalculatorMetricCard
                 key={i}
                 label={`Wrap — pulley ${i + 1}`}
-                value={`${formatDisplayNumber(wrap)}°`}
+                numericValue={wrap}
+                unit="°"
                 tone={wrap < 120 ? "red" : "blue"}
               />
             ))}
@@ -54,14 +54,15 @@ export default function MultiPulleyResults({ result, lengthUnit }: Props) {
                 <CalculatorMetricCard
                   key={i}
                   label={`Radial load — pulley ${i + 1}`}
-                  value={formatEngineeringValue(load, "N")}
+                  numericValue={load} unit="N"
                 />
               ))}
             </CalculatorMetricGrid>
           ) : null}
           <CalculatorMetricCard
             label="Minimum wrap angle"
-            value={`${formatDisplayNumber(result.minWrapAngle)}°`}
+            numericValue={result.minWrapAngle}
+            unit="°"
             tone={result.minWrapAngle < 120 ? "red" : "green"}
             size="lg"
           />

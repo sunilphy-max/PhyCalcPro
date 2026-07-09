@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import CalculatorResultsTable from "./CalculatorResultsTable";
+import { ResultsTableProvider } from "./ResultsTableContext";
 
 type Props = {
   title?: string;
@@ -8,7 +10,7 @@ type Props = {
   className?: string;
 };
 
-/** Primary results container — matches column buckling module styling. */
+/** Primary results container — unified metrics table plus charts and module-specific output. */
 export default function CalculatorResultsPanel({
   title,
   children,
@@ -23,7 +25,12 @@ export default function CalculatorResultsPanel({
           {title}
         </h2>
       ) : null}
-      <div className="grid min-w-0 grid-cols-1 gap-5">{children}</div>
+      <ResultsTableProvider>
+        <div className="grid min-w-0 grid-cols-1 gap-5">
+          <CalculatorResultsTable />
+          {children}
+        </div>
+      </ResultsTableProvider>
     </div>
   );
 }

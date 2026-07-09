@@ -34,50 +34,50 @@ export default function CamToolpathsResults({ result }: Props) {
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Feed rate"
-              value={formatEngineeringValue(result.feedRate, "mm/min")}
+              numericValue={result.feedRate} unit="mm/min"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Surface speed"
-              value={formatEngineeringValue(result.surfaceSpeed, "m/min")}
+              numericValue={result.surfaceSpeed} unit="m/min"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Chip load"
-              value={formatEngineeringValue(result.feedPerTooth, "mm/tooth")}
+              numericValue={result.feedPerTooth} unit="mm/tooth"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Step-over width"
-              value={formatEngineeringValue(result.stepOverWidth, "mm")}
+              numericValue={result.stepOverWidth} unit="mm"
               tone="purple"
             />
             <CalculatorMetricCard
               label="Axial depth"
-              value={formatEngineeringValue(result.axialDepth, "mm")}
+              numericValue={result.axialDepth} unit="mm"
               tone="orange"
             />
             <CalculatorMetricCard
               label="Radial depth"
-              value={formatEngineeringValue(result.radialDepth, "mm")}
+              numericValue={result.radialDepth} unit="mm"
               tone="orange"
             />
-            <CalculatorMetricCard label="Pass count" numericValue={result.passes} tone="green" />
+            <CalculatorMetricCard label="Pass count" numericValue={result.passes} unit="—" tone="green" />
             <CalculatorMetricCard
               label="Material removal rate"
-              value={formatEngineeringValue(result.materialRemovalRate / 1000, "cm³/min")}
+              numericValue={result.materialRemovalRate / 1000} unit="cm³/min"
               tone="red"
             />
           </CalculatorMetricGrid>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Time per pass"
-              value={formatEngineeringValue(result.timePerPass, "min")}
+              numericValue={result.timePerPass} unit="min"
               tone="blue"
             />
             <CalculatorMetricCard
               label="Total cut time"
-              value={formatEngineeringValue(result.totalCutTime, "min")}
+              numericValue={result.totalCutTime} unit="min"
               tone="green"
               size="lg"
             />
