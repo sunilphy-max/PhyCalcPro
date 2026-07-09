@@ -6,6 +6,7 @@ import { solveCorrosionEngine } from "@/lib/materials/corrosion/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
+import { STEEL_E } from "@/lib/materials/materialDefaults";
 
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
@@ -20,7 +21,14 @@ export function designMaterialSelection(userInputs: ModuleUserInputs): ModuleDes
   const items = ranked.map((m) => ({
     label: m.name,
     utilization: required / m.yieldStress,
-    fields: { material: m.name, E: m.E },
+    fields: {
+      material: m.name,
+      E: m.E,
+      yieldStress: m.yieldStress,
+      ultimateStrength: m.ultimateStrength,
+      density: m.density,
+      poisson: m.poisson,
+    },
     detail: `Sy ${(m.yieldStress / 1e6).toFixed(0)} MPa`,
   }));
   return fromSweep(sweepCatalogForUtilization(items), "Material screening by required allowable stress.");
@@ -62,7 +70,7 @@ export function designRolledSection(userInputs: ModuleUserInputs): ModuleDesignM
   const search = searchBeamSections(
     {
       length: userInputs.length ?? 4,
-      E: userInputs.E ?? 210e9,
+      E: userInputs.E ?? STEEL_E,
       I: 1e-6,
       c: 0.05,
       support: "simply_supported",

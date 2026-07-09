@@ -6,6 +6,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 import type { CircularPlateConfig } from "@/lib/structural/circular-plates/types";
 
 type Boundary = CircularPlateConfig["boundary"];
@@ -31,6 +32,8 @@ type Props = {
   setPressureUnit: Dispatch<SetStateAction<string>>;
   modulusUnit: string;
   setModulusUnit: Dispatch<SetStateAction<string>>;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -55,6 +58,8 @@ export default function CircularPlatesInputs({
   setPressureUnit,
   modulusUnit,
   setModulusUnit,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
   return (
@@ -63,6 +68,18 @@ export default function CircularPlatesInputs({
       description="Uniform pressure on a solid disk — axisymmetric FDM with Roark closed-form validation."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate plate" designAware />}
     >
+      <MaterialFormSection
+        profile="plate-shell"
+        moduleId="circular-plates"
+        material={material}
+        onMaterialChange={onMaterialChange}
+        elasticModulus={modulus}
+        setElasticModulus={setModulus}
+        poisson={poisson}
+        setPoisson={setPoisson}
+        stressUnit={modulusUnit}
+        setStressUnit={setModulusUnit}
+      />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Plate radius"
@@ -88,26 +105,6 @@ export default function CircularPlatesInputs({
             <ModuleUnitSelect moduleId="circular-plates" fieldKey="pressure" value={pressureUnit} onChange={setPressureUnit} />
           }
         />
-        <CalculatorUnitField
-          label="Elastic modulus"
-          value={modulus}
-          onChange={setModulus}
-          unit={
-            <ModuleUnitSelect moduleId="circular-plates" fieldKey="modulus" value={modulusUnit} onChange={setModulusUnit} />
-          }
-        />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Poisson&apos;s ratio</span>
-          <input
-            type="number"
-            step="0.01"
-            min={0}
-            max={0.49}
-            value={poisson}
-            onChange={(e) => setPoisson(Number(e.target.value))}
-            className={calculatorNumberInputClass}
-          />
-        </label>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Radial mesh segments</span>
           <input

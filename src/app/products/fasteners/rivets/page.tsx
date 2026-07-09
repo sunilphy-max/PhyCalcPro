@@ -14,28 +14,9 @@ import RivetInputs from "@/components/fasteners/rivets/RivetInputs";
 import RivetResults from "@/components/fasteners/rivets/RivetResults";
 import { toBase } from "@/lib/units/conversions";
 import { solveRivetEngine } from "@/lib/fasteners/rivets/engine";
-import type { RivetMaterial, RivetResult, RivetType } from "@/lib/fasteners/rivets/types";
-
-const MATERIALS: Record<string, RivetMaterial> = {
-  Steel: {
-    name: "Steel",
-    yieldStress: 250e6,
-    shearStrength: 145e6,
-    bearingStrength: 370e6,
-  },
-  Aluminum: {
-    name: "Aluminum",
-    yieldStress: 150e6,
-    shearStrength: 95e6,
-    bearingStrength: 210e6,
-  },
-  Brass: {
-    name: "Brass",
-    yieldStress: 140e6,
-    shearStrength: 80e6,
-    bearingStrength: 190e6,
-  },
-};
+import type { RivetResult, RivetType } from "@/lib/fasteners/rivets/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { resolveMaterial, toRivetMaterial } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -49,7 +30,7 @@ export default function Page() {
   const [shearUnit, setShearUnit] = useState("N");
   const [axialForce, setAxialForce] = useState(4000);
   const [axialUnit, setAxialUnit] = useState("N");
-  const [material, setMaterial] = useState("Steel");
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("rivet"));
   const [rivetType, setRivetType] = useState<RivetType>("solid");
   const [result, setResult] = useState<RivetResult | null>(null);
 
@@ -60,7 +41,7 @@ export default function Page() {
       quantity: Math.max(1, Math.round(quantity)),
       shearForce: toBase(shearForce, "force", shearUnit),
       axialForce: toBase(axialForce, "force", axialUnit),
-      material: MATERIALS[material] || MATERIALS.Steel,
+      material: toRivetMaterial(resolveMaterial(material, "rivet")),
       rivetType,
     };
 
@@ -94,14 +75,31 @@ export default function Page() {
         moduleId="rivets"
         title="Rivet Joint Strength"
         inputs={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Fastener guidance</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Evaluate rivet joint stress states, bearing strength, and governing failure mode with a simple combined load model.
-              </p>
-            </div>
-          </div>
+          <RivetInputs
+            rivetDiameter={rivetDiameter}
+            setRivetDiameter={setRivetDiameter}
+            rivetDiameterUnit={rivetDiameterUnit}
+            setRivetDiameterUnit={setRivetDiameterUnit}
+            plateThickness={plateThickness}
+            setPlateThickness={setPlateThickness}
+            plateThicknessUnit={plateThicknessUnit}
+            setPlateThicknessUnit={setPlateThicknessUnit}
+            quantity={quantity}
+            setQuantity={setQuantity}
+            shearForce={shearForce}
+            setShearForce={setShearForce}
+            shearUnit={shearUnit}
+            setShearUnit={setShearUnit}
+            axialForce={axialForce}
+            setAxialForce={setAxialForce}
+            axialUnit={axialUnit}
+            setAxialUnit={setAxialUnit}
+            material={material}
+            setMaterial={setMaterial}
+            rivetType={rivetType}
+            setRivetType={setRivetType}
+            onCalculate={calculate}
+          />
         }
         results={
           <RivetResults

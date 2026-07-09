@@ -5,6 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { InternalGearsRackConfig } from "@/lib/machine/internal-gears-rack/types";
 
@@ -115,14 +116,7 @@ export default function InternalGearsRackInputs({
             <ModuleUnitSelect moduleId="internal-gears-rack" fieldKey="faceWidth" value={faceWidthUnit} onChange={setFaceWidthUnit} />
           }
         />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Material</span>
-          <select value={material} onChange={(e) => setMaterial(e.target.value)} className={calculatorNumberInputClass}>
-            <option value="Steel">Steel</option>
-            <option value="Aluminum">Aluminum</option>
-            <option value="Bronze">Bronze</option>
-          </select>
-        </label>
+        <MaterialSelect profile="machine-gear" value={material} onChange={setMaterial} />
       </div>
     </CalculatorInputPanel>
   );

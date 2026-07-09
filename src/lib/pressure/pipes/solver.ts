@@ -1,5 +1,6 @@
 import { generatePressurePipeMesh } from "./mesh";
 import type { PressurePipeConfig, PressurePipeResult, PipeStressSummary } from "./types";
+import { STEEL_YIELD } from "@/lib/materials/materialDefaults";
 
 function buildPipeStressCategories(
   config: PressurePipeConfig,
@@ -11,7 +12,7 @@ function buildPipeStressCategories(
       longitudinalStress * longitudinalStress -
       maxHoopStress * longitudinalStress
   );
-  const allowableS = 138e6;
+  const allowableS = config.allowableStress ?? STEEL_YIELD * 0.55;
 
   const base = {
     hoopStress: maxHoopStress,

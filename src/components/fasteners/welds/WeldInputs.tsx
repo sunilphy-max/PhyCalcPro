@@ -6,7 +6,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass } from "@/components/calculator/styles";
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import type { WeldType } from "@/lib/fasteners/welds/types";
 
 type Props = {
@@ -133,14 +133,7 @@ export default function WeldInputs({
             />
           }
         />
-        <label className="space-y-2 col-span-full">
-          <span className={calculatorFieldLabelClass}>Material</span>
-          <select value={material} onChange={(event) => setMaterial(event.target.value)} className={calculatorSelectClass}>
-            <option value="Steel">Steel</option>
-            <option value="Stainless">Stainless</option>
-            <option value="Aluminum">Aluminum</option>
-          </select>
-        </label>
+        <MaterialSelect profile="weld-base" value={material} onChange={setMaterial} />
       </div>
     </CalculatorInputPanel>
   );

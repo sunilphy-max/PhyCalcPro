@@ -5,6 +5,9 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import MaterialSelect from "@/components/materials/MaterialSelect";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
+import { CUSTOM_MATERIAL } from "@/data/materials";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import type { ShellConfig } from "@/lib/structural/shells/types";
 
@@ -39,16 +42,28 @@ type Props = {
   setModulusUnit: Dispatch<SetStateAction<string>>;
   stressUnit: string;
   setStressUnit: Dispatch<SetStateAction<string>>;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
 export default function ShellsInputs(props: Props) {
+  const handleMaterial = (name: string) => {
+    props.onMaterialChange(name);
+    if (name !== CUSTOM_MATERIAL) {
+      const u = getMaterialFieldUpdates(name, "structural");
+      props.setModulus(u.E / 1e9);
+      props.setAllowableStress(u.yieldStress / 1e6);
+    }
+  };
+
   return (
     <CalculatorInputPanel
       title="Cylindrical shell"
       description="Thin-shell hoop, axial and bending stress with von Mises screening."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate shell" designAware />}
     >
+      <MaterialSelect profile="structural" value={props.material} onChange={handleMaterial} />
       <div className={calculatorInputGridClass}>
         <CalculatorUnitField
           label="Mean radius"

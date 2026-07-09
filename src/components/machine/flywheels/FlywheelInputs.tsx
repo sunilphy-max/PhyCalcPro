@@ -6,6 +6,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
@@ -31,6 +32,8 @@ type Props = {
   setYieldStress: Dispatch<SetStateAction<number>>;
   yieldStressUnit: string;
   setYieldStressUnit: Dispatch<SetStateAction<string>>;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -57,6 +60,8 @@ export default function FlywheelInputs({
   setYieldStress,
   yieldStressUnit,
   setYieldStressUnit,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
   return (
@@ -65,6 +70,17 @@ export default function FlywheelInputs({
       description="Energy storage and inertia design for rotating systems."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate flywheel" designAware />}
     >
+      <MaterialFormSection
+        profile="structural"
+        moduleId="flywheels"
+        material={material}
+        onMaterialChange={onMaterialChange}
+        yieldStrength={yieldStress}
+        setYieldStrength={setYieldStress}
+        stressUnit={yieldStressUnit}
+        setStressUnit={setYieldStressUnit}
+        yieldOnly
+      />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Outer diameter"
@@ -99,14 +115,6 @@ export default function FlywheelInputs({
           }
         />
         <CalculatorNumberField label="Speed (rpm)" value={rpm} onChange={setRpm} />
-        <CalculatorUnitField
-          label="Yield stress"
-          value={yieldStress}
-          onChange={setYieldStress}
-          unit={
-            <ModuleUnitSelect moduleId="gears" fieldKey="stress" value={yieldStressUnit} onChange={setYieldStressUnit} />
-          }
-        />
       </div>
     </CalculatorInputPanel>
   );

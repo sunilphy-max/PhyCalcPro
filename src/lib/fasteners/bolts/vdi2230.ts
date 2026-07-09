@@ -9,6 +9,8 @@
  * heat treatment) and head bearing surface pressure.
  */
 
+import { findMaterial } from "@/data/materials";
+
 export type BoltPropertyClass = "8.8" | "10.9" | "12.9";
 
 export type TighteningMethod =
@@ -40,11 +42,11 @@ export const METRIC_BOLT_SIZES: MetricBoltSize[] = [
   { designation: "M30", d: 0.03, pitch: 0.0035, dw: 0.0427, dh: 0.033 },
 ];
 
-/** ISO 898-1 minimum 0.2 % proof stress (Pa) */
+/** ISO 898-1 minimum 0.2 % proof stress (Pa) — sourced from central material catalog */
 export const PROPERTY_CLASS_RP02: Record<BoltPropertyClass, number> = {
-  "8.8": 640e6,
-  "10.9": 940e6,
-  "12.9": 1100e6,
+  "8.8": findMaterial("Bolt class 8.8")?.yieldStress ?? 640e6,
+  "10.9": findMaterial("Bolt class 10.9")?.yieldStress ?? 940e6,
+  "12.9": findMaterial("Bolt class 12.9")?.yieldStress ?? 1100e6,
 };
 
 /** VDI 2230 tightening (scatter) factor αA guide values */

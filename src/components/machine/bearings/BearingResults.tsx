@@ -12,22 +12,42 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
-import { formatDisplayNumber } from "@/lib/display/formatEngineering";
+import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
+import {
+  BEARING_MANUFACTURER_LABELS,
+  BEARING_TYPE_LABELS,
+  findBearing,
+} from "@/data/catalogs/bearingCatalog";
 
 type Props = {
   result: WithCalculationSpec<BearingResult> | null;
   loadUnit: string;
   speedRpm: number;
+  arrangement?: "single" | "back_to_back" | "face_to_face" | "tandem";
 };
 
-export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
+function utilizationStatus(value: number, limit: number, higherIsSafe: boolean): "safe" | "danger" {
+  return higherIsSafe ? (value >= limit ? "safe" : "danger") : value <= limit ? "safe" : "danger";
+}
+
+export default function BearingResults({
+  result,
+  loadUnit,
+  speedRpm,
+  arrangement = "single",
+}: Props) {
+  const catalogEntry = result?.designation ? findBearing(result.designation) : undefined;
+
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result) return [];
 
     const p0 = result.equivalentLoad;
+    const p0Display = fromBase(p0, "force", loadUnit);
     const loadMultipliers = Array.from({ length: 15 }, (_, i) => 0.5 + i * 0.1);
     const loads = loadMultipliers.map((m) => p0 * m);
+    const loadsDisplay = loads.map((l) => fromBase(l, "force", loadUnit));
     const basicLives = loads.map((p) => {
       const ratio = result.dynamicLoadRatingN / Math.max(p, 1e-9);
       return (result.a1 * Math.pow(ratio, result.lifeExponent) * 1e6) / (Math.max(speedRpm, 1) * 60);
@@ -48,6 +68,17 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
       return (result.a1 * Math.pow(ratio, result.lifeExponent) * 1e6) / (Math.max(n, 1) * 60);
     });
 
+    const utilPoints = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2].map((u) => ({
+      u,
+      life: (result.a1 * Math.pow(1 / u, result.lifeExponent) * 1e6) / (Math.max(speedRpm, 1) * 60),
+    }));
+
+    const staticSafety = loadMultipliers.map((m) => {
+      const p0Scaled = p0 * m;
+      const p0Static = result.staticEquivalentLoad * (p0Scaled / Math.max(p0, 1e-9));
+      return result.staticLoadRatingN / Math.max(p0Static, 1e-9);
+    });
+
     return [
       {
         id: "life-load",
@@ -55,13 +86,14 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
         content: (
           <EngineeringPlot
             title="Rating life vs equivalent load (ISO 281)"
-            x={loads.map((l) => fromBase(l, "force", loadUnit))}
+            x={loadsDisplay}
             y={basicLives}
             yLabel="Basic rating life L10"
             xLabel="Equivalent load P"
             xUnit={loadUnit}
             unitLabel="h"
             series={[{ y: modifiedLives, label: "Modified life Lnm (a_ISO)" }]}
+            probeX={p0Display}
             showPeak={false}
           />
         ),
@@ -78,6 +110,40 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
             xLabel="Speed"
             xUnit="RPM"
             unitLabel="h"
+            probeX={speedRpm}
+            showPeak={false}
+          />
+        ),
+      },
+      {
+        id: "utilization",
+        label: "P/C margin",
+        content: (
+          <EngineeringPlot
+            title="Dynamic utilization P/C vs rating life"
+            x={utilPoints.map((p) => p.u)}
+            y={utilPoints.map((p) => p.life)}
+            yLabel="Basic rating life L10"
+            xLabel="Dynamic utilization P/C"
+            xUnit="—"
+            unitLabel="h"
+            probeX={result.dynamicUtilization}
+            showPeak={false}
+          />
+        ),
+      },
+      {
+        id: "static-margin",
+        label: "Static margin",
+        content: (
+          <EngineeringPlot
+            title="Static safety s₀ = C₀/P₀ vs load level"
+            x={loadsDisplay}
+            y={staticSafety}
+            yLabel="Static safety factor s₀"
+            xLabel="Equivalent load P"
+            xUnit={loadUnit}
+            probeX={p0Display}
             showPeak={false}
           />
         ),
@@ -101,6 +167,7 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
       csvRows={
         result
           ? [
+              { metric: "designation", value: result.designation ?? "" },
               { metric: "equivalentLoad", value: result.equivalentLoad },
               { metric: "staticEquivalentLoad", value: result.staticEquivalentLoad },
               { metric: "requiredDynamicRating", value: result.requiredDynamicRating },
@@ -109,12 +176,22 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
               { metric: "dynamicUtilization", value: result.dynamicUtilization },
               { metric: "staticSafetyFactor", value: result.staticSafetyFactor },
               { metric: "speedMargin", value: result.speedMargin ?? 0 },
+              { metric: "lifeUtilization", value: result.lifeUtilization },
             ]
           : undefined
       }
     >
       {result ? (
         <>
+          {result.bearingType ? (
+            <BearingReferenceVisual
+              bearingType={result.bearingType}
+              sealType={catalogEntry?.sealType ?? "open"}
+              arrangement={arrangement}
+              compact
+            />
+          ) : null}
+
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Status"
@@ -122,6 +199,18 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
               status={status}
             />
             <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
+            <CalculatorMetricCard
+              label="Catalog designation"
+              value={result.designation ?? "—"}
+              tone="blue"
+            />
+            <CalculatorMetricCard
+              label="Bearing family"
+              value={BEARING_TYPE_LABELS[result.bearingType]}
+            />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Equivalent load P"
               value={`${formatDisplayNumber(fromBase(result.equivalentLoad, "force", loadUnit))} ${loadUnit}`}
@@ -133,23 +222,27 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
               tone="blue"
               size="lg"
             />
-          </CalculatorMetricGrid>
-
-          <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Modified life Lnm"
               value={`${formatDisplayNumber(result.modifiedLife)} h`}
               tone="purple"
             />
             <CalculatorMetricCard
+              label="Static equivalent P₀"
+              value={`${formatDisplayNumber(fromBase(result.staticEquivalentLoad, "force", loadUnit))} ${loadUnit}`}
+            />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricGrid cols={4}>
+            <CalculatorMetricCard
               label="Dynamic utilization P/C"
               numericValue={result.dynamicUtilization}
-              status={result.dynamicUtilization <= 1 ? "safe" : "danger"}
+              status={utilizationStatus(result.dynamicUtilization, 1, false)}
             />
             <CalculatorMetricCard
               label="Static safety s₀ = C₀/P₀"
               numericValue={result.staticSafetyFactor}
-              status={result.staticSafetyFactor >= 1 ? "safe" : "danger"}
+              status={utilizationStatus(result.staticSafetyFactor, 1, true)}
             />
             <CalculatorMetricCard
               label="Speed margin n_lim/n"
@@ -157,6 +250,11 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
               status={
                 result.speedMargin == null || result.speedMargin >= 1 ? "safe" : "danger"
               }
+            />
+            <CalculatorMetricCard
+              label="Life utilization L_req/L10"
+              numericValue={result.lifeUtilization}
+              status={utilizationStatus(result.lifeUtilization, 1, false)}
             />
           </CalculatorMetricGrid>
 
@@ -171,21 +269,29 @@ export default function BearingResults({ result, loadUnit, speedRpm }: Props) {
               value={`${formatDisplayNumber(fromBase(result.dynamicLoadRatingN, "force", loadUnit))} / ${formatDisplayNumber(fromBase(result.staticLoadRatingN, "force", loadUnit))} ${loadUnit}`}
             />
             <CalculatorMetricCard
-              label="Life utilization"
-              numericValue={result.lifeUtilization}
-              status={result.lifeUtilization <= 1 ? "safe" : "danger"}
+              label="Manufacturer"
+              value={
+                catalogEntry
+                  ? BEARING_MANUFACTURER_LABELS[catalogEntry.manufacturer]
+                  : "—"
+              }
             />
           </CalculatorMetricGrid>
 
-          {result.geometry && (
-            <p className="text-sm text-slate-600">
-              {result.designation}: bore {result.geometry.boreMm} mm × OD{" "}
-              {result.geometry.outerDiameterMm} mm × B {result.geometry.widthMm} mm
-              {result.limitingSpeedRpm != null && ` · n_lim = ${result.limitingSpeedRpm} RPM (grease)`}
-            </p>
-          )}
+          {result.geometry ? (
+            <CalculatorMetricGrid cols={1}>
+              <CalculatorMetricCard
+                label="Catalog geometry"
+                value={`${result.designation} · d = ${result.geometry.boreMm} mm · D = ${result.geometry.outerDiameterMm} mm · B = ${result.geometry.widthMm} mm${
+                  result.limitingSpeedRpm != null
+                    ? ` · n_lim = ${formatEngineeringValue(result.limitingSpeedRpm, { decimals: 0 })} RPM`
+                    : ""
+                }${catalogEntry?.series ? ` · series ${catalogEntry.series}` : ""}`}
+              />
+            </CalculatorMetricGrid>
+          ) : null}
 
-          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="life-load" label="Result chart" />
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="life-load" label="Result charts" />
         </>
       ) : null}
     </CalculatorResultsShell>

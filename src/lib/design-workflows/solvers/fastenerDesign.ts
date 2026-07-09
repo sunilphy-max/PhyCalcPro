@@ -9,14 +9,16 @@ import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
 
 import { COARSE_THREADS } from "@/data/catalogs/boltTable";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { resolveMaterial, toWeldMaterial, toRivetMaterial } from "@/lib/materials/materialCatalogService";
+import { DEFAULT_STRUCTURAL, STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
 
-const WELD_STEEL = { name: "Steel", strength: 410e6, yieldStress: 250e6 };
-const RIVET_MATERIAL = {
-  name: "Steel",
-  yieldStress: 250e6,
-  shearStrength: 180e6,
-  bearingStrength: 350e6,
-};
+const WELD_DEFAULT = toWeldMaterial(
+  resolveMaterial(getDefaultMaterialNameForProfile("weld-base"), "weld-base")
+);
+const RIVET_DEFAULT = toRivetMaterial(
+  resolveMaterial(getDefaultMaterialNameForProfile("rivet"), "rivet")
+);
 
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
@@ -52,7 +54,7 @@ export function designWeldThroat(userInputs: ModuleUserInputs): ModuleDesignMode
         shearForce: userInputs.shearForce ?? userInputs.maxForce ?? 20000,
         axialForce: userInputs.axialLoad ?? 0,
         eccentricity: userInputs.eccentricity ?? 0,
-        material: WELD_STEEL,
+        material: WELD_DEFAULT,
       });
       const util = 1.5 / Math.max(res.safetyFactorOverall, 1e-9);
       return {
@@ -78,7 +80,7 @@ export function designRivetDiameter(userInputs: ModuleUserInputs): ModuleDesignM
         quantity: userInputs.count ?? 2,
         shearForce: userInputs.maxForce ?? 8000,
         axialForce: userInputs.axialLoad ?? 0,
-        material: RIVET_MATERIAL,
+        material: RIVET_DEFAULT,
         rivetType: "solid",
       });
       const util = 1.5 / Math.max(res.safetyFactorOverall, 1e-9);
@@ -112,7 +114,7 @@ export function designKeySelection(userInputs: ModuleUserInputs): ModuleDesignMo
         keyWidth: k.w / 1000,
         keyHeight: k.h / 1000,
         keyLength: userInputs.length ?? 0.04,
-        yieldStress: 250e6,
+        yieldStress: STEEL_YIELD,
         keyType: "parallel",
       });
       const util = (userInputs.torque ?? 800) / Math.max(res.capacityTorque, 1e-9);
@@ -140,7 +142,7 @@ export function designShaftHubInterference(userInputs: ModuleUserInputs): Module
         hubLength: userInputs.length ?? 0.04,
         interference: um / 1e6,
         frictionCoeff: 0.12,
-        modulus: 210e9,
+        modulus: STEEL_E,
       });
       const util = (userInputs.torque ?? 500) / Math.max(res.frictionTorque, 1e-9);
       return {
@@ -165,7 +167,7 @@ export function designPinDiameter(userInputs: ModuleUserInputs): ModuleDesignMod
         plateThickness: 0.01,
         pinCount: userInputs.count ?? 1,
         force: userInputs.maxForce ?? 12000,
-        pinMaterialYield: 250e6,
+        pinMaterialYield: STEEL_YIELD,
       });
       const util = 1.5 / Math.max(Math.min(res.shearSafety, res.bearingSafety), 1e-9);
       return {
@@ -193,8 +195,8 @@ export function designSafetyFactorTarget(userInputs: ModuleUserInputs): ModuleDe
         shearForce: userInputs.shearForce ?? 5000,
         bendingMoment: userInputs.bendingMoment ?? 200,
         torque: userInputs.torque ?? 150,
-        yieldStrength: userInputs.yieldStress ?? 250e6,
-        ultimateStrength: userInputs.ultimateStrength ?? 400e6,
+        yieldStrength: userInputs.yieldStress ?? STEEL_YIELD,
+        ultimateStrength: userInputs.ultimateStrength ?? DEFAULT_STRUCTURAL.ultimateStrength,
       });
       const util = target / Math.max(res.governingFactor, 1e-9);
       return {

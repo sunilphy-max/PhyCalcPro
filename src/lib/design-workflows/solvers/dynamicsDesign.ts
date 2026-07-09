@@ -6,6 +6,7 @@ import { solveSuspensionEngine } from "@/lib/dynamics/suspension/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
+import { STEEL_DENSITY, STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
 
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
@@ -22,10 +23,10 @@ export function designVibrationMargin(userInputs: ModuleUserInputs): ModuleDesig
     try {
       const res = solveVibrationEngine({
         length: userInputs.length ?? 1,
-        E: userInputs.E ?? 210e9,
+        E: userInputs.E ?? STEEL_E,
         I,
         A: 0.001,
-        rho: 7850,
+        rho: STEEL_DENSITY,
         segments: 20,
         support: "simply_supported",
         dampingRatio: userInputs.dampingRatio ?? 0.05,
@@ -59,7 +60,7 @@ export function designRotationSystem(userInputs: ModuleUserInputs): ModuleDesign
         power: userInputs.power ?? 10000,
       });
       const util = (userInputs.targetSafetyFactor ?? 1.5) / Math.max(
-        (userInputs.yieldStress ?? 250e6) / Math.max(res.centripetalForce / (Math.PI * r * r), 1),
+        (userInputs.yieldStress ?? STEEL_YIELD) / Math.max(res.centripetalForce / (Math.PI * r * r), 1),
         1e-9
       );
       return {
@@ -84,7 +85,7 @@ export function designImpactAbsorber(userInputs: ModuleUserInputs): ModuleDesign
         velocityChange: userInputs.velocity ?? 2,
         impactDuration: userInputs.impactDuration ?? 0.01,
         crossSectionArea: a,
-        yieldStrength: userInputs.yieldStress ?? 250e6,
+        yieldStrength: userInputs.yieldStress ?? STEEL_YIELD,
       });
       const util = (userInputs.targetSafetyFactor ?? 1.5) / Math.max(res.safetyFactor, 1e-9);
       return {

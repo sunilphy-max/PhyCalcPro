@@ -8,6 +8,7 @@ import { searchBeamSections } from "@/lib/design-workflows/solvers/beamDesign";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
+import { STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
 
 function resultFromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
@@ -23,7 +24,7 @@ function resultFromSweep(
 export function designPlateThickness(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const length = userInputs.length ?? 1;
   const width = userInputs.width ?? 0.8;
-  const E = userInputs.E ?? 210e9;
+  const E = userInputs.E ?? STEEL_E;
   const q = userInputs.pressure ?? userInputs.maxForce ?? 5000;
   const deflectionLimit = userInputs.deflectionLimit ?? length / 250;
   const allowable = userInputs.allowableStressPa ?? 170e6;
@@ -65,7 +66,7 @@ export function designPlateThickness(userInputs: ModuleUserInputs): ModuleDesign
 
 export function designCircularPlateThickness(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const radius = userInputs.length ?? 0.25;
-  const modulus = userInputs.E ?? 210e9;
+  const modulus = userInputs.E ?? STEEL_E;
   const pressure = userInputs.pressure ?? userInputs.maxForce ?? 8000;
   const deflectionLimit = userInputs.deflectionLimit ?? radius / 100;
   const thicknessesMm = [3, 4, 5, 6, 8, 10, 12, 16, 20];
@@ -101,7 +102,7 @@ export function designFrameSection(userInputs: ModuleUserInputs): ModuleDesignMo
   const span = userInputs.length ?? 6;
   const height = userInputs.height ?? 3;
   const load = userInputs.maxForce ?? 20000;
-  const E = userInputs.E ?? 210e9;
+  const E = userInputs.E ?? STEEL_E;
   const targetSf = userInputs.targetSafetyFactor ?? 1.5;
   const search = searchBeamSections(
     {
@@ -140,7 +141,7 @@ export function designFrameSection(userInputs: ModuleUserInputs): ModuleDesignMo
 export function designTrussSection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const span = userInputs.length ?? 8;
   const load = userInputs.maxForce ?? 15000;
-  const E = userInputs.E ?? 210e9;
+  const E = userInputs.E ?? STEEL_E;
   const areas = [0.0005, 0.001, 0.0015, 0.002, 0.003, 0.004, 0.005];
 
   const items = areas.map((area) => {
@@ -171,7 +172,7 @@ export function designTrussSection(userInputs: ModuleUserInputs): ModuleDesignMo
 }
 
 export function designCombinedLoadingSection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const yieldStrength = userInputs.allowableStressPa ?? 250e6;
+  const yieldStrength = userInputs.allowableStressPa ?? STEEL_YIELD;
   const targetSf = userInputs.targetSafetyFactor ?? 1.5;
   const sizesMm = [40, 50, 60, 75, 90, 100, 120, 150];
 
@@ -223,7 +224,7 @@ function designShellThickness(userInputs: ModuleUserInputs): ModuleDesignModeRes
         internalPressure: pressure,
         axialForce: userInputs.axialLoad ?? 0,
         bendingMoment: userInputs.bendingMoment ?? 0,
-        modulus: userInputs.E ?? 210e9,
+        modulus: userInputs.E ?? STEEL_E,
         poisson: 0.3,
         endCondition: "closed",
         allowableStress: allowable,

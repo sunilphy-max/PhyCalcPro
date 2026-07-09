@@ -15,6 +15,9 @@ import TrussResults from "@/components/structural/trusses/TrussResults";
 import { toBase } from "@/lib/units/conversions";
 import { solveTrussEngine } from "@/lib/structural/trusses/engine";
 import type { TrussResult } from "@/lib/structural/trusses/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E } from "@/lib/materials/materialDefaults";
+import { createMaterialHandler } from "@/components/materials/MaterialFormSection";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -23,7 +26,12 @@ export default function Page() {
   const [height, setHeight] = useState(1.2);
   const [panels, setPanels] = useState(4);
   const [area, setArea] = useState(0.005);
-  const [E, setE] = useState(210e9);
+  const [E, setE] = useState(STEEL_E);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("structural"));
+  const handleMaterialChange = useCallback(
+    createMaterialHandler("structural", setMaterial, { setElasticModulus: setE }),
+    []
+  );
   const [load, setLoad] = useState(10000);
   const [spanUnit, setSpanUnit] = useState("m");
   const [heightUnit, setHeightUnit] = useState("m");
@@ -111,6 +119,8 @@ export default function Page() {
           sectionDesignation={sectionDesignation}
           setSectionDesignation={setSectionDesignation}
           onSectionApplied={applySectionProperties}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
       }

@@ -17,6 +17,10 @@ import { toBase } from "@/lib/units/conversions";
 import { solveWormGearEngine } from "@/lib/machine/worm-gears/engine";
 import type { WormGearResult } from "@/lib/machine/worm-gears/types";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -38,7 +42,13 @@ export default function Page() {
   const [faceWidth, setFaceWidth] = useState(50);
   const [frictionCoeff, setFrictionCoeff] = useState(0.05);
   const [leadAngleDeg, setLeadAngleDeg] = useState(5);
-  const [yieldStress, setYieldStress] = useState(250);
+  const [yieldStress, setYieldStress] = useState(STEEL_YIELD / 1e6);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("machine-gear"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name === CUSTOM_MATERIAL) return;
+    setYieldStress(getMaterialFieldUpdates(name, "machine-gear").yieldStress / 1e6);
+  }, []);
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [stressUnit, setStressUnit] = useState("MPa");
   const [result, setResult] = useState<(WormGearResult & { calculationSpec?: CalculationSpec }) | null>(null);
@@ -117,6 +127,8 @@ export default function Page() {
           setLengthUnit={setLengthUnit}
           stressUnit={stressUnit}
           setStressUnit={setStressUnit}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
       }

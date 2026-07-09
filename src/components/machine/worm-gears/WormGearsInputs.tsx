@@ -5,6 +5,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 
 type Props = {
@@ -32,6 +33,8 @@ type Props = {
   setLengthUnit: Dispatch<SetStateAction<string>>;
   stressUnit: string;
   setStressUnit: Dispatch<SetStateAction<string>>;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -60,6 +63,8 @@ export default function WormGearsInputs({
   setLengthUnit,
   stressUnit,
   setStressUnit,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
   return (
@@ -68,6 +73,17 @@ export default function WormGearsInputs({
       description="Estimate ratio, efficiency, contact stress and axial load for a worm-and-wheel set."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Calculate worm drive" designAware />}
     >
+      <MaterialFormSection
+        profile="structural"
+        moduleId="worm-gears"
+        material={material}
+        onMaterialChange={onMaterialChange}
+        yieldStrength={yieldStress}
+        setYieldStrength={setYieldStress}
+        stressUnit={stressUnit}
+        setStressUnit={setStressUnit}
+        yieldOnly
+      />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Power"
@@ -142,14 +158,6 @@ export default function WormGearsInputs({
             className={calculatorNumberInputClass}
           />
         </label>
-        <CalculatorUnitField
-          label="Yield stress"
-          value={yieldStress}
-          onChange={setYieldStress}
-          unit={
-            <ModuleUnitSelect moduleId="worm-gears" fieldKey="stress" value={stressUnit} onChange={setStressUnit} />
-          }
-        />
       </div>
     </CalculatorInputPanel>
   );

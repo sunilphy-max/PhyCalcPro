@@ -1,5 +1,6 @@
 "use client";
 
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
@@ -28,6 +29,8 @@ type Props = {
   setE: (value: number) => void;
   EUnit: string;
   setEUnit: (value: string) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   segments: number;
   setSegments: (value: number) => void;
   onCalculate: () => void;
@@ -54,6 +57,8 @@ export default function PressureVesselInputs({
   setE,
   EUnit,
   setEUnit,
+  material,
+  onMaterialChange,
   segments,
   setSegments,
   onCalculate,
@@ -65,6 +70,7 @@ export default function PressureVesselInputs({
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vessel FEM" designAware />}
     >
       <div className={`${calculatorInputGridClass}`}>
+        <MaterialSelect profile="pressure" value={material} onChange={onMaterialChange} />
         <CalculatorUnitField
           label="Radius"
           value={radius}

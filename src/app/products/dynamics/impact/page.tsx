@@ -19,6 +19,10 @@ import { solveImpactEngine } from "@/lib/dynamics/impact/engine";
 import type { ImpactConfig, ImpactResult } from "@/lib/dynamics/impact/types";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { toBaseUnit } from "@/lib/physics/units";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 const profile = moduleUnitProfiles.impact;
 
@@ -42,7 +46,13 @@ export default function Page() {
   const [durationUnit, setDurationUnit] = useState(profile.duration.defaultUnit);
   const [crossSectionArea, setCrossSectionArea] = useState(100);
   const [areaUnit, setAreaUnit] = useState(profile.area.defaultUnit);
-  const [yieldStrength, setYieldStrength] = useState(250);
+  const [yieldStrength, setYieldStrength] = useState(STEEL_YIELD / 1e6);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("structural"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name === CUSTOM_MATERIAL) return;
+    setYieldStrength(getMaterialFieldUpdates(name, "structural").yieldStress / 1e6);
+  }, []);
   const [stressUnit, setStressUnit] = useState(profile.stress.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<ImpactResult> | null>(null);
 
@@ -111,6 +121,8 @@ export default function Page() {
             setYieldStrength={setYieldStrength}
             stressUnit={stressUnit}
             setStressUnit={setStressUnit}
+            material={material}
+            onMaterialChange={handleMaterialChange}
             onCalculate={calculate}
           />
         }

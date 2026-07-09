@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import ExtensionSpringInputs from "@/components/springs/extension-springs/ExtensionSpringInputs";
@@ -23,6 +23,7 @@ import type { SpringWireType, HookType } from "@/lib/springs/shared/wireStrength
 import type { En13906LifeClass, En13906WireQuality } from "@/lib/springs/shared/en13906Fatigue";
 import { fromBase } from "@/lib/units/conversions";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+import { getWireGradeModuli } from "@/lib/materials/springWireGrades";
 
 type ExtensionSpringProjectData = {
   wireDiameter: number;
@@ -58,7 +59,7 @@ export default function Page() {
   const [activeCoils, setActiveCoils] = useState(10);
   const [freeLength, setFreeLength] = useState(60);
   const [deflection, setDeflection] = useState(15);
-  const [modulus, setModulus] = useState(81);
+  const [modulus, setModulus] = useState(() => (getWireGradeModuli("music")?.G ?? 81e9) / 1e9);
   const [ultimateStrength, setUltimateStrength] = useState(1400);
   const [initialTension, setInitialTension] = useState(5);
   const [hookType, setHookType] = useState<HookType>("machine");
@@ -120,6 +121,17 @@ export default function Page() {
   });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
+
+  const handleWireTypeChange = useCallback(
+    (type: SpringWireType) => {
+      setWireType(type);
+      const moduli = getWireGradeModuli(type);
+      if (moduli) {
+        setModulus(fromBase(moduli.G, "stress", modulusUnit));
+      }
+    },
+    [modulusUnit]
+  );
 
   const runCheck = () => {
     const raw = solveExtensionSpringEngine({
@@ -222,7 +234,7 @@ export default function Page() {
           ultimateStrength={ultimateStrength}
           setUltimateStrength={setUltimateStrength}
           wireType={wireType}
-          setWireType={setWireType}
+          setWireType={handleWireTypeChange}
           initialTension={initialTension}
           setInitialTension={setInitialTension}
           hookType={hookType}

@@ -17,10 +17,10 @@ import type { BeamApplicationId } from "@/lib/structural/beams/applicationPreset
  */
 export function useApplicationPreset(moduleId: string | undefined) {
   const { designCode } = useDesignCode();
-  const { userInputs } = useDesignWorkflow();
+  const { mergedUserInputs } = useDesignWorkflow();
 
   const presetId =
-    userInputs.applicationPresetId ??
+    mergedUserInputs.applicationPresetId ??
     (moduleId ? getDefaultPresetId(moduleId, designCode) : "general_mechanics");
 
   const preset = useMemo(
@@ -53,10 +53,10 @@ export function useOnApplicationPresetChange(
   handler: ApplyHandler
 ) {
   const { presetId, preset } = useApplicationPreset(moduleId);
-  const { userInputs } = useDesignWorkflow();
+  const { mergedUserInputs } = useDesignWorkflow();
 
   useEffect(() => {
-    if (!moduleId || !preset || userInputs.applicationPresetId == null) return;
+    if (!moduleId || !preset || mergedUserInputs.applicationPresetId == null) return;
     handler(preset, presetId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to preset id changes
   }, [presetId]);

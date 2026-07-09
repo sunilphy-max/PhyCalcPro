@@ -6,7 +6,9 @@ import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
-import { calculatorInputGridClass } from "@/components/calculator/styles";
+import MaterialSelect from "@/components/materials/MaterialSelect";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
+import { CUSTOM_MATERIAL } from "@/data/materials";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
@@ -39,6 +41,8 @@ type Props = {
   sectionDesignation: string;
   setSectionDesignation: (value: string) => void;
   onSectionApplied: (designation: string, section: RolledSectionProps) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -72,8 +76,18 @@ export default function FrameInputs({
   sectionDesignation,
   setSectionDesignation,
   onSectionApplied,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
+  const handleMaterial = (name: string) => {
+    onMaterialChange(name);
+    if (name !== CUSTOM_MATERIAL) {
+      const u = getMaterialFieldUpdates(name, "structural");
+      setE(u.E);
+    }
+  };
+
   return (
     <CalculatorInputPanel
       title="Frame geometry"
@@ -121,6 +135,7 @@ export default function FrameInputs({
             <ModuleUnitSelect moduleId="sections" fieldKey="inertia" value={inertiaUnit} onChange={setInertiaUnit} />
           }
         />
+        <MaterialSelect profile="structural" value={material} onChange={handleMaterial} />
         <CalculatorUnitField
           label="Young's modulus"
           value={E}

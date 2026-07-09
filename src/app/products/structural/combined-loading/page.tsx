@@ -18,6 +18,10 @@ import { normalizeFieldValue } from "@/components/shared/ModuleUnitField";
 import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/engine";
 import type { CombinedLoadingConfig, CombinedLoadingResult } from "@/lib/structural/combinedLoading/types";
 import type { WithCalculationSpec } from "@/lib/standards/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 const defaults = moduleUnitProfiles["combined-loading"];
 
@@ -47,7 +51,14 @@ export default function Page() {
   const [widthUnit, setWidthUnit] = useState(defaults.sectionWidth.defaultUnit);
   const [height, setHeight] = useState(0.27);
   const [heightUnit, setHeightUnit] = useState(defaults.sectionHeight.defaultUnit);
-  const [yieldStrength, setYieldStrength] = useState(250);
+  const [yieldStrength, setYieldStrength] = useState(STEEL_YIELD / 1e6);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("structural"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name !== CUSTOM_MATERIAL) {
+      setYieldStrength(getMaterialFieldUpdates(name, "structural").yieldStress / 1e6);
+    }
+  }, []);
   const [stressUnit, setStressUnit] = useState(defaults.yieldStrength.defaultUnit);
   const [result, setResult] = useState<WithCalculationSpec<CombinedLoadingResult> | null>(null);
 
@@ -125,9 +136,11 @@ export default function Page() {
             setYieldStrength={setYieldStrength}
             stressUnit={stressUnit}
             setStressUnit={setStressUnit}
+            material={material}
+            onMaterialChange={handleMaterialChange}
             onCalculate={calculate}
           />
-        }
+        }
         results={<CombinedLoadingResults result={result} />}
       />
   );

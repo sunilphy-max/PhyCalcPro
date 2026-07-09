@@ -6,6 +6,7 @@ import CalculatorNumberField from "@/components/calculator/CalculatorNumberField
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass } from "@/components/calculator/styles";
 import type { SupportType } from "@/lib/dynamics/vibrations/types";
 
@@ -36,6 +37,8 @@ type Props = {
   setSupport: (value: SupportType) => void;
   dampingRatio: number;
   setDampingRatio: (value: number) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -66,6 +69,8 @@ export default function VibrationInputs({
   setSupport,
   dampingRatio,
   setDampingRatio,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
   return (
@@ -74,6 +79,7 @@ export default function VibrationInputs({
       description="Natural frequency and resonance screening."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run vibration analysis" designAware />}
     >
+      <MaterialSelect profile="dynamics" value={material} onChange={onMaterialChange} />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Beam length"

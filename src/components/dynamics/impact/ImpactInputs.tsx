@@ -4,6 +4,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 import { calculatorInputGridClass } from "@/components/calculator/styles";
 
 type Props = {
@@ -27,6 +28,8 @@ type Props = {
   setYieldStrength: (v: number) => void;
   stressUnit: string;
   setStressUnit: (u: string) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -37,6 +40,17 @@ export default function ImpactInputs(props: Props) {
       description="Estimate average impact force and dynamic stress for a sudden loading event."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate impact results" designAware />}
     >
+      <MaterialFormSection
+        profile="structural"
+        moduleId="impact"
+        material={props.material}
+        onMaterialChange={props.onMaterialChange}
+        yieldStrength={props.yieldStrength}
+        setYieldStrength={props.setYieldStrength}
+        stressUnit={props.stressUnit}
+        setStressUnit={props.setStressUnit}
+        yieldOnly
+      />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Mass"
@@ -78,19 +92,6 @@ export default function ImpactInputs(props: Props) {
           onChange={props.setCrossSectionArea}
           unit={
             <ModuleUnitSelect moduleId="impact" fieldKey="area" value={props.areaUnit} onChange={props.setAreaUnit} />
-          }
-        />
-        <CalculatorUnitField
-          label="Yield strength"
-          value={props.yieldStrength}
-          onChange={props.setYieldStrength}
-          unit={
-            <ModuleUnitSelect
-              moduleId="impact"
-              fieldKey="stress"
-              value={props.stressUnit}
-              onChange={props.setStressUnit}
-            />
           }
         />
       </div>

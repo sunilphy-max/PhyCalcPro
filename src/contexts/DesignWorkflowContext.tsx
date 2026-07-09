@@ -25,6 +25,8 @@ type DesignWorkflowContextValue = {
   /** Editable design targets from the inputs column (merged into userInputs for solvers). */
   designTargets: ModuleUserInputs;
   setDesignTargets: Dispatch<SetStateAction<ModuleUserInputs>>;
+  /** userInputs merged with designTargets — use for preset/mode UI reads after patchDesignTarget. */
+  mergedUserInputs: ModuleUserInputs;
   patchDesignTarget: <K extends keyof ModuleUserInputs>(
     key: K,
     value: ModuleUserInputs[K]
@@ -64,6 +66,11 @@ export function DesignWorkflowProvider({
     applyHandlerRef.current?.(fields);
   }, []);
 
+  const mergedUserInputs = useMemo(
+    () => ({ ...userInputs, ...designTargets }),
+    [userInputs, designTargets]
+  );
+
   const value = useMemo(
     () => ({
       moduleId,
@@ -73,6 +80,7 @@ export function DesignWorkflowProvider({
       setUserInputs,
       designTargets,
       setDesignTargets,
+      mergedUserInputs,
       patchDesignTarget,
       applyDesignCandidate,
       registerApplyDesignCandidate,
@@ -82,6 +90,7 @@ export function DesignWorkflowProvider({
       mode,
       userInputs,
       designTargets,
+      mergedUserInputs,
       patchDesignTarget,
       applyDesignCandidate,
       registerApplyDesignCandidate,
@@ -104,6 +113,7 @@ export function useDesignWorkflow(): DesignWorkflowContextValue {
       setUserInputs: noop,
       designTargets: {},
       setDesignTargets: noop,
+      mergedUserInputs: {},
       patchDesignTarget: noop,
       applyDesignCandidate: noop,
       registerApplyDesignCandidate: noop,

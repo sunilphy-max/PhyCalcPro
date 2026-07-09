@@ -15,12 +15,8 @@ import { toBase } from "@/lib/units/conversions";
 import { solveInternalGearsRackEngine } from "@/lib/machine/internal-gears-rack/engine";
 import type { InternalGearsRackMaterial, InternalGearsRackResult } from "@/lib/machine/internal-gears-rack/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-
-const MATERIALS: Record<string, InternalGearsRackMaterial> = {
-  Steel: { name: "Steel", E: 210e9, yieldStress: 250e6, poisson: 0.3 },
-  Aluminum: { name: "Aluminum", E: 70e9, yieldStress: 150e6, poisson: 0.33 },
-  Bronze: { name: "Bronze", E: 103e9, yieldStress: 140e6, poisson: 0.34 },
-};
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { resolveMaterial, toGearMaterial } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -43,7 +39,7 @@ export default function Page() {
   const [gearTeeth, setGearTeeth] = useState(80);
   const [faceWidth, setFaceWidth] = useState(40);
   const [faceWidthUnit, setFaceWidthUnit] = useState("mm");
-  const [material, setMaterial] = useState("Steel");
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("machine-gear"));
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [stressUnit, setStressUnit] = useState("Pa");
   const [result, setResult] = useState<(InternalGearsRackResult & { calculationSpec?: CalculationSpec }) | null>(null);
@@ -60,7 +56,7 @@ export default function Page() {
           pinionTeeth,
           gearTeeth,
           faceWidth: toBase(faceWidth, "length", faceWidthUnit),
-          material: MATERIALS[material] ?? MATERIALS.Steel,
+          material: toGearMaterial(resolveMaterial(material, "machine-gear")) as InternalGearsRackMaterial,
         })
       )
     );

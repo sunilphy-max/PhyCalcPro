@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -73,6 +74,14 @@ export default function Page() {
     "simply_supported" | "cantilever" | "fixed_fixed"
   >("simply_supported");
   const [material, setMaterial] = useState("S275JR");
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get("material");
+    if (q) {
+      const name = decodeURIComponent(q);
+      if (materials.some((m) => m.name === name)) setMaterial(name);
+    }
+  }, [searchParams]);
   const { applicationId } = useBeamApplicationPreset();
   const { patchDesignTarget, mode } = useDesignWorkflow();
   const [sectionDesignation, setSectionDesignation] = useState("");

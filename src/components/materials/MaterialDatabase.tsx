@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { materials, materialCategoryLabels, type MaterialCategory } from "@/data/materials";
 
@@ -69,7 +70,7 @@ export default function MaterialDatabase({ highlightMaterial, querySeed }: Props
         ) : (
           results.map((material) => (
             <div
-              key={material.name}
+              key={material.id}
               className={`rounded-xl border p-4 ${
                 highlightMaterial === material.name
                   ? "border-emerald-300 bg-emerald-50"
@@ -91,6 +92,26 @@ export default function MaterialDatabase({ highlightMaterial, querySeed }: Props
                 <span>ν = {material.poisson}</span>
                 {material.enduranceLimit ? <span>Se = {mpa(material.enduranceLimit)}</span> : null}
                 {material.hardnessHB ? <span>{material.hardnessHB} HB</span> : null}
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href={`/products/structural/beams?material=${encodeURIComponent(material.name)}`}
+                  className="rounded-md border border-slate-200 px-2 py-1 text-xs text-blue-600 hover:bg-slate-100"
+                >
+                  Use in beams
+                </Link>
+                <Link
+                  href={`/products/machine/shafts?material=${encodeURIComponent(material.name)}`}
+                  className="rounded-md border border-slate-200 px-2 py-1 text-xs text-blue-600 hover:bg-slate-100"
+                >
+                  Use in shafts
+                </Link>
+                <Link
+                  href={`/products/structural/columns?material=${encodeURIComponent(material.name)}`}
+                  className="rounded-md border border-slate-200 px-2 py-1 text-xs text-blue-600 hover:bg-slate-100"
+                >
+                  Use in columns
+                </Link>
               </div>
             </div>
           ))

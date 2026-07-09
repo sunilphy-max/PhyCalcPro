@@ -4,7 +4,6 @@ import { Suspense, ReactNode } from "react";
 import DesignCodeSelector from "@/components/shared/DesignCodeSelector";
 import ApplicationPresetSelector from "@/components/shared/ApplicationPresetSelector";
 import { moduleSupportsApplicationPreset } from "@/lib/applications";
-import ReleaseTierBadge from "@/components/qa/ReleaseTierBadge";
 import DesignModeToggle from "@/components/design-workflows/DesignModeToggle";
 import DesignTargetFields from "@/components/design-workflows/DesignTargetFields";
 import ModuleDesignAdvisor from "@/components/design-workflows/ModuleDesignAdvisor";
@@ -13,15 +12,10 @@ import ModuleReferenceDocumentation from "@/components/design-workflows/ModuleRe
 import ModuleContinueWorkflowBar from "@/components/design-workflows/ModuleContinueWorkflowBar";
 import PowerTrainWorkflowStepper from "@/components/design-workflows/PowerTrainWorkflowStepper";
 import PowerTrainAssemblyBootstrap from "@/components/design-workflows/PowerTrainAssemblyBootstrap";
-import WorkflowModeHelp from "@/components/design-workflows/WorkflowModeHelp";
-import CalculationQualityChecklist from "@/components/shared/CalculationQualityChecklist";
 import GuestHistoryBanner from "@/components/shared/GuestHistoryBanner";
 import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
 import { PowerTrainAssemblyProvider, usePowerTrainAssemblyOptional } from "@/contexts/PowerTrainAssemblyContext";
-import { CalculatorReportProvider, useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
-import { getModuleQualityChecklist } from "@/lib/calculation/moduleQualityDefaults";
-import { getBenchmarkStatsFromLastRun } from "@/lib/qa/lastRun";
-import { computeReleaseTier } from "@/lib/qa/maturityGates";
+import { CalculatorReportProvider } from "@/contexts/CalculatorReportContext";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 import { stepIdForModule } from "@/lib/design-workflows/powerTrainAssembly";
@@ -42,19 +36,6 @@ type Props = {
   moduleId?: string;
 };
 
-function ModuleDocumentStatus({ moduleId }: { moduleId?: string }) {
-  const report = useCalculatorReportOptional();
-  const checklist =
-    report?.qualityChecklist ??
-    (moduleId ? getModuleQualityChecklist(moduleId) : null);
-
-  if (!checklist) return null;
-
-  return (
-    <CalculationQualityChecklist title="Document status" checklist={checklist} />
-  );
-}
-
 function CalculatorLayoutBody({
   inputs,
   results,
@@ -66,12 +47,6 @@ function CalculatorLayoutBody({
   moduleId,
 }: Props) {
   const profile = moduleId ? getModuleStandardProfile(moduleId) : undefined;
-  const benchmarkStats = moduleId
-    ? getBenchmarkStatsFromLastRun()[moduleId]
-    : undefined;
-  const releaseTier = moduleId
-    ? computeReleaseTier(moduleId, benchmarkStats)
-    : undefined;
   const designWorkflow = moduleId ? getModuleDesignWorkflow(moduleId) : undefined;
   const powerTrainAssembly = usePowerTrainAssemblyOptional()?.assembly ?? null;
   const showPowerTrainStepper =
@@ -109,7 +84,6 @@ function CalculatorLayoutBody({
                 </h1>
                 {profile ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {releaseTier ? <ReleaseTierBadge tier={releaseTier} /> : null}
                     <span className="text-sm capitalize text-slate-500">
                       Catalog: {profile.validationStatus}
                     </span>
@@ -125,8 +99,7 @@ function CalculatorLayoutBody({
 
             {designWorkflow ? (
               <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-700">
-                <DesignModeToggle workflow={designWorkflow} compact />
-                <WorkflowModeHelp workflow={designWorkflow} />
+                <DesignModeToggle workflow={designWorkflow} />
               </div>
             ) : null}
           </div>
@@ -188,8 +161,6 @@ function CalculatorLayoutBody({
           {designWorkflow ? <ModuleCandidateStrategy workflow={designWorkflow} /> : null}
 
           {designWorkflow ? <ModuleContinueWorkflowBar workflow={designWorkflow} /> : null}
-
-          <ModuleDocumentStatus moduleId={moduleId} />
         </div>
       </div>
   );

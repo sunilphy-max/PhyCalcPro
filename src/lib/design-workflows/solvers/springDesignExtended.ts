@@ -5,6 +5,10 @@ import { solveTorsionSpringEngine } from "@/lib/springs/torsion-springs/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
+import { WIRE_GRADE_MODULI } from "@/lib/materials/springWireGrades";
+
+const DEFAULT_SPRING_G = WIRE_GRADE_MODULI["oil-tempered"].G;
+const DEFAULT_SPRING_RM = 1400e6;
 
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
@@ -19,8 +23,8 @@ export function designSpringModule(moduleId: string, userInputs: ModuleUserInput
       targetRate: userInputs.targetRate ?? 50,
       maxForce: userInputs.maxForce ?? 450,
       maxOD: userInputs.maxOD ?? 0.04,
-      modulus: userInputs.modulus ?? 81e9,
-      ultimateStrength: userInputs.ultimateStrength ?? 1400e6,
+      modulus: userInputs.modulus ?? DEFAULT_SPRING_G,
+      ultimateStrength: userInputs.ultimateStrength ?? DEFAULT_SPRING_RM,
       freeLength: userInputs.freeLength ?? 0.05,
       minSafetyFactor: userInputs.targetSafetyFactor ?? 1.2,
     });
@@ -54,8 +58,8 @@ export function designSpringModule(moduleId: string, userInputs: ModuleUserInput
   if (moduleId === "extension-springs") {
     const targetRate = userInputs.targetRate ?? 40;
     const maxForce = userInputs.maxForce ?? 200;
-    const modulus = userInputs.modulus ?? 81e9;
-    const ultimateStrength = userInputs.ultimateStrength ?? 1400e6;
+    const modulus = userInputs.modulus ?? DEFAULT_SPRING_G;
+    const ultimateStrength = userInputs.ultimateStrength ?? DEFAULT_SPRING_RM;
     const freeLength = userInputs.freeLength ?? 0.06;
     const deflection = userInputs.deflection ?? 0.015;
     const initialTension = userInputs.initialTension ?? 5;
@@ -99,8 +103,8 @@ export function designSpringModule(moduleId: string, userInputs: ModuleUserInput
   }
 
   const targetRate = userInputs.targetRate ?? 0.5;
-  const modulus = userInputs.modulus ?? 210e9;
-  const ultimateStrength = userInputs.ultimateStrength ?? 1400e6;
+  const modulus = userInputs.modulus ?? DEFAULT_SPRING_G;
+  const ultimateStrength = userInputs.ultimateStrength ?? DEFAULT_SPRING_RM;
   const deflectionAngleDeg = userInputs.deflectionAngleDeg ?? 90;
   const wires = designSweepWireDiametersMm().filter((d) => d >= 1 && d <= 5);
   const coilCounts = [6, 8, 10, 12];

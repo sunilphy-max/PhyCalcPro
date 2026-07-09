@@ -113,9 +113,21 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 ## Materials (8 modules)
 
+Central catalog: `src/data/materials.ts` (~80+ grades). Module pickers use `MaterialSelect` with profile filters (`src/lib/materials/materialProfiles.ts`). No local `MATERIALS` maps in product pages (`npm run validate:materials`).
+
+| Grade coverage (user-requested) | Catalog id | Typical modules |
+|--------------------------------|------------|-----------------|
+| ASTM A36 | `astm-a36` | beams, columns, frames, plates |
+| ASTM A572 Gr.50 / Gr.60 | `astm-a572-50`, `astm-a572-60` | structural |
+| 4140 / 4340 Q&T | `42crmo4-4140`, `34crnimo6-4340` | shafts, gears, fatigue handoff |
+| AW-6061 T6 / AW-7075 T6 | `al-6061`, `al-7075` | structural, dynamics, machine |
+| Stainless 304 / 316 / 316L / 2205 | `ss-304`, `ss-316`, `ss-316l`, `ss-2205` | structural, pressure, welds |
+| Plastics POM / PA66 / PEEK / ABS | `pom-c`, `pa66`, `peek`, `abs` | dynamics (E, ρ) |
+| Weld filler E6013 / E7018 | `weld-e6013`, `weld-e7018` | welds (throat allowable) |
+
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **material-db** | Browse | Spot-check E, ν, Sy against MMPDS / matweb for alloys you use. |
+| **material-db** | CI | Spot-check E, ν, Sy against MMPDS / matweb for alloys you use. Cross-calc links apply `?material=` to beams/shafts/columns. |
 | **sections** | CI | Area properties vs CAD section properties. |
 | **rolled-sections** | CI | W/HSS designation lookup vs AISC Steel Construction Manual. |
 | **profiles** | CI | Custom polygon I/A/c vs hand composite sections. |
@@ -123,6 +135,8 @@ Use this document to validate **physics, standards mapping, and design outputs**
 | **temperature-properties** | CI | Interpolated strength derating vs code table. |
 | **fatigue** | CI | Goodman/Gerber + Marin vs Shigley Ex. 6-1. |
 | **corrosion** | CI | Corrosion allowance vs API 510 / company spec. |
+
+Verification JSON cases with named grades: `beams-a36-01`, `shafts-4140-01`, `vibrations-s275-01`.
 
 ---
 

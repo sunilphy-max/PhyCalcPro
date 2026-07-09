@@ -16,7 +16,8 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
 import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
-import { calculatorInputGridTightClass } from "@/components/calculator/styles";
+import MaterialSelect from "@/components/materials/MaterialSelect";
+import { CUSTOM_MATERIAL } from "@/data/materials";
 
 export type SupportPreset = "fixed_left" | "simply_supported" | "custom";
 
@@ -375,17 +376,13 @@ export default function ShaftInputs({
 
       <section className="space-y-3 border-t border-slate-200 pt-4">
         <h3 className="text-sm font-semibold text-slate-900">Material</h3>
-        <select
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        <MaterialSelect
+          profile="machine-shaft"
           value={material}
-          onChange={(e) => setMaterial(e.target.value)}
-        >
-          <option value="Steel">Steel</option>
-          <option value="Aluminum">Aluminum</option>
-          <option value="Titanium">Titanium</option>
-          <option value="custom">Custom</option>
-        </select>
-        {material === "custom" && (
+          onChange={setMaterial}
+          allowCustom
+        />
+        {material === CUSTOM_MATERIAL && (
           <>
             <CalculatorUnitField
               label="Elastic modulus (E)"

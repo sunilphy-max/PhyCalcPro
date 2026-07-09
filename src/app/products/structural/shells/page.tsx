@@ -15,6 +15,10 @@ import { toBase } from "@/lib/units/conversions";
 import { solveShellEngine } from "@/lib/structural/shells/engine";
 import type { ShellResult } from "@/lib/structural/shells/types";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -37,8 +41,17 @@ export default function Page() {
   const [internalPressure, setInternalPressure] = useState(500);
   const [axialForce, setAxialForce] = useState(0);
   const [bendingMoment, setBendingMoment] = useState(0);
-  const [modulus, setModulus] = useState(210);
-  const [allowableStress, setAllowableStress] = useState(170);
+  const [modulus, setModulus] = useState(STEEL_E / 1e9);
+  const [allowableStress, setAllowableStress] = useState(STEEL_YIELD / 1e6);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("structural"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name !== CUSTOM_MATERIAL) {
+      const u = getMaterialFieldUpdates(name, "structural");
+      setModulus(u.E / 1e9);
+      setAllowableStress(u.yieldStress / 1e6);
+    }
+  }, []);
   const [endCondition, setEndCondition] = useState<"open" | "closed">("closed");
   const [lengthUnit, setLengthUnit] = useState("m");
   const [pressureUnit, setPressureUnit] = useState("kPa");
@@ -125,6 +138,8 @@ export default function Page() {
           setModulusUnit={setModulusUnit}
           stressUnit={stressUnit}
           setStressUnit={setStressUnit}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
       }

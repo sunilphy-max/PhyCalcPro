@@ -5,6 +5,7 @@ import { solveHeatExchangerEngine } from "@/lib/pressure/heat-exchangers/engine"
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
+import { PRESSURE_ALLOWABLE, STEEL_E } from "@/lib/materials/materialDefaults";
 
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
@@ -16,8 +17,8 @@ function fromSweep(
 export function designPipeWall(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const pressure = userInputs.pressure ?? userInputs.maxForce ?? 2.5e6;
   const radius = userInputs.length ?? 0.05;
-  const E = userInputs.E ?? 210e9;
-  const allowable = userInputs.allowableStressPa ?? 138e6;
+  const E = userInputs.E ?? STEEL_E;
+  const allowable = userInputs.allowableStressPa ?? PRESSURE_ALLOWABLE;
   const thicknessesMm = [3, 4, 5, 6, 8, 10, 12, 16];
 
   const items = thicknessesMm.map((tMm) => {
@@ -49,8 +50,8 @@ export function designPipeWall(userInputs: ModuleUserInputs): ModuleDesignModeRe
 export function designVesselWall(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const pressure = userInputs.pressure ?? 1.6e6;
   const radius = userInputs.length ?? 0.5;
-  const E = userInputs.E ?? 210e9;
-  const allowable = userInputs.allowableStressPa ?? 138e6;
+  const E = userInputs.E ?? STEEL_E;
+  const allowable = userInputs.allowableStressPa ?? PRESSURE_ALLOWABLE;
   const thicknessesMm = [6, 8, 10, 12, 16, 20, 25];
 
   const items = thicknessesMm.map((tMm) => {

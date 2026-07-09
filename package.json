@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "validate:layout": "node scripts/validate-module-registry.mjs && node scripts/validate-product-layout.mjs",
+    "validate:materials": "tsx scripts/validate-materials.ts",
     "validate:maturity-gates": "tsx scripts/validate-maturity-gates.ts",
     "generate:verification-template": "node scripts/generate-verification-template.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",

@@ -14,6 +14,10 @@ import PressureVesselResults from "@/components/pressure/vessels/PressureVesselR
 import { toBase } from "@/lib/units/conversions";
 import { solvePressureVesselEngine } from "@/lib/pressure/vessels/engine";
 import type { PressureVesselResult } from "@/lib/pressure/vessels/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -26,8 +30,17 @@ export default function Page() {
   const [lengthUnit, setLengthUnit] = useState("m");
   const [pressure, setPressure] = useState(1e6);
   const [pressureUnit, setPressureUnit] = useState("Pa");
-  const [E, setE] = useState(210e9);
+  const [E, setE] = useState(STEEL_E);
   const [EUnit, setEUnit] = useState("Pa");
+  const [allowableStress, setAllowableStress] = useState(STEEL_YIELD * 0.55);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("pressure"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name === CUSTOM_MATERIAL) return;
+    const u = getMaterialFieldUpdates(name, "pressure");
+    setE(u.E);
+    setAllowableStress(u.yieldStress * 0.55);
+  }, []);
   const [segments, setSegments] = useState(40);
   const [result, setResult] = useState<PressureVesselResult | null>(null);
 
@@ -40,6 +53,7 @@ export default function Page() {
       E: toBase(E, "stress", EUnit),
       A: toBase(thickness, "length", thicknessUnit) * toBase(length, "length", lengthUnit),
       segments: Math.max(8, Math.round(segments)),
+      allowableStress,
     };
 
     setResult(wrapResult(solvePressureVesselEngine(config)));
@@ -51,7 +65,8 @@ export default function Page() {
       length: toBase(radius, "length", radiusUnit),
       E: toBase(E, "stress", EUnit),
       thickness: toBase(thickness, "length", thicknessUnit),
-    }), [pressure, pressureUnit, radius, radiusUnit, E, EUnit, thickness, thicknessUnit]);
+      allowableStressPa: allowableStress,
+    }), [pressure, pressureUnit, radius, radiusUnit, E, EUnit, thickness, thicknessUnit, allowableStress]);
 
   useSyncDesignInputs("vessels", designUserInputs);
 
@@ -96,6 +111,8 @@ export default function Page() {
           setE={setE}
           EUnit={EUnit}
           setEUnit={setEUnit}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           segments={segments}
           setSegments={setSegments}
           onCalculate={calculate}

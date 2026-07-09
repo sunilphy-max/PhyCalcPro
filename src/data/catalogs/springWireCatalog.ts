@@ -5,6 +5,7 @@
 
 import { SPRING_WIRE_DIAMETERS_MM } from "@/data/catalogs/standardSeries";
 import { wireUltimateStrengthPa, type SpringWireType } from "@/lib/springs/shared/wireStrength";
+import { WIRE_GRADE_MODULI } from "@/lib/materials/springWireGrades";
 
 export type SpringWireStandard = "EN10270-1" | "ASTM";
 
@@ -23,16 +24,7 @@ export type SpringWireCatalogEntry = {
   densityKgM3: number;
 };
 
-const GRADE_MODULI: Record<
-  Exclude<SpringWireType, "custom">,
-  { G: number; E: number; standard: SpringWireStandard; label: string }
-> = {
-  music: { G: 81e9, E: 210e9, standard: "EN10270-1", label: "SH" },
-  "hard-drawn": { G: 78.5e9, E: 205e9, standard: "ASTM", label: "HD" },
-  "oil-tempered": { G: 77e9, E: 200e9, standard: "ASTM", label: "OT" },
-  "chrome-vanadium": { G: 77e9, E: 200e9, standard: "ASTM", label: "CrV" },
-  "chrome-silicon": { G: 77e9, E: 200e9, standard: "ASTM", label: "CrSi" },
-};
+const GRADE_MODULI = WIRE_GRADE_MODULI;
 
 const CATALOG_GRADES: Exclude<SpringWireType, "custom">[] = [
   "music",
@@ -59,7 +51,7 @@ function buildCatalog(): SpringWireCatalogEntry[] {
         tensileStrengthPa: Rm,
         shearModulusPa: meta.G,
         elasticModulusPa: meta.E,
-        densityKgM3: 7850,
+        densityKgM3: meta.density ?? 7850,
       });
     }
   }

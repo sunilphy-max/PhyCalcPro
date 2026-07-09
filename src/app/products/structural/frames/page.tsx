@@ -17,6 +17,9 @@ import { solveFrameEngine } from "@/lib/structural/frames/engine";
 import type { FrameResult } from "@/lib/structural/frames/types";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E } from "@/lib/materials/materialDefaults";
+import { createMaterialHandler } from "@/components/materials/MaterialFormSection";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -26,7 +29,12 @@ export default function Page() {
   const [segments, setSegments] = useState(3);
   const [area, setArea] = useState(0.005);
   const [I, setI] = useState(1e-5);
-  const [E, setE] = useState(210e9);
+  const [E, setE] = useState(STEEL_E);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("structural"));
+  const handleMaterialChange = useCallback(
+    createMaterialHandler("structural", setMaterial, { setElasticModulus: setE }),
+    []
+  );
   const [load, setLoad] = useState(20000);
   const [spanUnit, setSpanUnit] = useState("m");
   const [heightUnit, setHeightUnit] = useState("m");
@@ -137,6 +145,8 @@ export default function Page() {
           sectionDesignation={sectionDesignation}
           setSectionDesignation={setSectionDesignation}
           onSectionApplied={applySectionProperties}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
         </div>

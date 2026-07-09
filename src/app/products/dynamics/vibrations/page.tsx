@@ -16,20 +16,32 @@ import { normalizeInput } from "@/lib/physics";
 import { solveVibrationEngine } from "@/lib/dynamics/vibrations/engine";
 import type { VibrationResult, SupportType } from "@/lib/dynamics/vibrations/types";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_DENSITY, STEEL_E } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("vibrations");
   const [length, setLength] = useState(5);
   const [lengthUnit, setLengthUnit] = useState("m");
-  const [E, setE] = useState(210e9);
+  const [E, setE] = useState(STEEL_E);
   const [EUnit, setEUnit] = useState("Pa");
   const [A, setA] = useState(0.005);
   const [areaUnit, setAreaUnit] = useState("m2");
   const [I, setI] = useState(8e-6);
   const [inertiaUnit, setInertiaUnit] = useState("m4");
-  const [rho, setRho] = useState(7850);
+  const [rho, setRho] = useState(STEEL_DENSITY);
   const [rhoUnit, setRhoUnit] = useState("kg/m3");
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("dynamics"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name === CUSTOM_MATERIAL) return;
+    const u = getMaterialFieldUpdates(name, "dynamics");
+    setE(u.E);
+    setRho(u.density);
+  }, []);
   const [segments, setSegments] = useState(12);
   const [support, setSupport] = useState<SupportType>("simply_supported");
   const [dampingRatio, setDampingRatio] = useState(0.02);
@@ -129,6 +141,8 @@ export default function Page() {
           setSupport={setSupport}
           dampingRatio={dampingRatio}
           setDampingRatio={setDampingRatio}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
       }

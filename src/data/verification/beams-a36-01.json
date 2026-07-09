@@ -1,0 +1,23 @@
+{
+  "id": "beams-a36-01",
+  "moduleId": "beams",
+  "designCode": "US",
+  "description": "ASTM A36 simply supported beam — catalog E = 200 GPa",
+  "inputs": {
+    "length": 5,
+    "E": 200000000000,
+    "I": 0.00005,
+    "A": 0.01,
+    "c": 0.1,
+    "support": "simply_supported",
+    "meshSegments": 10,
+    "applicationId": "general",
+    "loads": [{ "id": "p1", "type": "point", "value": 10000, "position": 2.5 }]
+  },
+  "expected": {
+    "maxDeflection": 0.0026041666666666665,
+    "maxMoment": 12500
+  },
+  "tolerancePercent": 2,
+  "source": "Catalog ASTM A36 — E from materials.ts"
+}

@@ -1,13 +1,12 @@
 "use client";
 
-import { CheckCircle2, GitCompare, Ruler } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, GitCompare, HelpCircle, Ruler } from "lucide-react";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import type { ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
-import { getWorkflowModeLabel } from "@/lib/design-workflows/workflowModeLabels";
 
 type Props = {
   workflow: ModuleDesignWorkflow;
-  compact?: boolean;
 };
 
 const modeIcons = {
@@ -16,33 +15,12 @@ const modeIcons = {
   select: GitCompare,
 } as const;
 
-export default function DesignModeToggle({ workflow, compact = false }: Props) {
+export default function DesignModeToggle({ workflow }: Props) {
   const { mode, setMode } = useDesignWorkflow();
 
   return (
-    <div
-      className={`rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-700 dark:bg-slate-800/40 ${
-        compact ? "p-3" : "p-4"
-      }`}
-    >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
-            Workflow mode
-          </p>
-          {!compact ? (
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-              Auto-design sizes from targets; Validate checks your inputs; Compare lets you pick
-              from ranked options.
-            </p>
-          ) : null}
-        </div>
-        <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-cyan-800 shadow-sm dark:bg-slate-800 dark:text-cyan-300">
-          {getWorkflowModeLabel(mode)}
-        </span>
-      </div>
-
-      <div className={`mt-3 grid gap-2 ${compact ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-1 sm:grid-cols-3"}`}>
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="inline-flex rounded-xl bg-slate-100/90 p-1 shadow-inner dark:bg-slate-800/80">
         {workflow.modes.map((item) => {
           const Icon = modeIcons[item.id];
           const active = mode === item.id;
@@ -51,26 +29,30 @@ export default function DesignModeToggle({ workflow, compact = false }: Props) {
               key={item.id}
               type="button"
               onClick={() => setMode(item.id)}
-              title={item.description}
-              className={`rounded-lg border px-2.5 py-2 text-left transition ${
+              title={item.label}
+              aria-pressed={active}
+              className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
                 active
-                  ? "border-cyan-500 bg-cyan-50 text-slate-950 shadow-sm ring-1 ring-cyan-200 dark:border-cyan-600 dark:bg-cyan-950/40 dark:text-white"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                  ? "bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-200/80 dark:bg-slate-950 dark:text-cyan-100 dark:ring-cyan-700/60"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
-              <div className="flex items-center gap-1.5">
-                <Icon className={`h-3.5 w-3.5 shrink-0 ${active ? "text-cyan-700" : "text-slate-400"}`} />
-                <span className="text-sm font-semibold">{item.label}</span>
-              </div>
-              {!compact ? (
-                <p className="mt-1 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
-                  {item.description}
-                </p>
-              ) : null}
+              <Icon
+                className={`h-4 w-4 shrink-0 ${active ? "text-cyan-600 dark:text-cyan-400" : "text-slate-400"}`}
+                aria-hidden
+              />
+              {item.label}
             </button>
           );
         })}
       </div>
+      <Link
+        href="/documentation/workflow-modes"
+        className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-cyan-700 dark:text-slate-400 dark:hover:text-cyan-300"
+      >
+        <HelpCircle className="h-3.5 w-3.5" aria-hidden />
+        How workflow modes work
+      </Link>
     </div>
   );
 }

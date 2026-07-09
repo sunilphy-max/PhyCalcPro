@@ -32,8 +32,8 @@ type RollingSyncHandlers = {
 
 /** Apply rolling-bearing catalog defaults when the application preset changes. */
 export function useRollingBearingPresetSync(handlers: RollingSyncHandlers) {
-  const { userInputs } = useDesignWorkflow();
-  const presetId = userInputs.applicationPresetId;
+  const { mergedUserInputs } = useDesignWorkflow();
+  const presetId = mergedUserInputs.applicationPresetId;
 
   useEffect(() => {
     if (!presetId) return;
@@ -71,8 +71,8 @@ type PlainSyncHandlers = {
 };
 
 export function usePlainBearingPresetSync(handlers: PlainSyncHandlers) {
-  const { userInputs } = useDesignWorkflow();
-  const presetId = userInputs.applicationPresetId;
+  const { mergedUserInputs } = useDesignWorkflow();
+  const presetId = mergedUserInputs.applicationPresetId;
 
   useEffect(() => {
     if (!presetId) return;

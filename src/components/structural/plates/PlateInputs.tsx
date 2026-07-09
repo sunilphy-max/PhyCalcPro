@@ -7,6 +7,7 @@ import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass } from "@/components/calculator/styles";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 import type { BoundaryType } from "@/lib/structural/plates/types";
 
 type Props = {
@@ -34,6 +35,8 @@ type Props = {
   setBoundaryType: (value: BoundaryType) => void;
   meshSegments: number;
   setMeshSegments: (value: number) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -62,6 +65,8 @@ export default function PlateInputs({
   setBoundaryType,
   meshSegments,
   setMeshSegments,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
   return (
@@ -70,6 +75,18 @@ export default function PlateInputs({
       description="Thin plate bending and stress analysis."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run plate FEM" designAware />}
     >
+      <MaterialFormSection
+        profile="plate-shell"
+        moduleId="plates"
+        material={material}
+        onMaterialChange={onMaterialChange}
+        elasticModulus={E}
+        setElasticModulus={setE}
+        poisson={nu}
+        setPoisson={setNu}
+        stressUnit={EUnit}
+        setStressUnit={setEUnit}
+      />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Length"
@@ -102,20 +119,6 @@ export default function PlateInputs({
           unit={
             <ModuleUnitSelect moduleId="plates" fieldKey="pressure" value={pressureUnit} onChange={setPressureUnit} />
           }
-        />
-        <CalculatorUnitField
-          label="Young's modulus"
-          value={E}
-          onChange={setE}
-          unit={<ModuleUnitSelect moduleId="plates" fieldKey="stress" value={EUnit} onChange={setEUnit} />}
-        />
-        <CalculatorNumberField
-          label="Poisson's ratio"
-          value={nu}
-          onChange={setNu}
-          min={0}
-          max={0.49}
-          step={0.01}
         />
       </div>
 

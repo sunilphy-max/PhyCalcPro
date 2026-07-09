@@ -19,26 +19,9 @@ import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/lo
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
-const MATERIALS: Record<string, GearMaterial> = {
-  Steel: {
-    name: "Steel",
-    E: 210e9,
-    yieldStress: 250e6,
-    poisson: 0.3,
-  },
-  Aluminum: {
-    name: "Aluminum",
-    E: 70e9,
-    yieldStress: 150e6,
-    poisson: 0.33,
-  },
-  Bronze: {
-    name: "Bronze",
-    E: 103e9,
-    yieldStress: 140e6,
-    poisson: 0.34,
-  },
-};
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { DEFAULT_MACHINE_GEAR } from "@/lib/materials/materialDefaults";
+import { resolveMaterial, toGearMaterial } from "@/lib/materials/materialCatalogService";
 
 type GearProjectData = {
   power: number;
@@ -76,7 +59,7 @@ export default function Page() {
   const [moduleUnit, setModuleUnit] = useState("mm");
   const [faceWidth, setFaceWidth] = useState(40);
   const [faceWidthUnit, setFaceWidthUnit] = useState("mm");
-  const [material, setMaterial] = useState("Steel");
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("machine-gear"));
   const [rating, setRating] = useState<GearRatingOptions>({
     applicationFactor: 1.25,
     faceLoadFactor: 1.3,
@@ -103,7 +86,7 @@ export default function Page() {
       faceWidth: toBase(faceWidth, "length", faceWidthUnit),
       pinionTeeth,
       gearRatio,
-      material: MATERIALS[material] || MATERIALS.Steel,
+      material: toGearMaterial(resolveMaterial(material, "machine-gear")),
       rating,
     };
 

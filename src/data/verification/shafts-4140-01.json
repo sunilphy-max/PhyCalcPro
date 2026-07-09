@@ -1,0 +1,34 @@
+{
+  "id": "shafts-4140-01",
+  "moduleId": "shafts",
+  "designCode": "INDICATIVE",
+  "description": "42CrMo4 (4140) Q&T shaft — catalog E, G, yield from materials.ts",
+  "inputs": {
+    "geometry": {
+      "diameter": 0.05,
+      "length": 1
+    },
+    "material": {
+      "name": "42CrMo4 (4140) Q&T",
+      "E": 210000000000,
+      "G": 80769230769.23077,
+      "density": 7850,
+      "yieldStress": 750000000,
+      "ultimateStrength": 1000000000
+    },
+    "loads": [
+      {
+        "position": 0.5,
+        "torque": 100,
+        "bendingMoment": 200
+      }
+    ],
+    "meshSegments": 20
+  },
+  "expected": {
+    "safetyFactor": 42.23031938283863,
+    "maxStress": 17759752.020838052
+  },
+  "tolerancePercent": 2,
+  "source": "Catalog 42CrMo4 (4140) Q&T — shaft FEM regression"
+}

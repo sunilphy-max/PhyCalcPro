@@ -1,7 +1,7 @@
 "use client";
 
 import { Load, UDL } from "@/lib/structural/beams/types";
-import { materials } from "@/data/materials";
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
@@ -79,11 +79,6 @@ type Props = {
 
 export default function BeamInputs(props: Props) {
   const { applicationId } = useBeamApplicationPreset();
-  const beamMaterials = materials.filter((material) =>
-    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(
-      material.category
-    )
-  );
   const selectedApplication = getBeamApplicationPreset(applicationId);
   const isDesignMode = props.workflowMode === "design";
   const showManualSection = !isDesignMode;
@@ -141,20 +136,11 @@ export default function BeamInputs(props: Props) {
           </select>
         </label>
 
-        <label className={calculatorFieldLabelClass}>
-          Material
-          <select
-            className={`${calculatorSelectClass} mt-2`}
-            value={props.material}
-            onChange={(e) => props.setMaterial(e.target.value)}
-          >
-            {beamMaterials.map((m) => (
-              <option key={m.name} value={m.name}>
-                {m.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <MaterialSelect
+          profile="structural"
+          value={props.material}
+          onChange={props.setMaterial}
+        />
       </CalculatorFormSection>
 
       {isDesignMode ? (

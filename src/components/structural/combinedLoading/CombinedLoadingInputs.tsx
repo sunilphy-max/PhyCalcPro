@@ -5,6 +5,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass } from "@/components/calculator/styles";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 
 type Props = {
   axialForce: number;
@@ -35,6 +36,8 @@ type Props = {
   setYieldStrength: (v: number) => void;
   stressUnit: string;
   setStressUnit: (u: string) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -45,6 +48,17 @@ export default function CombinedLoadingInputs(props: Props) {
       description="Combine axial, bending, torsion, and shear for a von Mises-style check."
       footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate combined stress" designAware />}
     >
+      <MaterialFormSection
+        profile="structural"
+        moduleId="combined-loading"
+        material={props.material}
+        onMaterialChange={props.onMaterialChange}
+        yieldStrength={props.yieldStrength}
+        setYieldStrength={props.setYieldStrength}
+        stressUnit={props.stressUnit}
+        setStressUnit={props.setStressUnit}
+        yieldOnly
+      />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Axial force"
@@ -123,19 +137,6 @@ export default function CombinedLoadingInputs(props: Props) {
               fieldKey="sectionHeight"
               value={props.heightUnit}
               onChange={props.setHeightUnit}
-            />
-          }
-        />
-        <CalculatorUnitField
-          label="Yield strength"
-          value={props.yieldStrength}
-          onChange={props.setYieldStrength}
-          unit={
-            <ModuleUnitSelect
-              moduleId="combined-loading"
-              fieldKey="yieldStrength"
-              value={props.stressUnit}
-              onChange={props.setStressUnit}
             />
           }
         />

@@ -5,7 +5,8 @@ import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
@@ -32,33 +33,11 @@ import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview"
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import { handoffSpeedRpm } from "@/lib/design-workflows/handoffParamRegistry";
 import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
-
-const MATERIALS: Record<string, ShaftMaterial> = {
-  Steel: {
-    name: "Steel",
-    E: 210e9,
-    G: 80e9,
-    density: 7850,
-    yieldStress: 250e6,
-    ultimateStrength: 690e6,
-  },
-  Aluminum: {
-    name: "Aluminum",
-    E: 70e9,
-    G: 26e9,
-    density: 2700,
-    yieldStress: 70e6,
-    ultimateStrength: 130e6,
-  },
-  Titanium: {
-    name: "Titanium",
-    E: 110e9,
-    G: 42e9,
-    density: 4510,
-    yieldStress: 880e6,
-    ultimateStrength: 950e6,
-  },
-};
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { DEFAULT_MACHINE_SHAFT } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates, resolveMaterial, toShaftMaterial } from "@/lib/materials/materialCatalogService";
+import { shearModulus as calcShearModulus } from "@/data/materials";
 
 type ShaftProjectData = {
   diameter: number;
@@ -96,9 +75,9 @@ export default function Page() {
 
   const [diameter, setDiameter] = useState(0.05);
   const [length, setLength] = useState(1);
-  const [material, setMaterial] = useState("Steel");
-  const [elasticModulus, setElasticModulus] = useState(210e9);
-  const [shearModulus, setShearModulus] = useState(80e9);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("machine-shaft"));
+  const [elasticModulus, setElasticModulus] = useState(DEFAULT_MACHINE_SHAFT.E);
+  const [shearModulus, setShearModulus] = useState(calcShearModulus(DEFAULT_MACHINE_SHAFT));
   const [loads, setLoads] = useState<LoadCase[]>([
     { position: 0.5, torque: 100, bendingMoment: 200 },
   ]);
@@ -131,15 +110,28 @@ export default function Page() {
 
   const handleMaterialChange = (nextMaterial: string) => {
     setMaterial(nextMaterial);
-    const mat = MATERIALS[nextMaterial];
-    if (mat) {
-      setElasticModulus(mat.E);
-      setShearModulus(mat.G);
-    }
+    if (nextMaterial === CUSTOM_MATERIAL) return;
+    const resolved = resolveMaterial(nextMaterial, "machine-shaft");
+    setElasticModulus(resolved.E);
+    setShearModulus(resolved.G ?? calcShearModulus(resolved as never));
   };
 
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get("material");
+    if (q) handleMaterialChange(decodeURIComponent(q));
+  }, [searchParams]);
+
   const buildConfig = useCallback((): ShaftConfig => {
-    const mat = MATERIALS[material] || MATERIALS["Steel"];
+    const resolved = resolveMaterial(material, "machine-shaft", {
+      E: elasticModulus,
+      G: shearModulus,
+    });
+    const mat: ShaftMaterial = {
+      ...toShaftMaterial(resolved),
+      E: toBase(elasticModulus, "stress", modulusUnit),
+      G: toBase(shearModulus, "stress", modulusUnit),
+    };
     const spanM = toBase(length, "length", lengthUnit);
 
     const normalizedSegments = useSteppedGeometry
@@ -158,11 +150,7 @@ export default function Page() {
         length: spanM,
         segments: normalizedSegments,
       },
-      material: {
-        ...mat,
-        E: toBase(elasticModulus, "stress", modulusUnit),
-        G: toBase(shearModulus, "stress", modulusUnit),
-      },
+      material: mat,
       loads: loads.map((load) => ({
         position: toBase(load.position, "length", lengthUnit),
         ...(load.torque !== undefined

@@ -14,6 +14,9 @@ import PlateResults from "@/components/structural/plates/PlateResults";
 import { toBase } from "@/lib/units/conversions";
 import { solvePlateEngine } from "@/lib/structural/plates/engine";
 import type { BoundaryType, PlateResult } from "@/lib/structural/plates/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E, STEEL_POISSON } from "@/lib/materials/materialDefaults";
+import { createMaterialHandler } from "@/components/materials/MaterialFormSection";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -22,8 +25,13 @@ export default function Page() {
   const [width, setWidth] = useState(1.2);
   const [thickness, setThickness] = useState(0.015);
   const [pressure, setPressure] = useState(10000);
-  const [E, setE] = useState(210e9);
-  const [nu, setNu] = useState(0.3);
+  const [E, setE] = useState(STEEL_E);
+  const [nu, setNu] = useState(STEEL_POISSON);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("plate-shell"));
+  const handleMaterialChange = useCallback(
+    createMaterialHandler("plate-shell", setMaterial, { setElasticModulus: setE, setPoisson: setNu }),
+    []
+  );
   const [lengthUnit, setLengthUnit] = useState("m");
   const [thicknessUnit, setThicknessUnit] = useState("mm");
   const [pressureUnit, setPressureUnit] = useState("Pa");
@@ -103,6 +111,8 @@ export default function Page() {
           setBoundaryType={setBoundaryType}
           meshSegments={meshSegments}
           setMeshSegments={setMeshSegments}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
       }

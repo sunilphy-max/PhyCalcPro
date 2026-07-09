@@ -15,6 +15,10 @@ import FlywheelResults from "@/components/machine/flywheels/FlywheelResults";
 import { toBase } from "@/lib/units/conversions";
 import { solveFlywheelEngine } from "@/lib/machine/flywheels/engine";
 import type { FlywheelResult } from "@/lib/machine/flywheels/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_DENSITY, STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -25,11 +29,19 @@ export default function Page() {
   const [thicknessUnit, setThicknessUnit] = useState("m");
   const [faceWidth, setFaceWidth] = useState(0.2);
   const [faceWidthUnit, setFaceWidthUnit] = useState("m");
-  const [density, setDensity] = useState(7850);
+  const [density, setDensity] = useState(STEEL_DENSITY);
   const [densityUnit, setDensityUnit] = useState("kg/m3");
   const [rpm, setRpm] = useState(1800);
-  const [yieldStress, setYieldStress] = useState(250e6);
+  const [yieldStress, setYieldStress] = useState(STEEL_YIELD);
   const [yieldStressUnit, setYieldStressUnit] = useState("Pa");
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("machine-shaft"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name === CUSTOM_MATERIAL) return;
+    const u = getMaterialFieldUpdates(name, "machine-shaft");
+    setDensity(u.density);
+    setYieldStress(u.yieldStress);
+  }, []);
   const [result, setResult] = useState<FlywheelResult | null>(null);
 
   const runCheck = () => {
@@ -72,14 +84,33 @@ export default function Page() {
         moduleId="flywheels"
         title="Flywheel Energy & Stress"
         inputs={
-          <div className="bg-white rounded-xl p-4 shadow-sm space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-900">Flywheel design guidance</h3>
-              <p className="text-sm text-slate-500 mt-1">
-                Optimize rim mass and rotational speed to store energy while keeping hoop stress below material limits.
-              </p>
-            </div>
-          </div>
+          <FlywheelInputs
+            outerDiameter={outerDiameter}
+            setOuterDiameter={setOuterDiameter}
+            outerDiameterUnit={outerDiameterUnit}
+            setOuterDiameterUnit={setOuterDiameterUnit}
+            thickness={thickness}
+            setThickness={setThickness}
+            thicknessUnit={thicknessUnit}
+            setThicknessUnit={setThicknessUnit}
+            faceWidth={faceWidth}
+            setFaceWidth={setFaceWidth}
+            faceWidthUnit={faceWidthUnit}
+            setFaceWidthUnit={setFaceWidthUnit}
+            density={density}
+            setDensity={setDensity}
+            densityUnit={densityUnit}
+            setDensityUnit={setDensityUnit}
+            rpm={rpm}
+            setRpm={setRpm}
+            yieldStress={yieldStress}
+            setYieldStress={setYieldStress}
+            yieldStressUnit={yieldStressUnit}
+            setYieldStressUnit={setYieldStressUnit}
+            material={material}
+            onMaterialChange={handleMaterialChange}
+            onCalculate={calculate}
+          />
         }
         results={
           <FlywheelResults

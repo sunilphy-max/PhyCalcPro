@@ -14,6 +14,7 @@ import type {
   BearingApplicationProfile,
   BearingSealType,
 } from "@/lib/machine/bearings/types";
+import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
 import {
   bearingCatalog,
   findBearing,
@@ -219,6 +220,13 @@ export default function BearingInputs({
 
       <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-sky-800">Application & catalog selection</p>
+
+        <BearingReferenceVisual
+          bearingType={bearingType}
+          sealType={selected?.sealType ?? (sealFilter !== "all" ? sealFilter : "open")}
+          arrangement={arrangement}
+        />
+
         <label className="block space-y-2 text-sm text-slate-700">
           <span>Application profile</span>
           <select

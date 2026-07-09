@@ -1,0 +1,21 @@
+{
+  "id": "vibrations-s275-01",
+  "moduleId": "vibrations",
+  "designCode": "EU",
+  "description": "S275JR catalog density and modulus — simply supported beam vibration",
+  "inputs": {
+    "length": 2,
+    "E": 210000000000,
+    "I": 8e-6,
+    "A": 0.005,
+    "rho": 7850,
+    "segments": 12,
+    "support": "simply_supported",
+    "dampingRatio": 0.02
+  },
+  "expected": {
+    "fundamentalFrequency": 81.24490028971941
+  },
+  "tolerancePercent": 3,
+  "source": "Catalog S275JR — E and density from materials.ts"
+}

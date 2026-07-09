@@ -3,6 +3,7 @@
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useApplicationPreset } from "@/hooks/useApplicationPreset";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
@@ -18,6 +19,9 @@ import type { BucklingConfig, BucklingResult, EndCondition } from "@/lib/structu
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { searchColumnSections } from "@/lib/design-workflows/solvers/columnDesign";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { createMaterialHandler } from "@/components/materials/MaterialFormSection";
 
 type BucklingProjectData = {
   length: number;
@@ -48,8 +52,21 @@ export default function Page() {
   const [load, setLoad] = useState(50000);
   const [inertia, setInertia] = useState(1e-7);
   const [area, setArea] = useState(0.001);
-  const [elasticModulus, setElasticModulus] = useState(210e9);
-  const [yieldStrength, setYieldStrength] = useState(250e6);
+  const [elasticModulus, setElasticModulus] = useState(STEEL_E);
+  const [yieldStrength, setYieldStrength] = useState(STEEL_YIELD);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("structural"));
+  const handleMaterialChange = useCallback(
+    createMaterialHandler("structural", setMaterial, {
+      setElasticModulus,
+      setYieldStrength,
+    }),
+    []
+  );
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const q = searchParams.get("material");
+    if (q) handleMaterialChange(decodeURIComponent(q));
+  }, [searchParams, handleMaterialChange]);
   const [endCondition, setEndCondition] = useState<EndCondition>("pinned");
   const [sectionDesignation, setSectionDesignation] = useState("");
   const { preset } = useApplicationPreset("columns");
@@ -285,6 +302,8 @@ export default function Page() {
           onSectionApplied={applySectionProperties}
           targetSafetyFactor={targetSafetyFactor}
           setTargetSafetyFactor={setTargetSafetyFactor}
+          material={material}
+          onMaterialChange={handleMaterialChange}
         />
         </>
       }

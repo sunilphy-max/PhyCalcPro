@@ -50,7 +50,7 @@ function PresetOptionGroup({
 
 export default function ApplicationPresetSelector({ moduleId }: Props) {
   const { designCode } = useDesignCode();
-  const { userInputs, patchDesignTarget } = useDesignWorkflow();
+  const { mergedUserInputs, patchDesignTarget } = useDesignWorkflow();
   const designCodeOption = getDesignCodeOption(designCode);
 
   const presets = useMemo(() => getPresetsForModule(moduleId), [moduleId]);
@@ -60,7 +60,7 @@ export default function ApplicationPresetSelector({ moduleId }: Props) {
   );
 
   const presetId =
-    userInputs.applicationPresetId ?? getDefaultPresetId(moduleId, designCode);
+    mergedUserInputs.applicationPresetId ?? getDefaultPresetId(moduleId, designCode);
   const selected = useMemo(
     () => getModuleApplicationPreset(moduleId, presetId),
     [moduleId, presetId]
@@ -86,14 +86,14 @@ export default function ApplicationPresetSelector({ moduleId }: Props) {
   );
 
   useEffect(() => {
-    if (userInputs.applicationPresetId != null) return;
+    if (mergedUserInputs.applicationPresetId != null) return;
     const defaultId = getDefaultPresetId(moduleId, designCode);
     patchDesignTarget("applicationPresetId", defaultId);
     applyKnobs(getModuleApplicationPreset(moduleId, defaultId));
   }, [
     moduleId,
     designCode,
-    userInputs.applicationPresetId,
+    mergedUserInputs.applicationPresetId,
     patchDesignTarget,
     applyKnobs,
   ]);
@@ -102,7 +102,7 @@ export default function ApplicationPresetSelector({ moduleId }: Props) {
   useEffect(() => {
     if (prevDesignCode.current === designCode) return;
     prevDesignCode.current = designCode;
-    const current = userInputs.applicationPresetId;
+    const current = mergedUserInputs.applicationPresetId;
     if (current) {
       const stillValid = getModuleApplicationPreset(moduleId, current).designCodes.includes(
         designCode
@@ -112,7 +112,7 @@ export default function ApplicationPresetSelector({ moduleId }: Props) {
     const nextId = getDefaultPresetId(moduleId, designCode);
     patchDesignTarget("applicationPresetId", nextId);
     applyKnobs(getModuleApplicationPreset(moduleId, nextId));
-  }, [designCode, moduleId, patchDesignTarget, userInputs.applicationPresetId, applyKnobs]);
+  }, [designCode, moduleId, patchDesignTarget, mergedUserInputs.applicationPresetId, applyKnobs]);
 
   const handleChange = (id: string) => {
     patchDesignTarget("applicationPresetId", id);

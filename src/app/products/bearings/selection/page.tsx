@@ -338,7 +338,7 @@ export default function Page() {
           />
         </div>
       }
-      results={<BearingResults result={result} loadUnit={radialUnit} speedRpm={speed} />}
+      results={<BearingResults result={result} loadUnit={radialUnit} speedRpm={speed} arrangement={arrangement} />}
     />
   );
 }

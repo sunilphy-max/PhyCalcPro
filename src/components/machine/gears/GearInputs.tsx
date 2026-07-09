@@ -8,6 +8,7 @@ import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
 import { calculatorFieldLabelClass, calculatorInputGridClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import type { GearRatingOptions } from "@/lib/machine/gears/types";
 
 type Props = {
@@ -123,14 +124,7 @@ export default function GearInputs({
         />
       </div>
 
-      <label className="space-y-2">
-        <span className={calculatorFieldLabelClass}>Material</span>
-        <select value={material} onChange={(event) => setMaterial(event.target.value)} className={calculatorSelectClass}>
-          <option value="Steel">Steel</option>
-          <option value="Aluminum">Aluminum</option>
-          <option value="Bronze">Bronze</option>
-        </select>
-      </label>
+      <MaterialSelect profile="machine-gear" value={material} onChange={setMaterial} />
 
       <CalculatorFormSection
         title="ISO 6336 rating factors"

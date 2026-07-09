@@ -5,6 +5,8 @@ export type PressurePipeConfig = {
   pressure: number;
   E: number;
   segments: number;
+  /** Allowable stress for B31.3 screening (Pa); defaults from material yield */
+  allowableStress?: number;
 };
 
 export type PressurePipeNode = {

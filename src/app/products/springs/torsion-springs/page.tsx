@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CalculatorGuidancePanel from "@/components/calculator/CalculatorGuidancePanel";
 import TorsionSpringInputs from "@/components/springs/torsion-springs/TorsionSpringInputs";
@@ -23,6 +23,7 @@ import type { SpringWireType } from "@/lib/springs/shared/wireStrength";
 import type { En13906LifeClass, En13906WireQuality } from "@/lib/springs/shared/en13906Fatigue";
 import { fromBase } from "@/lib/units/conversions";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
+import { getWireGradeModuli } from "@/lib/materials/springWireGrades";
 
 type TorsionSpringProjectData = {
   wireDiameter: number;
@@ -54,7 +55,7 @@ export default function Page() {
   const [activeCoils, setActiveCoils] = useState(8);
   const [legLength, setLegLength] = useState(30);
   const [deflectionAngleDeg, setDeflectionAngleDeg] = useState(90);
-  const [modulus, setModulus] = useState(210);
+  const [modulus, setModulus] = useState(() => (getWireGradeModuli("music")?.E ?? 207e9) / 1e9);
   const [ultimateStrength, setUltimateStrength] = useState(1400);
   const [wireType, setWireType] = useState<SpringWireType>("music");
   const [targetRate, setTargetRate] = useState(0.5);
@@ -109,6 +110,17 @@ export default function Page() {
   });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
+
+  const handleWireTypeChange = useCallback(
+    (type: SpringWireType) => {
+      setWireType(type);
+      const moduli = getWireGradeModuli(type);
+      if (moduli) {
+        setModulus(fromBase(moduli.E, "stress", modulusUnit));
+      }
+    },
+    [modulusUnit]
+  );
 
   const runCheck = () => {
     const raw = solveTorsionSpringEngine({
@@ -202,7 +214,7 @@ export default function Page() {
           ultimateStrength={ultimateStrength}
           setUltimateStrength={setUltimateStrength}
           wireType={wireType}
-          setWireType={setWireType}
+          setWireType={handleWireTypeChange}
           lengthUnit={lengthUnit}
           setLengthUnit={setLengthUnit}
           stressUnit={stressUnit}

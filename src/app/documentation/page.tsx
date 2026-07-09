@@ -22,7 +22,7 @@ export default function DocumentationPage() {
         design-code checks, assumptions, limitations, and known gaps.
       </p>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2">
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/documentation/reference"
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
@@ -31,6 +31,15 @@ export default function DocumentationPage() {
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
             Complete manual — platform architecture, all {moduleCount} active modules, maturity
             matrix, and roadmap.
+          </p>
+        </Link>
+        <Link
+          href="/documentation/workflow-modes"
+          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
+        >
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Workflow modes</h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+            Auto-design, Validate, and Compare — how the three calculator modes work on every module.
           </p>
         </Link>
         <Link

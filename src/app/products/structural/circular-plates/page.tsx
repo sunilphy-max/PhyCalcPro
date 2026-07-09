@@ -16,6 +16,10 @@ import { toBase } from "@/lib/units/conversions";
 import { solveCircularPlateEngine } from "@/lib/structural/circular-plates/engine";
 import type { CircularPlateConfig, CircularPlateResult } from "@/lib/structural/circular-plates/types";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
+import { STEEL_E, STEEL_POISSON } from "@/lib/materials/materialDefaults";
+import { CUSTOM_MATERIAL } from "@/data/materials";
+import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -31,8 +35,17 @@ export default function Page() {
   const [radius, setRadius] = useState(0.5);
   const [thickness, setThickness] = useState(10);
   const [pressure, setPressure] = useState(100);
-  const [modulus, setModulus] = useState(210);
-  const [poisson, setPoisson] = useState(0.3);
+  const [modulus, setModulus] = useState(STEEL_E / 1e9);
+  const [poisson, setPoisson] = useState(STEEL_POISSON);
+  const [material, setMaterial] = useState(() => getDefaultMaterialNameForProfile("plate-shell"));
+  const handleMaterialChange = useCallback((name: string) => {
+    setMaterial(name);
+    if (name !== CUSTOM_MATERIAL) {
+      const u = getMaterialFieldUpdates(name, "plate-shell");
+      setModulus(u.E / 1e9);
+      setPoisson(u.poisson);
+    }
+  }, []);
   const [boundary, setBoundary] = useState<CircularPlateConfig["boundary"]>("simply_supported");
   const [meshSegments, setMeshSegments] = useState(12);
   const [lengthUnit, setLengthUnit] = useState("m");
@@ -106,6 +119,8 @@ export default function Page() {
           setPressureUnit={setPressureUnit}
           modulusUnit={modulusUnit}
           setModulusUnit={setModulusUnit}
+          material={material}
+          onMaterialChange={handleMaterialChange}
           onCalculate={calculate}
         />
       }

@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-06T21:06:35.831Z",
-  "total": 72,
-  "passed": 72,
+  "ranAt": "2026-07-09T00:17:07.090Z",
+  "total": 75,
+  "passed": 75,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -20,6 +20,25 @@
           "field": "packEnergy",
           "expected": 7.104000000000001,
           "actual": 7.104000000000001,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "beams-a36-01",
+      "moduleId": "beams",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxDeflection",
+          "expected": 0.0026041666666666665,
+          "actual": 0.0026041666666666687,
+          "pass": true
+        },
+        {
+          "field": "maxMoment",
+          "expected": 12500,
+          "actual": 12500.000000000873,
           "pass": true
         }
       ]
@@ -1183,6 +1202,25 @@
       ]
     },
     {
+      "caseId": "shafts-4140-01",
+      "moduleId": "shafts",
+      "pass": true,
+      "fields": [
+        {
+          "field": "safetyFactor",
+          "expected": 42.23031938283863,
+          "actual": 42.230319383422746,
+          "pass": true
+        },
+        {
+          "field": "maxStress",
+          "expected": 17759752.020838052,
+          "actual": 17759752.020592295,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "shafts-indicative-01",
       "moduleId": "shafts",
       "pass": true,
@@ -1480,7 +1518,20 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468195,
+          "actual": 256.9198297468234,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "vibrations-s275-01",
+      "moduleId": "vibrations",
+      "pass": true,
+      "fields": [
+        {
+          "field": "fundamentalFrequency",
+          "expected": 81.24490028971941,
+          "actual": 81.24490028971941,
           "pass": true
         }
       ]

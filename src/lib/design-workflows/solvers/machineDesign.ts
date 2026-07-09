@@ -16,22 +16,17 @@ import { solveCamEngine } from "@/lib/machine/cams/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
+import {
+  DEFAULT_MACHINE_GEAR,
+  DEFAULT_MACHINE_SHAFT,
+  STEEL_DENSITY,
+  STEEL_YIELD,
+} from "@/lib/materials/materialDefaults";
+import { resolveMaterial, toGearMaterial, toShaftMaterial } from "@/lib/materials/materialCatalogService";
 
-const STEEL_MATERIAL = {
-  name: "Steel",
-  E: 210e9,
-  yieldStress: 250e6,
-  poisson: 0.3,
-};
+const STEEL_MATERIAL = toGearMaterial(resolveMaterial(DEFAULT_MACHINE_GEAR.name, "machine-gear"));
 
-const SHAFT_MATERIAL = {
-  name: "Steel",
-  E: 210e9,
-  G: 80e9,
-  density: 7850,
-  yieldStress: 250e6,
-  ultimateStrength: 690e6,
-};
+const SHAFT_MATERIAL = toShaftMaterial(resolveMaterial(DEFAULT_MACHINE_SHAFT.name, "machine-shaft"));
 
 const BEARING_MATERIAL = {
   name: "Steel",
@@ -272,9 +267,9 @@ export function designFlywheelInertia(userInputs: ModuleUserInputs): ModuleDesig
         outerDiameter: d,
         thickness: t,
         faceWidth: t,
-        density: 7850,
+        density: STEEL_DENSITY,
         rpm,
-        yieldStress: 250e6,
+        yieldStress: STEEL_YIELD,
       });
       const util = targetEnergy / Math.max(res.storedEnergy, 1e-9);
       return {
@@ -305,7 +300,7 @@ export function designBevelGear(userInputs: ModuleUserInputs): ModuleDesignModeR
         pinionTeeth: userInputs.pinionTeeth ?? 18,
         gearRatio: userInputs.ratio ?? 2.5,
         faceWidth: (8 * m) / 1000,
-        yieldStress: 250e6,
+        yieldStress: STEEL_MATERIAL.yieldStress,
         pressureAngleDeg: 20,
       });
       const util = 1.5 / Math.max(res.bendingSafety, 1e-9);
@@ -339,7 +334,7 @@ export function designWormGear(userInputs: ModuleUserInputs): ModuleDesignModeRe
         faceWidth: 0.025,
         frictionCoeff: 0.05,
         leadAngleDeg: 5,
-        yieldStress: 250e6,
+        yieldStress: STEEL_MATERIAL.yieldStress,
       });
       const util = 1.5 / Math.max(res.contactSafety, 1e-9);
       return {
@@ -521,7 +516,7 @@ export function designHousingMount(userInputs: ModuleUserInputs): ModuleDesignMo
     axialLoad: userInputs.axialLoad ?? 0,
     speed: userInputs.rpm ?? 1500,
     mountStyle: "pillow_block" as const,
-    yieldStress: userInputs.yieldStress ?? 250e6,
+    yieldStress: userInputs.yieldStress ?? STEEL_YIELD,
   };
   const { best } = designHousingBolts(base);
   if (!best) {

@@ -1,5 +1,6 @@
 "use client";
 
+import MaterialSelect from "@/components/materials/MaterialSelect";
 import { calculatorInputGridClass } from "@/components/calculator/styles";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
@@ -30,6 +31,8 @@ type Props = {
   setEUnit: (value: string) => void;
   segments: number;
   setSegments: (value: number) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
   onCalculate: () => void;
 };
 
@@ -56,6 +59,8 @@ export default function PressurePipeInputs({
   setEUnit,
   segments,
   setSegments,
+  material,
+  onMaterialChange,
   onCalculate,
 }: Props) {
   return (
@@ -64,6 +69,7 @@ export default function PressurePipeInputs({
       description="Internal pressure and stress analysis for piping."
       footer={<CalculatorCalculateButton onClick={onCalculate} label="Run pipe analysis" designAware />}
     >
+      <MaterialSelect profile="pressure" value={material} onChange={onMaterialChange} />
       <div className={`${calculatorInputGridClass}`}>
         <CalculatorUnitField
           label="Radius"

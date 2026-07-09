@@ -14,6 +14,7 @@ import {
   calculatorSelectClass,
   calculatorTextInputClass,
 } from "@/components/calculator/styles";
+import { MaterialFormSection } from "@/components/materials/MaterialFormSection";
 
 type Props = {
   projectName: string;
@@ -49,6 +50,8 @@ type Props = {
   onSectionApplied: (designation: string, section: RolledSectionProps) => void;
   targetSafetyFactor: number;
   setTargetSafetyFactor: (value: number) => void;
+  material: string;
+  onMaterialChange: (name: string) => void;
 };
 
 export default function BucklingInputs({
@@ -85,6 +88,8 @@ export default function BucklingInputs({
   onSectionApplied,
   targetSafetyFactor,
   setTargetSafetyFactor,
+  material,
+  onMaterialChange,
 }: Props) {
   const isDesignMode = workflowMode === "design";
   const showManualSection = !isDesignMode;
@@ -185,39 +190,21 @@ export default function BucklingInputs({
         ) : null}
       </CalculatorFormSection>
 
-      <CalculatorFormSection title="Material">
-        <CalculatorUnitField
-          label="Elastic modulus (E)"
-          value={elasticModulus}
-          onChange={setElasticModulus}
-          step={1e6}
-          unit={
-            <ModuleUnitSelect
-              moduleId="columns"
-              fieldKey="stress"
-              value={elasticModulusUnit}
-              onChange={setElasticModulusUnit}
-            />
-          }
-        />
-        <CalculatorUnitField
-          label="Yield strength (Fy)"
-          value={yieldStrength}
-          onChange={setYieldStrength}
-          step={1e6}
-          unit={
-            <ModuleUnitSelect
-              moduleId="columns"
-              fieldKey="stress"
-              value={elasticModulusUnit}
-              onChange={setElasticModulusUnit}
-            />
-          }
-        />
-        <p className="text-xs text-slate-500 dark:text-slate-400">
-          Used by AISC 360 §E3 / EN 1993-1-1 §6.3 compression checks.
-        </p>
-      </CalculatorFormSection>
+      <MaterialFormSection
+        profile="structural"
+        moduleId="columns"
+        material={material}
+        onMaterialChange={onMaterialChange}
+        elasticModulus={elasticModulus}
+        setElasticModulus={setElasticModulus}
+        yieldStrength={yieldStrength}
+        setYieldStrength={setYieldStrength}
+        stressUnit={elasticModulusUnit}
+        setStressUnit={setElasticModulusUnit}
+      />
+      <p className="text-xs text-slate-500 dark:text-slate-400 -mt-2">
+        Used by AISC 360 §E3 / EN 1993-1-1 §6.3 compression checks.
+      </p>
 
       <CalculatorFormSection title="Loading & end condition">
         <CalculatorUnitField

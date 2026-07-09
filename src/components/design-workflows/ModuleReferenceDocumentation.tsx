@@ -31,12 +31,20 @@ export default function ModuleReferenceDocumentation({ workflow }: Props) {
             Standards, catalogs, and technical write-ups relevant to this module.
           </p>
         </div>
-        <Link
-          href={moduleDocHref}
-          className="shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
-        >
-          Full module reference →
-        </Link>
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Link
+            href="/documentation/workflow-modes"
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+          >
+            Workflow modes →
+          </Link>
+          <Link
+            href={moduleDocHref}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+          >
+            Full module reference →
+          </Link>
+        </div>
       </div>
       <ul className="mt-3 space-y-1.5">
         {entries.map(({ label, link }) => (
