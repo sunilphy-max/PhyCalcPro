@@ -13,7 +13,6 @@ import type {
 export type {
   BearingManufacturer,
   BearingCatalogTier,
-  CatalogBearingType as BearingType,
   BearingApplicationProfile,
   BearingSealType,
 };

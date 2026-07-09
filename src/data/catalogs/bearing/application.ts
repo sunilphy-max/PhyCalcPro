@@ -33,10 +33,11 @@ export function filterCatalog(
     pool = pool.filter((b) => b.type === options.type);
   }
   if (options.applicationProfile && options.applicationProfile !== "all") {
-    const profile = APPLICATION_PROFILE_META[options.applicationProfile];
+    const applicationProfile = options.applicationProfile;
+    const profile = APPLICATION_PROFILE_META[applicationProfile];
     pool = pool.filter(
       (b) =>
-        b.applicationTags.includes(options.applicationProfile!) ||
+        b.applicationTags.includes(applicationProfile) ||
         profile.suggestedTypes.includes(b.type)
     );
   }
