@@ -22,7 +22,7 @@ export default function CalculatorMetricGrid({
 }: Props) {
   return (
     <div
-      className={`grid min-w-0 grid-cols-1 gap-3 ${colClass[cols]} ${className}`.trim()}
+      className={`grid min-w-0 grid-cols-1 gap-4 ${colClass[cols]} ${className}`.trim()}
     >
       {children}
     </div>

@@ -31,7 +31,7 @@ export default function CalculatorUnitField({
 }: Props) {
   return (
     <div className={`min-w-0 space-y-2 ${className}`.trim()}>
-      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>
+      <label className="block text-[0.8125rem] font-medium tracking-wide text-slate-600 dark:text-slate-300">{label}</label>
       <div className={calculatorUnitFieldRowClass}>
         <input
           type="number"

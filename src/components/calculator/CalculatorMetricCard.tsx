@@ -40,16 +40,16 @@ const statusStyles: Record<
   { card: string; value: string }
 > = {
   safe: {
-    card: "bg-green-50 border-green-200 dark:bg-green-950/40 dark:border-green-900/50",
-    value: "text-green-600 dark:text-green-400",
+    card: "border-green-200/80 bg-gradient-to-br from-green-50 to-emerald-50/50 dark:border-green-900/50 dark:from-green-950/40 dark:to-emerald-950/20",
+    value: "text-green-700 dark:text-green-400",
   },
   warning: {
-    card: "bg-amber-50 border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50",
-    value: "text-amber-600 dark:text-amber-400",
+    card: "border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50/40 dark:border-amber-900/50 dark:from-amber-950/40 dark:to-orange-950/20",
+    value: "text-amber-700 dark:text-amber-400",
   },
   danger: {
-    card: "bg-red-50 border-red-200 dark:bg-red-950/40 dark:border-red-900/50",
-    value: "text-red-600 dark:text-red-400",
+    card: "border-red-200/80 bg-gradient-to-br from-red-50 to-rose-50/40 dark:border-red-900/50 dark:from-red-950/40 dark:to-rose-950/20",
+    value: "text-red-700 dark:text-red-400",
   },
 };
 
@@ -64,11 +64,11 @@ export default function CalculatorMetricCard({
 }: Props) {
   const cardStyle = status
     ? statusStyles[status].card
-    : "bg-slate-50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700";
+    : "border-slate-200/70 bg-gradient-to-br from-slate-50/90 to-white dark:border-slate-700/60 dark:from-slate-800/40 dark:to-slate-900/30";
   const valueStyle = status
     ? statusStyles[status].value
     : toneValueClass[tone];
-  const valueSize = size === "lg" ? "text-2xl" : "text-lg";
+  const valueSize = size === "lg" ? "text-2xl" : "text-xl";
   const display =
     numericValue !== undefined
       ? formatDisplayNumber(numericValue)
@@ -76,11 +76,13 @@ export default function CalculatorMetricCard({
 
   return (
     <div
-      className={`min-w-0 rounded-xl border p-3 ${cardStyle} ${className}`.trim()}
+      className={`min-w-0 rounded-xl border p-4 shadow-sm transition hover:shadow-md ${cardStyle} ${className}`.trim()}
     >
-      <div className="mb-1 text-xs text-slate-500 dark:text-slate-400">{label}</div>
+      <div className="mb-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+        {label}
+      </div>
       <div
-        className={`break-all font-bold leading-tight ${valueSize} ${valueStyle}`}
+        className={`break-all font-semibold tabular-nums leading-tight ${valueSize} ${valueStyle}`}
       >
         {display}
       </div>

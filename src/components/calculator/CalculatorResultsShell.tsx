@@ -1,7 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useLayoutEffect, type ReactNode } from "react";
 import ExportableReport from "@/components/shared/ExportableReport";
+import { useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { CsvRow } from "@/lib/export/csvRows";
@@ -41,6 +42,12 @@ export default function CalculatorResultsShell({
   empty = false,
   ...rest
 }: Props) {
+  const reportContext = useCalculatorReportOptional();
+
+  useLayoutEffect(() => {
+    reportContext?.setResultsStageActive(!empty);
+  }, [empty, reportContext]);
+
   return (
     <ExportableReport moduleId={moduleId} {...rest}>
       {empty ? (

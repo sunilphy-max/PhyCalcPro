@@ -21,7 +21,7 @@ export default function DesignModeToggle({ workflow }: Props) {
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <div className="inline-flex rounded-xl bg-slate-100/90 p-1 shadow-inner dark:bg-slate-800/80">
+      <div className="inline-flex rounded-xl border border-slate-200/70 bg-slate-100/80 p-1 shadow-inner backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-800/60">
         {workflow.modes.map((item) => {
           const Icon = modeIcons[item.id] ?? CheckCircle2;
           const active = mode === item.id;
@@ -32,10 +32,10 @@ export default function DesignModeToggle({ workflow }: Props) {
               onClick={() => setMode(item.id)}
               title={item.label}
               aria-pressed={active}
-              className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-all ${
+              className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold transition-all duration-200 ${
                 active
-                  ? "bg-white text-cyan-900 shadow-sm ring-1 ring-cyan-200/80 dark:bg-slate-950 dark:text-cyan-100 dark:ring-cyan-700/60"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
+                  ? "bg-white text-cyan-800 shadow-sm ring-1 ring-cyan-200/80 dark:bg-slate-950 dark:text-cyan-100 dark:ring-cyan-600/40"
+                  : "text-slate-600 hover:bg-white/60 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/40 dark:hover:text-slate-200"
               }`}
             >
               <Icon

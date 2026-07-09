@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -32,6 +33,9 @@ export type CalculatorReportRegistration = {
 };
 
 type CalculatorReportContextValue = {
+  /** True after a calculation has produced visible results (split layout). */
+  resultsStageActive: boolean;
+  setResultsStageActive: (active: boolean) => void;
   registered: boolean;
   exportPdf: () => Promise<void>;
   exportExcel: () => Promise<void>;
@@ -60,6 +64,11 @@ export function CalculatorReportProvider({
   children: ReactNode;
 }) {
   const [registration, setRegistration] = useState<CalculatorReportRegistration | null>(null);
+  const [resultsStageActive, setResultsStageActive] = useState(false);
+
+  useEffect(() => {
+    setResultsStageActive(false);
+  }, [moduleId]);
 
   const exportConfig = useMemo(() => {
     if (!registration) return null;
@@ -112,6 +121,8 @@ export function CalculatorReportProvider({
 
   const value = useMemo<CalculatorReportContextValue>(
     () => ({
+      resultsStageActive,
+      setResultsStageActive,
       registered: registration != null,
       exportPdf: exportState.exportPdf,
       exportExcel: exportState.exportExcel,
@@ -129,7 +140,14 @@ export function CalculatorReportProvider({
       registerReport,
       unregisterReport,
     }),
-    [exportState, qualityChecklist, registerReport, unregisterReport, registration != null]
+    [
+      exportState,
+      qualityChecklist,
+      registerReport,
+      unregisterReport,
+      registration != null,
+      resultsStageActive,
+    ]
   );
 
   return (

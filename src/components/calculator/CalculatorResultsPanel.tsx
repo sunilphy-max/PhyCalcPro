@@ -16,12 +16,14 @@ export default function CalculatorResultsPanel({
 }: Props) {
   return (
     <div
-      className={`min-w-0 rounded-xl bg-white p-4 shadow-sm dark:bg-slate-900 dark:shadow-none dark:ring-1 dark:ring-slate-700 ${className}`.trim()}
+      className={`calculator-results-panel relative min-w-0 overflow-hidden rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/80 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] ${className}`.trim()}
     >
       {title ? (
-        <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+        <h2 className="mb-5 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
+          {title}
+        </h2>
       ) : null}
-      <div className="grid min-w-0 grid-cols-1 gap-4">{children}</div>
+      <div className="grid min-w-0 grid-cols-1 gap-5">{children}</div>
     </div>
   );
 }

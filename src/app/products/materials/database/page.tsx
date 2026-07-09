@@ -50,6 +50,7 @@ export default function Page() {
     <CalculatorLayout
       moduleId="material-db"
       title="Material Database"
+      hasResults={Boolean(selectedMaterial)}
       inputs={
         <div className={calculatorPanelClass}>
           <div>
@@ -96,7 +97,9 @@ export default function Page() {
         </div>
       }
       results={
-        <MaterialDatabase highlightMaterial={selectedMaterial} querySeed={selectedMaterial ?? undefined} />
+        selectedMaterial ? (
+          <MaterialDatabase highlightMaterial={selectedMaterial} querySeed={selectedMaterial} />
+        ) : null
       }
     />
   );

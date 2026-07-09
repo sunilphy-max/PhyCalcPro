@@ -26,13 +26,13 @@ export default function CalculatorCalculateButton({
   const resolvedLabel = designAware ? getDesignCalculateLabel(mode, label) : label;
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-start gap-2">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-stretch gap-2.5">
         <button
           type="button"
           onClick={onClick}
           disabled={disabled}
-          className={`${calculatorPrimaryButtonClass} min-w-0 flex-1 disabled:cursor-not-allowed disabled:opacity-60`}
+          className={`${calculatorPrimaryButtonClass} min-w-0 flex-1 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none`}
         >
           {resolvedLabel}
         </button>
