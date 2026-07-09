@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, GitCompare, HelpCircle, Ruler } from "lucide-react";
+import { CheckCircle2, GitCompare, HelpCircle, Ruler, Stethoscope } from "lucide-react";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import type { ModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 
@@ -9,11 +9,12 @@ type Props = {
   workflow: ModuleDesignWorkflow;
 };
 
-const modeIcons = {
+const modeIcons: Partial<Record<import("@/lib/design-workflows/workflowModeLabels").DesignWorkflowMode, typeof Ruler>> = {
   design: Ruler,
   check: CheckCircle2,
   select: GitCompare,
-} as const;
+  diagnose: Stethoscope,
+};
 
 export default function DesignModeToggle({ workflow }: Props) {
   const { mode, setMode } = useDesignWorkflow();
@@ -22,7 +23,7 @@ export default function DesignModeToggle({ workflow }: Props) {
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="inline-flex rounded-xl bg-slate-100/90 p-1 shadow-inner dark:bg-slate-800/80">
         {workflow.modes.map((item) => {
-          const Icon = modeIcons[item.id];
+          const Icon = modeIcons[item.id] ?? CheckCircle2;
           const active = mode === item.id;
           return (
             <button

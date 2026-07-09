@@ -1,5 +1,5 @@
-/** Internal workflow mode IDs (stable in code). User-facing names: Auto-design, Validate, Compare. */
-export type DesignWorkflowMode = "check" | "design" | "select";
+/** Internal workflow mode IDs (stable in code). User-facing names: Auto-design, Validate, Compare, Diagnose. */
+export type DesignWorkflowMode = "check" | "design" | "select" | "diagnose";
 
 export type WorkflowModeMeta = {
   label: string;
@@ -47,6 +47,18 @@ export const WORKFLOW_MODE_META: Record<DesignWorkflowMode, WorkflowModeMeta> = 
       "Open “Sizing candidates & reference” to see ranked catalog or solver options.",
       "Click Apply on a row to load that size into the form (switches to Validate).",
       "Run Validate again to confirm the chosen option with full physics and code checks.",
+    ],
+  },
+  diagnose: {
+    label: "Diagnose",
+    description:
+      "Analyze an installed bearing under current operating conditions — flag overload, lubrication, misalignment, and speed risks.",
+    calculateLabel: "Diagnose failure risk",
+    headline: "Diagnose — why is this bearing failing?",
+    steps: [
+      "Enter the installed designation and actual operating loads, speed, and lubrication.",
+      "Click Diagnose to run ISO 281/76 checks and risk screening.",
+      "Review failure modes, root-cause hints, and catalog replacement options.",
     ],
   },
 };

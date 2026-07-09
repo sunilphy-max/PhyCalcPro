@@ -10,7 +10,9 @@ import CalculatorLayout from "@/components/CalculatorLayout";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import BearingInputs from "@/components/machine/bearings/BearingInputs";
+import BearingInputs, {
+  type LoadSpectrumUiStep,
+} from "@/components/machine/bearings/BearingInputs";
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
@@ -20,6 +22,9 @@ import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { fromBase } from "@/lib/units/conversions";
 import { toBase } from "@/lib/units/conversions";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
+import { diagnoseBearing, type BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
+import { rankCatalogBearings } from "@/lib/machine/bearings/catalogSelection";
+import { buildBearingReportInputRows } from "@/lib/machine/bearings/reportInputs";
 import type {
   BearingResult,
   BearingMaterial,
@@ -67,9 +72,22 @@ type BearingProjectData = {
   contamination: ContaminationLevel;
   clearanceOverride: BearingClearance | "";
   useVariableLoad: boolean;
-  variableLoadPercent: number;
-  variableLoadFraction: number;
+  loadSpectrumSteps: LoadSpectrumUiStep[];
+  shockFactor: number;
+  lifeInputMode: "hours" | "revolutions";
+  lifeRevolutions: number;
+  maxOuterMm: number | "";
+  /** @deprecated migrated to loadSpectrumSteps */
+  variableLoadPercent?: number;
+  /** @deprecated migrated to loadSpectrumSteps */
+  variableLoadFraction?: number;
 };
+
+const DEFAULT_LOAD_SPECTRUM: LoadSpectrumUiStep[] = [
+  { loadPercent: 100, durationPercent: 70 },
+  { loadPercent: 75, durationPercent: 20 },
+  { loadPercent: 125, durationPercent: 10 },
+];
 
 const LEGACY_MATERIAL: BearingMaterial = {
   name: "Bearing steel",
@@ -89,6 +107,9 @@ export default function Page() {
   const [speed, setSpeed] = useState(1800);
   const [lifeHours, setLifeHours] = useState(20000);
   const [safetyFactor, setSafetyFactor] = useState(1.5);
+  const [shockFactor, setShockFactor] = useState(1);
+  const [lifeInputMode, setLifeInputMode] = useState<"hours" | "revolutions">("hours");
+  const [lifeRevolutions, setLifeRevolutions] = useState(90e6);
   const [applicationProfile, setApplicationProfile] = useState<BearingApplicationProfile | "all">("all");
   const [bearingType, setBearingType] = useState<BearingType>("deep_groove");
   const [designation, setDesignation] = useState("6205");
@@ -104,34 +125,42 @@ export default function Page() {
   const [contamination, setContamination] = useState<ContaminationLevel>("normal_clean");
   const [clearanceOverride, setClearanceOverride] = useState<BearingClearance | "">("");
   const [useVariableLoad, setUseVariableLoad] = useState(false);
-  const [variableLoadPercent, setVariableLoadPercent] = useState(75);
-  const [variableLoadFraction, setVariableLoadFraction] = useState(0.3);
+  const [loadSpectrumSteps, setLoadSpectrumSteps] = useState<LoadSpectrumUiStep[]>(DEFAULT_LOAD_SPECTRUM);
   const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
+  const [maxOuterMm, setMaxOuterMm] = useState<number | "">("");
   const [result, setResult] = useState<BearingResult | null>(null);
+  const [diagnosis, setDiagnosis] = useState<BearingDiagnosis | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
     useSavedProjects<BearingProjectData>("bearings", "Bearing Project");
   const completePowerTrainStep = usePowerTrainStepCompletion();
 
   const runCheck = () => {
     const catalogEntry = findBearing(designation);
-    const Fr = toBase(radialLoad, "force", radialUnit);
-    const Fa = toBase(axialLoad, "force", axialUnit);
+    const Fr = toBase(radialLoad, "force", radialUnit) * shockFactor;
+    const Fa = toBase(axialLoad, "force", axialUnit) * shockFactor;
+    const effectiveLifeHours =
+      lifeInputMode === "hours"
+        ? lifeHours
+        : lifeRevolutions / (60 * Math.max(speed, 1));
 
     let loadSpectrum: LoadSpectrumStep[] | undefined;
     if (useVariableLoad) {
-      const frac = Math.min(Math.max(variableLoadFraction, 0.05), 0.95);
-      const scale = variableLoadPercent / 100;
-      loadSpectrum = [
-        { durationFraction: 1 - frac, radialLoad: Fr, axialLoad: Fa },
-        { durationFraction: frac, radialLoad: Fr * scale, axialLoad: Fa * scale },
-      ];
+      const totalDuration = loadSpectrumSteps.reduce(
+        (sum, step) => sum + Math.max(step.durationPercent, 0),
+        0
+      );
+      loadSpectrum = loadSpectrumSteps.map((step) => ({
+        durationFraction: Math.max(step.durationPercent, 0) / Math.max(totalDuration, 1),
+        radialLoad: Fr * (step.loadPercent / 100),
+        axialLoad: Fa * (step.loadPercent / 100),
+      }));
     }
 
     const config = {
       radialLoad: Fr,
       axialLoad: Fa,
       speed,
-      lifeHours,
+      lifeHours: effectiveLifeHours,
       safetyFactor,
       bearingType: catalogEntry?.type ?? bearingType,
       designation: catalogEntry?.designation,
@@ -155,6 +184,22 @@ export default function Page() {
 
     const raw = solveBearingEngine(config);
     setResult(wrapResult(raw));
+    setDiagnosis(
+      workflowMode === "diagnose"
+        ? diagnoseBearing(raw, {
+            radialLoad: Fr,
+            axialLoad: Fa,
+            speed,
+            bearingType: config.bearingType,
+            manufacturer,
+            applicationProfile,
+            arrangement,
+            lubricantType,
+            contamination,
+            operatingTempC,
+          })
+        : null
+    );
 
     const bore = raw.geometry?.boreMm;
     publishHandoff("housing", {
@@ -180,7 +225,7 @@ export default function Page() {
     maxForce: toBase(radialLoad, "force", radialUnit),
     axialLoad: toBase(axialLoad, "force", axialUnit),
     speedDriver: speed,
-    requiredLife: lifeHours,
+    requiredLife: lifeInputMode === "hours" ? lifeHours : lifeRevolutions / (60 * Math.max(speed, 1)),
     targetSafetyFactor: safetyFactor,
     bearingType,
     bearingManufacturer: manufacturer,
@@ -194,6 +239,8 @@ export default function Page() {
     axialUnit,
     speed,
     lifeHours,
+    lifeInputMode,
+    lifeRevolutions,
     safetyFactor,
     bearingType,
     manufacturer,
@@ -260,8 +307,19 @@ export default function Page() {
     if (p.contamination) setContamination(p.contamination);
     setClearanceOverride(p.clearanceOverride ?? "");
     setUseVariableLoad(p.useVariableLoad ?? false);
-    setVariableLoadPercent(p.variableLoadPercent ?? 75);
-    setVariableLoadFraction(p.variableLoadFraction ?? 0.3);
+    if (p.loadSpectrumSteps?.length) {
+      setLoadSpectrumSteps(p.loadSpectrumSteps);
+    } else if (p.variableLoadPercent != null) {
+      setLoadSpectrumSteps([
+        { loadPercent: 100, durationPercent: Math.round((1 - (p.variableLoadFraction ?? 0.3)) * 100) },
+        { loadPercent: p.variableLoadPercent, durationPercent: Math.round((p.variableLoadFraction ?? 0.3) * 100) },
+        { loadPercent: 125, durationPercent: 10 },
+      ]);
+    }
+    setShockFactor(p.shockFactor ?? 1);
+    setLifeInputMode(p.lifeInputMode ?? "hours");
+    setLifeRevolutions(p.lifeRevolutions ?? 90e6);
+    setMaxOuterMm(p.maxOuterMm ?? "");
   };
 
   const syncDesignation = (
@@ -288,6 +346,94 @@ export default function Page() {
     const first = pool[0]?.designation;
     if (first) setDesignation(first);
   };
+
+  const reportInputRows = useMemo(
+    () =>
+      buildBearingReportInputRows({
+        radialLoad,
+        radialUnit,
+        axialLoad,
+        axialUnit,
+        shockFactor,
+        speed,
+        lifeHours,
+        lifeInputMode,
+        lifeRevolutions,
+        safetyFactor,
+        bearingType,
+        designation,
+        manufacturer,
+        applicationProfile,
+        arrangement,
+        reliability,
+        lubricantType,
+        isoVgGrade,
+        operatingTempC,
+        contamination,
+        sealFilter,
+        useVariableLoad,
+        loadSpectrumSteps,
+        maxBoreMm,
+        maxOuterMm,
+      }),
+    [
+      radialLoad,
+      radialUnit,
+      axialLoad,
+      axialUnit,
+      shockFactor,
+      speed,
+      lifeHours,
+      lifeInputMode,
+      lifeRevolutions,
+      safetyFactor,
+      bearingType,
+      designation,
+      manufacturer,
+      applicationProfile,
+      arrangement,
+      reliability,
+      lubricantType,
+      isoVgGrade,
+      operatingTempC,
+      contamination,
+      sealFilter,
+      useVariableLoad,
+      loadSpectrumSteps,
+      maxBoreMm,
+      maxOuterMm,
+    ]
+  );
+
+  const recommendations = useMemo(() => {
+    if (!result || workflowMode === "diagnose") return [];
+    return rankCatalogBearings({
+      bearingType: result.bearingType,
+      requiredDynamicRatingN: result.requiredDynamicRating,
+      requiredStaticRatingN: result.requiredStaticRating,
+      speedRpm: speed,
+      manufacturer,
+      applicationProfile,
+      series: seriesFilter,
+      sealType: sealFilter,
+      boreMaxMm: maxBoreMm === "" ? undefined : maxBoreMm,
+      outerMaxMm: maxOuterMm === "" ? undefined : maxOuterMm,
+    }).slice(0, 5);
+  }, [
+    result,
+    workflowMode,
+    speed,
+    manufacturer,
+    applicationProfile,
+    seriesFilter,
+    sealFilter,
+    maxBoreMm,
+    maxOuterMm,
+  ]);
+
+  const applyDesignation = useCallback((next: string) => {
+    if (findBearing(next)) setDesignation(next);
+  }, []);
 
   return (
     <CalculatorLayout
@@ -322,10 +468,16 @@ export default function Page() {
             setAxialLoad={setAxialLoad}
             axialUnit={axialUnit}
             setAxialUnit={setAxialUnit}
+            shockFactor={shockFactor}
+            setShockFactor={setShockFactor}
             speed={speed}
             setSpeed={setSpeed}
             lifeHours={lifeHours}
             setLifeHours={setLifeHours}
+            lifeInputMode={lifeInputMode}
+            setLifeInputMode={setLifeInputMode}
+            lifeRevolutions={lifeRevolutions}
+            setLifeRevolutions={setLifeRevolutions}
             safetyFactor={safetyFactor}
             setSafetyFactor={setSafetyFactor}
             applicationProfile={applicationProfile}
@@ -371,12 +523,13 @@ export default function Page() {
             setClearanceOverride={setClearanceOverride}
             useVariableLoad={useVariableLoad}
             setUseVariableLoad={setUseVariableLoad}
-            variableLoadPercent={variableLoadPercent}
-            setVariableLoadPercent={setVariableLoadPercent}
-            variableLoadFraction={variableLoadFraction}
-            setVariableLoadFraction={setVariableLoadFraction}
+            loadSpectrumSteps={loadSpectrumSteps}
+            setLoadSpectrumSteps={setLoadSpectrumSteps}
             maxBoreMm={maxBoreMm}
             setMaxBoreMm={setMaxBoreMm}
+            maxOuterMm={maxOuterMm}
+            setMaxOuterMm={setMaxOuterMm}
+            workflowMode={workflowMode}
             onCalculate={calculate}
             onSave={() =>
               saveProject({
@@ -401,8 +554,11 @@ export default function Page() {
                 contamination,
                 clearanceOverride,
                 useVariableLoad,
-                variableLoadPercent,
-                variableLoadFraction,
+                loadSpectrumSteps,
+                shockFactor,
+                lifeInputMode,
+                lifeRevolutions,
+                maxOuterMm,
               })
             }
             saving={saving}
@@ -411,7 +567,19 @@ export default function Page() {
           />
         </div>
       }
-      results={<BearingResults result={result} loadUnit={radialUnit} speedRpm={speed} arrangement={arrangement} />}
+      results={
+        <BearingResults
+          result={result}
+          loadUnit={radialUnit}
+          speedRpm={speed}
+          arrangement={arrangement}
+          workflowMode={workflowMode}
+          diagnosis={diagnosis}
+          recommendations={recommendations}
+          inputRows={reportInputRows}
+          onSelectDesignation={applyDesignation}
+        />
+      }
     />
   );
 }

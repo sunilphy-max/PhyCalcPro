@@ -1,6 +1,7 @@
 import { allModules } from "@/data/modules";
 import {
   DEFAULT_WORKFLOW_MODES,
+  WORKFLOW_MODE_META,
   type DesignWorkflowMode,
 } from "@/lib/design-workflows/workflowModeLabels";
 
@@ -322,6 +323,14 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   bearings: {
     maturity: "solver-backed",
+    modes: [
+      ...DEFAULT_WORKFLOW_MODES,
+      {
+        id: "diagnose" as DesignWorkflowMode,
+        label: WORKFLOW_MODE_META.diagnose.label,
+        description: WORKFLOW_MODE_META.diagnose.description,
+      },
+    ],
     designInputs: ["Radial/axial load", "Speed", "Required life", "Reliability", "Manufacturer", "Bore/space limits", "Lubrication class"],
     autoSizingTargets: ["Required dynamic rating", "Catalog designation", "L10/Lnm life", "Static C₀/P₀", "Speed margin"],
     catalogTables: ["ISO 281 life factors", "ISO 76 static ratings", "SKF/FAG/NSK/Timken/NTN metric catalog", "Lubrication a_ISO screening"],

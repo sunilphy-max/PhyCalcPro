@@ -3,8 +3,12 @@
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { WithCalculationSpec } from "@/lib/standards/types";
+import type { ReportRow } from "@/lib/export/reportPayload";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import { fromBase } from "@/lib/units/conversions";
 import type { BearingResult } from "@/lib/machine/bearings/types";
+import type { BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
+import type { RankedBearing } from "@/lib/machine/bearings/catalogSelection";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
   CalculatorMetricCard,
@@ -15,6 +19,10 @@ import {
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
+import BearingStatusBanner from "@/components/machine/bearings/BearingStatusBanner";
+import BearingRecommendations from "@/components/machine/bearings/BearingRecommendations";
+import BearingDiagnosisPanel from "@/components/machine/bearings/BearingDiagnosisPanel";
+import BearingReportPreview from "@/components/machine/bearings/BearingReportPreview";
 import {
   BEARING_MANUFACTURER_LABELS,
   BEARING_TYPE_LABELS,
@@ -26,6 +34,11 @@ type Props = {
   loadUnit: string;
   speedRpm: number;
   arrangement?: "single" | "back_to_back" | "face_to_face" | "tandem";
+  workflowMode?: DesignWorkflowMode;
+  diagnosis?: BearingDiagnosis | null;
+  recommendations?: RankedBearing[];
+  inputRows?: ReportRow[];
+  onSelectDesignation?: (designation: string) => void;
 };
 
 function utilizationStatus(value: number, limit: number, higherIsSafe: boolean): "safe" | "danger" {
@@ -37,6 +50,11 @@ export default function BearingResults({
   loadUnit,
   speedRpm,
   arrangement = "single",
+  workflowMode,
+  diagnosis,
+  recommendations = [],
+  inputRows = [],
+  onSelectDesignation,
 }: Props) {
   const catalogEntry = result?.designation ? findBearing(result.designation) : undefined;
 
@@ -151,89 +169,49 @@ export default function BearingResults({
     ];
   }, [loadUnit, result, speedRpm]);
 
-  const status = result?.isSafe ? "safe" : "danger";
+  const resultsContent = result ? (
+    <>
+      <BearingStatusBanner result={result} />
 
-  return (
-    <CalculatorResultsShell
-      moduleId="bearings"
-      fileName="bearing"
-      calculationSpec={result?.calculationSpec}
-      title="Export Bearing results"
-      description="Export the current summary and charts for review."
-      empty={!result}
-      emptyMessage="Enter loads, speed, life target, and catalog bearing, then calculate."
-      heading="Bearing life results"
-      qualityOverrides={chartModuleQuality()}
-      csvRows={
-        result
-          ? [
-              { metric: "designation", value: result.designation ?? "" },
-              { metric: "equivalentLoad", value: result.equivalentLoad },
-              { metric: "staticEquivalentLoad", value: result.staticEquivalentLoad },
-              { metric: "requiredDynamicRating", value: result.requiredDynamicRating },
-              { metric: "expectedLife", value: result.expectedLife },
-              { metric: "modifiedLife", value: result.modifiedLife },
-              { metric: "dynamicUtilization", value: result.dynamicUtilization },
-              { metric: "staticSafetyFactor", value: result.staticSafetyFactor },
-              { metric: "speedMargin", value: result.speedMargin ?? 0 },
-              { metric: "lifeUtilization", value: result.lifeUtilization },
-            ]
-          : undefined
-      }
-    >
-      {result ? (
-        <>
-          {result.bearingType ? (
-            <BearingReferenceVisual
-              bearingType={result.bearingType}
-              sealType={catalogEntry?.sealType ?? "open"}
-              arrangement={arrangement}
-              compact
-            />
-          ) : null}
+      {workflowMode !== "diagnose" && recommendations.length > 0 ? (
+        <BearingRecommendations recommendations={recommendations} onSelect={onSelectDesignation} />
+      ) : null}
 
-          <CalculatorMetricGrid cols={4}>
-            <CalculatorMetricCard
-              label="Status"
-              value={result.isSafe ? "Pass" : "Check required"}
-              status={status}
-            />
-            <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
-            <CalculatorMetricCard
-              label="Catalog designation"
-              value={result.designation ?? "—"}
-              tone="blue"
-            />
-            <CalculatorMetricCard
-              label="Bearing family"
-              value={BEARING_TYPE_LABELS[result.bearingType]}
-            />
-          </CalculatorMetricGrid>
+      {result.bearingType ? (
+        <BearingReferenceVisual
+          bearingType={result.bearingType}
+          sealType={catalogEntry?.sealType ?? "open"}
+          arrangement={arrangement}
+          compact
+        />
+      ) : null}
 
-          <CalculatorMetricGrid cols={4}>
-            <CalculatorMetricCard
-              label="Equivalent load P"
-              value={`${formatDisplayNumber(fromBase(result.equivalentLoad, "force", loadUnit))} ${loadUnit}`}
-              tone="orange"
-            />
-            <CalculatorMetricCard
-              label={`Basic L10 life (a1=${result.a1})`}
-              value={`${formatDisplayNumber(result.expectedLife)} h`}
-              tone="blue"
-              size="lg"
-            />
-            <CalculatorMetricCard
-              label="Modified life Lnm"
-              value={`${formatDisplayNumber(result.modifiedLife)} h`}
-              tone="purple"
-            />
-            <CalculatorMetricCard
-              label="Static equivalent P₀"
-              value={`${formatDisplayNumber(fromBase(result.staticEquivalentLoad, "force", loadUnit))} ${loadUnit}`}
-            />
-          </CalculatorMetricGrid>
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label="Catalog designation"
+          value={result.designation ?? "—"}
+          tone="blue"
+        />
+        <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
+        <CalculatorMetricCard
+          label="Equivalent load P"
+          value={`${formatDisplayNumber(fromBase(result.equivalentLoad, "force", loadUnit))} ${loadUnit}`}
+          tone="orange"
+        />
+        <CalculatorMetricCard
+          label={`Basic L10 life (a1=${result.a1})`}
+          value={`${formatDisplayNumber(result.expectedLife)} h`}
+          tone="blue"
+          size="lg"
+        />
+        <CalculatorMetricCard
+          label="Modified life Lnm"
+          value={`${formatDisplayNumber(result.modifiedLife)} h`}
+          tone="purple"
+        />
+      </CalculatorMetricGrid>
 
-          <CalculatorMetricGrid cols={4}>
+      <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard
               label="Dynamic utilization P/C"
               numericValue={result.dynamicUtilization}
@@ -352,7 +330,67 @@ export default function BearingResults({
           ) : null}
 
           <EngineeringPlotPicker tabs={plotTabs} defaultTabId="life-load" label="Result charts" />
-        </>
+    </>
+  ) : null;
+
+  const viewTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    const tabs: PlotPickerTab[] = [
+      { id: "results", label: "Results", content: resultsContent },
+      {
+        id: "reports",
+        label: "Reports",
+        content: <BearingReportPreview inputRows={inputRows} hasResult />,
+      },
+    ];
+    if (workflowMode === "diagnose" && diagnosis) {
+      tabs.splice(1, 0, {
+        id: "diagnose",
+        label: "Diagnose",
+        content: (
+          <BearingDiagnosisPanel diagnosis={diagnosis} onSelectReplacement={onSelectDesignation} />
+        ),
+      });
+    }
+    return tabs;
+  }, [diagnosis, inputRows, onSelectDesignation, result, resultsContent, workflowMode]);
+
+  return (
+    <CalculatorResultsShell
+      moduleId="bearings"
+      fileName="bearing"
+      calculationSpec={result?.calculationSpec}
+      title="Bearing calculation report"
+      description="ISO 281/76 bearing life report with inputs, equations, safety checks, and charts."
+      empty={!result}
+      emptyMessage="Enter loads, speed, life target, and catalog bearing, then calculate."
+      heading="Bearing results"
+      qualityOverrides={chartModuleQuality()}
+      inputRows={inputRows}
+      reportMeta={{ project: result?.designation ?? "Bearing selection" }}
+      csvRows={
+        result
+          ? [
+              { metric: "designation", value: result.designation ?? "" },
+              { metric: "designStatus", value: result.designStatus },
+              { metric: "governingFailureMode", value: result.governingFailureMode },
+              { metric: "equivalentLoad", value: result.equivalentLoad },
+              { metric: "staticEquivalentLoad", value: result.staticEquivalentLoad },
+              { metric: "requiredDynamicRating", value: result.requiredDynamicRating },
+              { metric: "expectedLife", value: result.expectedLife },
+              { metric: "modifiedLife", value: result.modifiedLife },
+              { metric: "dynamicUtilization", value: result.dynamicUtilization },
+              { metric: "staticSafetyFactor", value: result.staticSafetyFactor },
+              { metric: "speedMargin", value: result.speedMargin ?? 0 },
+              { metric: "lifeUtilization", value: result.lifeUtilization },
+              { metric: "kappa", value: result.modifiedLifeFactors.kappa },
+              { metric: "aIso", value: result.aIso },
+            ]
+          : undefined
+      }
+    >
+      {result ? (
+        <EngineeringPlotPicker tabs={viewTabs} defaultTabId="results" label="Results view" />
       ) : null}
     </CalculatorResultsShell>
   );
