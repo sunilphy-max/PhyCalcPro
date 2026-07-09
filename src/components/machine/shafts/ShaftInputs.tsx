@@ -18,6 +18,7 @@ import CalculatorFormSection from "@/components/calculator/CalculatorFormSection
 import CalculatorNumberField from "@/components/calculator/CalculatorNumberField";
 import MaterialSelect from "@/components/materials/MaterialSelect";
 import { CUSTOM_MATERIAL } from "@/data/materials";
+import { calculatorInputGridTightClass } from "@/components/calculator/styles";
 
 export type SupportPreset = "fixed_left" | "simply_supported" | "custom";
 

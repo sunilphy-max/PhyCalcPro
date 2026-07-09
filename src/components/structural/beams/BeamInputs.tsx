@@ -11,6 +11,7 @@ import {
   getBeamApplicationPreset,
 } from "@/lib/structural/beams/applicationPresets";
 import { useBeamApplicationPreset } from "@/hooks/useApplicationPreset";
+import { materials } from "@/data/materials";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";

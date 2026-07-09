@@ -76,8 +76,14 @@ export function MaterialFormSection(props: Props) {
       });
       return;
     }
+    if ("setElasticModulus" in props) {
+      applyMaterial(name, props.profile, {
+        setElasticModulus: props.setElasticModulus,
+        setYieldStrength: props.setYieldStrength,
+      });
+      return;
+    }
     applyMaterial(name, props.profile, {
-      setElasticModulus: props.setElasticModulus,
       setYieldStrength: props.setYieldStrength,
     });
   };

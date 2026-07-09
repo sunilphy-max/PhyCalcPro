@@ -9,6 +9,7 @@ import RolledSectionPicker from "@/components/design-workflows/RolledSectionPick
 import MaterialSelect from "@/components/materials/MaterialSelect";
 import { getMaterialFieldUpdates } from "@/lib/materials/materialCatalogService";
 import { CUSTOM_MATERIAL } from "@/data/materials";
+import { calculatorInputGridClass } from "@/components/calculator/styles";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {

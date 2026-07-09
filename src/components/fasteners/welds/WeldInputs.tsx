@@ -7,6 +7,11 @@ import CalculatorNumberField from "@/components/calculator/CalculatorNumberField
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MaterialSelect from "@/components/materials/MaterialSelect";
+import {
+  calculatorFieldLabelClass,
+  calculatorInputGridClass,
+  calculatorSelectClass,
+} from "@/components/calculator/styles";
 import type { WeldType } from "@/lib/fasteners/welds/types";
 
 type Props = {
