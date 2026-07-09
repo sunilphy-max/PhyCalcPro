@@ -221,7 +221,7 @@ export const categories: EngineeringCategory[] = [
     id: "machine",
     title: "Machine Design",
     description:
-      "Shafts, gears, bearings, and rotating systems",
+      "Shafts, gears, and rotating systems",
 
     icon: Cog,
     color: "from-green-500 to-green-600",
@@ -329,33 +329,49 @@ export const categories: EngineeringCategory[] = [
         icon: Disc3,
         subGroup: "Rotating Machinery",
       },
+    ],
+  },
+
+  // =========================================================
+  // BEARINGS
+  // =========================================================
+  {
+    id: "bearings",
+    title: "Bearings",
+    description: "Rolling element, plain hydrodynamic, and housing design",
+
+    icon: Gauge,
+    color: "from-cyan-500 to-cyan-600",
+
+    modules: [
       {
         id: "bearings",
-        title: "Bearing Selection",
-        description: "Load rating and life estimation",
-        route: "/products/machine/bearings",
-        category: "machine",
+        title: "Rolling Bearing Selection",
+        description: "ISO 281 life, ISO 76 static check, multi-manufacturer catalog",
+        route: "/products/bearings/selection",
+        category: "bearings",
         icon: Gauge,
-        subGroup: "Bearings",
+        featured: true,
+        subGroup: "Rolling Element",
+      },
+      {
+        id: "plain-bearings",
+        title: "Plain Bearings",
+        description: "Journal, thrust pad, and tilting pad hydrodynamic screening",
+        route: "/products/bearings/plain",
+        category: "bearings",
+        icon: Circle,
+        subGroup: "Hydrodynamic",
       },
       {
         id: "housing",
         title: "Bearing Housing",
         description: "Housing body stress and mounting bolt loads",
-        route: "/products/machine/housing",
-        category: "machine",
+        route: "/products/bearings/housing",
+        category: "bearings",
         icon: Building2,
-        subGroup: "Bearings",
+        subGroup: "Mounting",
         tags: ["power train", "workflow"],
-      },
-      {
-        id: "plain-bearings",
-        title: "Plain Bearings",
-        description: "Journal and thrust pad hydrodynamic screening",
-        route: "/products/machine/plain-bearings",
-        category: "machine",
-        icon: Circle,
-        subGroup: "Bearings",
       },
     ],
   },
@@ -406,7 +422,7 @@ export const categories: EngineeringCategory[] = [
   {
     id: "fasteners",
     title: "Connections & Fasteners",
-    description: "Bolts, welds, rivets, keys, pins and joints",
+    description: "Bolts, welds, rivets, keys, pins — ISO, DIN, ANSI, ASME context",
 
     icon: Wrench,
     color: "from-red-500 to-red-600",

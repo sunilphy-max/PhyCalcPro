@@ -183,10 +183,20 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("bearing", "Bearing on threads", "utilization"),
   ], {
     standardsByCode: {
-      US: [{ body: "AISC", document: "360-22", clause: "J3" }],
+      US: [
+        { body: "AISC", document: "360-22", clause: "J3" },
+        { body: "ANSI", document: "B18.2.1", note: "Inch-series bolts" },
+        { body: "ASME", document: "B1.1", note: "Unified inch screw threads" },
+      ],
       EU: [
         { body: "EN", document: "1993-1-8" },
         { body: "VDI", document: "2230", note: "High-fidelity bolted joints" },
+        { body: "DIN", document: "EN ISO 4014", note: "Hex head bolts" },
+      ],
+      ISO: [
+        { body: "ISO", document: "898-1", note: "Property classes" },
+        { body: "ISO", document: "724", note: "Metric thread geometry" },
+        { body: "ISO", document: "4014", note: "Hex head bolts" },
       ],
     },
   }),
@@ -231,15 +241,25 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     {
       validationStatus: "beta",
       standardsByCode: {
-        US: [{ body: "AWS", document: "D1.1" }],
+        US: [
+          { body: "AWS", document: "D1.1" },
+          { body: "ASME", document: "VIII-1", note: "Pressure vessel welds" },
+        ],
         EU: [{ body: "EN", document: "1993-1-8" }],
+        ISO: [{ body: "ISO", document: "2553", note: "Welding symbols context" }],
       },
     }
   ),
   rivets: withCodeChecks("rivets", "Rivet Analysis", [
     genericIndicativeCheck("shear", "Shear safety factor", "safety_factor"),
     genericIndicativeCheck("bearing", "Bearing safety factor", "safety_factor"),
-  ]),
+  ], {
+    standardsByCode: {
+      US: [{ body: "ANSI", document: "B18.1.1", note: "Small solid rivets" }],
+      EU: [{ body: "DIN", document: "7337", note: "Blind rivets context" }],
+      ISO: [{ body: "ISO", document: "15983", note: "Blind rivets context" }],
+    },
+  }),
   "safety-factor": withCodeChecks("safety-factor", "Safety Factor", [
     genericIndicativeCheck("von_mises_yield", "Yield safety factor", "safety_factor"),
     genericIndicativeCheck("von_mises_ultimate", "Ultimate safety factor", "safety_factor"),
@@ -520,16 +540,32 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   "extension-springs": withCodeChecks("extension-springs", "Extension Springs", extensionSpringChecks),
   "torsion-springs": withCodeChecks("torsion-springs", "Torsion Springs", torsionSpringChecks),
   "keys-splines": withCodeChecks("keys-splines", "Keys & Splines", keysSplinesChecks, {
-    standardsByCode: { ISO: [{ body: "ISO", document: "3912" }] },
+    standardsByCode: {
+      ISO: [{ body: "ISO", document: "3912" }],
+      US: [{ body: "ANSI", document: "B17.1", note: "Keys and keyseats" }],
+      EU: [{ body: "DIN", document: "6885", note: "Parallel keys" }],
+    },
   }),
   "shaft-hubs": withCodeChecks("shaft-hubs", "Shaft Hub Fits", [
     genericIndicativeCheck("contact_pressure", "Contact pressure", "stress"),
     genericIndicativeCheck("torque_capacity", "Friction torque capacity", "utilization"),
-  ]),
+  ], {
+    standardsByCode: {
+      ISO: [{ body: "ISO", document: "286-1", note: "Fit tolerances" }],
+      US: [{ body: "ASME", document: "B4.1", note: "Preferred limits and fits" }],
+      EU: [{ body: "DIN", document: "7190", note: "Interference fits" }],
+    },
+  }),
   "pins": withCodeChecks("pins", "Pin & Clevis", [
     genericIndicativeCheck("shear", "Pin shear safety", "safety_factor"),
     genericIndicativeCheck("bearing", "Pin bearing safety", "safety_factor"),
-  ]),
+  ], {
+    standardsByCode: {
+      ISO: [{ body: "ISO", document: "8734", note: "Parallel pins" }],
+      US: [{ body: "ANSI", document: "B18.8.2", note: "Clevis pins" }],
+      EU: [{ body: "DIN", document: "7", note: "Parallel pins" }],
+    },
+  }),
   "brakes-clutches": withCodeChecks("brakes-clutches", "Brakes & Clutches", [
     genericIndicativeCheck("friction_torque", "Friction torque capacity", "utilization"),
     genericIndicativeCheck("energy", "Energy per stop", "other"),

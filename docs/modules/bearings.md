@@ -2,7 +2,7 @@
 
 **Purpose**
 
-Rolling-element bearing screening per ISO 281 (basic and modified rating life) and ISO 76 static load check. Catalog-backed C, C₀, geometry, and limiting speed for deep-groove, angular-contact, and cylindrical-roller bearings.
+Rolling-element bearing screening per ISO 281 (basic and modified rating life) and ISO 76 static load check. Multi-manufacturer catalog (SKF, FAG, NSK, Timken, NTN) with application profiles, series/sealing filters, and representative C, C₀, geometry, and limiting speed.
 
 **Physics & theory**
 
@@ -27,7 +27,11 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 | Fr, Fa | Radial and axial loads |
 | n | Operating speed (rpm) |
 | L₁₀h target | Required rating life |
-| Bearing type & catalog designation | C, C₀, n_lim from catalog |
+| Application profile | General radial, combined loads, heavy shock, high speed, space limited, thrust, locating/floating |
+| Manufacturer | SKF, FAG, NSK, Timken, NTN |
+| Bearing family / type | Deep groove, angular contact, NU/NJ/NUP cylindrical, tapered, spherical, needle, self-aligning, thrust |
+| Series & sealing | Catalog series (62xx, 302xx, …) and open/shielded/sealed |
+| Catalog designation | C, C₀, n_lim from catalog |
 | Reliability a₁ | 90–99% |
 | Lubrication class | Optional a_ISO screening (poor/average/good) |
 | Max bore | Shaft diameter constraint for auto-selection |
@@ -44,15 +48,16 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 
 - **ISO 281:2007** — Basic and modified rating life
 - **ISO 76** — Static load rating screening
-- Catalog limiting speed (grease)
+- Catalog limiting speed (grease) and reference speed (oil) where listed
 
 **Assumptions & limitations**
 
 - Constant load and speed; variable spectra need ISO 281-1 equivalent load methods
 - a_ISO is simplified (κ, contamination not computed individually)
-- ~40 catalog entries — not a full SKF/INA database
-- No duplex/paired angular-contact or tapered-roller arrangements
-- Fits, clearance, and temperature derating not modeled
+- Representative catalog (~800+ entries across 5 manufacturers) — not full vendor databases
+- Per-designation X/Y/e overrides where listed; otherwise family defaults
+- Duplex/paired angular-contact life factors not fully modeled
+- Fits, clearance selection (C2/CN/C3), and temperature derating not modeled
 
 **Verification**
 
@@ -63,7 +68,7 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 **Design workflow**
 
 - **Validate:** ISO 281/76 forward check on selected designation.
-- **Auto-design:** Ranks catalog entries by life utilization, static SF, and speed margin within bore limit.
+- **Auto-design:** Ranks catalog entries by manufacturer, application profile, life utilization, static SF, and speed margin within bore limit.
 - **Handoff:** Receives Fr, Fa, speed from **shafts** module (manual apply today).
 
 **References**

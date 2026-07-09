@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { solveBearingEngine } from "./engine";
-import { calculateBearingEquivalentLoad } from "./solver";
+import { calculateBearingEquivalentLoad, lifeExponentFor } from "./solver";
 import { calculateStaticEquivalentLoad as p0 } from "./staticLoad";
 import { rankCatalogBearings } from "./catalogSelection";
+import { filterCatalog, bearingCatalog } from "@/data/catalogs/bearingCatalog";
 
 const LEGACY_MATERIAL = {
   name: "Steel",
@@ -104,10 +105,39 @@ describe("bearing ISO 281 regression", () => {
     expect(skf.some((r) => r.entry.designation === "6205")).toBe(true);
     expect(nsk.some((r) => r.entry.designation === "NSK 6205")).toBe(true);
   });
+
+  it("supports tapered roller catalog type with roller life exponent", () => {
+    expect(lifeExponentFor("tapered_roller")).toBeCloseTo(10 / 3);
+    const res = solveBearingEngine({
+      radialLoad: 8000,
+      axialLoad: 5000,
+      speed: 1200,
+      lifeHours: 15000,
+      safetyFactor: 1.2,
+      bearingType: "tapered_roller",
+      designation: "30205",
+      material: LEGACY_MATERIAL,
+    });
+    expect(res.equivalentLoad).toBeGreaterThan(8000);
+    expect(res.geometry?.boreMm).toBe(25);
+  });
+
+  it("filters catalog by application profile", () => {
+    const thrust = filterCatalog(bearingCatalog, {
+      manufacturer: "SKF",
+      applicationProfile: "pure_thrust",
+    });
+    expect(thrust.length).toBeGreaterThan(0);
+    expect(thrust.every((e) => e.type === "thrust_ball")).toBe(true);
+  });
 });
 
 describe("ISO 76 static load", () => {
   it("P0 = Fr when Fa/Fr is low", () => {
     expect(p0(5000, 100, "deep_groove")).toBe(5000);
+  });
+
+  it("P0 = Fa for thrust ball", () => {
+    expect(p0(0, 12000, "thrust_ball")).toBe(12000);
   });
 });

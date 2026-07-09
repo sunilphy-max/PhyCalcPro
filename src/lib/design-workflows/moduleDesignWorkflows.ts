@@ -127,9 +127,19 @@ const CATEGORY_TEMPLATES: Record<
       { option: "Recommended fastener", basis: "Balanced utilization", pass: "Pass expected", tradeoff: "Standard hardware" },
       { option: "Heavy fastener", basis: "High reserve", pass: "High margin", tradeoff: "More space/cost" },
     ],
-    catalogTables: ["Bolt grades", "Thread sizes", "Keyway/spline dimensions", "Weld throat/leg sizes"],
+    catalogTables: [
+      "ISO 898-1 / ISO 724 threads",
+      "DIN EN ISO bolt series",
+      "ANSI B18 inch bolts",
+      "ASME B1.1 unified threads",
+      "Keyway/spline dimensions",
+      "Weld throat/leg sizes",
+    ],
     linkedWorkflowModuleIds: ["combined-loading", "fatigue", "shafts", "materials/database"],
-    expertNotes: ["Connection detailing and eccentricity often control more than nominal stress."],
+    expertNotes: [
+      "Connection detailing and eccentricity often control more than nominal stress.",
+      "Thread catalogs span ISO metric, DIN EN ISO, ANSI inch, and ASME unified series — match hardware to the selected design standard.",
+    ],
     gaps: ["Automatic bolt/weld pattern optimization is not complete."],
   },
   materials: {
@@ -317,7 +327,7 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     catalogTables: ["ISO 281 life factors", "ISO 76 static ratings", "SKF/FAG/NSK/Timken/NTN metric catalog", "Lubrication a_ISO screening"],
     linkedWorkflowModuleIds: ["housing", "shafts", "plain-bearings", "fatigue"],
     expertNotes: ["Shaft FEM handoff imports Fr, Fa, and speed. Publishes bore and loads to Bearing Housing."],
-    gaps: ["Full manufacturer designation tables beyond representative series, paired bearing arrangements, and ISO 281 a_ISO from κ/ηc still need integration."],
+    gaps: ["Full vendor designation tables beyond representative series, duplex paired life factors, and ISO 281 a_ISO from κ/ηc still need integration."],
   },
   housing: {
     maturity: "solver-backed",
@@ -335,7 +345,14 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     maturity: "solver-backed",
     designInputs: ["Tension/shear", "Joint members", "Bolt pattern", "Preload", "Grade"],
     autoSizingTargets: ["Bolt diameter", "Grade", "Preload", "Thread engagement", "Group utilization"],
-    catalogTables: ["ISO/ASME bolt sizes", "Property classes", "AISC/VDI factors"],
+    catalogTables: [
+      "ISO 898-1 / ISO 724 threads",
+      "DIN EN ISO bolt series",
+      "ANSI B18 inch bolts",
+      "ASME B1.1 unified threads",
+      "Property classes",
+      "AISC/VDI factors",
+    ],
     linkedWorkflowModuleIds: ["frames", "welds", "pins", "combined-loading", "safety-factor"],
   },
   frames: {

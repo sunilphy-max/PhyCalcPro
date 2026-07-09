@@ -6,21 +6,24 @@ import type {
   BearingCatalogEntry,
   BearingManufacturer,
   CatalogBearingType,
+  BearingApplicationProfile,
+  BearingSealType,
+  BearingMountingRole,
 } from "@/data/catalogs/bearingCatalog";
-import { bearingCatalog } from "@/data/catalogs/bearingCatalog";
+import { bearingCatalog, filterCatalog } from "@/data/catalogs/bearingCatalog";
 
 export type BearingSelectionCriteria = {
   bearingType: CatalogBearingType;
   requiredDynamicRatingN: number;
   requiredStaticRatingN?: number;
   speedRpm: number;
-  /** Limit search to one manufacturer (e.g. SKF, NSK) */
   manufacturer?: BearingManufacturer;
-  /** Maximum bore (mm) from shaft diameter */
+  applicationProfile?: BearingApplicationProfile | "all";
+  series?: string | "all";
+  sealType?: BearingSealType | "all";
+  mountingRole?: BearingMountingRole | "all";
   boreMaxMm?: number;
-  /** Maximum outside diameter (mm) */
   outerMaxMm?: number;
-  /** Minimum bore (mm) */
   boreMinMm?: number;
 };
 
@@ -32,21 +35,28 @@ export type RankedBearing = {
   passes: boolean;
 };
 
+function catalogPool(criteria: BearingSelectionCriteria): BearingCatalogEntry[] {
+  return filterCatalog(bearingCatalog, {
+    manufacturer: criteria.manufacturer,
+    type: criteria.bearingType,
+    applicationProfile: criteria.applicationProfile,
+    series: criteria.series,
+    sealType: criteria.sealType,
+    mountingRole: criteria.mountingRole,
+  });
+}
+
 export function rankCatalogBearings(criteria: BearingSelectionCriteria): RankedBearing[] {
   const {
-    bearingType,
     requiredDynamicRatingN,
     requiredStaticRatingN = 0,
     speedRpm,
-    manufacturer,
     boreMaxMm,
     outerMaxMm,
     boreMinMm,
   } = criteria;
 
-  return bearingCatalog
-    .filter((b) => b.type === bearingType)
-    .filter((b) => manufacturer == null || b.manufacturer === manufacturer)
+  return catalogPool(criteria)
     .filter((b) => (boreMaxMm == null || b.boreMm <= boreMaxMm + 0.01))
     .filter((b) => (boreMinMm == null || b.boreMm >= boreMinMm - 0.01))
     .filter((b) => (outerMaxMm == null || b.outerDiameterMm <= outerMaxMm + 0.01))

@@ -32,9 +32,9 @@ export const POWER_TRAIN_STEPS: PowerTrainStepDef[] = [
     route: "/products/power-transmission/multi-pulley",
   },
   { id: "shafts", moduleId: "shafts", label: "Shaft", route: "/products/machine/shafts" },
-  { id: "bearings", moduleId: "bearings", label: "Bearing", route: "/products/machine/bearings" },
+  { id: "bearings", moduleId: "bearings", label: "Bearing", route: "/products/bearings/selection" },
   { id: "keys-splines", moduleId: "keys-splines", label: "Key", route: "/products/fasteners/keys-splines" },
-  { id: "housing", moduleId: "housing", label: "Housing", route: "/products/machine/housing" },
+  { id: "housing", moduleId: "housing", label: "Housing", route: "/products/bearings/housing" },
   { id: "bolts", moduleId: "bolts", label: "Fasteners", route: "/products/fasteners/bolts" },
   { id: "frames", moduleId: "frames", label: "Frame", route: "/products/structural/frames" },
 ];

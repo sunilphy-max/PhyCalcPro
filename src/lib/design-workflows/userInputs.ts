@@ -97,8 +97,9 @@ export type ModuleUserInputs = {
   module?: number;
   faceWidth?: number;
   bearingSeries?: string;
-  bearingType?: "deep_groove" | "angular_contact" | "cylindrical_roller";
+  bearingType?: "deep_groove" | "angular_contact" | "cylindrical_roller" | "cylindrical_nj" | "cylindrical_nup" | "tapered_roller" | "spherical_roller" | "needle_roller" | "self_aligning_ball" | "thrust_ball";
   bearingManufacturer?: "SKF" | "FAG" | "NSK" | "TIMKEN" | "NTN";
+  bearingApplicationProfile?: "general_radial" | "combined_loads" | "heavy_shock" | "high_speed" | "space_limited" | "pure_thrust" | "locating_bearing" | "floating_bearing" | "all";
   bore?: number;
   diameter?: number;
   shaftDiameterMm?: number;

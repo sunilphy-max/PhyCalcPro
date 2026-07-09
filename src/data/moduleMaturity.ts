@@ -81,7 +81,14 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
     validationQuality: 3,
     refactorRisk: "low",
     maturityBand: "formula",
-    notes: "ISO 281 L10 life with catalog C ratings, a1 reliability and ball/roller exponents.",
+    notes: "ISO 281/76 multi-manufacturer catalog, application presets per family, design-mode ranking.",
+  },
+  housing: {
+    numericalDepth: 3,
+    validationQuality: 2,
+    refactorRisk: "medium",
+    maturityBand: "formula",
+    notes: "Bearing housing body stress and bolt pattern screening; power-train workflow bridge.",
   },
   cams: {
     numericalDepth: 3,

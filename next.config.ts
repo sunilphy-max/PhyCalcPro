@@ -9,6 +9,21 @@ const nextConfig: NextConfig = {
         destination: "/products/materials/profiles",
         permanent: true,
       },
+      {
+        source: "/products/machine/bearings",
+        destination: "/products/bearings/selection",
+        permanent: true,
+      },
+      {
+        source: "/products/machine/plain-bearings",
+        destination: "/products/bearings/plain",
+        permanent: true,
+      },
+      {
+        source: "/products/machine/housing",
+        destination: "/products/bearings/housing",
+        permanent: true,
+      },
     ];
   },
   env: {

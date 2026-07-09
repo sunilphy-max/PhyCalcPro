@@ -1,11 +1,33 @@
+import { useMemo } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
-import type { BearingType, BearingReliability, LubricationClass, BearingManufacturer, BearingArrangement } from "@/lib/machine/bearings/types";
-import { bearingsOfType, findBearing, BEARING_MANUFACTURERS, BEARING_MANUFACTURER_LABELS } from "@/data/catalogs/bearingCatalog";
+import type {
+  BearingType,
+  BearingReliability,
+  LubricationClass,
+  BearingManufacturer,
+  BearingArrangement,
+  BearingApplicationProfile,
+  BearingSealType,
+} from "@/lib/machine/bearings/types";
+import {
+  bearingCatalog,
+  findBearing,
+  filterCatalog,
+  uniqueSeries,
+  uniqueTypes,
+  suggestedTypeForApplication,
+  applicationProfileOptions,
+  APPLICATION_PROFILE_META,
+  BEARING_MANUFACTURERS,
+  BEARING_MANUFACTURER_LABELS,
+  BEARING_TYPE_LABELS,
+  SEAL_TYPE_LABELS,
+} from "@/data/catalogs/bearingCatalog";
 
 type Props = {
   radialLoad: number;
@@ -22,6 +44,8 @@ type Props = {
   setLifeHours: Dispatch<SetStateAction<number>>;
   safetyFactor: number;
   setSafetyFactor: Dispatch<SetStateAction<number>>;
+  applicationProfile: BearingApplicationProfile | "all";
+  setApplicationProfile: (profile: BearingApplicationProfile | "all") => void;
   bearingType: BearingType;
   setBearingType: (type: BearingType) => void;
   designation: string;
@@ -32,6 +56,10 @@ type Props = {
   setLubricationClass: (v: LubricationClass | "") => void;
   manufacturer: BearingManufacturer;
   setManufacturer: (manufacturer: BearingManufacturer) => void;
+  seriesFilter: string | "all";
+  setSeriesFilter: (series: string | "all") => void;
+  sealFilter: BearingSealType | "all";
+  setSealFilter: (seal: BearingSealType | "all") => void;
   arrangement: BearingArrangement;
   setArrangement: (a: BearingArrangement) => void;
   maxBoreMm: number | "";
@@ -58,6 +86,8 @@ export default function BearingInputs({
   setLifeHours,
   safetyFactor,
   setSafetyFactor,
+  applicationProfile,
+  setApplicationProfile,
   bearingType,
   setBearingType,
   designation,
@@ -68,6 +98,10 @@ export default function BearingInputs({
   setLubricationClass,
   manufacturer,
   setManufacturer,
+  seriesFilter,
+  setSeriesFilter,
+  sealFilter,
+  setSealFilter,
   arrangement,
   setArrangement,
   maxBoreMm,
@@ -78,8 +112,35 @@ export default function BearingInputs({
   projectName,
   setProjectName,
 }: Props) {
-  const catalogOptions = bearingsOfType(bearingType, manufacturer);
+  const manufacturerPool = useMemo(
+    () => filterCatalog(bearingCatalog, { manufacturer, applicationProfile }),
+    [manufacturer, applicationProfile]
+  );
+
+  const availableTypes = useMemo(() => uniqueTypes(manufacturerPool), [manufacturerPool]);
+
+  const typePool = useMemo(
+    () => filterCatalog(bearingCatalog, { manufacturer, applicationProfile, type: bearingType }),
+    [manufacturer, applicationProfile, bearingType]
+  );
+
+  const seriesOptions = useMemo(() => uniqueSeries(typePool), [typePool]);
+
+  const catalogOptions = useMemo(
+    () =>
+      filterCatalog(bearingCatalog, {
+        manufacturer,
+        applicationProfile,
+        type: bearingType,
+        series: seriesFilter,
+        sealType: sealFilter,
+      }),
+    [manufacturer, applicationProfile, bearingType, seriesFilter, sealFilter]
+  );
+
   const selected = findBearing(designation);
+  const profileHint =
+    applicationProfile !== "all" ? APPLICATION_PROFILE_META[applicationProfile].description : null;
 
   return (
     <CalculatorInputPanel
@@ -154,57 +215,133 @@ export default function BearingInputs({
             className={calculatorNumberInputClass}
           />
         </label>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Bearing type</span>
-          <select
-            value={bearingType}
-            onChange={(event) => setBearingType(event.target.value as BearingType)}
-            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-          >
-            <option value="deep_groove">Deep groove ball</option>
-            <option value="angular_contact">Angular contact (40°)</option>
-            <option value="cylindrical_roller">Cylindrical roller</option>
-          </select>
-        </label>
       </div>
 
-      <label className="block space-y-2 text-sm text-slate-700">
-        <span>Manufacturer</span>
-        <select
-          value={manufacturer}
-          onChange={(event) => setManufacturer(event.target.value as BearingManufacturer)}
-          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-        >
-          {BEARING_MANUFACTURERS.map((mfr) => (
-            <option key={mfr} value={mfr}>
-              {BEARING_MANUFACTURER_LABELS[mfr]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="rounded-lg border border-sky-200 bg-sky-50/60 p-3 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-sky-800">Application & catalog selection</p>
+        <label className="block space-y-2 text-sm text-slate-700">
+          <span>Application profile</span>
+          <select
+            value={applicationProfile}
+            onChange={(event) => {
+              const profile = event.target.value as BearingApplicationProfile | "all";
+              setApplicationProfile(profile);
+              setSeriesFilter("all");
+              setSealFilter("all");
+              if (profile !== "all") {
+                const pool = filterCatalog(bearingCatalog, { manufacturer, applicationProfile: profile });
+                const types = uniqueTypes(pool);
+                const suggested = suggestedTypeForApplication(profile, types);
+                if (suggested) {
+                  setBearingType(suggested);
+                  const first = filterCatalog(bearingCatalog, {
+                    manufacturer,
+                    applicationProfile: profile,
+                    type: suggested,
+                  })[0];
+                  if (first) setDesignation(first.designation);
+                }
+              }
+            }}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            {applicationProfileOptions().map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {profileHint ? <p className="text-xs text-slate-500">{profileHint}</p> : null}
+        </label>
 
-      <label className="block space-y-2 text-sm text-slate-700">
-        <span>Catalog bearing</span>
-        <select
-          value={designation}
-          onChange={(event) => setDesignation(event.target.value)}
-          className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-        >
-          {catalogOptions.map((entry) => (
-            <option key={entry.designation} value={entry.designation}>
-              {entry.designation} — d {entry.boreMm} mm, C {(entry.dynamicRatingN / 1000).toFixed(1)} kN, C₀{" "}
-              {(entry.staticRatingN / 1000).toFixed(1)} kN
-            </option>
-          ))}
-        </select>
-      </label>
+        <div className={`${calculatorInputGridClass}`}>
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Manufacturer</span>
+            <select
+              value={manufacturer}
+              onChange={(event) => setManufacturer(event.target.value as BearingManufacturer)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            >
+              {BEARING_MANUFACTURERS.map((mfr) => (
+                <option key={mfr} value={mfr}>
+                  {BEARING_MANUFACTURER_LABELS[mfr]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Bearing family / type</span>
+            <select
+              value={bearingType}
+              onChange={(event) => setBearingType(event.target.value as BearingType)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            >
+              {availableTypes.map((type) => (
+                <option key={type} value={type}>
+                  {BEARING_TYPE_LABELS[type]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Series</span>
+            <select
+              value={seriesFilter}
+              onChange={(event) => setSeriesFilter(event.target.value)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            >
+              <option value="all">All series</option>
+              {seriesOptions.map((series) => (
+                <option key={series} value={series}>
+                  {series}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Sealing</span>
+            <select
+              value={sealFilter}
+              onChange={(event) => setSealFilter(event.target.value as BearingSealType | "all")}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            >
+              <option value="all">All seals</option>
+              {(Object.keys(SEAL_TYPE_LABELS) as BearingSealType[]).map((seal) => (
+                <option key={seal} value={seal}>
+                  {SEAL_TYPE_LABELS[seal]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-      {selected && (
-        <p className="text-xs text-slate-500">
-          {BEARING_MANUFACTURER_LABELS[selected.manufacturer]} · {selected.designation}: d={selected.boreMm} D=
-          {selected.outerDiameterMm} B={selected.widthMm} mm · n_lim={selected.limitingSpeedRpm} RPM
-        </p>
-      )}
+        <label className="block space-y-2 text-sm text-slate-700">
+          <span>Catalog designation</span>
+          <select
+            value={designation}
+            onChange={(event) => setDesignation(event.target.value)}
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            {catalogOptions.map((entry) => (
+              <option key={entry.designation} value={entry.designation}>
+                {entry.designation} — d {entry.boreMm} mm, C {(entry.dynamicRatingN / 1000).toFixed(1)} kN, C₀{" "}
+                {(entry.staticRatingN / 1000).toFixed(1)} kN
+                {entry.sealType !== "open" ? ` · ${SEAL_TYPE_LABELS[entry.sealType]}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {selected && (
+          <p className="text-xs text-slate-600">
+            {BEARING_MANUFACTURER_LABELS[selected.manufacturer]} · {BEARING_TYPE_LABELS[selected.type]} · series{" "}
+            {selected.series} · {selected.clearance} · {selected.mountingRole.replace("_", " ")} · d=
+            {selected.boreMm} D={selected.outerDiameterMm} B={selected.widthMm} mm · n_lim=
+            {selected.limitingSpeedRpm} RPM
+            {selected.referenceSpeedRpm ? ` · n_ref=${selected.referenceSpeedRpm} RPM` : ""}
+          </p>
+        )}
+      </div>
 
       <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">

@@ -2,11 +2,24 @@
  * Bearing Design Module Types
  */
 
-import type { BearingManufacturer, BearingCatalogTier } from "@/data/catalogs/bearingCatalog";
+import type {
+  BearingManufacturer,
+  BearingCatalogTier,
+  CatalogBearingType,
+  BearingApplicationProfile,
+  BearingSealType,
+} from "@/data/catalogs/bearingCatalog";
 
-export type { BearingManufacturer, BearingCatalogTier };
+export type {
+  BearingManufacturer,
+  BearingCatalogTier,
+  CatalogBearingType as BearingType,
+  BearingApplicationProfile,
+  BearingSealType,
+};
 
-export type BearingType = "deep_groove" | "angular_contact" | "cylindrical_roller";
+/** Solver bearing type — mirrors catalog types */
+export type BearingType = CatalogBearingType;
 
 export type BearingMaterial = {
   name: string;
@@ -38,9 +51,13 @@ export type BearingConfig = {
   lubricationClass?: LubricationClass;
   /** Preferred bearing manufacturer for catalog lookup and auto-design */
   manufacturer?: BearingManufacturer;
+  /** Application profile for catalog filtering in design mode */
+  applicationProfile?: BearingApplicationProfile | "all";
   /** @deprecated Use manufacturer — kept for saved projects */
   catalogTier?: BearingCatalogTier;
   arrangement?: BearingArrangement;
+  /** Per-designation X/Y/e override from catalog entry */
+  catalogFactors?: { X: number; Y: number; e: number };
   /** Target static safety factor s₀ = C₀/P₀ (default 1.0) */
   targetStaticSafetyFactor?: number;
   /** Minimum speed margin n_lim / n (default 1.0) */

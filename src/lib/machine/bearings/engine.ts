@@ -24,6 +24,8 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
         staticLoadRatingN: entry.staticRatingN,
         limitingSpeedRpm: entry.limitingSpeedRpm,
         designation: entry.designation,
+        bearingType: entry.type,
+        catalogFactors: entry.catalogFactors,
       });
       result.geometry = {
         boreMm: entry.boreMm,

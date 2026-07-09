@@ -27,6 +27,16 @@ describe("application preset registry", () => {
     expect(other.every((p) => !p.designCodes.includes("US"))).toBe(true);
   });
 
+  it("provides bearing-suite presets per module", () => {
+    const rolling = getPresetsForModule("bearings");
+    const plain = getPresetsForModule("plain-bearings");
+    const housing = getPresetsForModule("housing");
+    expect(rolling.some((p) => p.id === "tapered_gearbox")).toBe(true);
+    expect(rolling.length).toBeGreaterThanOrEqual(15);
+    expect(plain.some((p) => p.id === "journal_turbine")).toBe(true);
+    expect(housing.some((p) => p.id === "foot_mount_general")).toBe(true);
+  });
+
   it("picks a US-aligned default for structural modules", () => {
     const id = getDefaultPresetId("columns", "US");
     const preset = getPresetsForModule("columns").find((p) => p.id === id);

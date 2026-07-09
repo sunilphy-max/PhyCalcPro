@@ -17,6 +17,12 @@ import {
   structuralApplicationPresets,
   toolsApplicationPresets,
 } from "./categoryPresets";
+import {
+  bearingHousingApplicationPresets,
+  bearingsCategoryApplicationPresets,
+  plainBearingApplicationPresets,
+  rollingBearingApplicationPresets,
+} from "./bearingPresets";
 import type { ModuleApplicationPreset } from "./types";
 import { ALL_DESIGN_CODES } from "./types";
 
@@ -69,6 +75,7 @@ const CATEGORY_PRESETS: Record<string, ModuleApplicationPreset[]> = {
   structural: structuralApplicationPresets,
   "power-transmission": powerTransmissionApplicationPresets,
   machine: machineApplicationPresets,
+  bearings: bearingsCategoryApplicationPresets,
   springs: springApplicationPresets,
   fasteners: fastenerApplicationPresets,
   materials: materialsApplicationPresets,
@@ -81,6 +88,9 @@ const CATEGORY_PRESETS: Record<string, ModuleApplicationPreset[]> = {
 
 const MODULE_PRESET_OVERRIDES: Partial<Record<string, ModuleApplicationPreset[]>> = {
   beams: beamPresets,
+  bearings: rollingBearingApplicationPresets,
+  "plain-bearings": plainBearingApplicationPresets,
+  housing: bearingHousingApplicationPresets,
 };
 
 const moduleCategoryById = new Map(allModules.map((m) => [m.id, m.category]));

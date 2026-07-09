@@ -11,3 +11,11 @@ export {
   MODULES_WITH_INLINE_APPLICATION,
   MODULES_WITHOUT_APPLICATION_PRESET,
 } from "./registry";
+export {
+  getBearingPresetDefaults,
+  getPlainBearingPresetDefaults,
+  FAMILY_RECOMMENDED_PRESET,
+  rollingBearingApplicationPresets,
+  plainBearingApplicationPresets,
+  bearingHousingApplicationPresets,
+} from "./bearingPresets";

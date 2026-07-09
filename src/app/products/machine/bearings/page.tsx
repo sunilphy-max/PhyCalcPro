@@ -2,6 +2,7 @@
 
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useRollingBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -28,12 +29,15 @@ import type {
   BearingManufacturer,
   BearingCatalogTier,
   BearingArrangement,
+  BearingApplicationProfile,
+  BearingSealType,
 } from "@/lib/machine/bearings/types";
 import {
-  bearingsOfType,
   findBearing,
   equivalentDesignation,
   catalogTierToManufacturer,
+  filterCatalog,
+  bearingCatalog,
 } from "@/data/catalogs/bearingCatalog";
 
 type BearingProjectData = {
@@ -47,7 +51,9 @@ type BearingProjectData = {
   reliability: BearingReliability;
   lubricationClass: LubricationClass | "";
   manufacturer: BearingManufacturer;
-  /** @deprecated migrated to manufacturer on load */
+  applicationProfile?: BearingApplicationProfile | "all";
+  seriesFilter?: string | "all";
+  sealFilter?: BearingSealType | "all";
   catalogTier?: BearingCatalogTier;
   arrangement: BearingArrangement;
   maxBoreMm: number | "";
@@ -60,6 +66,7 @@ const LEGACY_MATERIAL: BearingMaterial = {
   allowableLife: 10000,
 };
 
+
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("bearings");
@@ -70,11 +77,14 @@ export default function Page() {
   const [speed, setSpeed] = useState(1800);
   const [lifeHours, setLifeHours] = useState(20000);
   const [safetyFactor, setSafetyFactor] = useState(1.5);
+  const [applicationProfile, setApplicationProfile] = useState<BearingApplicationProfile | "all">("all");
   const [bearingType, setBearingType] = useState<BearingType>("deep_groove");
   const [designation, setDesignation] = useState("6205");
   const [reliability, setReliability] = useState<BearingReliability>(90);
   const [lubricationClass, setLubricationClass] = useState<LubricationClass | "">("");
   const [manufacturer, setManufacturer] = useState<BearingManufacturer>("SKF");
+  const [seriesFilter, setSeriesFilter] = useState<string | "all">("all");
+  const [sealFilter, setSealFilter] = useState<BearingSealType | "all">("all");
   const [arrangement, setArrangement] = useState<BearingArrangement>("single");
   const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
   const [result, setResult] = useState<BearingResult | null>(null);
@@ -90,14 +100,16 @@ export default function Page() {
       speed,
       lifeHours,
       safetyFactor,
-      bearingType,
+      bearingType: catalogEntry?.type ?? bearingType,
       designation: catalogEntry?.designation,
       dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
       staticLoadRatingN: catalogEntry?.staticRatingN,
       limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
+      catalogFactors: catalogEntry?.catalogFactors,
       reliabilityPercent: reliability,
       lubricationClass: lubricationClass || undefined,
       manufacturer,
+      applicationProfile,
       arrangement,
       material: LEGACY_MATERIAL,
     };
@@ -133,8 +145,21 @@ export default function Page() {
     targetSafetyFactor: safetyFactor,
     bearingType,
     bearingManufacturer: manufacturer,
+    bearingApplicationProfile: applicationProfile,
     shaftDiameterMm: maxBoreMm === "" ? undefined : maxBoreMm,
-  }), [radialLoad, radialUnit, axialLoad, axialUnit, speed, lifeHours, safetyFactor, bearingType, manufacturer, maxBoreMm]);
+  }), [
+    radialLoad,
+    radialUnit,
+    axialLoad,
+    axialUnit,
+    speed,
+    lifeHours,
+    safetyFactor,
+    bearingType,
+    manufacturer,
+    applicationProfile,
+    maxBoreMm,
+  ]);
 
   useSyncDesignInputs("bearings", designUserInputs);
 
@@ -147,6 +172,17 @@ export default function Page() {
   }, []);
 
   useRegisterApplyDesignCandidate(applyDesignFields);
+
+  useRollingBearingPresetSync({
+    setApplicationProfile,
+    setBearingType,
+    setManufacturer,
+    setReliability,
+    setLubricationClass,
+    setSafetyFactor,
+    setDesignation,
+    designation,
+  });
 
   const calculate = () => {
     if (workflowMode === "design") {
@@ -172,8 +208,36 @@ export default function Page() {
     } else if (p.catalogTier) {
       setManufacturer(catalogTierToManufacturer(p.catalogTier));
     }
+    setApplicationProfile(p.applicationProfile ?? "all");
+    setSeriesFilter(p.seriesFilter ?? "all");
+    setSealFilter(p.sealFilter ?? "all");
     if (p.arrangement) setArrangement(p.arrangement);
     setMaxBoreMm(p.maxBoreMm ?? "");
+  };
+
+  const syncDesignation = (
+    mfr: BearingManufacturer,
+    type: BearingType,
+    profile: BearingApplicationProfile | "all",
+    series: string | "all",
+    seal: BearingSealType | "all",
+    current: string
+  ) => {
+    const pool = filterCatalog(bearingCatalog, {
+      manufacturer: mfr,
+      type,
+      applicationProfile: profile,
+      series,
+      sealType: seal,
+    });
+    if (pool.some((b) => b.designation === current)) return;
+    const mapped = equivalentDesignation(current, mfr);
+    if (mapped && pool.some((b) => b.designation === mapped)) {
+      setDesignation(mapped);
+      return;
+    }
+    const first = pool[0]?.designation;
+    if (first) setDesignation(first);
   };
 
   return (
@@ -215,13 +279,13 @@ export default function Page() {
             setLifeHours={setLifeHours}
             safetyFactor={safetyFactor}
             setSafetyFactor={setSafetyFactor}
+            applicationProfile={applicationProfile}
+            setApplicationProfile={setApplicationProfile}
             bearingType={bearingType}
             setBearingType={(type) => {
               setBearingType(type);
-              const candidates = bearingsOfType(type, manufacturer);
-              if (candidates.length && !candidates.some((b) => b.designation === designation)) {
-                setDesignation(candidates[0]!.designation);
-              }
+              setSeriesFilter("all");
+              syncDesignation(manufacturer, type, applicationProfile, "all", sealFilter, designation);
             }}
             designation={designation}
             setDesignation={setDesignation}
@@ -232,13 +296,17 @@ export default function Page() {
             manufacturer={manufacturer}
             setManufacturer={(mfr) => {
               setManufacturer(mfr);
-              const mapped = equivalentDesignation(designation, mfr);
-              if (mapped) {
-                setDesignation(mapped);
-              } else {
-                const candidates = bearingsOfType(bearingType, mfr);
-                if (candidates.length) setDesignation(candidates[0]!.designation);
-              }
+              syncDesignation(mfr, bearingType, applicationProfile, seriesFilter, sealFilter, designation);
+            }}
+            seriesFilter={seriesFilter}
+            setSeriesFilter={(series) => {
+              setSeriesFilter(series);
+              syncDesignation(manufacturer, bearingType, applicationProfile, series, sealFilter, designation);
+            }}
+            sealFilter={sealFilter}
+            setSealFilter={(seal) => {
+              setSealFilter(seal);
+              syncDesignation(manufacturer, bearingType, applicationProfile, seriesFilter, seal, designation);
             }}
             arrangement={arrangement}
             setArrangement={setArrangement}
@@ -257,6 +325,9 @@ export default function Page() {
                 reliability,
                 lubricationClass,
                 manufacturer,
+                applicationProfile,
+                seriesFilter,
+                sealFilter,
                 arrangement,
                 maxBoreMm,
               })
