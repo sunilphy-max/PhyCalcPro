@@ -12,13 +12,19 @@ Basic rating life L₁₀ is the life in revolutions (or hours at speed n) excee
 L_{10h} = \frac{a_1 \cdot 10^6}{60 n} \left(\frac{C}{P}\right)^p, \quad p = 3 \text{ (ball)}, \; 10/3 \text{ (roller)}
 \]
 
-Modified rating life (ISO 281:2007 screening):
+Modified rating life (ISO 281:2007):
 
 \[
 L_{nm} = a_1 \cdot a_{ISO} \cdot (C/P)^p \cdot 10^6 / (60n)
 \]
 
+where **aISO** is computed from viscosity ratio κ = ν/ν₁, contamination factor eC, and fatigue load limit Pu (estimated as 0.025C for ball, 0.03C for roller when not in catalog).
+
 Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static load.
+
+**Paired arrangements (O / X / T):** loads are split per bearing; system life is governed by the minimum station modified life.
+
+**Variable load (ISO 281-1):** optional two-step spectrum computes equivalent load and Palmgren-Miner combined life.
 
 **Inputs**
 
@@ -33,14 +39,20 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 | Series & sealing | Catalog series (62xx, 302xx, …) and open/shielded/sealed |
 | Catalog designation | C, C₀, n_lim from catalog |
 | Reliability a₁ | 90–99% |
-| Lubrication class | Optional a_ISO screening (poor/average/good) |
+| Lubricant | Oil or grease (ISO VG) + operating temperature |
+| Contamination eC | ISO 281 cleanliness classes |
+| Internal clearance | C2 / CN / C3 / C4 (fit recommendation) |
+| Mounting arrangement | Single, back-to-back (O), face-to-face (X), tandem (T) |
+| Variable load spectrum | Optional ISO 281-1 duty cycle |
 | Max bore | Shaft diameter constraint for auto-selection |
 
 **Outputs**
 
-- Equivalent loads P and P₀
-- Basic L₁₀ and modified Lnm life
+- Equivalent loads P and P₀ (paired per-station when applicable)
+- Basic L₁₀ and modified Lnm life with κ, eC, aISO breakdown
 - Dynamic utilization P/C, static safety C₀/P₀, speed margin n_lim/n
+- Minimum load (skidding), friction torque, power loss
+- Recommended shaft/housing fits and operating clearance
 - Required C and C₀ for target life
 - Governing failure mode
 
@@ -52,12 +64,11 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 
 **Assumptions & limitations**
 
-- Constant load and speed; variable spectra need ISO 281-1 equivalent load methods
-- a_ISO is simplified (κ, contamination not computed individually)
-- Representative catalog (~800+ entries across 5 manufacturers) — not full vendor databases
-- Per-designation X/Y/e overrides where listed; otherwise family defaults
-- Duplex/paired angular-contact life factors not fully modeled
-- Fits, clearance selection (C2/CN/C3), and temperature derating not modeled
+- Constant load and speed unless variable spectrum is enabled
+- Pu estimated from C when not in catalog entry
+- Representative catalog — not full vendor databases
+- Duplex paired C catalog multipliers use tandem axial convention (screening)
+- Temperature derating on C above 120 °C (screening factor)
 
 **Verification**
 

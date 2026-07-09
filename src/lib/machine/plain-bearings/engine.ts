@@ -1,17 +1,50 @@
 import type { PlainBearingConfig, PlainBearingResult } from "./types";
+import {
+  bearingTemperatureRiseC,
+  eccentricityFromSommerfeld,
+  recommendPlainJournalFits,
+  sommerfeldNumber,
+  specificLoadPa,
+} from "./iso7902";
 
 function solveJournal(c: PlainBearingConfig): PlainBearingResult {
   const r = c.diameter / 2;
   const cRad = c.clearance / 2;
-  const omega = (2 * Math.PI * c.speed) / 60;
-  const U = (omega * r) / cRad;
-  const W = c.load / (c.length * c.diameter);
-  const S = (c.viscosity * U) / W;
-  const eccentricityRatio = Math.min(0.95, 1 / (1 + S));
+  const S = sommerfeldNumber({
+    viscosityPas: c.viscosity,
+    speedRpm: c.speed,
+    radialLoadN: c.load,
+    diameterM: c.diameter,
+    lengthM: c.length,
+    radialClearanceM: cRad,
+  });
+  const eccentricityRatio = eccentricityFromSommerfeld(S);
   const minFilmThickness = cRad * (1 - eccentricityRatio);
-  const powerLoss = (c.viscosity * omega ** 2 * r ** 2 * c.length) / cRad;
-  const status =
-    minFilmThickness > 0.00001 ? "adequate film (indicative)" : "boundary lubrication risk";
+  const omega = (2 * Math.PI * c.speed) / 60;
+  const powerLoss = (c.viscosity * omega ** 2 * r ** 2 * c.length) / Math.max(cRad, 1e-12);
+  const specLoad = specificLoadPa(c.load, c.diameter, c.length);
+  const tempRise = bearingTemperatureRiseC(powerLoss, c.diameter, c.length);
+  const ambient = c.ambientTempC ?? 40;
+  const outletTempC = ambient + tempRise;
+  const fits = recommendPlainJournalFits(c.diameter, c.speed);
+
+  const filmOk = minFilmThickness > 5e-6;
+  const loadOk = specLoad < 3.5e6;
+  const tempOk = outletTempC < 120;
+  const isSafe = filmOk && loadOk && tempOk;
+  const designStatus: PlainBearingResult["designStatus"] = isSafe
+    ? "safe"
+    : filmOk || loadOk
+      ? "warning"
+      : "critical";
+
+  const status = isSafe
+    ? "ISO 7902 journal: adequate film, load and temperature (screening)"
+    : !filmOk
+      ? "Boundary lubrication risk — increase clearance, viscosity, or bearing length"
+      : !loadOk
+        ? "Specific load high — increase bearing area"
+        : "Operating temperature high — improve cooling or lubricant";
 
   return {
     bearingType: "journal",
@@ -19,11 +52,19 @@ function solveJournal(c: PlainBearingConfig): PlainBearingResult {
     eccentricityRatio,
     minFilmThickness,
     powerLoss,
+    specificLoadPa: specLoad,
+    temperatureRiseC: tempRise,
+    outletTempC,
+    shaftFit: fits.shaftFit,
+    housingFit: fits.housingFit,
+    minRecommendedClearanceUm: fits.minClearanceUm,
     status,
+    designStatus,
+    isSafe,
   };
 }
 
-/** Flat thrust pad — unit load and film thickness screening. */
+/** ISO 12131 thrust pad — unit load and film thickness screening. */
 function solveThrustPad(c: PlainBearingConfig): PlainBearingResult {
   const ratio = c.padDiameterRatio ?? 2;
   const rOut = c.diameter / 2;
@@ -34,12 +75,11 @@ function solveThrustPad(c: PlainBearingConfig): PlainBearingResult {
   const meanRadius = (rOut + rIn) / 2;
   const surfaceSpeed = omega * meanRadius;
   const filmFactor = (c.viscosity * surfaceSpeed) / Math.max(unitLoad, 1);
-  const minFilmThickness = Math.max(1e-6, c.clearance * Math.min(1, filmFactor * 0.01));
-  const powerLoss = c.viscosity * omega ** 2 * meanRadius ** 2 * padArea / Math.max(c.clearance, 1e-9);
-  const status =
-    unitLoad < 3e6 && minFilmThickness > 5e-6
-      ? "Thrust pad load and film adequate (indicative)"
-      : "Review pad area, speed or lubricant viscosity";
+  const minFilmThickness = Math.max(1e-6, c.clearance * Math.min(1, filmFactor * 0.015));
+  const powerLoss =
+    (c.viscosity * omega ** 2 * meanRadius ** 2 * padArea) / Math.max(c.clearance, 1e-9);
+  const tempRise = bearingTemperatureRiseC(powerLoss, c.diameter, c.diameter * 0.3);
+  const isSafe = unitLoad < 2.5e6 && minFilmThickness > 8e-6;
 
   return {
     bearingType: "thrust_pad",
@@ -48,16 +88,22 @@ function solveThrustPad(c: PlainBearingConfig): PlainBearingResult {
     minFilmThickness,
     powerLoss,
     unitLoad,
-    status,
+    temperatureRiseC: tempRise,
+    outletTempC: (c.ambientTempC ?? 40) + tempRise,
+    status: isSafe
+      ? "ISO 12131 thrust pad: load and film adequate (screening)"
+      : "Review pad area, speed or lubricant viscosity",
+    designStatus: isSafe ? "safe" : unitLoad < 3e6 ? "warning" : "critical",
+    isSafe,
   };
 }
 
-/** Tilting-pad thrust — load split across pads with pivot factor. */
+/** ISO 12130 tilting-pad thrust. */
 function solveTiltingPad(c: PlainBearingConfig): PlainBearingResult {
   const padCount = Math.max(3, Math.round(c.padCount ?? 6));
   const loadPerPad = c.load / padCount;
   const perPad = solveThrustPad({ ...c, load: loadPerPad, bearingType: "thrust_pad" });
-  const pivotFactor = 1.15;
+  const pivotFactor = 1.12;
   const minFilmThickness = perPad.minFilmThickness * pivotFactor;
 
   return {
@@ -65,7 +111,9 @@ function solveTiltingPad(c: PlainBearingConfig): PlainBearingResult {
     bearingType: "tilting_pad",
     minFilmThickness,
     powerLoss: perPad.powerLoss * padCount,
-    status: `${padCount}-pad tilting thrust: ${perPad.status}`,
+    status: `${padCount}-pad tilting thrust (ISO 12130): ${perPad.status}`,
+    isSafe: perPad.isSafe && minFilmThickness > 6e-6,
+    designStatus: perPad.isSafe ? "safe" : perPad.designStatus,
   };
 }
 

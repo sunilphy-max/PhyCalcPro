@@ -31,6 +31,10 @@ import type {
   BearingArrangement,
   BearingApplicationProfile,
   BearingSealType,
+  BearingClearance,
+  ContaminationLevel,
+  LubricantType,
+  LoadSpectrumStep,
 } from "@/lib/machine/bearings/types";
 import {
   findBearing,
@@ -57,6 +61,14 @@ type BearingProjectData = {
   catalogTier?: BearingCatalogTier;
   arrangement: BearingArrangement;
   maxBoreMm: number | "";
+  lubricantType: LubricantType;
+  isoVgGrade: number;
+  operatingTempC: number;
+  contamination: ContaminationLevel;
+  clearanceOverride: BearingClearance | "";
+  useVariableLoad: boolean;
+  variableLoadPercent: number;
+  variableLoadFraction: number;
 };
 
 const LEGACY_MATERIAL: BearingMaterial = {
@@ -86,6 +98,14 @@ export default function Page() {
   const [seriesFilter, setSeriesFilter] = useState<string | "all">("all");
   const [sealFilter, setSealFilter] = useState<BearingSealType | "all">("all");
   const [arrangement, setArrangement] = useState<BearingArrangement>("single");
+  const [lubricantType, setLubricantType] = useState<LubricantType>("oil");
+  const [isoVgGrade, setIsoVgGrade] = useState(68);
+  const [operatingTempC, setOperatingTempC] = useState(70);
+  const [contamination, setContamination] = useState<ContaminationLevel>("normal_clean");
+  const [clearanceOverride, setClearanceOverride] = useState<BearingClearance | "">("");
+  const [useVariableLoad, setUseVariableLoad] = useState(false);
+  const [variableLoadPercent, setVariableLoadPercent] = useState(75);
+  const [variableLoadFraction, setVariableLoadFraction] = useState(0.3);
   const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
   const [result, setResult] = useState<BearingResult | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
@@ -94,9 +114,22 @@ export default function Page() {
 
   const runCheck = () => {
     const catalogEntry = findBearing(designation);
+    const Fr = toBase(radialLoad, "force", radialUnit);
+    const Fa = toBase(axialLoad, "force", axialUnit);
+
+    let loadSpectrum: LoadSpectrumStep[] | undefined;
+    if (useVariableLoad) {
+      const frac = Math.min(Math.max(variableLoadFraction, 0.05), 0.95);
+      const scale = variableLoadPercent / 100;
+      loadSpectrum = [
+        { durationFraction: 1 - frac, radialLoad: Fr, axialLoad: Fa },
+        { durationFraction: frac, radialLoad: Fr * scale, axialLoad: Fa * scale },
+      ];
+    }
+
     const config = {
-      radialLoad: toBase(radialLoad, "force", radialUnit),
-      axialLoad: toBase(axialLoad, "force", axialUnit),
+      radialLoad: Fr,
+      axialLoad: Fa,
       speed,
       lifeHours,
       safetyFactor,
@@ -107,7 +140,13 @@ export default function Page() {
       limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
       catalogFactors: catalogEntry?.catalogFactors,
       reliabilityPercent: reliability,
-      lubricationClass: lubricationClass || undefined,
+      lubricationClass: lubricantType === "none" ? lubricationClass || undefined : undefined,
+      lubricantType: lubricantType === "none" ? undefined : lubricantType,
+      isoVgGrade: lubricantType === "none" ? undefined : isoVgGrade,
+      operatingTempC,
+      contamination: lubricantType === "none" ? undefined : contamination,
+      clearance: clearanceOverride || catalogEntry?.clearance,
+      loadSpectrum,
       manufacturer,
       applicationProfile,
       arrangement,
@@ -146,6 +185,7 @@ export default function Page() {
     bearingType,
     bearingManufacturer: manufacturer,
     bearingApplicationProfile: applicationProfile,
+    bearingArrangement: arrangement,
     shaftDiameterMm: maxBoreMm === "" ? undefined : maxBoreMm,
   }), [
     radialLoad,
@@ -159,6 +199,7 @@ export default function Page() {
     manufacturer,
     applicationProfile,
     maxBoreMm,
+    arrangement,
   ]);
 
   useSyncDesignInputs("bearings", designUserInputs);
@@ -213,6 +254,14 @@ export default function Page() {
     setSealFilter(p.sealFilter ?? "all");
     if (p.arrangement) setArrangement(p.arrangement);
     setMaxBoreMm(p.maxBoreMm ?? "");
+    if (p.lubricantType) setLubricantType(p.lubricantType);
+    if (p.isoVgGrade) setIsoVgGrade(p.isoVgGrade);
+    if (p.operatingTempC) setOperatingTempC(p.operatingTempC);
+    if (p.contamination) setContamination(p.contamination);
+    setClearanceOverride(p.clearanceOverride ?? "");
+    setUseVariableLoad(p.useVariableLoad ?? false);
+    setVariableLoadPercent(p.variableLoadPercent ?? 75);
+    setVariableLoadFraction(p.variableLoadFraction ?? 0.3);
   };
 
   const syncDesignation = (
@@ -310,6 +359,22 @@ export default function Page() {
             }}
             arrangement={arrangement}
             setArrangement={setArrangement}
+            lubricantType={lubricantType}
+            setLubricantType={setLubricantType}
+            isoVgGrade={isoVgGrade}
+            setIsoVgGrade={setIsoVgGrade}
+            operatingTempC={operatingTempC}
+            setOperatingTempC={setOperatingTempC}
+            contamination={contamination}
+            setContamination={setContamination}
+            clearanceOverride={clearanceOverride}
+            setClearanceOverride={setClearanceOverride}
+            useVariableLoad={useVariableLoad}
+            setUseVariableLoad={setUseVariableLoad}
+            variableLoadPercent={variableLoadPercent}
+            setVariableLoadPercent={setVariableLoadPercent}
+            variableLoadFraction={variableLoadFraction}
+            setVariableLoadFraction={setVariableLoadFraction}
             maxBoreMm={maxBoreMm}
             setMaxBoreMm={setMaxBoreMm}
             onCalculate={calculate}
@@ -330,6 +395,14 @@ export default function Page() {
                 sealFilter,
                 arrangement,
                 maxBoreMm,
+                lubricantType,
+                isoVgGrade,
+                operatingTempC,
+                contamination,
+                clearanceOverride,
+                useVariableLoad,
+                variableLoadPercent,
+                variableLoadFraction,
               })
             }
             saving={saving}

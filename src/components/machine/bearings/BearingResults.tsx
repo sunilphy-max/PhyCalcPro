@@ -258,6 +258,66 @@ export default function BearingResults({
             />
           </CalculatorMetricGrid>
 
+          <CalculatorMetricGrid cols={4}>
+            <CalculatorMetricCard label="Viscosity ratio κ" numericValue={result.modifiedLifeFactors.kappa} tone="purple" />
+            <CalculatorMetricCard label="Contamination eC" numericValue={result.modifiedLifeFactors.eC} />
+            <CalculatorMetricCard label="Life factor aISO" numericValue={result.aIso} tone="blue" />
+            <CalculatorMetricCard
+              label="Pu / P"
+              numericValue={result.modifiedLifeFactors.puOverP}
+            />
+          </CalculatorMetricGrid>
+
+          <CalculatorMetricGrid cols={4}>
+            <CalculatorMetricCard
+              label="Minimum radial load"
+              value={`${formatDisplayNumber(fromBase(result.minimumRadialLoadN, "force", loadUnit))} ${loadUnit}`}
+              status={result.minLoadSatisfied ? "safe" : "danger"}
+            />
+            <CalculatorMetricCard
+              label="Friction torque"
+              value={formatEngineeringValue(result.frictionTorqueNm, { unit: "N·m", decimals: 4 })}
+            />
+            <CalculatorMetricCard label="Power loss" value={formatEngineeringValue(result.powerLossW, "W")} />
+            <CalculatorMetricCard
+              label="Temp. derating on C"
+              value={`${(result.temperatureDeratingFactor * 100).toFixed(1)}%`}
+            />
+          </CalculatorMetricGrid>
+
+          {result.fitRecommendation ? (
+            <CalculatorMetricGrid cols={3}>
+              <CalculatorMetricCard
+                label="Recommended shaft fit"
+                value={result.fitRecommendation.shaftFit}
+                tone="blue"
+              />
+              <CalculatorMetricCard
+                label="Recommended housing fit"
+                value={result.fitRecommendation.housingFit}
+                tone="blue"
+              />
+              <CalculatorMetricCard
+                label="Est. operating clearance"
+                value={`${result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0)} µm`}
+              />
+            </CalculatorMetricGrid>
+          ) : null}
+
+          {result.pairedStations && result.pairedStations.length > 1 ? (
+            <CalculatorMetricGrid cols={1}>
+              <CalculatorMetricCard
+                label={`Paired arrangement (${result.arrangement})`}
+                value={result.pairedStations
+                  .map(
+                    (s) =>
+                      `#${s.index + 1}: P=${formatDisplayNumber(fromBase(s.equivalentLoad, "force", loadUnit))} ${loadUnit}, Lnm=${formatDisplayNumber(s.modifiedLifeHours)} h`
+                  )
+                  .join(" · ")}
+              />
+            </CalculatorMetricGrid>
+          ) : null}
+
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard
               label="Required dynamic C"

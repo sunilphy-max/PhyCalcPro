@@ -13,6 +13,9 @@ import type {
   BearingArrangement,
   BearingApplicationProfile,
   BearingSealType,
+  BearingClearance,
+  ContaminationLevel,
+  LubricantType,
 } from "@/lib/machine/bearings/types";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
 import {
@@ -63,6 +66,22 @@ type Props = {
   setSealFilter: (seal: BearingSealType | "all") => void;
   arrangement: BearingArrangement;
   setArrangement: (a: BearingArrangement) => void;
+  lubricantType: LubricantType;
+  setLubricantType: (v: LubricantType) => void;
+  isoVgGrade: number;
+  setIsoVgGrade: (v: number) => void;
+  operatingTempC: number;
+  setOperatingTempC: (v: number) => void;
+  contamination: ContaminationLevel;
+  setContamination: (v: ContaminationLevel) => void;
+  clearanceOverride: BearingClearance | "";
+  setClearanceOverride: (v: BearingClearance | "") => void;
+  useVariableLoad: boolean;
+  setUseVariableLoad: (v: boolean) => void;
+  variableLoadPercent: number;
+  setVariableLoadPercent: (v: number) => void;
+  variableLoadFraction: number;
+  setVariableLoadFraction: (v: number) => void;
   maxBoreMm: number | "";
   setMaxBoreMm: (v: number | "") => void;
   onCalculate: () => void;
@@ -105,6 +124,22 @@ export default function BearingInputs({
   setSealFilter,
   arrangement,
   setArrangement,
+  lubricantType,
+  setLubricantType,
+  isoVgGrade,
+  setIsoVgGrade,
+  operatingTempC,
+  setOperatingTempC,
+  contamination,
+  setContamination,
+  clearanceOverride,
+  setClearanceOverride,
+  useVariableLoad,
+  setUseVariableLoad,
+  variableLoadPercent,
+  setVariableLoadPercent,
+  variableLoadFraction,
+  setVariableLoadFraction,
   maxBoreMm,
   setMaxBoreMm,
   onCalculate,
@@ -366,6 +401,23 @@ export default function BearingInputs({
           </select>
         </label>
         <label className="space-y-2 text-sm text-slate-700">
+          <span>Internal clearance (ISO)</span>
+          <select
+            value={clearanceOverride || selected?.clearance || "CN"}
+            onChange={(event) =>
+              setClearanceOverride(
+                event.target.value === (selected?.clearance ?? "CN") ? "" : (event.target.value as BearingClearance)
+              )
+            }
+            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+          >
+            <option value="C2">C2 (tight)</option>
+            <option value="CN">CN (normal)</option>
+            <option value="C3">C3 (greater than normal)</option>
+            <option value="C4">C4 (loose)</option>
+          </select>
+        </label>
+        <label className="space-y-2 text-sm text-slate-700">
           <span>Reliability (ISO 281 a1)</span>
           <select
             value={reliability}
@@ -380,19 +432,123 @@ export default function BearingInputs({
             <option value={99}>99% (a1 = 0.25)</option>
           </select>
         </label>
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Modified life lubrication (a_ISO screening)</span>
-          <select
-            value={lubricationClass}
-            onChange={(event) => setLubricationClass(event.target.value as LubricationClass | "")}
-            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-          >
-            <option value="">Basic L10 only (a_ISO = 1)</option>
-            <option value="poor">Poor (a_ISO ≈ 0.15)</option>
-            <option value="average">Average (a_ISO ≈ 0.5)</option>
-            <option value="good">Good (a_ISO ≈ 1.0)</option>
-          </select>
+      </div>
+
+      <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-3 space-y-3 dark:border-violet-900/40 dark:bg-violet-950/20">
+        <p className="text-xs font-semibold uppercase tracking-wide text-violet-800 dark:text-violet-200">
+          ISO 281 modified life (κ, eC, Pu)
+        </p>
+        <div className={`${calculatorInputGridClass}`}>
+          <label className="space-y-2 text-sm text-slate-700">
+            <span>Lubricant</span>
+            <select
+              value={lubricantType}
+              onChange={(event) => setLubricantType(event.target.value as LubricantType)}
+              className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            >
+              <option value="none">Basic L10 only (aISO = 1)</option>
+              <option value="oil">Oil (ISO VG)</option>
+              <option value="grease">Grease (base oil VG)</option>
+            </select>
+          </label>
+          {lubricantType !== "none" ? (
+            <>
+              <label className="space-y-2 text-sm text-slate-700">
+                <span>ISO VG grade @ 40 °C</span>
+                <select
+                  value={isoVgGrade}
+                  onChange={(event) => setIsoVgGrade(Number(event.target.value))}
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                >
+                  {[10, 15, 22, 32, 46, 68, 100, 150, 220].map((vg) => (
+                    <option key={vg} value={vg}>
+                      VG {vg}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-2 text-sm text-slate-700">
+                <span>Operating temperature (°C)</span>
+                <input
+                  type="number"
+                  value={operatingTempC}
+                  onChange={(event) => setOperatingTempC(Number(event.target.value))}
+                  className={calculatorNumberInputClass}
+                />
+              </label>
+              <label className="space-y-2 text-sm text-slate-700">
+                <span>Contamination eC</span>
+                <select
+                  value={contamination}
+                  onChange={(event) => setContamination(event.target.value as ContaminationLevel)}
+                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                >
+                  <option value="extreme_clean">Extreme cleanliness</option>
+                  <option value="high_clean">High cleanliness</option>
+                  <option value="normal_clean">Normal cleanliness</option>
+                  <option value="slight_contamination">Slight contamination</option>
+                  <option value="typical_contamination">Typical contamination</option>
+                  <option value="heavy_contamination">Heavy contamination</option>
+                </select>
+              </label>
+            </>
+          ) : (
+            <label className="space-y-2 text-sm text-slate-700">
+              <span>Legacy lubrication screening (optional)</span>
+              <select
+                value={lubricationClass}
+                onChange={(event) => setLubricationClass(event.target.value as LubricationClass | "")}
+                className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+              >
+                <option value="">—</option>
+                <option value="poor">Poor</option>
+                <option value="average">Average</option>
+                <option value="good">Good</option>
+              </select>
+            </label>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 space-y-3">
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={useVariableLoad}
+            onChange={(event) => setUseVariableLoad(event.target.checked)}
+          />
+          <span>Variable load spectrum (ISO 281-1)</span>
         </label>
+        {useVariableLoad ? (
+          <div className={`${calculatorInputGridClass}`}>
+            <label className="space-y-2 text-sm text-slate-700">
+              <span>Secondary load (% of Fr/Fa)</span>
+              <input
+                type="number"
+                min={10}
+                max={200}
+                value={variableLoadPercent}
+                onChange={(event) => setVariableLoadPercent(Number(event.target.value))}
+                className={calculatorNumberInputClass}
+              />
+            </label>
+            <label className="space-y-2 text-sm text-slate-700">
+              <span>Time at secondary load (fraction)</span>
+              <input
+                type="number"
+                min={0.05}
+                max={0.95}
+                step={0.05}
+                value={variableLoadFraction}
+                onChange={(event) => setVariableLoadFraction(Number(event.target.value))}
+                className={calculatorNumberInputClass}
+              />
+            </label>
+          </div>
+        ) : null}
+      </div>
+
+      <div className={`${calculatorInputGridClass}`}>
         <label className="space-y-2 text-sm text-slate-700">
           <span>Max bore from shaft (design mode hint, mm)</span>
           <input

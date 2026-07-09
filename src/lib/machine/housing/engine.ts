@@ -1,4 +1,5 @@
 import type { HousingConfig, HousingResult } from "./types";
+import { recommendBearingFits } from "@/lib/machine/bearings/fitsClearance";
 
 const BOLT_SIZES = [
   { label: "M6", area: 20.1e-6, tensileArea: 14.2e-6 },
@@ -46,8 +47,19 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
     recommendedBoltSize = bolt.label;
   }
 
+  const boreMm = config.boreDiameter * 1000;
+  const fitRecommendation = recommendBearingFits({
+    boreMm,
+    radialLoadN: radial,
+    speedRpm: config.speed,
+    mountingRole: config.mountStyle === "foot" ? "locating" : "either",
+    clearance: config.bearingClearance ?? "CN",
+    operatingTempDeltaC: config.operatingTempDeltaC ?? 35,
+  });
+
   const isSafe = bodySf >= 1.5 && boltTensionPerBolt > 0;
-  const designStatus: HousingResult["designStatus"] = bodySf >= 2 ? "safe" : bodySf >= 1.5 ? "warning" : "critical";
+  const designStatus: HousingResult["designStatus"] =
+    bodySf >= 2 ? "safe" : bodySf >= 1.5 ? "warning" : "critical";
 
   return {
     bodyStress,
@@ -59,7 +71,12 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
     recommendedBoltSize,
     isSafe,
     designStatus,
-    governingFailureMode: bodySf < 1.5 ? "Housing body bending stress" : "Bolt combined tension and shear",
+    governingFailureMode:
+      bodySf < 1.5 ? "Housing body bending stress" : "Bolt combined tension and shear",
+    fitRecommendation,
+    recommendedShaftFit: fitRecommendation.shaftFit,
+    recommendedHousingFit: fitRecommendation.housingFit,
+    estimatedOperatingClearanceUm: fitRecommendation.estimatedOperatingClearanceUm,
   };
 }
 

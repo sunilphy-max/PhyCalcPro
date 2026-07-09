@@ -1,3 +1,6 @@
+import type { BearingClearance } from "@/data/catalogs/bearingCatalog";
+import type { FitRecommendation } from "@/lib/machine/bearings/fitsClearance";
+
 export type HousingMountStyle = "pillow_block" | "flange" | "foot";
 
 export type HousingConfig = {
@@ -10,6 +13,8 @@ export type HousingConfig = {
   boltCount: number;
   boltCircleDiameter: number;
   yieldStress: number;
+  bearingClearance?: BearingClearance;
+  operatingTempDeltaC?: number;
 };
 
 export type HousingResult = {
@@ -23,4 +28,8 @@ export type HousingResult = {
   isSafe: boolean;
   designStatus: "safe" | "warning" | "critical";
   governingFailureMode: string;
+  fitRecommendation: FitRecommendation;
+  recommendedShaftFit: string;
+  recommendedHousingFit: string;
+  estimatedOperatingClearanceUm: number;
 };

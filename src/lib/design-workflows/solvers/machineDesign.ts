@@ -220,6 +220,11 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
       lifeHours,
       safetyFactor: targetSf,
       bearingType,
+      arrangement: userInputs.bearingArrangement ?? "single",
+      lubricantType: "oil",
+      isoVgGrade: 68,
+      operatingTempC: 70,
+      contamination: "normal_clean",
       material: BEARING_MATERIAL,
     });
 

@@ -1,5 +1,7 @@
 export type PlainBearingType = "journal" | "thrust_pad" | "tilting_pad";
 
+export type PlainBearingMaterial = "bronze" | "babbitt" | "steel" | "ptfe";
+
 export type PlainBearingConfig = {
   bearingType: PlainBearingType;
   load: number;
@@ -7,10 +9,12 @@ export type PlainBearingConfig = {
   diameter: number;
   length: number;
   clearance: number;
+  /** Dynamic viscosity Pa·s */
   viscosity: number;
-  /** Thrust pad outer/inner diameter ratio (thrust types). */
+  operatingTempC?: number;
+  ambientTempC?: number;
+  material?: PlainBearingMaterial;
   padDiameterRatio?: number;
-  /** Number of pads for tilting-pad thrust (typical 4–12). */
   padCount?: number;
 };
 
@@ -21,5 +25,13 @@ export type PlainBearingResult = {
   minFilmThickness: number;
   powerLoss: number;
   unitLoad?: number;
+  specificLoadPa?: number;
+  temperatureRiseC?: number;
+  outletTempC?: number;
+  shaftFit?: string;
+  housingFit?: string;
+  minRecommendedClearanceUm?: number;
   status: string;
+  designStatus: "safe" | "warning" | "critical";
+  isSafe: boolean;
 };

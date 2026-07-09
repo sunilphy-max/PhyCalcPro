@@ -1,5 +1,6 @@
 import type { BearingConfig, BearingResult } from "./types";
 import { findBearing } from "@/data/catalogs/bearingCatalog";
+import { recommendBearingFits } from "./fitsClearance";
 import { solveBearingDesign } from "./solver";
 
 export function solveBearingEngine(config: BearingConfig): BearingResult {
@@ -18,6 +19,17 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
   if (config.designation) {
     const entry = findBearing(config.designation);
     if (entry) {
+      const fitRecommendation =
+        config.fitRecommendation ??
+        recommendBearingFits({
+          boreMm: entry.boreMm,
+          radialLoadN: config.radialLoad,
+          speedRpm: config.speed,
+          mountingRole: entry.mountingRole,
+          clearance: config.clearance ?? entry.clearance,
+          operatingTempDeltaC: (config.operatingTempC ?? 70) - 20,
+        });
+
       const result = solveBearingDesign({
         ...config,
         dynamicLoadRatingN: entry.dynamicRatingN,
@@ -26,6 +38,11 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
         designation: entry.designation,
         bearingType: entry.type,
         catalogFactors: entry.catalogFactors,
+        boreMm: entry.boreMm,
+        outerDiameterMm: entry.outerDiameterMm,
+        clearance: config.clearance ?? entry.clearance,
+        sealed: entry.sealType !== "open",
+        fitRecommendation,
       });
       result.geometry = {
         boreMm: entry.boreMm,

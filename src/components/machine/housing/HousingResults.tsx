@@ -58,6 +58,20 @@ export default function HousingResults({ result }: Props) {
             value={formatEngineeringValue(result.housingDeflection * 1000, "mm")}
             tone="blue"
           />
+          <CalculatorMetricCard
+            label="Shaft fit (ISO 286)"
+            value={result.recommendedShaftFit}
+            tone="purple"
+          />
+          <CalculatorMetricCard
+            label="Housing fit"
+            value={result.recommendedHousingFit}
+            tone="purple"
+          />
+          <CalculatorMetricCard
+            label="Est. operating clearance"
+            value={`${result.estimatedOperatingClearanceUm.toFixed(0)} µm`}
+          />
         </CalculatorMetricGrid>
       ) : null}
     </CalculatorResultsShell>
