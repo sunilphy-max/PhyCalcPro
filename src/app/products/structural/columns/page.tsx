@@ -2,7 +2,7 @@
 
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useApplicationPreset } from "@/hooks/useApplicationPreset";
@@ -36,7 +36,7 @@ type BucklingProjectData = {
 
 type BucklingProject = LocalProject<BucklingProjectData>;
 
-export default function Page() {
+function ColumnsPageContent() {
   const { wrapResult } = useStandardCalculation("columns", (units) =>
     applyUnitMap(units, {
       length: setLengthUnit,
@@ -309,5 +309,13 @@ export default function Page() {
       }
       results={<BucklingResults result={result} projectName={projectName} />}
     />
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <ColumnsPageContent />
+    </Suspense>
   );
 }

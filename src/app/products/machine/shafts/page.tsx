@@ -5,7 +5,7 @@ import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { Suspense, useState, useMemo, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -59,7 +59,7 @@ type ShaftProjectData = {
 
 type ShaftProject = LocalProject<ShaftProjectData>;
 
-export default function Page() {
+function ShaftsPageContent() {
   const { mode: workflowMode } = useDesignWorkflow();
   const { wrapResult } = useStandardCalculation("shafts", (units) =>
     applyUnitMap(units, {
@@ -469,5 +469,13 @@ export default function Page() {
         />
       }
     />
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <ShaftsPageContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
@@ -60,7 +60,7 @@ const BEAM_UNIT_FIELD_KEYS = [
 
 const DEFAULT_BEAM_MATERIAL = materials[0]!;
 
-export default function Page() {
+function BeamsPageContent() {
   // =========================
   // INPUTS
   // =========================
@@ -577,5 +577,13 @@ const handleLoadDrag = (
         />
       }
     />
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <BeamsPageContent />
+    </Suspense>
   );
 }
