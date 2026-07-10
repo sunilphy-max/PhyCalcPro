@@ -43,24 +43,49 @@ function formatUnitCell(row: { unit?: string; numericValue?: number | null; valu
   return "—";
 }
 
+type Props = {
+  /** `compact` uses tighter padding and smaller type — good for bearing modules with many rows. */
+  variant?: "default" | "compact";
+};
+
 /** Unified results table — populated automatically from CalculatorMetricCard children. */
-export default function CalculatorResultsTable() {
+export default function CalculatorResultsTable({ variant = "default" }: Props) {
   const rows = useResultsTableRows();
 
   if (!rows.length) return null;
 
+  const compact = variant === "compact";
+
   return (
-    <div className="calculator-results-table-wrap overflow-hidden rounded-xl border border-slate-200/70 bg-white/90 shadow-sm dark:border-slate-700/60 dark:bg-slate-950/40">
-      <table className="calculator-results-table w-full min-w-0 text-sm">
+    <div
+      className={`calculator-results-table-wrap overflow-hidden rounded-xl border border-slate-200/70 bg-white/90 shadow-sm dark:border-slate-700/60 dark:bg-slate-950/40 ${
+        compact ? "calculator-results-table--compact" : ""
+      }`}
+    >
+      <table
+        className={`calculator-results-table w-full min-w-0 ${compact ? "text-xs" : "text-sm"}`}
+      >
         <thead>
           <tr className="border-b border-slate-200/80 bg-slate-50/90 text-left dark:border-slate-700/60 dark:bg-slate-900/60">
-            <th className="px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+            <th
+              className={`font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400 ${
+                compact ? "px-2.5 py-1.5 text-[0.625rem]" : "px-4 py-3 text-[0.6875rem]"
+              }`}
+            >
               Parameter
             </th>
-            <th className="px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+            <th
+              className={`font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400 ${
+                compact ? "px-2.5 py-1.5 text-[0.625rem]" : "px-4 py-3 text-[0.6875rem]"
+              }`}
+            >
               Value
             </th>
-            <th className="w-28 px-4 py-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
+            <th
+              className={`font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400 ${
+                compact ? "w-16 px-2.5 py-1.5 text-[0.625rem]" : "w-28 px-4 py-3 text-[0.6875rem]"
+              }`}
+            >
               Unit
             </th>
           </tr>
@@ -72,7 +97,9 @@ export default function CalculatorResultsTable() {
                 <tr key={row.id} className="border-t border-slate-200/70 dark:border-slate-700/50">
                   <td
                     colSpan={3}
-                    className="bg-slate-50/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-900/50 dark:text-slate-400"
+                    className={`bg-slate-50/80 font-semibold uppercase tracking-[0.1em] text-slate-500 dark:bg-slate-900/50 dark:text-slate-400 ${
+                      compact ? "px-2.5 py-1 text-[0.625rem]" : "px-4 py-2 text-xs"
+                    }`}
                   >
                     {row.label}
                   </td>
@@ -90,11 +117,27 @@ export default function CalculatorResultsTable() {
                 key={row.id}
                 className={`border-t border-slate-100 transition hover:bg-slate-50/70 dark:border-slate-800/80 dark:hover:bg-slate-900/40 ${rowClass}`}
               >
-                <td className="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">{row.label}</td>
-                <td className={`px-4 py-3 font-semibold tabular-nums ${valueClass}`}>
+                <td
+                  className={`font-medium text-slate-700 dark:text-slate-300 ${
+                    compact ? "max-w-[11rem] px-2.5 py-1 text-[0.6875rem]" : "px-4 py-3"
+                  }`}
+                >
+                  {row.label}
+                </td>
+                <td
+                  className={`font-semibold tabular-nums ${valueClass} ${
+                    compact ? "px-2.5 py-1 text-xs" : "px-4 py-3"
+                  }`}
+                >
                   {formatValueCell(row)}
                 </td>
-                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatUnitCell(row)}</td>
+                <td
+                  className={`text-slate-500 dark:text-slate-400 ${
+                    compact ? "w-16 px-2.5 py-1 text-[0.6875rem]" : "px-4 py-3"
+                  }`}
+                >
+                  {formatUnitCell(row)}
+                </td>
               </tr>
             );
           })}

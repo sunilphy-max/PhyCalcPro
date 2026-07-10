@@ -335,6 +335,10 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     dynamicUtilization,
     staticSafetyFactor: staticSf,
     speedMargin,
+    referenceSpeedMargin:
+      config.referenceSpeedRpm != null && config.referenceSpeedRpm > 0
+        ? config.referenceSpeedRpm / speed
+        : null,
     lifeUtilization,
     safetyFactor: config.safetyFactor,
     bearingType: config.bearingType,

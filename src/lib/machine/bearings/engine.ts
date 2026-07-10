@@ -35,6 +35,7 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
         dynamicLoadRatingN: entry.dynamicRatingN,
         staticLoadRatingN: entry.staticRatingN,
         limitingSpeedRpm: entry.limitingSpeedRpm,
+        referenceSpeedRpm: entry.referenceSpeedRpm,
         designation: entry.designation,
         bearingType: entry.type,
         catalogFactors: entry.catalogFactors,
@@ -49,6 +50,10 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
         outerDiameterMm: entry.outerDiameterMm,
         widthMm: entry.widthMm,
       };
+      result.referenceSpeedMargin =
+        entry.referenceSpeedRpm != null && entry.referenceSpeedRpm > 0
+          ? entry.referenceSpeedRpm / config.speed
+          : null;
       return result;
     }
   }

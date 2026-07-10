@@ -8,6 +8,8 @@ type Props = {
   title?: string;
   children: ReactNode;
   className?: string;
+  /** Pass `compact` for dense modules (e.g. bearings) with many result rows. */
+  tableVariant?: "default" | "compact";
 };
 
 /** Primary results container — unified metrics table plus charts and module-specific output. */
@@ -15,6 +17,7 @@ export default function CalculatorResultsPanel({
   title,
   children,
   className = "",
+  tableVariant = "default",
 }: Props) {
   return (
     <div
@@ -27,7 +30,7 @@ export default function CalculatorResultsPanel({
       ) : null}
       <ResultsTableProvider>
         <div className="grid min-w-0 grid-cols-1 gap-5">
-          <CalculatorResultsTable />
+          <CalculatorResultsTable variant={tableVariant} />
           {children}
         </div>
       </ResultsTableProvider>

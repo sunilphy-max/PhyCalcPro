@@ -438,7 +438,7 @@ export default function Page() {
   return (
     <CalculatorLayout
       moduleId="bearings"
-      title="Bearing Load Rating & Life"
+      title="Bearing Load Rating & Life (SKF / ISO 281)"
       footer={
         <SavedProjectsFooter
           projects={savedProjects}

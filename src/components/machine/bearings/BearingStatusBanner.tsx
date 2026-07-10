@@ -38,7 +38,7 @@ export default function BearingStatusBanner({ result }: Props) {
 
   const highlights = [
     {
-      label: "Modified life Lnm",
+      label: "SKF Lnm",
       value: `${formatDisplayNumber(result.modifiedLife)} h`,
     },
     {

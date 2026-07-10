@@ -60,7 +60,7 @@ export default function BearingInputTabs({ children, defaultTab = "application" 
     <div className="space-y-5">
       {/* Step rail — inspired by SKF / engineering selector wizards */}
       <nav aria-label="Bearing input steps">
-        <ol className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        <ol className="bearing-input-step-rail grid grid-cols-2 gap-2">
           {STEPS.map((step, index) => {
             const active = step.id === activeTab;
             const complete = index < activeIndex;
@@ -95,7 +95,7 @@ export default function BearingInputTabs({ children, defaultTab = "application" 
                       <Icon className="h-3.5 w-3.5 shrink-0 text-cyan-600 dark:text-cyan-400" aria-hidden />
                       {step.label}
                     </span>
-                    <span className="mt-0.5 hidden text-xs leading-snug text-slate-500 dark:text-slate-400 sm:block">
+                    <span className="bearing-input-step-desc mt-0.5 hidden text-xs leading-snug text-slate-500 dark:text-slate-400 sm:block">
                       {step.description}
                     </span>
                   </span>

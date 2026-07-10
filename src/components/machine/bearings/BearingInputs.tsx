@@ -25,6 +25,7 @@ import type {
   LubricantType,
 } from "@/lib/machine/bearings/types";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import BearingTypePicker from "@/components/machine/bearings/BearingTypePicker";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
 import BearingInputTabs, { type BearingInputTabId } from "@/components/machine/bearings/BearingInputTabs";
 import {
@@ -220,59 +221,58 @@ export default function BearingInputs({
       case "application":
         return (
           <div className="space-y-4">
+            <CalculatorFormSection
+              title="Bearing type"
+              description="Select the rolling bearing family — SKF bearing selection step 2."
+            >
+              <BearingTypePicker
+                value={bearingType}
+                availableTypes={availableTypes}
+                onChange={(type) => setBearingType(type)}
+              />
+            </CalculatorFormSection>
+
             <BearingReferenceVisual
               bearingType={bearingType}
               sealType={selected?.sealType ?? (sealFilter !== "all" ? sealFilter : "open")}
               arrangement={arrangement}
             />
+
             <CalculatorFormSection
-              title="Duty & bearing family"
-              description="Start with application profile — the catalog and suggested bearing type update automatically."
+              title="Application profile"
+              description="Duty profile filters the catalog and suggests a bearing family."
             >
-              <div className={calculatorInputGridClass}>
-                <CalculatorSelectField
-                  label="Application profile"
-                  value={applicationProfile}
-                  hint={profileHint ?? undefined}
-                  onChange={(value) => {
-                    const profile = value as BearingApplicationProfile | "all";
-                    setApplicationProfile(profile);
-                    setSeriesFilter("all");
-                    setSealFilter("all");
-                    if (profile !== "all") {
-                      const pool = filterCatalog(bearingCatalog, { manufacturer, applicationProfile: profile });
-                      const types = uniqueTypes(pool);
-                      const suggested = suggestedTypeForApplication(profile, types);
-                      if (suggested) {
-                        setBearingType(suggested);
-                        const first = filterCatalog(bearingCatalog, {
-                          manufacturer,
-                          applicationProfile: profile,
-                          type: suggested,
-                        })[0];
-                        if (first) setDesignation(first.designation);
-                      }
+              <CalculatorSelectField
+                label="Application profile"
+                value={applicationProfile}
+                hint={profileHint ?? undefined}
+                onChange={(value) => {
+                  const profile = value as BearingApplicationProfile | "all";
+                  setApplicationProfile(profile);
+                  setSeriesFilter("all");
+                  setSealFilter("all");
+                  if (profile !== "all") {
+                    const pool = filterCatalog(bearingCatalog, { manufacturer, applicationProfile: profile });
+                    const types = uniqueTypes(pool);
+                    const suggested = suggestedTypeForApplication(profile, types);
+                    if (suggested) {
+                      setBearingType(suggested);
+                      const first = filterCatalog(bearingCatalog, {
+                        manufacturer,
+                        applicationProfile: profile,
+                        type: suggested,
+                      })[0];
+                      if (first) setDesignation(first.designation);
                     }
-                  }}
-                >
-                  {applicationProfileOptions().map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </CalculatorSelectField>
-                <CalculatorSelectField
-                  label="Bearing family / type"
-                  value={bearingType}
-                  onChange={(value) => setBearingType(value as BearingType)}
-                >
-                  {availableTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {BEARING_TYPE_LABELS[type]}
-                    </option>
-                  ))}
-                </CalculatorSelectField>
-              </div>
+                  }
+                }}
+              >
+                {applicationProfileOptions().map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </CalculatorSelectField>
             </CalculatorFormSection>
           </div>
         );
@@ -338,7 +338,7 @@ export default function BearingInputs({
                     <span>Duration (%)</span>
                   </div>
                   {loadSpectrumSteps.map((step, index) => (
-                    <div key={index} className={calculatorInputGridClass}>
+                    <div key={index} className="grid min-w-0 grid-cols-2 gap-2">
                       <input
                         type="number"
                         min={10}
@@ -644,8 +644,8 @@ export default function BearingInputs({
 
   return (
     <CalculatorInputPanel
-      title="Bearing calculator"
-      description="ISO 281 basic and modified rating life, ISO 76 static check, and catalog speed margin."
+      title="Rolling bearing calculator"
+      description="SKF rating life (ISO 281:2007), ISO 76 static check, and multi-manufacturer catalog selection."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton

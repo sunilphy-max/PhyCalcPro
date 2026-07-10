@@ -31,6 +31,8 @@ type Props = {
   emptyMessage?: string;
   /** When true, renders standard empty state instead of children */
   empty?: boolean;
+  /** Dense results table for modules with many metrics */
+  tableVariant?: "default" | "compact";
 };
 
 /** Standard results column — export registration + buckling-style results panel. */
@@ -40,6 +42,7 @@ export default function CalculatorResultsShell({
   heading,
   emptyMessage,
   empty = false,
+  tableVariant = "default",
   ...rest
 }: Props) {
   const reportContext = useCalculatorReportOptional();
@@ -55,7 +58,9 @@ export default function CalculatorResultsShell({
       {empty ? (
         <CalculatorEmptyResults message={emptyMessage} />
       ) : (
-        <CalculatorResultsPanel title={heading}>{children}</CalculatorResultsPanel>
+        <CalculatorResultsPanel title={heading} tableVariant={tableVariant}>
+          {children}
+        </CalculatorResultsPanel>
       )}
     </ExportableReport>
   );

@@ -12,26 +12,20 @@ import type { BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
 import type { RankedBearing } from "@/lib/machine/bearings/catalogSelection";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
-  CalculatorMetricCard,
-  CalculatorMetricGrid,
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
-import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
 import BearingStatusBanner from "@/components/machine/bearings/BearingStatusBanner";
+import BearingResultsMetrics from "@/components/machine/bearings/BearingResultsMetrics";
 import BearingRecommendations from "@/components/machine/bearings/BearingRecommendations";
 import BearingDiagnosisPanel from "@/components/machine/bearings/BearingDiagnosisPanel";
 import BearingReportPreview from "@/components/machine/bearings/BearingReportPreview";
 import BearingResultsViewTabs, {
   type BearingResultsViewId,
 } from "@/components/machine/bearings/BearingResultsViewTabs";
-import {
-  BEARING_MANUFACTURER_LABELS,
-  BEARING_TYPE_LABELS,
-  findBearing,
-} from "@/data/catalogs/bearingCatalog";
+import { findBearing } from "@/data/catalogs/bearingCatalog";
 
 type Props = {
   result: WithCalculationSpec<BearingResult> | null;
@@ -44,10 +38,6 @@ type Props = {
   inputRows?: ReportRow[];
   onSelectDesignation?: (designation: string) => void;
 };
-
-function utilizationStatus(value: number, limit: number, higherIsSafe: boolean): "safe" | "danger" {
-  return higherIsSafe ? (value >= limit ? "safe" : "danger") : value <= limit ? "safe" : "danger";
-}
 
 export default function BearingResults({
   result,
@@ -174,11 +164,10 @@ export default function BearingResults({
   }, [loadUnit, result, speedRpm]);
 
   const summaryContent = result ? (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {workflowMode !== "diagnose" && recommendations.length > 0 ? (
         <BearingRecommendations recommendations={recommendations} onSelect={onSelectDesignation} />
       ) : null}
-
       {result.bearingType ? (
         <BearingReferenceVisual
           bearingType={result.bearingType}
@@ -187,134 +176,9 @@ export default function BearingResults({
           compact
         />
       ) : null}
-
-      <CalculatorMetricGrid cols={4} section="Selection & life">
-        <CalculatorMetricCard label="Catalog designation" value={result.designation ?? "—"} tone="blue" />
-        <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
-        <CalculatorMetricCard
-          label="Equivalent load P"
-          numericValue={fromBase(result.equivalentLoad, "force", loadUnit)}
-          unit={loadUnit}
-          tone="orange"
-        />
-        <CalculatorMetricCard
-          label={`Basic L10 life (a1=${result.a1})`}
-          numericValue={result.expectedLife}
-          unit="h"
-          tone="blue"
-          size="lg"
-        />
-        <CalculatorMetricCard label="Modified life Lnm" numericValue={result.modifiedLife} unit="h" tone="purple" />
-      </CalculatorMetricGrid>
-
-      <CalculatorMetricGrid cols={4} section="Safety checks">
-        <CalculatorMetricCard
-          label="Dynamic utilization P/C"
-          numericValue={result.dynamicUtilization}
-          unit="—"
-          status={utilizationStatus(result.dynamicUtilization, 1, false)}
-        />
-        <CalculatorMetricCard
-          label="Static safety s₀ = C₀/P₀"
-          numericValue={result.staticSafetyFactor}
-          unit="—"
-          status={utilizationStatus(result.staticSafetyFactor, 1, true)}
-        />
-        <CalculatorMetricCard
-          label="Speed margin n_lim/n"
-          value={result.speedMargin != null ? result.speedMargin.toFixed(2) : "N/A"}
-          status={result.speedMargin == null || result.speedMargin >= 1 ? "safe" : "danger"}
-        />
-        <CalculatorMetricCard
-          label="Life utilization L_req/L10"
-          numericValue={result.lifeUtilization}
-          unit="—"
-          status={utilizationStatus(result.lifeUtilization, 1, false)}
-        />
-      </CalculatorMetricGrid>
-
-      <CalculatorMetricGrid cols={4} section="Modified life factors">
-        <CalculatorMetricCard label="Viscosity ratio κ" numericValue={result.modifiedLifeFactors.kappa} unit="—" tone="purple" />
-        <CalculatorMetricCard label="Contamination eC" numericValue={result.modifiedLifeFactors.eC} />
-        <CalculatorMetricCard label="Life factor aISO" numericValue={result.aIso} unit="—" tone="blue" />
-        <CalculatorMetricCard label="Pu / P" numericValue={result.modifiedLifeFactors.puOverP} />
-      </CalculatorMetricGrid>
-
-      <CalculatorMetricGrid cols={4} section="Operating & friction">
-        <CalculatorMetricCard
-          label="Minimum radial load"
-          numericValue={fromBase(result.minimumRadialLoadN, "force", loadUnit)}
-          unit={loadUnit}
-          status={result.minLoadSatisfied ? "safe" : "danger"}
-        />
-        <CalculatorMetricCard label="Friction torque" numericValue={result.frictionTorqueNm} unit="N·m" />
-        <CalculatorMetricCard label="Power loss" numericValue={result.powerLossW} unit="W" />
-        <CalculatorMetricCard
-          label="Temp. derating on C"
-          numericValue={Number(result.temperatureDeratingFactor * 100)}
-          unit="%"
-        />
-      </CalculatorMetricGrid>
-
-      {result.fitRecommendation ? (
-        <CalculatorMetricGrid cols={3} section="Fit & clearance">
-          <CalculatorMetricCard label="Recommended shaft fit" value={result.fitRecommendation.shaftFit} tone="blue" />
-          <CalculatorMetricCard
-            label="Recommended housing fit"
-            value={result.fitRecommendation.housingFit}
-            tone="blue"
-          />
-          <CalculatorMetricCard
-            label="Est. operating clearance"
-            numericValue={Number(result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0))}
-            unit="µm"
-          />
-        </CalculatorMetricGrid>
-      ) : null}
-
-      {result.pairedStations && result.pairedStations.length > 1 ? (
-        <CalculatorMetricGrid cols={2} section="Paired arrangement">
-          <CalculatorMetricCard
-            label={`Paired arrangement (${result.arrangement})`}
-            value={result.pairedStations
-              .map(
-                (s) =>
-                  `#${s.index + 1}: P=${formatDisplayNumber(fromBase(s.equivalentLoad, "force", loadUnit))} ${loadUnit}, Lnm=${formatDisplayNumber(s.modifiedLifeHours)} h`
-              )
-              .join(" · ")}
-          />
-        </CalculatorMetricGrid>
-      ) : null}
-
-      <CalculatorMetricGrid cols={3} section="Catalog ratings">
-        <CalculatorMetricCard
-          label="Required dynamic C"
-          numericValue={fromBase(result.requiredDynamicRating, "force", loadUnit)}
-          unit={loadUnit}
-          tone="amber"
-        />
-        <CalculatorMetricCard
-          label="Catalog C / C₀"
-          value={`${formatDisplayNumber(fromBase(result.dynamicLoadRatingN, "force", loadUnit))} / ${formatDisplayNumber(fromBase(result.staticLoadRatingN, "force", loadUnit))} ${loadUnit}`}
-        />
-        <CalculatorMetricCard
-          label="Manufacturer"
-          value={catalogEntry ? BEARING_MANUFACTURER_LABELS[catalogEntry.manufacturer] : "—"}
-        />
-      </CalculatorMetricGrid>
-
-      {result.geometry ? (
-        <CalculatorMetricGrid cols={2} section="Geometry">
-          <CalculatorMetricCard
-            label="Catalog geometry"
-            value={`${result.designation} · d = ${result.geometry.boreMm} mm · D = ${result.geometry.outerDiameterMm} mm · B = ${result.geometry.widthMm} mm${
-              result.limitingSpeedRpm != null
-                ? ` · n_lim = ${formatEngineeringValue(result.limitingSpeedRpm, "RPM", { digits: 0 })}`
-                : ""
-            }${catalogEntry?.series ? ` · series ${catalogEntry.series}` : ""}`}
-          />
-        </CalculatorMetricGrid>
-      ) : null}
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        Full parameter table is above. SKF rating life Lnm uses a₁ · aSKF · (C/P)^p per ISO 281:2007.
+      </p>
     </div>
   ) : null;
 
@@ -373,6 +237,7 @@ export default function BearingResults({
       empty={!result}
       emptyMessage="Enter loads, speed, life target, and catalog bearing, then calculate."
       heading="Bearing results"
+      tableVariant="compact"
       qualityOverrides={chartModuleQuality()}
       inputRows={inputRows}
       reportMeta={{ project: result?.designation ?? "Bearing selection" }}
@@ -398,7 +263,8 @@ export default function BearingResults({
       }
     >
       {result ? (
-        <div className="space-y-5">
+        <div className="space-y-4">
+          <BearingResultsMetrics result={result} loadUnit={loadUnit} catalogEntry={catalogEntry} />
           <BearingStatusBanner result={result} />
           <BearingResultsViewTabs tabs={viewTabs} defaultTab="summary" />
         </div>

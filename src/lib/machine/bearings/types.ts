@@ -65,6 +65,7 @@ export type BearingConfig = {
   dynamicLoadRatingN?: number;
   staticLoadRatingN?: number;
   limitingSpeedRpm?: number;
+  referenceSpeedRpm?: number;
   designation?: string;
   reliabilityPercent?: BearingReliability;
   /** Legacy simplified lubrication — used when full lubricant inputs absent */
@@ -120,6 +121,8 @@ export type BearingResult = {
   dynamicUtilization: number;
   staticSafetyFactor: number;
   speedMargin: number | null;
+  /** n_ref / n when catalog reference speed is available (SKF lubrication screening). */
+  referenceSpeedMargin: number | null;
   lifeUtilization: number;
   safetyFactor: number;
   bearingType: BearingType;
