@@ -4,7 +4,9 @@ import { deriveParams, parseBrief } from "./paramParser";
 import { buildDesignPlan } from "./planBuilder";
 import type { CopilotBrief, CopilotParams, DesignPlan, DesignSession } from "./types";
 
-export * from "./types";
+export { runBearingCopilotSession, BEARING_COPILOT_EXAMPLES } from "./bearingCopilot";
+export type { BearingCopilotApplyPayload, BearingCopilotSession } from "./bearingCopilot";
+export type { CopilotBrief, CopilotParams, DesignPlan, DesignSession } from "./types";
 export { parseBrief, deriveParams } from "./paramParser";
 export { matchStartModule } from "./moduleMatch";
 export { buildDesignPlan } from "./planBuilder";

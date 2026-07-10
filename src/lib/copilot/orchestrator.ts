@@ -13,7 +13,10 @@ import type {
 function mapParamsToInputs(params: CopilotParams): ModuleUserInputs {
   const inputs: ModuleUserInputs = {};
   if (params.power != null) inputs.power = params.power;
-  if (params.rpm != null) inputs.rpm = params.rpm;
+  if (params.rpm != null) {
+    inputs.rpm = params.rpm;
+    inputs.speedDriver = params.rpm;
+  }
   if (params.torque != null) inputs.torque = params.torque;
   if (params.serviceFactor != null) inputs.serviceFactor = params.serviceFactor;
   if (params.bendingMoment != null) inputs.bendingMoment = params.bendingMoment;

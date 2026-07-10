@@ -13,6 +13,7 @@ import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import BearingInputs, {
   type LoadSpectrumUiStep,
 } from "@/components/machine/bearings/BearingInputs";
+import BearingCopilotPanel from "@/components/machine/bearings/BearingCopilotPanel";
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
@@ -48,6 +49,7 @@ import {
   filterCatalog,
   bearingCatalog,
 } from "@/data/catalogs/bearingCatalog";
+import type { BearingCopilotApplyPayload } from "@/lib/copilot/bearingCopilot";
 
 type BearingProjectData = {
   radialLoad: number;
@@ -435,6 +437,27 @@ export default function Page() {
     if (findBearing(next)) setDesignation(next);
   }, []);
 
+  const applyCopilot = useCallback(
+    (payload: BearingCopilotApplyPayload) => {
+      if (payload.radialLoad != null) setRadialLoad(fromBase(payload.radialLoad, "force", radialUnit));
+      if (payload.axialLoad != null) setAxialLoad(fromBase(payload.axialLoad, "force", axialUnit));
+      if (payload.speed != null) setSpeed(payload.speed);
+      if (payload.lifeHours != null) {
+        setLifeInputMode("hours");
+        setLifeHours(payload.lifeHours);
+      }
+      if (payload.safetyFactor != null) setSafetyFactor(payload.safetyFactor);
+      if (payload.bearingType) setBearingType(payload.bearingType);
+      if (payload.manufacturer) setManufacturer(payload.manufacturer);
+      if (payload.applicationProfile) setApplicationProfile(payload.applicationProfile);
+      if (payload.arrangement) setArrangement(payload.arrangement);
+      if (payload.designation && findBearing(payload.designation)) {
+        setDesignation(payload.designation);
+      }
+    },
+    [axialUnit, radialUnit]
+  );
+
   return (
     <CalculatorLayout
       moduleId="bearings"
@@ -447,6 +470,7 @@ export default function Page() {
       }
       inputs={
         <div className="space-y-4">
+          <BearingCopilotPanel onApply={applyCopilot} />
           <CrossCalcHandoffBanner
             moduleId="bearings"
             onApply={(params) => {
