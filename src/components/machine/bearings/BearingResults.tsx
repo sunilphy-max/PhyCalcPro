@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
+import { BarChart3, FileText, Stethoscope, Table2 } from "lucide-react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { ReportRow } from "@/lib/export/reportPayload";
@@ -23,6 +24,9 @@ import BearingStatusBanner from "@/components/machine/bearings/BearingStatusBann
 import BearingRecommendations from "@/components/machine/bearings/BearingRecommendations";
 import BearingDiagnosisPanel from "@/components/machine/bearings/BearingDiagnosisPanel";
 import BearingReportPreview from "@/components/machine/bearings/BearingReportPreview";
+import BearingResultsViewTabs, {
+  type BearingResultsViewId,
+} from "@/components/machine/bearings/BearingResultsViewTabs";
 import {
   BEARING_MANUFACTURER_LABELS,
   BEARING_TYPE_LABELS,
@@ -169,10 +173,8 @@ export default function BearingResults({
     ];
   }, [loadUnit, result, speedRpm]);
 
-  const resultsContent = result ? (
-    <>
-      <BearingStatusBanner result={result} />
-
+  const summaryContent = result ? (
+    <div className="space-y-5">
       {workflowMode !== "diagnose" && recommendations.length > 0 ? (
         <BearingRecommendations recommendations={recommendations} onSelect={onSelectDesignation} />
       ) : null}
@@ -186,174 +188,180 @@ export default function BearingResults({
         />
       ) : null}
 
-      <CalculatorMetricGrid cols={4}>
-        <CalculatorMetricCard
-          label="Catalog designation"
-          value={result.designation ?? "—"}
-          tone="blue"
-        />
+      <CalculatorMetricGrid cols={4} section="Selection & life">
+        <CalculatorMetricCard label="Catalog designation" value={result.designation ?? "—"} tone="blue" />
         <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
         <CalculatorMetricCard
           label="Equivalent load P"
-          numericValue={fromBase(result.equivalentLoad, "force", loadUnit)} unit={loadUnit}
+          numericValue={fromBase(result.equivalentLoad, "force", loadUnit)}
+          unit={loadUnit}
           tone="orange"
         />
         <CalculatorMetricCard
           label={`Basic L10 life (a1=${result.a1})`}
-          numericValue={result.expectedLife} unit="h"
+          numericValue={result.expectedLife}
+          unit="h"
           tone="blue"
           size="lg"
         />
+        <CalculatorMetricCard label="Modified life Lnm" numericValue={result.modifiedLife} unit="h" tone="purple" />
+      </CalculatorMetricGrid>
+
+      <CalculatorMetricGrid cols={4} section="Safety checks">
         <CalculatorMetricCard
-          label="Modified life Lnm"
-          numericValue={result.modifiedLife} unit="h"
-          tone="purple"
+          label="Dynamic utilization P/C"
+          numericValue={result.dynamicUtilization}
+          unit="—"
+          status={utilizationStatus(result.dynamicUtilization, 1, false)}
+        />
+        <CalculatorMetricCard
+          label="Static safety s₀ = C₀/P₀"
+          numericValue={result.staticSafetyFactor}
+          unit="—"
+          status={utilizationStatus(result.staticSafetyFactor, 1, true)}
+        />
+        <CalculatorMetricCard
+          label="Speed margin n_lim/n"
+          value={result.speedMargin != null ? result.speedMargin.toFixed(2) : "N/A"}
+          status={result.speedMargin == null || result.speedMargin >= 1 ? "safe" : "danger"}
+        />
+        <CalculatorMetricCard
+          label="Life utilization L_req/L10"
+          numericValue={result.lifeUtilization}
+          unit="—"
+          status={utilizationStatus(result.lifeUtilization, 1, false)}
         />
       </CalculatorMetricGrid>
 
-      <CalculatorMetricGrid cols={4}>
-            <CalculatorMetricCard
-              label="Dynamic utilization P/C"
-              numericValue={result.dynamicUtilization} unit="—"
-              status={utilizationStatus(result.dynamicUtilization, 1, false)}
-            />
-            <CalculatorMetricCard
-              label="Static safety s₀ = C₀/P₀"
-              numericValue={result.staticSafetyFactor} unit="—"
-              status={utilizationStatus(result.staticSafetyFactor, 1, true)}
-            />
-            <CalculatorMetricCard
-              label="Speed margin n_lim/n"
-              value={result.speedMargin != null ? result.speedMargin.toFixed(2) : "N/A"}
-              status={
-                result.speedMargin == null || result.speedMargin >= 1 ? "safe" : "danger"
-              }
-            />
-            <CalculatorMetricCard
-              label="Life utilization L_req/L10"
-              numericValue={result.lifeUtilization} unit="—"
-              status={utilizationStatus(result.lifeUtilization, 1, false)}
-            />
-          </CalculatorMetricGrid>
+      <CalculatorMetricGrid cols={4} section="Modified life factors">
+        <CalculatorMetricCard label="Viscosity ratio κ" numericValue={result.modifiedLifeFactors.kappa} unit="—" tone="purple" />
+        <CalculatorMetricCard label="Contamination eC" numericValue={result.modifiedLifeFactors.eC} />
+        <CalculatorMetricCard label="Life factor aISO" numericValue={result.aIso} unit="—" tone="blue" />
+        <CalculatorMetricCard label="Pu / P" numericValue={result.modifiedLifeFactors.puOverP} />
+      </CalculatorMetricGrid>
 
-          <CalculatorMetricGrid cols={4}>
-            <CalculatorMetricCard label="Viscosity ratio κ" numericValue={result.modifiedLifeFactors.kappa} unit="—" tone="purple" />
-            <CalculatorMetricCard label="Contamination eC" numericValue={result.modifiedLifeFactors.eC} />
-            <CalculatorMetricCard label="Life factor aISO" numericValue={result.aIso} unit="—" tone="blue" />
-            <CalculatorMetricCard
-              label="Pu / P"
-              numericValue={result.modifiedLifeFactors.puOverP}
-            />
-          </CalculatorMetricGrid>
+      <CalculatorMetricGrid cols={4} section="Operating & friction">
+        <CalculatorMetricCard
+          label="Minimum radial load"
+          numericValue={fromBase(result.minimumRadialLoadN, "force", loadUnit)}
+          unit={loadUnit}
+          status={result.minLoadSatisfied ? "safe" : "danger"}
+        />
+        <CalculatorMetricCard label="Friction torque" numericValue={result.frictionTorqueNm} unit="N·m" />
+        <CalculatorMetricCard label="Power loss" numericValue={result.powerLossW} unit="W" />
+        <CalculatorMetricCard
+          label="Temp. derating on C"
+          numericValue={Number(result.temperatureDeratingFactor * 100)}
+          unit="%"
+        />
+      </CalculatorMetricGrid>
 
-          <CalculatorMetricGrid cols={4}>
-            <CalculatorMetricCard
-              label="Minimum radial load"
-              numericValue={fromBase(result.minimumRadialLoadN, "force", loadUnit)} unit={loadUnit}
-              status={result.minLoadSatisfied ? "safe" : "danger"}
-            />
-            <CalculatorMetricCard
-              label="Friction torque"
-              numericValue={result.frictionTorqueNm} unit="N·m"
-            />
-            <CalculatorMetricCard label="Power loss" numericValue={result.powerLossW} unit="W" />
-            <CalculatorMetricCard
-              label="Temp. derating on C"
-              numericValue={Number((result.temperatureDeratingFactor ) * 100)} unit="%"
-            />
-          </CalculatorMetricGrid>
+      {result.fitRecommendation ? (
+        <CalculatorMetricGrid cols={3} section="Fit & clearance">
+          <CalculatorMetricCard label="Recommended shaft fit" value={result.fitRecommendation.shaftFit} tone="blue" />
+          <CalculatorMetricCard
+            label="Recommended housing fit"
+            value={result.fitRecommendation.housingFit}
+            tone="blue"
+          />
+          <CalculatorMetricCard
+            label="Est. operating clearance"
+            numericValue={Number(result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0))}
+            unit="µm"
+          />
+        </CalculatorMetricGrid>
+      ) : null}
 
-          {result.fitRecommendation ? (
-            <CalculatorMetricGrid cols={3}>
-              <CalculatorMetricCard
-                label="Recommended shaft fit"
-                value={result.fitRecommendation.shaftFit}
-                tone="blue"
-              />
-              <CalculatorMetricCard
-                label="Recommended housing fit"
-                value={result.fitRecommendation.housingFit}
-                tone="blue"
-              />
-              <CalculatorMetricCard
-                label="Est. operating clearance"
-                numericValue={Number(result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0))} unit="µm"
-              />
-            </CalculatorMetricGrid>
-          ) : null}
+      {result.pairedStations && result.pairedStations.length > 1 ? (
+        <CalculatorMetricGrid cols={2} section="Paired arrangement">
+          <CalculatorMetricCard
+            label={`Paired arrangement (${result.arrangement})`}
+            value={result.pairedStations
+              .map(
+                (s) =>
+                  `#${s.index + 1}: P=${formatDisplayNumber(fromBase(s.equivalentLoad, "force", loadUnit))} ${loadUnit}, Lnm=${formatDisplayNumber(s.modifiedLifeHours)} h`
+              )
+              .join(" · ")}
+          />
+        </CalculatorMetricGrid>
+      ) : null}
 
-          {result.pairedStations && result.pairedStations.length > 1 ? (
-            <CalculatorMetricGrid cols={2}>
-              <CalculatorMetricCard
-                label={`Paired arrangement (${result.arrangement})`}
-                value={result.pairedStations
-                  .map(
-                    (s) =>
-                      `#${s.index + 1}: P=${formatDisplayNumber(fromBase(s.equivalentLoad, "force", loadUnit))} ${loadUnit}, Lnm=${formatDisplayNumber(s.modifiedLifeHours)} h`
-                  )
-                  .join(" · ")}
-              />
-            </CalculatorMetricGrid>
-          ) : null}
+      <CalculatorMetricGrid cols={3} section="Catalog ratings">
+        <CalculatorMetricCard
+          label="Required dynamic C"
+          numericValue={fromBase(result.requiredDynamicRating, "force", loadUnit)}
+          unit={loadUnit}
+          tone="amber"
+        />
+        <CalculatorMetricCard
+          label="Catalog C / C₀"
+          value={`${formatDisplayNumber(fromBase(result.dynamicLoadRatingN, "force", loadUnit))} / ${formatDisplayNumber(fromBase(result.staticLoadRatingN, "force", loadUnit))} ${loadUnit}`}
+        />
+        <CalculatorMetricCard
+          label="Manufacturer"
+          value={catalogEntry ? BEARING_MANUFACTURER_LABELS[catalogEntry.manufacturer] : "—"}
+        />
+      </CalculatorMetricGrid>
 
-          <CalculatorMetricGrid cols={3}>
-            <CalculatorMetricCard
-              label="Required dynamic C"
-              numericValue={fromBase(result.requiredDynamicRating, "force", loadUnit)} unit={loadUnit}
-              tone="amber"
-            />
-            <CalculatorMetricCard
-              label="Catalog C / C₀"
-              value={`${formatDisplayNumber(fromBase(result.dynamicLoadRatingN, "force", loadUnit))} / ${formatDisplayNumber(fromBase(result.staticLoadRatingN, "force", loadUnit))} ${loadUnit}`}
-            />
-            <CalculatorMetricCard
-              label="Manufacturer"
-              value={
-                catalogEntry
-                  ? BEARING_MANUFACTURER_LABELS[catalogEntry.manufacturer]
-                  : "—"
-              }
-            />
-          </CalculatorMetricGrid>
-
-          {result.geometry ? (
-            <CalculatorMetricGrid cols={2}>
-              <CalculatorMetricCard
-                label="Catalog geometry"
-                value={`${result.designation} · d = ${result.geometry.boreMm} mm · D = ${result.geometry.outerDiameterMm} mm · B = ${result.geometry.widthMm} mm${
-                  result.limitingSpeedRpm != null
-                    ? ` · n_lim = ${formatEngineeringValue(result.limitingSpeedRpm, "RPM", { digits: 0 })}`
-                    : ""
-                }${catalogEntry?.series ? ` · series ${catalogEntry.series}` : ""}`}
-              />
-            </CalculatorMetricGrid>
-          ) : null}
-
-          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="life-load" label="Result charts" />
-    </>
+      {result.geometry ? (
+        <CalculatorMetricGrid cols={2} section="Geometry">
+          <CalculatorMetricCard
+            label="Catalog geometry"
+            value={`${result.designation} · d = ${result.geometry.boreMm} mm · D = ${result.geometry.outerDiameterMm} mm · B = ${result.geometry.widthMm} mm${
+              result.limitingSpeedRpm != null
+                ? ` · n_lim = ${formatEngineeringValue(result.limitingSpeedRpm, "RPM", { digits: 0 })}`
+                : ""
+            }${catalogEntry?.series ? ` · series ${catalogEntry.series}` : ""}`}
+          />
+        </CalculatorMetricGrid>
+      ) : null}
+    </div>
   ) : null;
 
-  const viewTabs = useMemo((): PlotPickerTab[] => {
+  const viewTabs = useMemo(() => {
     if (!result) return [];
-    const tabs: PlotPickerTab[] = [
-      { id: "results", label: "Results", content: resultsContent },
+
+    const tabs: {
+      id: BearingResultsViewId;
+      label: string;
+      icon: typeof Table2;
+      content: ReactNode;
+    }[] = [
+      { id: "summary", label: "Summary", icon: Table2, content: summaryContent },
       {
-        id: "reports",
-        label: "Reports",
+        id: "charts",
+        label: "Charts",
+        icon: BarChart3,
+        content: (
+          <EngineeringPlotPicker
+            tabs={plotTabs}
+            defaultTabId="life-load"
+            label="Sensitivity charts"
+            variant="segmented"
+          />
+        ),
+      },
+      {
+        id: "report",
+        label: "Report",
+        icon: FileText,
         content: <BearingReportPreview inputRows={inputRows} hasResult />,
       },
     ];
+
     if (workflowMode === "diagnose" && diagnosis) {
-      tabs.splice(1, 0, {
+      tabs.splice(2, 0, {
         id: "diagnose",
         label: "Diagnose",
+        icon: Stethoscope,
         content: (
           <BearingDiagnosisPanel diagnosis={diagnosis} onSelectReplacement={onSelectDesignation} />
         ),
       });
     }
+
     return tabs;
-  }, [diagnosis, inputRows, onSelectDesignation, result, resultsContent, workflowMode]);
+  }, [diagnosis, inputRows, onSelectDesignation, plotTabs, result, summaryContent, workflowMode]);
 
   return (
     <CalculatorResultsShell
@@ -390,7 +398,10 @@ export default function BearingResults({
       }
     >
       {result ? (
-        <EngineeringPlotPicker tabs={viewTabs} defaultTabId="results" label="Results view" />
+        <div className="space-y-5">
+          <BearingStatusBanner result={result} />
+          <BearingResultsViewTabs tabs={viewTabs} defaultTab="summary" />
+        </div>
       ) : null}
     </CalculatorResultsShell>
   );

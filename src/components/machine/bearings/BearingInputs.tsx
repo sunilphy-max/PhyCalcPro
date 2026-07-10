@@ -3,8 +3,15 @@ import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
+import CalculatorSelectField from "@/components/calculator/CalculatorSelectField";
+import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
-import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
+import {
+  calculatorFieldLabelClass,
+  calculatorInputGridClass,
+  calculatorNumberInputClass,
+  calculatorTextInputClass,
+} from "@/components/calculator/styles";
 import type {
   BearingType,
   BearingReliability,
@@ -212,114 +219,126 @@ export default function BearingInputs({
     switch (tab) {
       case "application":
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <BearingReferenceVisual
               bearingType={bearingType}
               sealType={selected?.sealType ?? (sealFilter !== "all" ? sealFilter : "open")}
               arrangement={arrangement}
             />
-            <label className="block space-y-2 text-sm text-slate-700">
-              <span>Application profile</span>
-              <select
-                value={applicationProfile}
-                onChange={(event) => {
-                  const profile = event.target.value as BearingApplicationProfile | "all";
-                  setApplicationProfile(profile);
-                  setSeriesFilter("all");
-                  setSealFilter("all");
-                  if (profile !== "all") {
-                    const pool = filterCatalog(bearingCatalog, { manufacturer, applicationProfile: profile });
-                    const types = uniqueTypes(pool);
-                    const suggested = suggestedTypeForApplication(profile, types);
-                    if (suggested) {
-                      setBearingType(suggested);
-                      const first = filterCatalog(bearingCatalog, {
-                        manufacturer,
-                        applicationProfile: profile,
-                        type: suggested,
-                      })[0];
-                      if (first) setDesignation(first.designation);
+            <CalculatorFormSection
+              title="Duty & bearing family"
+              description="Start with application profile — the catalog and suggested bearing type update automatically."
+            >
+              <div className={calculatorInputGridClass}>
+                <CalculatorSelectField
+                  label="Application profile"
+                  value={applicationProfile}
+                  hint={profileHint ?? undefined}
+                  onChange={(value) => {
+                    const profile = value as BearingApplicationProfile | "all";
+                    setApplicationProfile(profile);
+                    setSeriesFilter("all");
+                    setSealFilter("all");
+                    if (profile !== "all") {
+                      const pool = filterCatalog(bearingCatalog, { manufacturer, applicationProfile: profile });
+                      const types = uniqueTypes(pool);
+                      const suggested = suggestedTypeForApplication(profile, types);
+                      if (suggested) {
+                        setBearingType(suggested);
+                        const first = filterCatalog(bearingCatalog, {
+                          manufacturer,
+                          applicationProfile: profile,
+                          type: suggested,
+                        })[0];
+                        if (first) setDesignation(first.designation);
+                      }
                     }
-                  }
-                }}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-              >
-                {applicationProfileOptions().map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              {profileHint ? <p className="text-xs text-slate-500">{profileHint}</p> : null}
-            </label>
-            <label className="block space-y-2 text-sm text-slate-700">
-              <span>Bearing family / type</span>
-              <select
-                value={bearingType}
-                onChange={(event) => setBearingType(event.target.value as BearingType)}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-              >
-                {availableTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {BEARING_TYPE_LABELS[type]}
-                  </option>
-                ))}
-              </select>
-            </label>
+                  }}
+                >
+                  {applicationProfileOptions().map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Bearing family / type"
+                  value={bearingType}
+                  onChange={(value) => setBearingType(value as BearingType)}
+                >
+                  {availableTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {BEARING_TYPE_LABELS[type]}
+                    </option>
+                  ))}
+                </CalculatorSelectField>
+              </div>
+            </CalculatorFormSection>
           </div>
         );
 
       case "loads":
         return (
           <div className="space-y-4">
-            <div className={calculatorInputGridClass}>
-              <CalculatorUnitField
-                label="Radial load Fr"
-                value={radialLoad}
-                onChange={setRadialLoad}
-                unit={
-                  <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={radialUnit} onChange={setRadialUnit} />
-                }
-              />
-              <CalculatorUnitField
-                label="Axial load Fa"
-                value={axialLoad}
-                onChange={setAxialLoad}
-                unit={
-                  <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={axialUnit} onChange={setAxialUnit} />
-                }
-              />
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Shock factor Ks</span>
-                <input
-                  type="number"
-                  step="0.1"
-                  min={1}
-                  value={shockFactor}
-                  onChange={(event) => setShockFactor(Number(event.target.value))}
-                  className={calculatorNumberInputClass}
+            <CalculatorFormSection
+              title="Steady loads"
+              description="Enter radial and axial components. Shock factor scales both for impact duty."
+            >
+              <div className={calculatorInputGridClass}>
+                <CalculatorUnitField
+                  label="Radial load Fr"
+                  value={radialLoad}
+                  onChange={setRadialLoad}
+                  unit={
+                    <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={radialUnit} onChange={setRadialUnit} />
+                  }
                 />
-                <p className="text-xs text-slate-500">Multiplies Fr and Fa for impact / shock duty screening.</p>
-              </label>
-            </div>
+                <CalculatorUnitField
+                  label="Axial load Fa"
+                  value={axialLoad}
+                  onChange={setAxialLoad}
+                  unit={
+                    <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={axialUnit} onChange={setAxialUnit} />
+                  }
+                />
+                <div className="min-w-0 space-y-1.5">
+                  <label className={calculatorFieldLabelClass}>Shock factor Ks</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min={1}
+                    value={shockFactor}
+                    onChange={(event) => setShockFactor(Number(event.target.value))}
+                    className={calculatorNumberInputClass}
+                  />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Multiplies Fr and Fa for impact / shock duty screening.
+                  </p>
+                </div>
+              </div>
+            </CalculatorFormSection>
 
-            <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 space-y-3 dark:border-amber-900/40 dark:bg-amber-950/20">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+            <CalculatorFormSection
+              title="Loading spectrum (optional)"
+              description="ISO 281-1 variable load duty — duration percentages are normalized on calculate."
+            >
+              <label className="flex items-center gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50/60 px-3 py-2.5 text-sm font-medium text-slate-700 dark:border-amber-900/40 dark:bg-amber-950/25 dark:text-slate-200">
                 <input
                   type="checkbox"
                   checked={useVariableLoad}
                   onChange={(event) => setUseVariableLoad(event.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-cyan-600"
                 />
-                <span>Loading spectrum (ISO 281-1)</span>
+                <span>Enable loading spectrum</span>
               </label>
               {useVariableLoad ? (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs font-semibold uppercase text-slate-500">
+                  <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <span>Load (% of Fr/Fa)</span>
                     <span>Duration (%)</span>
                   </div>
                   {loadSpectrumSteps.map((step, index) => (
-                    <div key={index} className={`${calculatorInputGridClass}`}>
+                    <div key={index} className={calculatorInputGridClass}>
                       <input
                         type="number"
                         min={10}
@@ -349,225 +368,200 @@ export default function BearingInputs({
                     </div>
                   ))}
                   <p
-                    className={`text-xs ${Math.abs(spectrumDurationTotal - 100) > 1 ? "text-amber-700" : "text-slate-500"}`}
+                    className={`text-xs ${Math.abs(spectrumDurationTotal - 100) > 1 ? "text-amber-700 dark:text-amber-400" : "text-slate-500 dark:text-slate-400"}`}
                   >
                     Duration total: {spectrumDurationTotal}% (normalized on calculate)
                   </p>
                 </div>
               ) : null}
-            </div>
+            </CalculatorFormSection>
           </div>
         );
 
       case "operating":
         return (
           <div className="space-y-4">
-            <div className={calculatorInputGridClass}>
-              <CalculatorUnitField
-                label="Speed n"
-                value={speed}
-                onChange={setSpeed}
-                min={0}
-                unit={<span className="text-sm text-slate-500">RPM</span>}
-              />
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Life target input</span>
-                <select
+            <CalculatorFormSection title="Speed & life target" description="Required rating life and reliability factor a₁.">
+              <div className={calculatorInputGridClass}>
+                <CalculatorUnitField
+                  label="Speed n"
+                  value={speed}
+                  onChange={setSpeed}
+                  min={0}
+                  unit={<span className="text-sm text-slate-500">RPM</span>}
+                />
+                <CalculatorSelectField
+                  label="Life target input"
                   value={lifeInputMode}
-                  onChange={(event) =>
-                    setLifeInputMode(event.target.value as "hours" | "revolutions")
-                  }
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                  onChange={(value) => setLifeInputMode(value as "hours" | "revolutions")}
                 >
                   <option value="hours">Required rating life L10h (hours)</option>
                   <option value="revolutions">Required life (million revolutions)</option>
-                </select>
-              </label>
-              {lifeInputMode === "hours" ? (
-                <CalculatorUnitField
-                  label="Required rating life L10h"
-                  value={lifeHours}
-                  onChange={setLifeHours}
-                  min={0}
-                  unit={<span className="text-sm text-slate-500">h</span>}
-                />
-              ) : (
-                <label className="space-y-2 text-sm text-slate-700">
-                  <span>Required life (million rev)</span>
+                </CalculatorSelectField>
+                {lifeInputMode === "hours" ? (
+                  <CalculatorUnitField
+                    label="Required rating life L10h"
+                    value={lifeHours}
+                    onChange={setLifeHours}
+                    min={0}
+                    unit={<span className="text-sm text-slate-500">h</span>}
+                  />
+                ) : (
+                  <div className="min-w-0 space-y-1.5">
+                    <label className={calculatorFieldLabelClass}>Required life (million rev)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min={0}
+                      value={lifeRevolutions / 1e6}
+                      onChange={(event) => setLifeRevolutions(Number(event.target.value) * 1e6)}
+                      className={calculatorNumberInputClass}
+                    />
+                  </div>
+                )}
+                <div className="min-w-0 space-y-1.5">
+                  <label className={calculatorFieldLabelClass}>Life safety factor on C</label>
                   <input
                     type="number"
                     step="0.1"
-                    min={0}
-                    value={lifeRevolutions / 1e6}
-                    onChange={(event) => setLifeRevolutions(Number(event.target.value) * 1e6)}
+                    value={safetyFactor}
+                    onChange={(event) => setSafetyFactor(Number(event.target.value))}
                     className={calculatorNumberInputClass}
                   />
-                </label>
-              )}
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Life safety factor on C</span>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={safetyFactor}
-                  onChange={(event) => setSafetyFactor(Number(event.target.value))}
-                  className={calculatorNumberInputClass}
-                />
-              </label>
-            </div>
+                </div>
+              </div>
+            </CalculatorFormSection>
 
-            <div className={calculatorInputGridClass}>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Mounting arrangement</span>
-                <select
+            <CalculatorFormSection title="Mounting & reliability">
+              <div className={calculatorInputGridClass}>
+                <CalculatorSelectField
+                  label="Mounting arrangement"
                   value={arrangement}
-                  onChange={(event) => setArrangement(event.target.value as BearingArrangement)}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                  onChange={(value) => setArrangement(value as BearingArrangement)}
                 >
                   <option value="single">Single bearing</option>
                   <option value="back_to_back">Back-to-back (O)</option>
                   <option value="face_to_face">Face-to-face (X)</option>
                   <option value="tandem">Tandem (T)</option>
-                </select>
-              </label>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Internal clearance (ISO)</span>
-                <select
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Internal clearance (ISO)"
                   value={clearanceOverride || selected?.clearance || "CN"}
-                  onChange={(event) =>
+                  onChange={(value) =>
                     setClearanceOverride(
-                      event.target.value === (selected?.clearance ?? "CN")
-                        ? ""
-                        : (event.target.value as BearingClearance)
+                      value === (selected?.clearance ?? "CN") ? "" : (value as BearingClearance)
                     )
                   }
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
                 >
                   <option value="C2">C2 (tight)</option>
                   <option value="CN">CN (normal)</option>
                   <option value="C3">C3 (greater than normal)</option>
                   <option value="C4">C4 (loose)</option>
-                </select>
-              </label>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Reliability (ISO 281 a1)</span>
-                <select
-                  value={reliability}
-                  onChange={(event) => setReliability(Number(event.target.value) as BearingReliability)}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Reliability (ISO 281 a1)"
+                  value={String(reliability)}
+                  onChange={(value) => setReliability(Number(value) as BearingReliability)}
                 >
-                  <option value={90}>90% (a1 = 1.00)</option>
-                  <option value={95}>95% (a1 = 0.64)</option>
-                  <option value={96}>96% (a1 = 0.55)</option>
-                  <option value={97}>97% (a1 = 0.47)</option>
-                  <option value={98}>98% (a1 = 0.37)</option>
-                  <option value={99}>99% (a1 = 0.25)</option>
-                </select>
-              </label>
-            </div>
+                  <option value="90">90% (a1 = 1.00)</option>
+                  <option value="95">95% (a1 = 0.64)</option>
+                  <option value="96">96% (a1 = 0.55)</option>
+                  <option value="97">97% (a1 = 0.47)</option>
+                  <option value="98">98% (a1 = 0.37)</option>
+                  <option value="99">99% (a1 = 0.25)</option>
+                </CalculatorSelectField>
+              </div>
+            </CalculatorFormSection>
 
-            <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-3 space-y-3 dark:border-violet-900/40 dark:bg-violet-950/20">
-              <p className="text-xs font-semibold uppercase tracking-wide text-violet-800 dark:text-violet-200">
-                Lubrication & environment
-              </p>
+            <CalculatorFormSection
+              title="Lubrication & environment"
+              description="Modified life a_ISO uses viscosity ratio κ and contamination factor eC."
+            >
               <div className={calculatorInputGridClass}>
-                <label className="space-y-2 text-sm text-slate-700">
-                  <span>Lubricant</span>
-                  <select
-                    value={lubricantType}
-                    onChange={(event) => setLubricantType(event.target.value as LubricantType)}
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-                  >
-                    <option value="none">Basic L10 only (aISO = 1)</option>
-                    <option value="oil">Oil (ISO VG)</option>
-                    <option value="grease">Grease (base oil VG)</option>
-                  </select>
-                </label>
+                <CalculatorSelectField
+                  label="Lubricant"
+                  value={lubricantType}
+                  onChange={(value) => setLubricantType(value as LubricantType)}
+                >
+                  <option value="none">Basic L10 only (aISO = 1)</option>
+                  <option value="oil">Oil (ISO VG)</option>
+                  <option value="grease">Grease (base oil VG)</option>
+                </CalculatorSelectField>
                 {lubricantType !== "none" ? (
                   <>
-                    <label className="space-y-2 text-sm text-slate-700">
-                      <span>ISO VG grade @ 40 °C</span>
-                      <select
-                        value={isoVgGrade}
-                        onChange={(event) => setIsoVgGrade(Number(event.target.value))}
-                        className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-                      >
-                        {[10, 15, 22, 32, 46, 68, 100, 150, 220].map((vg) => (
-                          <option key={vg} value={vg}>
-                            VG {vg}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-2 text-sm text-slate-700">
-                      <span>Operating temperature (°C)</span>
+                    <CalculatorSelectField
+                      label="ISO VG grade @ 40 °C"
+                      value={String(isoVgGrade)}
+                      onChange={(value) => setIsoVgGrade(Number(value))}
+                    >
+                      {[10, 15, 22, 32, 46, 68, 100, 150, 220].map((vg) => (
+                        <option key={vg} value={vg}>
+                          VG {vg}
+                        </option>
+                      ))}
+                    </CalculatorSelectField>
+                    <div className="min-w-0 space-y-1.5">
+                      <label className={calculatorFieldLabelClass}>Operating temperature (°C)</label>
                       <input
                         type="number"
                         value={operatingTempC}
                         onChange={(event) => setOperatingTempC(Number(event.target.value))}
                         className={calculatorNumberInputClass}
                       />
-                    </label>
-                    <label className="space-y-2 text-sm text-slate-700">
-                      <span>Contamination</span>
-                      <select
-                        value={contamination}
-                        onChange={(event) => setContamination(event.target.value as ContaminationLevel)}
-                        className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-                      >
-                        <option value="extreme_clean">Clean</option>
-                        <option value="high_clean">High cleanliness</option>
-                        <option value="normal_clean">Moderate</option>
-                        <option value="slight_contamination">Slight contamination</option>
-                        <option value="typical_contamination">Typical / severe</option>
-                        <option value="heavy_contamination">Heavy contamination</option>
-                      </select>
-                    </label>
+                    </div>
+                    <CalculatorSelectField
+                      label="Contamination"
+                      value={contamination}
+                      onChange={(value) => setContamination(value as ContaminationLevel)}
+                    >
+                      <option value="extreme_clean">Clean</option>
+                      <option value="high_clean">High cleanliness</option>
+                      <option value="normal_clean">Moderate</option>
+                      <option value="slight_contamination">Slight contamination</option>
+                      <option value="typical_contamination">Typical / severe</option>
+                      <option value="heavy_contamination">Heavy contamination</option>
+                    </CalculatorSelectField>
                   </>
                 ) : (
-                  <label className="space-y-2 text-sm text-slate-700">
-                    <span>Legacy lubrication screening (optional)</span>
-                    <select
-                      value={lubricationClass}
-                      onChange={(event) => setLubricationClass(event.target.value as LubricationClass | "")}
-                      className="w-full rounded border border-slate-300 bg-white px-3 py-2"
-                    >
-                      <option value="">—</option>
-                      <option value="poor">Poor</option>
-                      <option value="average">Average</option>
-                      <option value="good">Good</option>
-                    </select>
-                  </label>
+                  <CalculatorSelectField
+                    label="Legacy lubrication screening (optional)"
+                    value={lubricationClass}
+                    onChange={(value) => setLubricationClass(value as LubricationClass | "")}
+                  >
+                    <option value="">—</option>
+                    <option value="poor">Poor</option>
+                    <option value="average">Average</option>
+                    <option value="good">Good</option>
+                  </CalculatorSelectField>
                 )}
               </div>
-            </div>
+            </CalculatorFormSection>
           </div>
         );
 
       case "selection":
         return (
-          <div className="space-y-3">
-            <div className={calculatorInputGridClass}>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Manufacturer</span>
-                <select
+          <div className="space-y-4">
+            <CalculatorFormSection
+              title="Catalog filters"
+              description="Narrow manufacturer, series, and sealing before picking a designation."
+            >
+              <div className={calculatorInputGridClass}>
+                <CalculatorSelectField
+                  label="Manufacturer"
                   value={manufacturer}
-                  onChange={(event) => setManufacturer(event.target.value as BearingManufacturer)}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                  onChange={(value) => setManufacturer(value as BearingManufacturer)}
                 >
                   {BEARING_MANUFACTURERS.map((mfr) => (
                     <option key={mfr} value={mfr}>
                       {BEARING_MANUFACTURER_LABELS[mfr]}
                     </option>
                   ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Series</span>
-                <select
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Series"
                   value={seriesFilter}
-                  onChange={(event) => setSeriesFilter(event.target.value)}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                  onChange={(value) => setSeriesFilter(value)}
                 >
                   <option value="all">All series</option>
                   {seriesOptions.map((series) => (
@@ -575,14 +569,11 @@ export default function BearingInputs({
                       {series}
                     </option>
                   ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Sealing</span>
-                <select
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Sealing"
                   value={sealFilter}
-                  onChange={(event) => setSealFilter(event.target.value as BearingSealType | "all")}
-                  className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                  onChange={(value) => setSealFilter(value as BearingSealType | "all")}
                 >
                   <option value="all">All seals</option>
                   {(Object.keys(SEAL_TYPE_LABELS) as BearingSealType[]).map((seal) => (
@@ -590,16 +581,15 @@ export default function BearingInputs({
                       {SEAL_TYPE_LABELS[seal]}
                     </option>
                   ))}
-                </select>
-              </label>
-            </div>
+                </CalculatorSelectField>
+              </div>
+            </CalculatorFormSection>
 
-            <label className="block space-y-2 text-sm text-slate-700">
-              <span>Catalog designation</span>
-              <select
+            <CalculatorFormSection title="Catalog designation">
+              <CalculatorSelectField
+                label="Bearing designation"
                 value={designation}
-                onChange={(event) => setDesignation(event.target.value)}
-                className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+                onChange={(value) => setDesignation(value)}
               >
                 {catalogOptions.map((entry) => (
                   <option key={entry.designation} value={entry.designation}>
@@ -608,43 +598,45 @@ export default function BearingInputs({
                     {entry.sealType !== "open" ? ` · ${SEAL_TYPE_LABELS[entry.sealType]}` : ""}
                   </option>
                 ))}
-              </select>
-            </label>
+              </CalculatorSelectField>
 
-            {selected ? (
-              <p className="text-xs text-slate-600">
-                {BEARING_MANUFACTURER_LABELS[selected.manufacturer]} · {BEARING_TYPE_LABELS[selected.type]} · series{" "}
-                {selected.series} · d={selected.boreMm} D={selected.outerDiameterMm} B={selected.widthMm} mm · n_lim=
-                {selected.limitingSpeedRpm} RPM
-              </p>
-            ) : null}
+              {selected ? (
+                <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                  {BEARING_MANUFACTURER_LABELS[selected.manufacturer]} · {BEARING_TYPE_LABELS[selected.type]} · series{" "}
+                  {selected.series} · d={selected.boreMm} D={selected.outerDiameterMm} B={selected.widthMm} mm · n_lim=
+                  {selected.limitingSpeedRpm} RPM
+                </p>
+              ) : null}
+            </CalculatorFormSection>
 
-            <div className={calculatorInputGridClass}>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Max bore from shaft (mm)</span>
-                <input
-                  type="number"
-                  value={maxBoreMm}
-                  onChange={(event) =>
-                    setMaxBoreMm(event.target.value === "" ? "" : Number(event.target.value))
-                  }
-                  placeholder="Optional"
-                  className={calculatorNumberInputClass}
-                />
-              </label>
-              <label className="space-y-2 text-sm text-slate-700">
-                <span>Max outer diameter D (mm)</span>
-                <input
-                  type="number"
-                  value={maxOuterMm}
-                  onChange={(event) =>
-                    setMaxOuterMm(event.target.value === "" ? "" : Number(event.target.value))
-                  }
-                  placeholder="Optional"
-                  className={calculatorNumberInputClass}
-                />
-              </label>
-            </div>
+            <CalculatorFormSection title="Envelope limits (optional)">
+              <div className={calculatorInputGridClass}>
+                <div className="min-w-0 space-y-1.5">
+                  <label className={calculatorFieldLabelClass}>Max bore from shaft (mm)</label>
+                  <input
+                    type="number"
+                    value={maxBoreMm}
+                    onChange={(event) =>
+                      setMaxBoreMm(event.target.value === "" ? "" : Number(event.target.value))
+                    }
+                    placeholder="Optional"
+                    className={calculatorNumberInputClass}
+                  />
+                </div>
+                <div className="min-w-0 space-y-1.5">
+                  <label className={calculatorFieldLabelClass}>Max outer diameter D (mm)</label>
+                  <input
+                    type="number"
+                    value={maxOuterMm}
+                    onChange={(event) =>
+                      setMaxOuterMm(event.target.value === "" ? "" : Number(event.target.value))
+                    }
+                    placeholder="Optional"
+                    className={calculatorNumberInputClass}
+                  />
+                </div>
+              </div>
+            </CalculatorFormSection>
           </div>
         );
     }
@@ -675,15 +667,15 @@ export default function BearingInputs({
       }
     >
       {setProjectName ? (
-        <label className="block space-y-2 text-sm text-slate-700">
-          <span>Project name</span>
+        <div className="min-w-0 space-y-1.5">
+          <label className={calculatorFieldLabelClass}>Project name</label>
           <input
             type="text"
             value={projectName ?? ""}
             onChange={(event) => setProjectName(event.target.value)}
-            className="w-full rounded border border-slate-300 bg-white px-3 py-2"
+            className={calculatorTextInputClass}
           />
-        </label>
+        </div>
       ) : null}
 
       <BearingInputTabs>{renderTab}</BearingInputTabs>
