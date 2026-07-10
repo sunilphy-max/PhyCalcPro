@@ -9,7 +9,8 @@ import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabe
 import { fromBase } from "@/lib/units/conversions";
 import type { BearingResult } from "@/lib/machine/bearings/types";
 import type { BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
-import type { RankedBearing } from "@/lib/machine/bearings/catalogSelection";
+import type { CrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
+import BearingLifeFactorsCard from "@/components/machine/bearings/BearingLifeFactorsCard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
   EngineeringPlotPicker,
@@ -34,7 +35,7 @@ type Props = {
   arrangement?: "single" | "back_to_back" | "face_to_face" | "tandem";
   workflowMode?: DesignWorkflowMode;
   diagnosis?: BearingDiagnosis | null;
-  recommendations?: RankedBearing[];
+  crossManufacturerRecommendation?: CrossManufacturerRecommendation | null;
   inputRows?: ReportRow[];
   onSelectDesignation?: (designation: string) => void;
 };
@@ -46,7 +47,7 @@ export default function BearingResults({
   arrangement = "single",
   workflowMode,
   diagnosis,
-  recommendations = [],
+  crossManufacturerRecommendation = null,
   inputRows = [],
   onSelectDesignation,
 }: Props) {
@@ -165,9 +166,15 @@ export default function BearingResults({
 
   const summaryContent = result ? (
     <div className="space-y-4">
-      {workflowMode !== "diagnose" && recommendations.length > 0 ? (
-        <BearingRecommendations recommendations={recommendations} onSelect={onSelectDesignation} />
+      {workflowMode !== "diagnose" && crossManufacturerRecommendation?.primary ? (
+        <BearingRecommendations
+          result={result}
+          recommendation={crossManufacturerRecommendation}
+          onSelect={onSelectDesignation}
+        />
       ) : null}
+
+      <BearingLifeFactorsCard result={result} />
       {result.bearingType ? (
         <BearingReferenceVisual
           bearingType={result.bearingType}

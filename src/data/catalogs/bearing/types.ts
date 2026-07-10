@@ -84,6 +84,12 @@ export type BearingCatalogEntry = {
   limitingSpeedRpm: number;
   /** Reference speed (oil) where available — screening only */
   referenceSpeedRpm?: number;
+  /** ISO / canonical size key for cross-manufacturer equivalence (e.g. 6205) */
+  isoSize?: string;
+  /** Screening mass (kg) */
+  massKg?: number;
+  /** Cage / retainer type */
+  cageType?: string;
   catalogFactors?: BearingCatalogFactors;
 };
 

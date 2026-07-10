@@ -3,6 +3,11 @@
  */
 
 import { ALL_SERIES_TEMPLATES } from "./seriesData";
+import {
+  cageTypeForFamily,
+  estimateBearingMassKg,
+  formatOemDesignation,
+} from "./manufacturerDesignations";
 import type {
   BearingCatalogEntry,
   BearingManufacturer,
@@ -21,8 +26,12 @@ const MANUFACTURER_FACTORS: Record<
   NTN: { dynamic: 0.99, static: 0.99, speed: 1 },
 };
 
-function formatDesignation(manufacturer: BearingManufacturer, series: string): string {
-  return manufacturer === "SKF" ? series : `${manufacturer} ${series}`;
+function formatDesignation(manufacturer: BearingManufacturer, template: SeriesTemplate): string {
+  return formatOemDesignation(manufacturer, template);
+}
+
+function isoSizeKey(template: SeriesTemplate): string {
+  return template.seriesDesignation.replace(/\s+B$/i, "").replace(/-2RS$/i, "").trim();
 }
 
 function scaleRating(value: number, factor: number): number {
@@ -35,7 +44,7 @@ function templateToEntry(
 ): BearingCatalogEntry {
   const factors = MANUFACTURER_FACTORS[manufacturer];
   return {
-    designation: formatDesignation(manufacturer, template.seriesDesignation),
+    designation: formatDesignation(manufacturer, template),
     type: template.type,
     family: template.family,
     manufacturer,
@@ -54,6 +63,9 @@ function templateToEntry(
     referenceSpeedRpm: template.referenceSpeedRpm
       ? scaleRating(template.referenceSpeedRpm, factors.speed)
       : undefined,
+    isoSize: isoSizeKey(template),
+    massKg: estimateBearingMassKg(template.boreMm, template.outerDiameterMm, template.widthMm),
+    cageType: cageTypeForFamily(template.family),
     catalogFactors: template.catalogFactors,
   };
 }

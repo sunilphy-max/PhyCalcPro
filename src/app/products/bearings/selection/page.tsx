@@ -14,6 +14,9 @@ import BearingInputs, {
   type LoadSpectrumUiStep,
 } from "@/components/machine/bearings/BearingInputs";
 import BearingCopilotPanel from "@/components/machine/bearings/BearingCopilotPanel";
+import BearingMountingSystem, {
+  type BearingMountingSystemId,
+} from "@/components/machine/bearings/BearingMountingSystem";
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
@@ -24,7 +27,7 @@ import { fromBase } from "@/lib/units/conversions";
 import { toBase } from "@/lib/units/conversions";
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
 import { diagnoseBearing, type BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
-import { rankCatalogBearings } from "@/lib/machine/bearings/catalogSelection";
+import { buildCrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
 import { buildBearingReportInputRows } from "@/lib/machine/bearings/reportInputs";
 import type {
   BearingResult,
@@ -79,6 +82,7 @@ type BearingProjectData = {
   lifeInputMode: "hours" | "revolutions";
   lifeRevolutions: number;
   maxOuterMm: number | "";
+  mountingSystem?: BearingMountingSystemId;
   /** @deprecated migrated to loadSpectrumSteps */
   variableLoadPercent?: number;
   /** @deprecated migrated to loadSpectrumSteps */
@@ -130,6 +134,7 @@ export default function Page() {
   const [loadSpectrumSteps, setLoadSpectrumSteps] = useState<LoadSpectrumUiStep[]>(DEFAULT_LOAD_SPECTRUM);
   const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
   const [maxOuterMm, setMaxOuterMm] = useState<number | "">("");
+  const [mountingSystem, setMountingSystem] = useState<BearingMountingSystemId>("single");
   const [result, setResult] = useState<BearingResult | null>(null);
   const [diagnosis, setDiagnosis] = useState<BearingDiagnosis | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
@@ -322,6 +327,7 @@ export default function Page() {
     setLifeInputMode(p.lifeInputMode ?? "hours");
     setLifeRevolutions(p.lifeRevolutions ?? 90e6);
     setMaxOuterMm(p.maxOuterMm ?? "");
+    if (p.mountingSystem) setMountingSystem(p.mountingSystem);
   };
 
   const syncDesignation = (
@@ -407,20 +413,23 @@ export default function Page() {
     ]
   );
 
-  const recommendations = useMemo(() => {
-    if (!result || workflowMode === "diagnose") return [];
-    return rankCatalogBearings({
-      bearingType: result.bearingType,
-      requiredDynamicRatingN: result.requiredDynamicRating,
-      requiredStaticRatingN: result.requiredStaticRating,
-      speedRpm: speed,
-      manufacturer,
-      applicationProfile,
-      series: seriesFilter,
-      sealType: sealFilter,
-      boreMaxMm: maxBoreMm === "" ? undefined : maxBoreMm,
-      outerMaxMm: maxOuterMm === "" ? undefined : maxOuterMm,
-    }).slice(0, 5);
+  const crossManufacturerRecommendation = useMemo(() => {
+    if (!result || workflowMode === "diagnose") return null;
+    return buildCrossManufacturerRecommendation(
+      {
+        bearingType: result.bearingType,
+        requiredDynamicRatingN: result.requiredDynamicRating,
+        requiredStaticRatingN: result.requiredStaticRating,
+        speedRpm: speed,
+        manufacturer,
+        applicationProfile,
+        series: seriesFilter,
+        sealType: sealFilter,
+        boreMaxMm: maxBoreMm === "" ? undefined : maxBoreMm,
+        outerMaxMm: maxOuterMm === "" ? undefined : maxOuterMm,
+      },
+      designation
+    );
   }, [
     result,
     workflowMode,
@@ -431,6 +440,7 @@ export default function Page() {
     sealFilter,
     maxBoreMm,
     maxOuterMm,
+    designation,
   ]);
 
   const applyDesignation = useCallback((next: string) => {
@@ -512,6 +522,12 @@ export default function Page() {
               setSeriesFilter("all");
               syncDesignation(manufacturer, type, applicationProfile, "all", sealFilter, designation);
             }}
+            mountingSystem={mountingSystem}
+            onMountingSystemChange={setMountingSystem}
+            onSuggestBearingType={(type) => {
+              setBearingType(type);
+              syncDesignation(manufacturer, type, applicationProfile, seriesFilter, sealFilter, designation);
+            }}
             designation={designation}
             setDesignation={setDesignation}
             reliability={reliability}
@@ -583,6 +599,7 @@ export default function Page() {
                 lifeInputMode,
                 lifeRevolutions,
                 maxOuterMm,
+                mountingSystem,
               })
             }
             saving={saving}
@@ -599,7 +616,7 @@ export default function Page() {
           arrangement={arrangement}
           workflowMode={workflowMode}
           diagnosis={diagnosis}
-          recommendations={recommendations}
+          crossManufacturerRecommendation={crossManufacturerRecommendation}
           inputRows={reportInputRows}
           onSelectDesignation={applyDesignation}
         />

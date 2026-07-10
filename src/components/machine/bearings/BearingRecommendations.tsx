@@ -1,57 +1,140 @@
 "use client";
 
-import type { RankedBearing } from "@/lib/machine/bearings/catalogSelection";
-import {
-  BEARING_MANUFACTURER_LABELS,
-  BEARING_TYPE_LABELS,
-} from "@/data/catalogs/bearingCatalog";
+import type { BearingResult } from "@/lib/machine/bearings/types";
+import type { CrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
+import { BEARING_MANUFACTURER_LABELS } from "@/data/catalogs/bearingCatalog";
+import { sealLabelForOem } from "@/data/catalogs/bearing/manufacturerDesignations";
 
 type Props = {
-  recommendations: RankedBearing[];
+  result: BearingResult;
+  recommendation: CrossManufacturerRecommendation;
   onSelect?: (designation: string) => void;
 };
 
-export default function BearingRecommendations({ recommendations, onSelect }: Props) {
-  if (recommendations.length === 0) return null;
+function CatalogRow({
+  label,
+  row,
+  onSelect,
+  variant,
+}: {
+  label: string;
+  row: CrossManufacturerRecommendation["primary"];
+  onSelect?: (designation: string) => void;
+  variant: "primary" | "alternative";
+}) {
+  if (!row) return null;
+  const { entry } = row;
 
   return (
-    <div className="rounded-xl border border-sky-200 bg-sky-50/60 p-4 dark:border-sky-900/40 dark:bg-sky-950/20">
-      <p className="text-sm font-semibold text-sky-900 dark:text-sky-100">Recommended catalog options</p>
-      <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-        Ranked by dynamic utilization (P/C) for current loads and speed.
+    <div
+      className={`rounded-xl border p-3 ${
+        variant === "primary"
+          ? "border-emerald-300/80 bg-white dark:border-emerald-800/50 dark:bg-slate-950/50"
+          : "border-slate-200/80 bg-white/80 dark:border-slate-700/60 dark:bg-slate-900/50"
+      }`}
+    >
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {label}
       </p>
-      <ul className="mt-3 space-y-2">
-        {recommendations.map((row) => (
-          <li
-            key={row.entry.designation}
-            className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-sky-100 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+      <p className="mt-1 text-base font-bold text-slate-900 dark:text-white">{entry.designation}</p>
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-400 sm:grid-cols-3">
+        <div>
+          <dt className="text-slate-400">d × D × B</dt>
+          <dd className="font-medium tabular-nums">
+            {entry.boreMm} × {entry.outerDiameterMm} × {entry.widthMm} mm
+          </dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">C / C₀</dt>
+          <dd className="font-medium tabular-nums">
+            {(entry.dynamicRatingN / 1000).toFixed(1)} / {(entry.staticRatingN / 1000).toFixed(1)} kN
+          </dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">n_lim</dt>
+          <dd className="font-medium tabular-nums">{entry.limitingSpeedRpm} rpm</dd>
+        </div>
+        {entry.massKg != null ? (
+          <div>
+            <dt className="text-slate-400">Mass</dt>
+            <dd className="font-medium tabular-nums">{entry.massKg} kg</dd>
+          </div>
+        ) : null}
+        <div>
+          <dt className="text-slate-400">Seal</dt>
+          <dd className="font-medium">{sealLabelForOem(entry.manufacturer, entry.sealType)}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">Cage</dt>
+          <dd className="font-medium">{entry.cageType ?? "—"}</dd>
+        </div>
+      </dl>
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+        <span>P/C {formatDisplayNumber(row.dynamicUtilization)}</span>
+        <span>s₀ {formatDisplayNumber(row.staticUtilization > 0 ? 1 / row.staticUtilization : 0)}</span>
+        <span>n_lim/n {formatDisplayNumber(row.speedMargin)}</span>
+        {onSelect ? (
+          <button
+            type="button"
+            onClick={() => onSelect(entry.designation)}
+            className="ml-auto rounded-md bg-cyan-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-cyan-500"
           >
-            <div>
-              <span className="font-semibold text-slate-900 dark:text-white">
-                {BEARING_MANUFACTURER_LABELS[row.entry.manufacturer]} {row.entry.designation}
-              </span>
-              <span className="ml-2 text-xs text-slate-500">
-                {BEARING_TYPE_LABELS[row.entry.type]} · d={row.entry.boreMm} mm
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs">
-              <span>P/C {formatDisplayNumber(row.dynamicUtilization)}</span>
-              <span>s₀ margin {formatDisplayNumber(row.staticUtilization > 0 ? 1 / row.staticUtilization : 0)}</span>
-              <span>n_lim/n {formatDisplayNumber(row.speedMargin)}</span>
-              {onSelect ? (
-                <button
-                  type="button"
-                  onClick={() => onSelect(row.entry.designation)}
-                  className="rounded-md bg-cyan-700 px-2 py-1 font-semibold text-white hover:bg-cyan-800"
-                >
-                  Apply
-                </button>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ul>
+            Select
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export default function BearingRecommendations({ result, recommendation, onSelect }: Props) {
+  const { primary, alternatives } = recommendation;
+  if (!primary && alternatives.length === 0) return null;
+
+  const statusLabel =
+    result.designStatus === "safe" ? "PASS" : result.designStatus === "warning" ? "MARGINAL" : "FAIL";
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 dark:border-slate-700/60 dark:bg-slate-900/40">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Bearing selection</p>
+          <p className="text-lg font-bold text-slate-900 dark:text-white">
+            <span
+              className={
+                result.designStatus === "safe"
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : result.designStatus === "warning"
+                    ? "text-amber-600"
+                    : "text-red-600"
+              }
+            >
+              {statusLabel}
+            </span>
+            <span className="ml-2 text-base font-semibold text-slate-700 dark:text-slate-300">
+              · Expected life Lnm {formatDisplayNumber(result.modifiedLife)} h
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <CatalogRow label="Recommended bearing" row={primary} onSelect={onSelect} variant="primary" />
+
+      {alternatives.length > 0 ? (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">Cross-manufacturer alternatives</p>
+          {alternatives.map((alt) => (
+            <CatalogRow
+              key={alt.entry.designation}
+              label={BEARING_MANUFACTURER_LABELS[alt.entry.manufacturer]}
+              row={alt}
+              onSelect={onSelect}
+              variant="alternative"
+            />
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

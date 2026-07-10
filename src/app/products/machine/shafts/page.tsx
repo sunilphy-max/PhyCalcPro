@@ -235,16 +235,20 @@ function ShaftsPageContent() {
         (max, r) => Math.max(max, Math.abs(r.forceZ)),
         0
       );
-      publishHandoff("bearings", {
-        fromModuleId: "shafts",
-        fromTitle: "Shaft Analysis",
-        summary: `Bearing load from shaft FEM: Fr ≈ ${(maxReaction / 1000).toFixed(2)} kN${maxAxial > 0 ? `, Fa ≈ ${(maxAxial / 1000).toFixed(2)} kN` : ""}.`,
-        params: {
-          radialLoad: maxReaction,
-          ...(maxAxial > 0 ? { axialLoad: maxAxial } : {}),
-          ...(operatingRpm > 0 ? { speed: operatingRpm } : {}),
+      publishHandoff(
+        "bearings",
+        {
+          fromModuleId: "shafts",
+          fromTitle: "Shaft Analysis",
+          summary: `Bearing reactions from shaft FEM — Fr ≈ ${(maxReaction / 1000).toFixed(2)} kN${maxAxial > 0 ? `, Fa ≈ ${(maxAxial / 1000).toFixed(2)} kN` : ""}. Loads applied automatically when you open Bearing Selection.`,
+          params: {
+            radialLoad: maxReaction,
+            ...(maxAxial > 0 ? { axialLoad: maxAxial } : {}),
+            ...(operatingRpm > 0 ? { speed: operatingRpm } : {}),
+          },
         },
-      });
+        { autoApply: true }
+      );
     }
 
     const shaftDiameterM = toBase(diameter, "length", lengthUnit);

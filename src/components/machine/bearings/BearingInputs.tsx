@@ -28,6 +28,9 @@ import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabe
 import BearingTypePicker from "@/components/machine/bearings/BearingTypePicker";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
 import BearingInputTabs, { type BearingInputTabId } from "@/components/machine/bearings/BearingInputTabs";
+import BearingMountingSystem, { type BearingMountingSystemId } from "@/components/machine/bearings/BearingMountingSystem";
+import BearingArrangementGuide from "@/components/machine/bearings/BearingArrangementGuide";
+import BearingCatalogDetail from "@/components/machine/bearings/BearingCatalogDetail";
 import {
   bearingCatalog,
   findBearing,
@@ -106,6 +109,9 @@ type Props = {
   maxOuterMm: number | "";
   setMaxOuterMm: (v: number | "") => void;
   workflowMode?: DesignWorkflowMode;
+  mountingSystem?: BearingMountingSystemId;
+  onMountingSystemChange?: (id: BearingMountingSystemId) => void;
+  onSuggestBearingType?: (type: BearingType) => void;
   onCalculate: () => void;
   onSave?: () => void;
   saving?: boolean;
@@ -178,6 +184,9 @@ export default function BearingInputs({
   maxOuterMm,
   setMaxOuterMm,
   workflowMode,
+  mountingSystem = "single",
+  onMountingSystemChange,
+  onSuggestBearingType,
   onCalculate,
   onSave,
   saving = false,
@@ -221,6 +230,19 @@ export default function BearingInputs({
       case "application":
         return (
           <div className="space-y-4">
+            <CalculatorFormSection
+              title="Shaft mounting system"
+              description="Locating + floating pairs (MITCalc / SKF shaft design step 2)."
+            >
+              {onMountingSystemChange ? (
+                <BearingMountingSystem
+                  value={mountingSystem}
+                  onChange={onMountingSystemChange}
+                  onSuggestType={onSuggestBearingType}
+                />
+              ) : null}
+            </CalculatorFormSection>
+
             <CalculatorFormSection
               title="Bearing type"
               description="Select the rolling bearing family — SKF bearing selection step 2."
@@ -432,10 +454,16 @@ export default function BearingInputs({
               </div>
             </CalculatorFormSection>
 
+            <BearingArrangementGuide
+              arrangement={arrangement}
+              onChange={setArrangement}
+              bearingType={bearingType}
+            />
+
             <CalculatorFormSection title="Mounting & reliability">
               <div className={calculatorInputGridClass}>
                 <CalculatorSelectField
-                  label="Mounting arrangement"
+                  label="Mounting arrangement (detail)"
                   value={arrangement}
                   onChange={(value) => setArrangement(value as BearingArrangement)}
                 >
@@ -600,13 +628,7 @@ export default function BearingInputs({
                 ))}
               </CalculatorSelectField>
 
-              {selected ? (
-                <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                  {BEARING_MANUFACTURER_LABELS[selected.manufacturer]} · {BEARING_TYPE_LABELS[selected.type]} · series{" "}
-                  {selected.series} · d={selected.boreMm} D={selected.outerDiameterMm} B={selected.widthMm} mm · n_lim=
-                  {selected.limitingSpeedRpm} RPM
-                </p>
-              ) : null}
+              {selected ? <BearingCatalogDetail entry={selected} /> : null}
             </CalculatorFormSection>
 
             <CalculatorFormSection title="Envelope limits (optional)">
