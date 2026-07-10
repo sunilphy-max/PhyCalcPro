@@ -5,7 +5,8 @@
  * catalog recommendation. Does not chain shafts, housing, or other modules.
  */
 
-import { parseBrief, type CopilotParams, type ParsedToken } from "./paramParser";
+import { parseBrief } from "./paramParser";
+import type { CopilotParams, ParsedToken } from "./types";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
@@ -204,7 +205,7 @@ export function runBearingCopilotSession(text: string): BearingCopilotSession {
   let status: BearingCopilotSession["status"] = "ok";
 
   try {
-    design = runModuleDesignMode("bearings", inputs);
+    design = runModuleDesignMode("bearings", inputs) ?? null;
     if (!design?.best) {
       status = "error";
       notes.push("No catalog bearing met the required dynamic rating and speed margin — relax life target or check loads.");
