@@ -36,12 +36,24 @@ export function rankCrossManufacturerAlternatives(
   criteria: BearingSelectionCriteria
 ): RankedBearing[] {
   const manufacturers: BearingManufacturer[] = ["SKF", "FAG", "NSK", "NTN", "TIMKEN"];
+  const preferred = criteria.manufacturer;
+  const ordered = preferred
+    ? [preferred, ...manufacturers.filter((m) => m !== preferred)]
+    : manufacturers;
   const bestPerMfr: RankedBearing[] = [];
 
-  for (const mfr of manufacturers) {
+  for (const mfr of ordered) {
     const ranked = rankCatalogBearings({ ...criteria, manufacturer: mfr });
     const best = ranked.find((r) => r.passes) ?? ranked[0];
     if (best) bestPerMfr.push(best);
+  }
+
+  // Prefer the user's manufacturer as primary when it passes; otherwise best utilization.
+  const preferredRow = preferred
+    ? bestPerMfr.find((r) => r.entry.manufacturer === preferred && r.passes)
+    : undefined;
+  if (preferredRow) {
+    return [preferredRow, ...bestPerMfr.filter((r) => r !== preferredRow)];
   }
 
   return bestPerMfr.sort((a, b) => a.dynamicUtilization - b.dynamicUtilization);
@@ -52,17 +64,29 @@ export function buildCrossManufacturerRecommendation(
   selectedDesignation?: string
 ): CrossManufacturerRecommendation {
   const ranked = rankCrossManufacturerAlternatives(criteria);
-  const primary = ranked[0] ?? null;
+  let primary = ranked[0] ?? null;
 
   let equivalents: BearingCatalogEntry[] = [];
   if (selectedDesignation) {
-    const current = bearingCatalog.find((b) => b.designation === selectedDesignation);
-    if (current) equivalents = equivalentCatalogEntries(current);
+    const current =
+      bearingCatalog.find((b) => b.designation === selectedDesignation) ??
+      bearingCatalog.find(
+        (b) =>
+          b.isoSize != null &&
+          selectedDesignation.replace(/[\s\-]/g, "").toUpperCase() ===
+            b.isoSize.replace(/[\s\-]/g, "").toUpperCase()
+      );
+    if (current) {
+      equivalents = equivalentCatalogEntries(current);
+      // Keep selected designation as primary when it is in the ranked set.
+      const selectedRanked = ranked.find((r) => r.entry.designation === current.designation);
+      if (selectedRanked) primary = selectedRanked;
+    }
   } else if (primary) {
     equivalents = equivalentCatalogEntries(primary.entry);
   }
 
-  const alternatives = ranked.slice(1);
+  const alternatives = ranked.filter((r) => r.entry.designation !== primary?.entry.designation);
 
   return { primary, alternatives, equivalents };
 }

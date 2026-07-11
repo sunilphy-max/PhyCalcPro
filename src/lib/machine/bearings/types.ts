@@ -88,6 +88,11 @@ export type BearingConfig = {
   /** @deprecated Use manufacturer — kept for saved projects */
   catalogTier?: BearingCatalogTier;
   arrangement?: BearingArrangement;
+  /**
+   * Locating + floating shaft layout (DG+NU / AC+NU).
+   * When set (and arrangement is single), solver reports two stations.
+   */
+  mountingSystem?: "single" | "locating_floating" | "duplex";
   catalogFactors?: { X: number; Y: number; e: number };
   targetStaticSafetyFactor?: number;
   targetSpeedMargin?: number;

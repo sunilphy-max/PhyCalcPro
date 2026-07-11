@@ -79,7 +79,7 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           status={result.speedMargin == null || result.speedMargin >= 1 ? "safe" : "danger"}
         />
         <CalculatorMetricCard
-          label="Life util. L_req/L10"
+          label="Life util. L_req/Lnm"
           numericValue={result.lifeUtilization}
           unit="—"
           status={utilizationStatus(result.lifeUtilization, 1, false)}

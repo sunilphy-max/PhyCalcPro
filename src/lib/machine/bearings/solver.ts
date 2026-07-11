@@ -12,6 +12,7 @@ import { greaseEffectiveViscosity, kinematicViscosityAtTemp } from "./lubricatio
 import {
   calculateStationLives,
   isPairedArrangement,
+  splitLocatingFloatingLoads,
   splitPairedLoads,
   systemLifeFromStations,
   tandemAxialRatingMultiplier,
@@ -50,7 +51,7 @@ function determineGoverningMode(params: {
     issues.push({ label: "Minimum load (skidding risk)", severity: 2 });
   }
   if (params.lifeUtil > 1) {
-    issues.push({ label: "Rating life L10", severity: params.lifeUtil });
+    issues.push({ label: "SKF rating life Lnm", severity: params.lifeUtil });
   }
   if (params.dynamicUtil > 1) {
     issues.push({ label: "Dynamic load P/C", severity: params.dynamicUtil });
@@ -140,7 +141,10 @@ function resolveAiso(config: BearingConfig, equivalentLoad: number, dynamicRatin
 export function solveBearingDesign(config: BearingConfig): BearingResult {
   const arrangement = config.arrangement ?? "single";
   const paired = isPairedArrangement(arrangement);
-  const stations = splitPairedLoads(config.radialLoad, config.axialLoad, arrangement);
+  const locatingFloating = config.mountingSystem === "locating_floating" && !paired;
+  const stations = locatingFloating
+    ? splitLocatingFloatingLoads(config.radialLoad, config.axialLoad)
+    : splitPairedLoads(config.radialLoad, config.axialLoad, arrangement);
 
   const tempFactor = temperatureDeratingFactor(config.operatingTempC ?? 70);
   const dynamicLoadRatingN =
@@ -179,15 +183,21 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     aIso = baseAiso.aIso;
     modifiedLifeFactors = baseAiso.modifiedLifeFactors;
 
+    // Basic L10 (a1 only) vs modified Lnm (a1·aISO) — keep them distinct.
+    expectedLife = combinedLifeFromSpectrum(steps, (step) => {
+      const P = calcP(step.radialLoad, step.axialLoad);
+      const n = step.speedRpm ?? config.speed;
+      const revs = a1 * Math.pow(dynamicLoadRatingN / Math.max(P, 1e-9), p) * 1e6;
+      return revs / (60 * Math.max(n, 1));
+    });
     modifiedLife = combinedLifeFromSpectrum(steps, (step) => {
       const P = calcP(step.radialLoad, step.axialLoad);
       const n = step.speedRpm ?? config.speed;
       const revs = a1 * aIso * Math.pow(dynamicLoadRatingN / Math.max(P, 1e-9), p) * 1e6;
       return revs / (60 * Math.max(n, 1));
     });
-    expectedLifeRevolutions = modifiedLife * 60 * speed;
-    expectedLife = expectedLifeRevolutions / (60 * speed);
-  } else if (paired) {
+    expectedLifeRevolutions = expectedLife * 60 * speed;
+  } else if (paired || locatingFloating) {
     const FaFr = Math.abs(config.radialLoad) > 0
       ? Math.abs(config.axialLoad) / Math.abs(config.radialLoad)
       : 0;
@@ -253,9 +263,11 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
   }
 
   const requiredRevolutions = config.lifeHours * speed * 60;
+  // Include aISO so required C matches SKF rating life Lnm (poor κ/ηc → larger C).
+  const aIsoForSizing = Math.max(aIso, 1e-6);
   const requiredDynamicRating =
     equivalentLoad *
-    Math.pow(requiredRevolutions / (a1 * 1e6), 1 / p) *
+    Math.pow(requiredRevolutions / (a1 * aIsoForSizing * 1e6), 1 / p) *
     config.safetyFactor;
   const requiredStaticRating = staticEquivalentLoad * targetStaticSf * config.safetyFactor;
 
@@ -265,7 +277,8 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
   const speedMargin =
     limitingSpeedRpm != null && limitingSpeedRpm > 0 ? limitingSpeedRpm / speed : null;
 
-  const lifeUtilization = expectedLife > 0 ? config.lifeHours / expectedLife : Infinity;
+  // Gate pass/fail on modified life Lnm (ISO 281 / SKF), not basic L10 alone.
+  const lifeUtilization = modifiedLife > 0 ? config.lifeHours / modifiedLife : Infinity;
 
   const meanDiameterMm =
     config.boreMm != null && config.outerDiameterMm != null

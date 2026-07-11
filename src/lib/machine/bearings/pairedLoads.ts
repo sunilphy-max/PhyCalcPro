@@ -35,15 +35,32 @@ export function splitPairedLoads(
 
   if (arrangement === "tandem") {
     return [
-      { index: 0, radialLoad: Fr, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
-      { index: 1, radialLoad: Fr, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
+      { index: 0, radialLoad: Fr / 2, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
+      { index: 1, radialLoad: Fr / 2, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
     ];
   }
 
-  // Back-to-back (O) and face-to-face (X): each carries full Fr, half Fa
+  // Back-to-back (O): moment-stiff — each carries Fr/2, Fa/2 (symmetric pair screening).
+  // Face-to-face (X): same load split for life screening; stiffness differs in practice.
   return [
-    { index: 0, radialLoad: Fr, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
-    { index: 1, radialLoad: Fr, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
+    { index: 0, radialLoad: Fr / 2, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
+    { index: 1, radialLoad: Fr / 2, axialLoad: Fa / 2, dynamicRatingMultiplier: 1 },
+  ];
+}
+
+/**
+ * Locating + floating shaft support (MITCalc / SKF step 2).
+ * Locating takes all axial + half radial; floating takes half radial only.
+ */
+export function splitLocatingFloatingLoads(
+  radialLoad: number,
+  axialLoad: number
+): BearingStationLoad[] {
+  const Fr = Math.abs(radialLoad);
+  const Fa = Math.abs(axialLoad);
+  return [
+    { index: 0, radialLoad: Fr / 2, axialLoad: Fa, dynamicRatingMultiplier: 1 },
+    { index: 1, radialLoad: Fr / 2, axialLoad: 0, dynamicRatingMultiplier: 1 },
   ];
 }
 

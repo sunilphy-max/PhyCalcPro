@@ -77,8 +77,46 @@ function expandTemplate(template: SeriesTemplate): BearingCatalogEntry[] {
 
 export const bearingCatalog: BearingCatalogEntry[] = ALL_SERIES_TEMPLATES.flatMap(expandTemplate);
 
+/** Normalize OEM strings for fuzzy lookup (spaces, hyphens, case). */
+export function normalizeDesignationKey(designation: string): string {
+  return designation
+    .toUpperCase()
+    .replace(/[\s\-_/]/g, "")
+    .replace(/2RS1$/i, "2RS")
+    .replace(/2RSR$/i, "2RS")
+    .replace(/DDU$/i, "2RS")
+    .replace(/LLU$/i, "2RS");
+}
+
+/**
+ * Find a catalog entry by exact designation, then normalized OEM variants
+ * (e.g. "6205", "6205-2RS1", "7205 B" / "7205B").
+ */
 export function findBearing(designation: string): BearingCatalogEntry | undefined {
-  return bearingCatalog.find((b) => b.designation === designation);
+  if (!designation.trim()) return undefined;
+  const exact = bearingCatalog.find((b) => b.designation === designation);
+  if (exact) return exact;
+
+  const key = normalizeDesignationKey(designation);
+  const byNorm = bearingCatalog.find((b) => normalizeDesignationKey(b.designation) === key);
+  if (byNorm) return byNorm;
+
+  const byIso = bearingCatalog.find(
+    (b) => b.isoSize != null && normalizeDesignationKey(b.isoSize) === key
+  );
+  if (byIso) return byIso;
+
+  // Prefix match for short ISO sizes like "6205" → first open SKF 6205
+  if (key.length >= 4) {
+    const prefix = bearingCatalog.find(
+      (b) =>
+        normalizeDesignationKey(b.designation).startsWith(key) ||
+        (b.isoSize != null && normalizeDesignationKey(b.isoSize) === key)
+    );
+    if (prefix) return prefix;
+  }
+
+  return undefined;
 }
 
 export function catalogTierToManufacturer(

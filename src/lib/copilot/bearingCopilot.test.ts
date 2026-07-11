@@ -13,6 +13,8 @@ describe("runBearingCopilotSession", () => {
     expect(session.apply.lifeHours).toBeCloseTo(20000, 0);
     expect(session.apply.bearingType).toBe("deep_groove");
     expect(session.apply.manufacturer).toBe("SKF");
+    expect(session.apply.lubricantType).toBe("oil");
+    expect(session.apply.resetCatalogFilters).toBe(true);
   });
 
   it("parses separate radial and axial loads", () => {
@@ -22,6 +24,25 @@ describe("runBearingCopilotSession", () => {
     expect(session.apply.radialLoad).toBeCloseTo(8000, 0);
     expect(session.apply.axialLoad).toBeCloseTo(2000, 0);
     expect(session.apply.bearingType).toBe("angular_contact");
+  });
+
+  it("does not double-count axial-only briefs into radial", () => {
+    const session = runBearingCopilotSession("5 kN axial at 1500 rpm, 20000 hours life");
+    expect(session.apply.axialLoad).toBeCloseTo(5000, 0);
+    expect(session.apply.radialLoad).toBe(0);
+  });
+
+  it("parses bore / shaft diameter", () => {
+    const session = runBearingCopilotSession(
+      "Deep groove, 4 kN radial, 1800 rpm, 20000 h, shaft 30 mm"
+    );
+    expect(session.apply.maxBoreMm).toBeCloseTo(30, 0);
+  });
+
+  it("allows apply loads when sizing fails", () => {
+    const session = runBearingCopilotSession("2 kN radial at 500 rpm");
+    expect(session.canApplyLoads).toBe(true);
+    expect(session.apply.radialLoad).toBeCloseTo(2000, 0);
   });
 
   it("does not chain to shafts or housing", () => {

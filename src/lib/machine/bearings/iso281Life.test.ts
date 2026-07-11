@@ -7,7 +7,7 @@ import {
   viscosityRatio,
 } from "./iso281Life";
 import { kinematicViscosityAtTemp } from "./lubrication";
-import { splitPairedLoads } from "./pairedLoads";
+import { splitLocatingFloatingLoads, splitPairedLoads } from "./pairedLoads";
 import { equivalentLoadFromSpectrum } from "./variableLoad";
 import { equivalentLoadFromRadialAxial } from "./equivalentLoad";
 import { solveBearingEngine } from "./engine";
@@ -67,7 +67,15 @@ describe("paired bearings", () => {
   it("splits Fa for back-to-back pair", () => {
     const stations = splitPairedLoads(5000, 2000, "back_to_back");
     expect(stations).toHaveLength(2);
+    expect(stations[0]!.radialLoad).toBeCloseTo(2500);
     expect(stations[0]!.axialLoad).toBeCloseTo(1000);
+  });
+
+  it("splits locating + floating loads", () => {
+    const stations = splitLocatingFloatingLoads(6000, 1500);
+    expect(stations[0]!.axialLoad).toBeCloseTo(1500);
+    expect(stations[1]!.axialLoad).toBe(0);
+    expect(stations[0]!.radialLoad).toBeCloseTo(3000);
   });
 
   it("uses minimum station life for paired system", () => {

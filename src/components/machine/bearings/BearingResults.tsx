@@ -11,6 +11,7 @@ import type { BearingResult } from "@/lib/machine/bearings/types";
 import type { BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
 import type { CrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
 import BearingLifeFactorsCard from "@/components/machine/bearings/BearingLifeFactorsCard";
+import BearingPairedStationsCard from "@/components/machine/bearings/BearingPairedStationsCard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
   EngineeringPlotPicker,
@@ -175,6 +176,7 @@ export default function BearingResults({
       ) : null}
 
       <BearingLifeFactorsCard result={result} />
+      <BearingPairedStationsCard result={result} loadUnit={loadUnit} />
       {result.bearingType ? (
         <BearingReferenceVisual
           bearingType={result.bearingType}

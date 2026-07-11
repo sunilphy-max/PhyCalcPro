@@ -143,6 +143,9 @@ export default function Page() {
 
   const runCheck = () => {
     const catalogEntry = findBearing(designation);
+    if (!catalogEntry && designation.trim()) {
+      // Soft warning path: still solve with legacy ratings but surface designation miss in result
+    }
     const Fr = toBase(radialLoad, "force", radialUnit) * shockFactor;
     const Fa = toBase(axialLoad, "force", axialUnit) * shockFactor;
     const effectiveLifeHours =
@@ -170,11 +173,14 @@ export default function Page() {
       lifeHours: effectiveLifeHours,
       safetyFactor,
       bearingType: catalogEntry?.type ?? bearingType,
-      designation: catalogEntry?.designation,
+      designation: catalogEntry?.designation ?? (designation.trim() || undefined),
       dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
       staticLoadRatingN: catalogEntry?.staticRatingN,
       limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
+      referenceSpeedRpm: catalogEntry?.referenceSpeedRpm,
       catalogFactors: catalogEntry?.catalogFactors,
+      boreMm: catalogEntry?.boreMm,
+      outerDiameterMm: catalogEntry?.outerDiameterMm,
       reliabilityPercent: reliability,
       lubricationClass: lubricantType === "none" ? lubricationClass || undefined : undefined,
       lubricantType: lubricantType === "none" ? undefined : lubricantType,
@@ -186,6 +192,13 @@ export default function Page() {
       manufacturer,
       applicationProfile,
       arrangement,
+      mountingSystem: (
+        mountingSystem === "locating_dg_floating_nu" || mountingSystem === "locating_ac_floating_nu"
+          ? "locating_floating"
+          : mountingSystem === "duplex_angular"
+            ? "duplex"
+            : "single"
+      ) as "single" | "locating_floating" | "duplex",
       material: LEGACY_MATERIAL,
     };
 
@@ -449,23 +462,113 @@ export default function Page() {
 
   const applyCopilot = useCallback(
     (payload: BearingCopilotApplyPayload) => {
-      if (payload.radialLoad != null) setRadialLoad(fromBase(payload.radialLoad, "force", radialUnit));
-      if (payload.axialLoad != null) setAxialLoad(fromBase(payload.axialLoad, "force", axialUnit));
-      if (payload.speed != null) setSpeed(payload.speed);
+      const nextRadial =
+        payload.radialLoad != null ? fromBase(payload.radialLoad, "force", radialUnit) : radialLoad;
+      const nextAxial =
+        payload.axialLoad != null ? fromBase(payload.axialLoad, "force", axialUnit) : axialLoad;
+      const nextSpeed = payload.speed ?? speed;
+      const nextLife = payload.lifeHours ?? lifeHours;
+      const nextSf = payload.safetyFactor ?? safetyFactor;
+      const nextType = payload.bearingType ?? bearingType;
+      const nextMfr = payload.manufacturer ?? manufacturer;
+      const nextProfile = payload.applicationProfile ?? applicationProfile;
+      const nextArrangement = payload.arrangement ?? arrangement;
+      const nextLube = payload.lubricantType ?? lubricantType;
+      const nextVg = payload.isoVgGrade ?? isoVgGrade;
+      const nextTemp = payload.operatingTempC ?? operatingTempC;
+      const nextContam = payload.contamination ?? contamination;
+      const nextBore = payload.maxBoreMm ?? maxBoreMm;
+
+      if (payload.radialLoad != null) setRadialLoad(nextRadial);
+      if (payload.axialLoad != null) setAxialLoad(nextAxial);
+      if (payload.speed != null) setSpeed(nextSpeed);
       if (payload.lifeHours != null) {
         setLifeInputMode("hours");
-        setLifeHours(payload.lifeHours);
+        setLifeHours(nextLife);
       }
-      if (payload.safetyFactor != null) setSafetyFactor(payload.safetyFactor);
-      if (payload.bearingType) setBearingType(payload.bearingType);
-      if (payload.manufacturer) setManufacturer(payload.manufacturer);
-      if (payload.applicationProfile) setApplicationProfile(payload.applicationProfile);
-      if (payload.arrangement) setArrangement(payload.arrangement);
+      if (payload.safetyFactor != null) setSafetyFactor(nextSf);
+      if (payload.bearingType) setBearingType(nextType);
+      if (payload.manufacturer) setManufacturer(nextMfr);
+      if (payload.applicationProfile) setApplicationProfile(nextProfile);
+      if (payload.arrangement) {
+        setArrangement(nextArrangement);
+        if (nextArrangement !== "single") setMountingSystem("duplex_angular");
+      }
+      if (payload.lubricantType) setLubricantType(nextLube);
+      if (payload.isoVgGrade != null) setIsoVgGrade(nextVg);
+      if (payload.operatingTempC != null) setOperatingTempC(nextTemp);
+      if (payload.contamination) setContamination(nextContam);
+      if (payload.maxBoreMm != null) setMaxBoreMm(nextBore);
+
+      if (payload.resetCatalogFilters) {
+        setSeriesFilter("all");
+        setSealFilter("all");
+      }
+
+      const resolvedDesignation =
+        payload.designation && findBearing(payload.designation)
+          ? findBearing(payload.designation)!.designation
+          : designation;
       if (payload.designation && findBearing(payload.designation)) {
-        setDesignation(payload.designation);
+        setDesignation(resolvedDesignation);
       }
+
+      // Solve immediately with applied values (React state updates are async).
+      const catalogEntry = findBearing(resolvedDesignation);
+      const Fr = toBase(nextRadial, "force", radialUnit) * shockFactor;
+      const Fa = toBase(nextAxial, "force", axialUnit) * shockFactor;
+      const raw = solveBearingEngine({
+        radialLoad: Fr,
+        axialLoad: Fa,
+        speed: nextSpeed,
+        lifeHours: nextLife,
+        safetyFactor: nextSf,
+        bearingType: catalogEntry?.type ?? nextType,
+        designation: catalogEntry?.designation,
+        dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
+        staticLoadRatingN: catalogEntry?.staticRatingN,
+        limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
+        referenceSpeedRpm: catalogEntry?.referenceSpeedRpm,
+        catalogFactors: catalogEntry?.catalogFactors,
+        boreMm: catalogEntry?.boreMm,
+        outerDiameterMm: catalogEntry?.outerDiameterMm,
+        reliabilityPercent: reliability,
+        lubricantType: nextLube === "none" ? undefined : nextLube,
+        isoVgGrade: nextLube === "none" ? undefined : nextVg,
+        operatingTempC: nextTemp,
+        contamination: nextLube === "none" ? undefined : nextContam,
+        clearance: clearanceOverride || catalogEntry?.clearance,
+        manufacturer: nextMfr,
+        applicationProfile: nextProfile,
+        arrangement: nextArrangement,
+        material: LEGACY_MATERIAL,
+      });
+      setResult(wrapResult(raw));
+      setDiagnosis(null);
     },
-    [axialUnit, radialUnit]
+    [
+      axialLoad,
+      axialUnit,
+      applicationProfile,
+      arrangement,
+      bearingType,
+      clearanceOverride,
+      contamination,
+      designation,
+      isoVgGrade,
+      lifeHours,
+      lubricantType,
+      manufacturer,
+      maxBoreMm,
+      operatingTempC,
+      radialLoad,
+      radialUnit,
+      reliability,
+      safetyFactor,
+      shockFactor,
+      speed,
+      wrapResult,
+    ]
   );
 
   return (
@@ -523,7 +626,15 @@ export default function Page() {
               syncDesignation(manufacturer, type, applicationProfile, "all", sealFilter, designation);
             }}
             mountingSystem={mountingSystem}
-            onMountingSystemChange={setMountingSystem}
+            onMountingSystemChange={(id) => {
+              setMountingSystem(id);
+              if (id === "duplex_angular" && arrangement === "single") {
+                setArrangement("back_to_back");
+              }
+              if (id === "single" && arrangement !== "single") {
+                setArrangement("single");
+              }
+            }}
             onSuggestBearingType={(type) => {
               setBearingType(type);
               syncDesignation(manufacturer, type, applicationProfile, seriesFilter, sealFilter, designation);

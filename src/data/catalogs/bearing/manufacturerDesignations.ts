@@ -74,12 +74,16 @@ export function formatOemDesignation(
         return base.replace(/\s+/g, "");
       case "FAG":
         return base.replace(/\s+B$/, "-B");
-      default:
+      case "SKF":
         return template.seriesDesignation;
+      default:
+        return `${manufacturer} ${base.replace(/\s+/g, "")}`;
     }
   }
 
-  return base;
+  // Open deep groove / rollers: SKF uses bare ISO size; other OEMs keep a unique key.
+  if (manufacturer === "SKF") return base;
+  return `${manufacturer} ${base}`;
 }
 
 export function sealLabelForOem(

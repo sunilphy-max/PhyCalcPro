@@ -116,7 +116,8 @@ function parseLabelledQuantities(text: string, consumed: Interval[], tokens: Par
       unit: "h",
       patterns: [
         new RegExp(`${NUMBER}\\s*(?:hours|hrs|h)\\s*(?:life|service life|of life|l10)`, "i"),
-        new RegExp(`(?:life|l10)\\s*(?:of\\s*)?${NUMBER}\\s*(?:hours|hrs|h)`, "i"),
+        new RegExp(`(?:life|l10h?|l10)\\s*(?:of\\s*|=\\s*|:\\s*)?${NUMBER}\\s*(?:hours|hrs|h)?`, "i"),
+        new RegExp(`${NUMBER}\\s*(?:hours|hrs)\\b`, "i"),
       ],
     },
   ];
