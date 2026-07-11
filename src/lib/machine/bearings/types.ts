@@ -45,14 +45,65 @@ export type LubricantType = "oil" | "grease" | "none";
 /** Paired / duplex mounting (MITCalc-style layout). */
 export type BearingArrangement = "single" | "back_to_back" | "face_to_face" | "tandem";
 
+export type BearingPreloadClass = "none" | "light" | "medium" | "heavy";
+
 export type PairedStationResult = {
   index: number;
+  role?: "locating" | "floating" | "duplex_a" | "duplex_b";
+  label?: string;
+  designation?: string;
+  bearingType?: BearingType;
   radialLoad: number;
   axialLoad: number;
   equivalentLoad: number;
   staticEquivalentLoad: number;
   basicLifeHours: number;
   modifiedLifeHours: number;
+  dynamicRatingN?: number;
+  dynamicUtilization?: number;
+};
+
+export type ThermalExpansionCheck = {
+  deltaTempK: number;
+  requiredFloatMm: number;
+  availableFloatMm: number;
+  floatMarginMm: number;
+  floatUtilization: number;
+  status: "ok" | "marginal" | "insufficient";
+  note: string;
+};
+
+export type DuplexStiffnessCheck = {
+  preloadForceN: number;
+  preloadClass: BearingPreloadClass;
+  axialStiffnessNPerUm: number;
+  radialStiffnessNPerUm: number;
+  momentStiffnessNmPerMrad: number;
+  arrangementLabel: string;
+  comparisonNote: string;
+};
+
+export type ThermalEquilibriumCheck = {
+  ambientTempC: number;
+  equilibriumTempC: number;
+  operatingTempC: number;
+  deltaTempK: number;
+  powerLossW: number;
+  frictionTorqueNm: number;
+  thermalResistanceKW: number;
+  viscosityCst: number | null;
+  usedSpecifiedTemp: boolean;
+  note: string;
+};
+
+export type RelubricationCheck = {
+  intervalHours: number;
+  speedFactorNdm: number;
+  temperatureFactor: number;
+  loadFactor: number;
+  contaminationFactor: number;
+  status: "ok" | "frequent" | "critical";
+  note: string;
 };
 
 export type BearingConfig = {
@@ -67,6 +118,8 @@ export type BearingConfig = {
   limitingSpeedRpm?: number;
   referenceSpeedRpm?: number;
   designation?: string;
+  /** Second station designation for locating+floating systems. */
+  floatingDesignation?: string;
   reliabilityPercent?: BearingReliability;
   /** Legacy simplified lubrication — used when full lubricant inputs absent */
   lubricationClass?: LubricationClass;
@@ -93,6 +146,29 @@ export type BearingConfig = {
    * When set (and arrangement is single), solver reports two stations.
    */
   mountingSystem?: "single" | "locating_floating" | "duplex";
+  /** Locating family when mountingSystem is locating_floating. */
+  locatingBearingType?: BearingType;
+  /** Floating family when mountingSystem is locating_floating. */
+  floatingBearingType?: BearingType;
+  /** Duplex preload class (O/X/T). */
+  preloadClass?: BearingPreloadClass;
+  /** Override preload force (N). */
+  preloadForceN?: number;
+  /** Contact angle for stiffness (deg). */
+  contactAngleDeg?: number;
+  /** Bearing span for thermal expansion (mm). */
+  bearingSpanMm?: number;
+  /** Available axial float at floating bearing (mm). */
+  availableFloatMm?: number;
+  /**
+   * Per-station radial reactions from shaft FBD (N).
+   * When length ≥ 2 and mounting is locating_floating, overrides Fr/2 split.
+   */
+  stationRadialLoadsN?: number[];
+  /** Ambient temperature for thermal equilibrium (°C). */
+  ambientTempC?: number;
+  /** If true, solve equilibrium temp instead of trusting operatingTempC alone. */
+  useThermalEquilibrium?: boolean;
   catalogFactors?: { X: number; Y: number; e: number };
   targetStaticSafetyFactor?: number;
   targetSpeedMargin?: number;
@@ -139,6 +215,16 @@ export type BearingResult = {
   material: BearingMaterial;
   arrangement: BearingArrangement;
   pairedStations?: PairedStationResult[];
+  thermalExpansion?: ThermalExpansionCheck;
+  duplexStiffness?: DuplexStiffnessCheck;
+  thermalEquilibrium?: ThermalEquilibriumCheck;
+  relubrication?: RelubricationCheck;
+  /** First-failure (min station) modified life. */
+  systemMinLifeHours?: number;
+  /** Weibull multi-bearing system life L_sys. */
+  weibullSystemLifeHours?: number;
+  /** Life safety Lnm / L_req. */
+  lifeSafetyFactor?: number;
   minimumRadialLoadN: number;
   minLoadSatisfied: boolean;
   frictionTorqueNm: number;

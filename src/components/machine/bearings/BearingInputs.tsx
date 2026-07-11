@@ -23,6 +23,7 @@ import type {
   BearingClearance,
   ContaminationLevel,
   LubricantType,
+  BearingPreloadClass,
 } from "@/lib/machine/bearings/types";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import BearingTypePicker from "@/components/machine/bearings/BearingTypePicker";
@@ -108,6 +109,19 @@ type Props = {
   setMaxBoreMm: (v: number | "") => void;
   maxOuterMm: number | "";
   setMaxOuterMm: (v: number | "") => void;
+  maxWidthMm?: number | "";
+  setMaxWidthMm?: (v: number | "") => void;
+  floatingDesignation?: string;
+  setFloatingDesignation?: (v: string) => void;
+  preloadClass?: BearingPreloadClass;
+  setPreloadClass?: (v: BearingPreloadClass) => void;
+  bearingSpanMm?: number;
+  setBearingSpanMm?: (v: number) => void;
+  availableFloatMm?: number;
+  setAvailableFloatMm?: (v: number) => void;
+  useThermalEquilibrium?: boolean;
+  setUseThermalEquilibrium?: (v: boolean) => void;
+  stationRadialLoadsN?: number[];
   workflowMode?: DesignWorkflowMode;
   mountingSystem?: BearingMountingSystemId;
   onMountingSystemChange?: (id: BearingMountingSystemId) => void;
@@ -183,6 +197,19 @@ export default function BearingInputs({
   setMaxBoreMm,
   maxOuterMm,
   setMaxOuterMm,
+  maxWidthMm = "",
+  setMaxWidthMm,
+  floatingDesignation = "",
+  setFloatingDesignation,
+  preloadClass = "none",
+  setPreloadClass,
+  bearingSpanMm = 400,
+  setBearingSpanMm,
+  availableFloatMm = 1,
+  setAvailableFloatMm,
+  useThermalEquilibrium = true,
+  setUseThermalEquilibrium,
+  stationRadialLoadsN,
   workflowMode,
   mountingSystem = "single",
   onMountingSystemChange,
@@ -460,6 +487,65 @@ export default function BearingInputs({
               bearingType={bearingType}
             />
 
+            {(arrangement === "back_to_back" ||
+              arrangement === "face_to_face" ||
+              arrangement === "tandem" ||
+              mountingSystem === "duplex_angular") &&
+            setPreloadClass ? (
+              <CalculatorFormSection
+                title="Duplex preload"
+                description="Preload increases stiffness and adds to axial load for life. O has higher moment stiffness than X."
+              >
+                <CalculatorSelectField
+                  label="Preload class"
+                  value={preloadClass}
+                  onChange={(value) => setPreloadClass(value as BearingPreloadClass)}
+                >
+                  <option value="none">None (clearance)</option>
+                  <option value="light">Light (~2% of C)</option>
+                  <option value="medium">Medium (~5% of C)</option>
+                  <option value="heavy">Heavy (~10% of C)</option>
+                </CalculatorSelectField>
+              </CalculatorFormSection>
+            ) : null}
+
+            {(mountingSystem === "locating_dg_floating_nu" ||
+              mountingSystem === "locating_ac_floating_nu") &&
+            setBearingSpanMm ? (
+              <CalculatorFormSection
+                title="Thermal expansion (locating + floating)"
+                description="Floating NU must accommodate shaft–housing differential growth over the bearing span."
+              >
+                {stationRadialLoadsN && stationRadialLoadsN.length >= 2 ? (
+                  <p className="mb-2 rounded-lg border border-emerald-200/70 bg-emerald-50/60 px-2.5 py-1.5 text-[11px] text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-100">
+                    Shaft FBD reactions applied: Fr₀ = {(stationRadialLoadsN[0]! / 1000).toFixed(2)}{" "}
+                    kN (locating), Fr₁ = {(stationRadialLoadsN[1]! / 1000).toFixed(2)} kN (floating).
+                  </p>
+                ) : (
+                  <p className="mb-2 text-[11px] text-slate-500">
+                    Without shaft handoff, radial load is split Fr/2 per station. Run Shaft Analysis to
+                    import true support reactions.
+                  </p>
+                )}
+                <div className={calculatorInputGridClass}>
+                  <CalculatorUnitField
+                    label="Bearing span L"
+                    value={bearingSpanMm}
+                    onChange={setBearingSpanMm}
+                    min={0}
+                    unit={<span className="text-sm text-slate-500">mm</span>}
+                  />
+                  <CalculatorUnitField
+                    label="Available float"
+                    value={availableFloatMm}
+                    onChange={setAvailableFloatMm ?? (() => undefined)}
+                    min={0}
+                    unit={<span className="text-sm text-slate-500">mm</span>}
+                  />
+                </div>
+              </CalculatorFormSection>
+            ) : null}
+
             <CalculatorFormSection title="Mounting & reliability">
               <div className={calculatorInputGridClass}>
                 <CalculatorSelectField
@@ -562,6 +648,21 @@ export default function BearingInputs({
                     <option value="good">Good</option>
                   </CalculatorSelectField>
                 )}
+                {lubricantType !== "none" && setUseThermalEquilibrium ? (
+                  <div className="col-span-full flex items-start gap-2 rounded-lg border border-orange-200/70 bg-orange-50/50 p-2.5 text-xs dark:border-orange-900/40 dark:bg-orange-950/20">
+                    <input
+                      id="thermal-eq"
+                      type="checkbox"
+                      checked={useThermalEquilibrium}
+                      onChange={(e) => setUseThermalEquilibrium(e.target.checked)}
+                      className="mt-0.5"
+                    />
+                    <label htmlFor="thermal-eq" className="leading-relaxed text-slate-600 dark:text-slate-300">
+                      Use thermal equilibrium for life (friction power → ΔT → ν → κ / aSKF). Uncheck to
+                      force the temperature entered above.
+                    </label>
+                  </div>
+                ) : null}
               </div>
             </CalculatorFormSection>
           </div>
@@ -631,6 +732,37 @@ export default function BearingInputs({
               {selected ? <BearingCatalogDetail entry={selected} /> : null}
             </CalculatorFormSection>
 
+            {(mountingSystem === "locating_dg_floating_nu" ||
+              mountingSystem === "locating_ac_floating_nu") &&
+            setFloatingDesignation ? (
+              <CalculatorFormSection
+                title="Floating station designation"
+                description="NU / NJ cylindrical roller for the non-locating end — sized separately from the locating bearing."
+              >
+                <CalculatorSelectField
+                  label="Floating bearing"
+                  value={floatingDesignation}
+                  onChange={setFloatingDesignation}
+                >
+                  <option value="">Auto-recommend</option>
+                  {bearingCatalog
+                    .filter(
+                      (e) =>
+                        e.manufacturer === manufacturer &&
+                        (e.type === "cylindrical_roller" ||
+                          e.type === "cylindrical_nj" ||
+                          e.type === "cylindrical_nup")
+                    )
+                    .map((entry) => (
+                      <option key={entry.designation} value={entry.designation}>
+                        {entry.designation} — d {entry.boreMm} · C{" "}
+                        {(entry.dynamicRatingN / 1000).toFixed(1)} kN
+                      </option>
+                    ))}
+                </CalculatorSelectField>
+              </CalculatorFormSection>
+            ) : null}
+
             <CalculatorFormSection title="Envelope limits (optional)">
               <div className={calculatorInputGridClass}>
                 <div className="min-w-0 space-y-1.5">
@@ -657,6 +789,20 @@ export default function BearingInputs({
                     className={calculatorNumberInputClass}
                   />
                 </div>
+                {setMaxWidthMm ? (
+                  <div className="min-w-0 space-y-1.5">
+                    <label className={calculatorFieldLabelClass}>Max width B (mm)</label>
+                    <input
+                      type="number"
+                      value={maxWidthMm}
+                      onChange={(event) =>
+                        setMaxWidthMm(event.target.value === "" ? "" : Number(event.target.value))
+                      }
+                      placeholder="Optional"
+                      className={calculatorNumberInputClass}
+                    />
+                  </div>
+                ) : null}
               </div>
             </CalculatorFormSection>
           </div>

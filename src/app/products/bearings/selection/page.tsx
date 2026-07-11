@@ -44,6 +44,7 @@ import type {
   ContaminationLevel,
   LubricantType,
   LoadSpectrumStep,
+  BearingPreloadClass,
 } from "@/lib/machine/bearings/types";
 import {
   findBearing,
@@ -134,7 +135,14 @@ export default function Page() {
   const [loadSpectrumSteps, setLoadSpectrumSteps] = useState<LoadSpectrumUiStep[]>(DEFAULT_LOAD_SPECTRUM);
   const [maxBoreMm, setMaxBoreMm] = useState<number | "">("");
   const [maxOuterMm, setMaxOuterMm] = useState<number | "">("");
+  const [maxWidthMm, setMaxWidthMm] = useState<number | "">("");
   const [mountingSystem, setMountingSystem] = useState<BearingMountingSystemId>("single");
+  const [floatingDesignation, setFloatingDesignation] = useState("");
+  const [preloadClass, setPreloadClass] = useState<BearingPreloadClass>("none");
+  const [bearingSpanMm, setBearingSpanMm] = useState(400);
+  const [availableFloatMm, setAvailableFloatMm] = useState(1);
+  const [useThermalEquilibrium, setUseThermalEquilibrium] = useState(true);
+  const [stationRadialLoadsN, setStationRadialLoadsN] = useState<number[] | undefined>(undefined);
   const [result, setResult] = useState<BearingResult | null>(null);
   const [diagnosis, setDiagnosis] = useState<BearingDiagnosis | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
@@ -199,6 +207,22 @@ export default function Page() {
             ? "duplex"
             : "single"
       ) as "single" | "locating_floating" | "duplex",
+      locatingBearingType: (mountingSystem === "locating_dg_floating_nu"
+        ? "deep_groove"
+        : mountingSystem === "locating_ac_floating_nu"
+          ? "angular_contact"
+          : undefined) as BearingType | undefined,
+      floatingBearingType: (mountingSystem === "locating_dg_floating_nu" ||
+      mountingSystem === "locating_ac_floating_nu"
+        ? "cylindrical_roller"
+        : undefined) as BearingType | undefined,
+      floatingDesignation: floatingDesignation || undefined,
+      preloadClass,
+      bearingSpanMm,
+      availableFloatMm,
+      stationRadialLoadsN,
+      useThermalEquilibrium,
+      ambientTempC: 20,
       material: LEGACY_MATERIAL,
     };
 
@@ -438,8 +462,9 @@ export default function Page() {
         applicationProfile,
         series: seriesFilter,
         sealType: sealFilter,
-        boreMaxMm: maxBoreMm === "" ? undefined : maxBoreMm,
         outerMaxMm: maxOuterMm === "" ? undefined : maxOuterMm,
+        widthMaxMm: maxWidthMm === "" ? undefined : maxWidthMm,
+        boreMaxMm: maxBoreMm === "" ? undefined : maxBoreMm,
       },
       designation
     );
@@ -453,6 +478,7 @@ export default function Page() {
     sealFilter,
     maxBoreMm,
     maxOuterMm,
+    maxWidthMm,
     designation,
   ]);
 
@@ -594,6 +620,15 @@ export default function Page() {
                 setAxialLoad(fromBase(params.axialLoad, "force", axialUnit));
               }
               if (params.speed != null) setSpeed(params.speed);
+              const boreM = params.boreMm ?? params.shaftDiameter;
+              if (boreM != null) setMaxBoreMm(boreM * 1000);
+              if (params.station0Radial != null && params.station1Radial != null) {
+                setStationRadialLoadsN([params.station0Radial, params.station1Radial]);
+                setMountingSystem((prev) =>
+                  prev === "single" ? "locating_dg_floating_nu" : prev
+                );
+              }
+              if (params.bearingSpanMm != null) setBearingSpanMm(params.bearingSpanMm);
             }}
           />
           <BearingInputs
@@ -680,6 +715,19 @@ export default function Page() {
             setMaxBoreMm={setMaxBoreMm}
             maxOuterMm={maxOuterMm}
             setMaxOuterMm={setMaxOuterMm}
+            maxWidthMm={maxWidthMm}
+            setMaxWidthMm={setMaxWidthMm}
+            floatingDesignation={floatingDesignation}
+            setFloatingDesignation={setFloatingDesignation}
+            preloadClass={preloadClass}
+            setPreloadClass={setPreloadClass}
+            bearingSpanMm={bearingSpanMm}
+            setBearingSpanMm={setBearingSpanMm}
+            availableFloatMm={availableFloatMm}
+            setAvailableFloatMm={setAvailableFloatMm}
+            useThermalEquilibrium={useThermalEquilibrium}
+            setUseThermalEquilibrium={setUseThermalEquilibrium}
+            stationRadialLoadsN={stationRadialLoadsN}
             workflowMode={workflowMode}
             onCalculate={calculate}
             onSave={() =>

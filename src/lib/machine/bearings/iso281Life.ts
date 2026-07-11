@@ -50,6 +50,8 @@ export type LubricationInputs = {
 
 export type ModifiedLifeFactors = {
   kappa: number;
+  /** Operating viscosity ν (cSt). */
+  nuCst: number;
   nu1Cst: number;
   eC: number;
   puOverP: number;
@@ -108,6 +110,7 @@ export function resolveModifiedLifeFactors(input: LubricationInputs): ModifiedLi
 
   return {
     kappa,
+    nuCst: input.kinematicViscosityCst,
     nu1Cst: nu1,
     eC,
     puOverP,

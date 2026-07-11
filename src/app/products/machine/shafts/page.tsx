@@ -225,6 +225,7 @@ function ShaftsPageContent() {
 
   const runCheck = () => {
     const raw = solveShaftEngine(buildConfig());
+    const shaftDiameterM = toBase(diameter, "length", lengthUnit);
 
     const maxReaction = raw.bearingReactions.reduce(
       (max, r) => Math.max(max, Math.hypot(r.forceY, r.forceZ)),
@@ -232,26 +233,36 @@ function ShaftsPageContent() {
     );
     if (maxReaction > 0) {
       const maxAxial = raw.bearingReactions.reduce(
-        (max, r) => Math.max(max, Math.abs(r.forceZ)),
+        (max, r) => Math.max(max, Math.abs(r.forceZ) * 0), // axial not in planar FEM — keep user Fa
         0
       );
+      const sorted = [...raw.bearingReactions].sort((a, b) => a.position - b.position);
+      const fr0 = sorted[0] ? Math.hypot(sorted[0].forceY, sorted[0].forceZ) : maxReaction;
+      const fr1 = sorted[1] ? Math.hypot(sorted[1].forceY, sorted[1].forceZ) : undefined;
+      const spanM =
+        sorted.length >= 2 ? Math.abs(sorted[1]!.position - sorted[0]!.position) : undefined;
+
       publishHandoff(
         "bearings",
         {
           fromModuleId: "shafts",
           fromTitle: "Shaft Analysis",
-          summary: `Bearing reactions from shaft FEM — Fr ≈ ${(maxReaction / 1000).toFixed(2)} kN${maxAxial > 0 ? `, Fa ≈ ${(maxAxial / 1000).toFixed(2)} kN` : ""}. Loads applied automatically when you open Bearing Selection.`,
+          summary: `Bearing reactions from shaft FEM — Fr₀ ≈ ${(fr0 / 1000).toFixed(2)} kN${fr1 != null ? `, Fr₁ ≈ ${(fr1 / 1000).toFixed(2)} kN` : ""}, shaft ⌀ ${(shaftDiameterM * 1000).toFixed(1)} mm. Station loads and span applied automatically.`,
           params: {
             radialLoad: maxReaction,
             ...(maxAxial > 0 ? { axialLoad: maxAxial } : {}),
             ...(operatingRpm > 0 ? { speed: operatingRpm } : {}),
+            shaftDiameter: shaftDiameterM,
+            boreMm: shaftDiameterM,
+            station0Radial: fr0,
+            ...(fr1 != null ? { station1Radial: fr1 } : {}),
+            ...(spanM != null ? { bearingSpanMm: spanM * 1000 } : {}),
           },
         },
         { autoApply: true }
       );
     }
 
-    const shaftDiameterM = toBase(diameter, "length", lengthUnit);
     if (raw.maxTorque > 0) {
       publishHandoff("keys-splines", {
         fromModuleId: "shafts",

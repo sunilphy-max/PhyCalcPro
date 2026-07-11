@@ -66,8 +66,28 @@ function templateToEntry(
     isoSize: isoSizeKey(template),
     massKg: estimateBearingMassKg(template.boreMm, template.outerDiameterMm, template.widthMm),
     cageType: cageTypeForFamily(template.family),
+    costIndex: estimateCostIndex(template, manufacturer),
+    fatigueLoadLimitN: Math.round(
+      template.dynamicRatingN * (template.family.includes("roller") ? 0.03 : 0.025)
+    ),
     catalogFactors: template.catalogFactors,
   };
+}
+
+function estimateCostIndex(
+  template: SeriesTemplate,
+  manufacturer: BearingManufacturer
+): number {
+  let cost = 1;
+  if (template.sealType === "sealed" || template.sealType === "contact_sealed") cost *= 1.25;
+  if (template.sealType === "shielded") cost *= 1.1;
+  if (template.type === "angular_contact") cost *= 1.35;
+  if (template.type === "tapered_roller") cost *= 1.2;
+  if (template.type === "spherical_roller") cost *= 1.8;
+  if (template.type === "needle_roller") cost *= 0.85;
+  if (manufacturer === "TIMKEN") cost *= 1.05;
+  if (manufacturer === "SKF") cost *= 1.08;
+  return Math.round(cost * 100) / 100;
 }
 
 function expandTemplate(template: SeriesTemplate): BearingCatalogEntry[] {

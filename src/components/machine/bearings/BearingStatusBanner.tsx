@@ -53,6 +53,17 @@ export default function BearingStatusBanner({ result }: Props) {
       label: "Speed margin",
       value: result.speedMargin != null ? formatDisplayNumber(result.speedMargin) : "N/A",
     },
+    ...(result.relubrication
+      ? [
+          {
+            label: "Relubrication",
+            value:
+              result.relubrication.intervalHours > 0
+                ? `${formatDisplayNumber(result.relubrication.intervalHours)} h`
+                : "—",
+          },
+        ]
+      : []),
   ];
 
   return (

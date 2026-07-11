@@ -12,6 +12,10 @@ import type { BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
 import type { CrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
 import BearingLifeFactorsCard from "@/components/machine/bearings/BearingLifeFactorsCard";
 import BearingPairedStationsCard from "@/components/machine/bearings/BearingPairedStationsCard";
+import BearingThermalCard from "@/components/machine/bearings/BearingThermalCard";
+import BearingDuplexStiffnessCard from "@/components/machine/bearings/BearingDuplexStiffnessCard";
+import BearingThermalEquilibriumCard from "@/components/machine/bearings/BearingThermalEquilibriumCard";
+import BearingRelubricationCard from "@/components/machine/bearings/BearingRelubricationCard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
   EngineeringPlotPicker,
@@ -177,6 +181,10 @@ export default function BearingResults({
 
       <BearingLifeFactorsCard result={result} />
       <BearingPairedStationsCard result={result} loadUnit={loadUnit} />
+      <BearingDuplexStiffnessCard result={result} />
+      <BearingThermalEquilibriumCard result={result} />
+      <BearingThermalCard result={result} />
+      <BearingRelubricationCard result={result} />
       {result.bearingType ? (
         <BearingReferenceVisual
           bearingType={result.bearingType}

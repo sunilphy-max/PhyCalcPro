@@ -19,7 +19,7 @@ function baseResult(overrides: Partial<BearingResult> = {}): BearingResult {
     lifeExponent: 3,
     a1: 1,
     aIso: 0.8,
-    modifiedLifeFactors: { kappa: 0.3, eC: 0.5, puOverP: 0.1 },
+    modifiedLifeFactors: { kappa: 0.3, nuCst: 20, nu1Cst: 15, eC: 0.5, puOverP: 0.1, aIso: 1, fatigueLoadLimitN: 1000 },
     dynamicUtilization: 0.37,
     staticSafetyFactor: 2,
     speedMargin: 2,

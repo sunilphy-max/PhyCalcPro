@@ -50,14 +50,32 @@ export function splitPairedLoads(
 
 /**
  * Locating + floating shaft support (MITCalc / SKF step 2).
- * Locating takes all axial + half radial; floating takes half radial only.
+ * Locating takes all axial + its radial share; floating takes radial only.
+ * Optional stationRadialLoadsN from shaft FEM overrides equal Fr/2 split.
  */
 export function splitLocatingFloatingLoads(
   radialLoad: number,
-  axialLoad: number
+  axialLoad: number,
+  stationRadialLoadsN?: number[]
 ): BearingStationLoad[] {
-  const Fr = Math.abs(radialLoad);
   const Fa = Math.abs(axialLoad);
+  if (stationRadialLoadsN && stationRadialLoadsN.length >= 2) {
+    return [
+      {
+        index: 0,
+        radialLoad: Math.abs(stationRadialLoadsN[0]!),
+        axialLoad: Fa,
+        dynamicRatingMultiplier: 1,
+      },
+      {
+        index: 1,
+        radialLoad: Math.abs(stationRadialLoadsN[1]!),
+        axialLoad: 0,
+        dynamicRatingMultiplier: 1,
+      },
+    ];
+  }
+  const Fr = Math.abs(radialLoad);
   return [
     { index: 0, radialLoad: Fr / 2, axialLoad: Fa, dynamicRatingMultiplier: 1 },
     { index: 1, radialLoad: Fr / 2, axialLoad: 0, dynamicRatingMultiplier: 1 },
@@ -117,11 +135,14 @@ export function calculateStationLives(params: {
   });
 }
 
-/** System life = minimum station life (first failure governs). */
+/** System life — first-failure (min) and Weibull/ISO multi-bearing system life. */
 export function systemLifeFromStations(stations: StationLife[]): {
   basicLifeHours: number;
   modifiedLifeHours: number;
+  /** Weibull system life from modified station lives. */
+  weibullSystemLifeHours: number;
   governingStationIndex: number;
+  weibullExponent: number;
 } {
   let minBasic = Infinity;
   let minModified = Infinity;
@@ -133,9 +154,34 @@ export function systemLifeFromStations(stations: StationLife[]): {
     }
     if (s.modifiedLifeHours < minModified) minModified = s.modifiedLifeHours;
   });
+
+  // ISO / SKF: e ≈ 10/9 ball, 9/8 roller — use 10/9 as default for mixed systems
+  const e = 10 / 9;
+  const sum = stations.reduce((acc, s) => {
+    const L = Math.max(s.modifiedLifeHours, 1e-9);
+    return acc + Math.pow(1 / L, e);
+  }, 0);
+  const weibullSystemLifeHours = Math.pow(sum, -1 / e);
+
   return {
     basicLifeHours: minBasic,
     modifiedLifeHours: minModified,
+    weibullSystemLifeHours,
     governingStationIndex: governing,
+    weibullExponent: e,
   };
+}
+
+/**
+ * Weibull system life from an array of station lives (hours).
+ * L_sys = (Σ L_i^(-e))^(-1/e)
+ */
+export function weibullSystemLifeHours(
+  livesHours: number[],
+  exponent = 10 / 9
+): number {
+  if (livesHours.length === 0) return 0;
+  if (livesHours.length === 1) return livesHours[0]!;
+  const sum = livesHours.reduce((acc, L) => acc + Math.pow(1 / Math.max(L, 1e-9), exponent), 0);
+  return Math.pow(sum, -1 / exponent);
 }

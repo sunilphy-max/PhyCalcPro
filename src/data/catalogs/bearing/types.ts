@@ -90,6 +90,10 @@ export type BearingCatalogEntry = {
   massKg?: number;
   /** Cage / retainer type */
   cageType?: string;
+  /** Relative cost index (1.0 = baseline open deep groove). */
+  costIndex?: number;
+  /** Fatigue load limit Pu (N) when known from catalog. */
+  fatigueLoadLimitN?: number;
   catalogFactors?: BearingCatalogFactors;
 };
 

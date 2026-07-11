@@ -16,6 +16,9 @@ export type HandoffParamKey =
   | "bendingMoment"
   | "shaftDiameter"
   | "boreMm"
+  | "station0Radial"
+  | "station1Radial"
+  | "bearingSpanMm"
   | "diameterDriver"
   | "diameterDriven"
   | "centerDistance"
@@ -39,7 +42,7 @@ export const POWER_TRAIN_HANDOFF_EDGES: HandoffEdge[] = [
   { from: "v-belts", to: "shafts", params: ["torque", "radialForce", "speed"] },
   { from: "v-belts", to: "bearings", params: ["radialLoad", "speed"] },
   { from: "shafts", to: "keys-splines", params: ["torque", "shaftDiameter"] },
-  { from: "shafts", to: "bearings", params: ["radialLoad", "axialLoad", "speed"] },
+  { from: "shafts", to: "bearings", params: ["radialLoad", "axialLoad", "speed", "shaftDiameter", "station0Radial", "station1Radial", "bearingSpanMm"] },
   { from: "bearings", to: "housing", params: ["boreMm", "radialLoad", "axialLoad", "speed"] },
   { from: "housing", to: "bolts", params: ["tension", "shear", "boltCount", "patternDiameter"] },
   { from: "bolts", to: "frames", params: ["reactionForce", "moment"] },

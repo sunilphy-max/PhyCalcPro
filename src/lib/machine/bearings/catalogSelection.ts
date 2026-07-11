@@ -24,6 +24,7 @@ export type BearingSelectionCriteria = {
   mountingRole?: BearingMountingRole | "all";
   boreMaxMm?: number;
   outerMaxMm?: number;
+  widthMaxMm?: number;
   boreMinMm?: number;
 };
 
@@ -53,6 +54,7 @@ export function rankCatalogBearings(criteria: BearingSelectionCriteria): RankedB
     speedRpm,
     boreMaxMm,
     outerMaxMm,
+    widthMaxMm,
     boreMinMm,
   } = criteria;
 
@@ -60,6 +62,7 @@ export function rankCatalogBearings(criteria: BearingSelectionCriteria): RankedB
     .filter((b) => (boreMaxMm == null || b.boreMm <= boreMaxMm + 0.01))
     .filter((b) => (boreMinMm == null || b.boreMm >= boreMinMm - 0.01))
     .filter((b) => (outerMaxMm == null || b.outerDiameterMm <= outerMaxMm + 0.01))
+    .filter((b) => (widthMaxMm == null || b.widthMm <= widthMaxMm + 0.01))
     .map((entry) => {
       const dynamicUtilization = requiredDynamicRatingN / Math.max(entry.dynamicRatingN, 1);
       const staticUtilization =
@@ -74,7 +77,12 @@ export function rankCatalogBearings(criteria: BearingSelectionCriteria): RankedB
 
       return { entry, dynamicUtilization, staticUtilization, speedMargin, passes };
     })
-    .sort((a, b) => a.dynamicUtilization - b.dynamicUtilization);
+    .sort((a, b) => {
+      if (a.passes !== b.passes) return a.passes ? -1 : 1;
+      const util = a.dynamicUtilization - b.dynamicUtilization;
+      if (Math.abs(util) > 1e-6) return util;
+      return (a.entry.costIndex ?? 1) - (b.entry.costIndex ?? 1);
+    });
 }
 
 export function bestCatalogBearing(criteria: BearingSelectionCriteria): RankedBearing | null {
