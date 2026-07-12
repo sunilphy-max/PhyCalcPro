@@ -1,5 +1,10 @@
 import type { DesignCodeId } from "@/lib/standards/types";
 
+/**
+ * Application presets define calculation standards and screening knobs only.
+ * They must NOT force product geometry, catalog designation, section, mount style,
+ * belt profile, bolt size, or bearing family — those stay user-selected.
+ */
 export type ApplicationPresetKnobs = {
   loadFactor?: number;
   allowableStressRatio?: number;

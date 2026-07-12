@@ -31,10 +31,20 @@ describe("application preset registry", () => {
     const rolling = getPresetsForModule("bearings");
     const plain = getPresetsForModule("plain-bearings");
     const housing = getPresetsForModule("housing");
-    expect(rolling.some((p) => p.id === "tapered_gearbox")).toBe(true);
-    expect(rolling.length).toBeGreaterThanOrEqual(15);
-    expect(plain.some((p) => p.id === "journal_turbine")).toBe(true);
-    expect(housing.some((p) => p.id === "foot_mount_general")).toBe(true);
+    expect(rolling.some((p) => p.id === "iso281_general")).toBe(true);
+    expect(rolling.some((p) => p.id === "skf_modified_life")).toBe(true);
+    expect(rolling.every((p) => !p.id.includes("tapered_gearbox"))).toBe(true);
+    expect(rolling.length).toBeGreaterThanOrEqual(5);
+    expect(plain.some((p) => p.id === "hydrodynamic_iso_screening")).toBe(true);
+    expect(plain.some((p) => p.id === "api_turbo_journal")).toBe(true);
+    expect(housing.some((p) => p.id === "housing_general_iso")).toBe(true);
+    expect(housing.every((p) => !p.id.startsWith("foot_mount"))).toBe(true);
+  });
+
+  it("machine presets are calculation context, not product-family locks", () => {
+    const machine = getPresetsForModule("shafts");
+    expect(machine.some((p) => p.id === "iso_machine_screening")).toBe(true);
+    expect(machine.every((p) => p.id !== "iso_bearing")).toBe(true);
   });
 
   it("picks a US-aligned default for structural modules", () => {

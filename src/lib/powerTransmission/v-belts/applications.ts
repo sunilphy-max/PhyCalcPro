@@ -26,6 +26,7 @@ export type VBeltApplicationProfile = {
   defaultServiceFactor: number;
   defaultOperatingHoursPerDay: number;
   subTypes?: VBeltApplicationSubType[];
+  /** Typical catalog sections for notes / scoring only — never forced on the form. */
   preferredSections?: string[];
 };
 

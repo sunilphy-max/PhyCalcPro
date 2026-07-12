@@ -306,14 +306,12 @@ export default function Page() {
   useRegisterApplyDesignCandidate(applyDesignFields);
 
   useRollingBearingPresetSync({
-    setApplicationProfile,
-    setBearingType,
-    setManufacturer,
     setReliability,
     setLubricationClass,
     setSafetyFactor,
-    setDesignation,
-    designation,
+    setShockFactor,
+    setLubricantType,
+    setContamination,
   });
 
   const calculate = () => {

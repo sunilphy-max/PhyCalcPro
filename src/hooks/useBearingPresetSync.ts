@@ -7,30 +7,21 @@ import {
   getBearingPresetDefaults,
   getPlainBearingPresetDefaults,
 } from "@/lib/applications/bearingPresets";
-import {
-  bearingCatalog,
-  filterCatalog,
-  equivalentDesignation,
-} from "@/data/catalogs/bearingCatalog";
-import type {
-  BearingApplicationProfile,
-  BearingManufacturer,
-  CatalogBearingType,
-} from "@/data/catalogs/bearingCatalog";
-import type { BearingReliability, LubricationClass } from "@/lib/machine/bearings/types";
+import type { BearingReliability, LubricationClass, LubricantType } from "@/lib/machine/bearings/types";
 
 type RollingSyncHandlers = {
-  setApplicationProfile: (v: BearingApplicationProfile | "all") => void;
-  setBearingType: (v: CatalogBearingType) => void;
-  setManufacturer: (v: BearingManufacturer) => void;
   setReliability: (v: BearingReliability) => void;
   setLubricationClass: (v: LubricationClass | "") => void;
   setSafetyFactor: (v: number) => void;
-  setDesignation: (v: string) => void;
-  designation: string;
+  setShockFactor?: (v: number) => void;
+  setLubricantType?: (v: LubricantType) => void;
+  setContamination?: (v: import("@/lib/machine/bearings/types").ContaminationLevel) => void;
 };
 
-/** Apply rolling-bearing catalog defaults when the application preset changes. */
+/**
+ * Apply calculation-standard knobs when the application preset changes.
+ * Does not change bearing type, manufacturer, designation, or catalog profile.
+ */
 export function useRollingBearingPresetSync(handlers: RollingSyncHandlers) {
   const { mergedUserInputs } = useDesignWorkflow();
   const presetId = mergedUserInputs.applicationPresetId;
@@ -41,43 +32,51 @@ export function useRollingBearingPresetSync(handlers: RollingSyncHandlers) {
     if (!defaults) return;
 
     const preset = getModuleApplicationPreset("bearings", presetId);
-    handlers.setApplicationProfile(defaults.catalogProfile);
-    if (defaults.bearingType) handlers.setBearingType(defaults.bearingType);
-    if (defaults.manufacturer) handlers.setManufacturer(defaults.manufacturer);
-    if (defaults.reliability) handlers.setReliability(defaults.reliability);
+
+    if (defaults.reliability != null) handlers.setReliability(defaults.reliability);
     if (defaults.lubricationClass !== undefined) {
       handlers.setLubricationClass(defaults.lubricationClass);
     }
     if (preset.knobs.targetSafetyFactor != null) {
       handlers.setSafetyFactor(preset.knobs.targetSafetyFactor);
     }
-
-    const mfr = defaults.manufacturer ?? "SKF";
-    const type = defaults.bearingType ?? "deep_groove";
-    const mapped = equivalentDesignation(handlers.designation, mfr);
-    const pool = filterCatalog(bearingCatalog, {
-      manufacturer: mfr,
-      type,
-      applicationProfile: defaults.catalogProfile,
-    });
-    const next = mapped && pool.some((b) => b.designation === mapped) ? mapped : pool[0]?.designation;
-    if (next) handlers.setDesignation(next);
+    if (defaults.shockFactor != null && handlers.setShockFactor) {
+      handlers.setShockFactor(defaults.shockFactor);
+    }
+    // Enable modified-life lubrication path without locking bearing family
+    if (defaults.preferModifiedLife && handlers.setLubricantType) {
+      handlers.setLubricantType("oil");
+      handlers.setContamination?.("normal_clean");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync on preset id only
   }, [presetId]);
 }
 
 type PlainSyncHandlers = {
-  setBearingType: (v: "journal" | "thrust_pad" | "tilting_pad") => void;
+  /** Optional local SF field — presets never change bearing type / pad geometry. */
+  setSafetyFactor?: (v: number) => void;
+  setServiceFactor?: (v: number) => void;
 };
 
-export function usePlainBearingPresetSync(handlers: PlainSyncHandlers) {
+/**
+ * Apply plain-bearing calculation knobs only.
+ * Does not change journal / thrust / tilting-pad selection.
+ */
+export function usePlainBearingPresetSync(handlers: PlainSyncHandlers = {}) {
   const { mergedUserInputs } = useDesignWorkflow();
   const presetId = mergedUserInputs.applicationPresetId;
 
   useEffect(() => {
     if (!presetId) return;
     const defaults = getPlainBearingPresetDefaults(presetId);
-    if (defaults?.bearingType) handlers.setBearingType(defaults.bearingType);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!defaults) return;
+
+    if (defaults.targetSafetyFactor != null && handlers.setSafetyFactor) {
+      handlers.setSafetyFactor(defaults.targetSafetyFactor);
+    }
+    if (defaults.serviceFactor != null && handlers.setServiceFactor) {
+      handlers.setServiceFactor(defaults.serviceFactor);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync on preset id only
   }, [presetId]);
 }

@@ -38,7 +38,6 @@ import {
   filterCatalog,
   uniqueSeries,
   uniqueTypes,
-  suggestedTypeForApplication,
   applicationProfileOptions,
   APPLICATION_PROFILE_META,
   BEARING_MANUFACTURERS,
@@ -289,7 +288,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Application profile"
-              description="Duty profile filters the catalog and suggests a bearing family."
+              description="Optional catalog filter only — does not change ISO 281 / SKF calculation method. Calculation standard comes from the application preset."
             >
               <CalculatorSelectField
                 label="Application profile"
@@ -300,20 +299,7 @@ export default function BearingInputs({
                   setApplicationProfile(profile);
                   setSeriesFilter("all");
                   setSealFilter("all");
-                  if (profile !== "all") {
-                    const pool = filterCatalog(bearingCatalog, { manufacturer, applicationProfile: profile });
-                    const types = uniqueTypes(pool);
-                    const suggested = suggestedTypeForApplication(profile, types);
-                    if (suggested) {
-                      setBearingType(suggested);
-                      const first = filterCatalog(bearingCatalog, {
-                        manufacturer,
-                        applicationProfile: profile,
-                        type: suggested,
-                      })[0];
-                      if (first) setDesignation(first.designation);
-                    }
-                  }
+                  // Profile only filters catalog options — never forces bearing type.
                 }}
               >
                 {applicationProfileOptions().map((opt) => (

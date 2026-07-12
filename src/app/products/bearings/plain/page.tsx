@@ -3,7 +3,7 @@
 import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -17,7 +17,6 @@ import { toBase } from "@/lib/units/conversions";
 import { solvePlainBearingEngine } from "@/lib/machine/plain-bearings/engine";
 import type { PlainBearingResult } from "@/lib/machine/plain-bearings/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { usePlainBearingPresetSync } from "@/hooks/useBearingPresetSync";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -75,8 +74,6 @@ export default function Page() {
   });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
-
-  usePlainBearingPresetSync({ setBearingType });
 
   const calculate = () => {
     if (workflowMode === "design") {

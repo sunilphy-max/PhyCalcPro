@@ -4,7 +4,8 @@ import { ALL_DESIGN_CODES } from "./types";
 const structuralGeneral: ModuleApplicationPreset = {
   id: "general_mechanics",
   label: "General mechanics",
-  description: "Elastic screening for brackets, rails, and non-code machine members.",
+  description:
+    "Elastic screening factors for brackets, rails, and non-code members. Section geometry stays free.",
   designCodes: ALL_DESIGN_CODES,
   standards: ["Roark's Formulas", "Timoshenko beam theory", "Machinery's Handbook"],
   knobs: { loadFactor: 1, allowableStressRatio: 0.6, deflectionLimitRatio: 360, targetSafetyFactor: 2 },
@@ -15,7 +16,7 @@ export const structuralApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "building_steel_us",
     label: "Building steel (AISC)",
-    description: "US structural steel member screening with AISC-style load and deflection targets.",
+    description: "US structural steel member screening with AISC-style load and deflection targets. Does not select section.",
     designCodes: ["US"],
     standards: ["AISC 360", "ASCE 7 load context"],
     knobs: { loadFactor: 1.2, allowableStressRatio: 0.66, deflectionLimitRatio: 360, targetSafetyFactor: 1.67 },
@@ -24,7 +25,7 @@ export const structuralApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "building_steel_eu",
     label: "Building steel (EN 1993)",
-    description: "EU harmonized steel member screening with EN 1993-1-1 context.",
+    description: "EU harmonized steel member screening with EN 1993-1-1 context. Section remains user-selected.",
     designCodes: ["EU"],
     standards: ["EN 1993-1-1", "EN 1990 load combinations"],
     knobs: { loadFactor: 1.35, allowableStressRatio: 0.55, deflectionLimitRatio: 300, targetSafetyFactor: 1.5 },
@@ -73,7 +74,8 @@ export const powerTransmissionApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "general_drive",
     label: "General industrial drive",
-    description: "Standard belt, chain, or pulley drive screening.",
+    description:
+      "Standard service / load factors for belt, chain, or pulley screening. Section and catalog stay free.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["Machinery's Handbook", "Manufacturer catalog practice"],
     knobs: { serviceFactor: 1.2, loadFactor: 1, targetSafetyFactor: 2 },
@@ -81,7 +83,8 @@ export const powerTransmissionApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "heavy_duty_drive",
     label: "Heavy-duty / shock load",
-    description: "Crushers, reciprocating compressors, and high-shock applications.",
+    description:
+      "Elevated service factors for crushers and high-shock drives. Does not lock belt section or chain size.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["AGMA 927", "ISO 10821 service factors"],
     knobs: { serviceFactor: 1.6, loadFactor: 1.25, targetSafetyFactor: 2.5 },
@@ -89,7 +92,8 @@ export const powerTransmissionApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "precision_drive",
     label: "Precision / low vibration",
-    description: "Machine tools, test equipment, and low-vibration drives.",
+    description:
+      "Tight service and deflection targets for machine-tool and test drives. Product family remains free.",
     designCodes: ["INDICATIVE", "EU", "ISO"],
     standards: ["ISO 10821", "VDI 2056 vibration context"],
     knobs: { serviceFactor: 1.1, loadFactor: 1, deflectionLimitRatio: 800, targetSafetyFactor: 2 },
@@ -97,7 +101,8 @@ export const powerTransmissionApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "continuous_process",
     label: "Continuous process (24/7)",
-    description: "Pumps, fans, and continuous-duty process drives.",
+    description:
+      "Elevated duty factors for continuous pumps, fans, and process drives. Geometry is user-selected.",
     designCodes: ["US", "EU", "ISO"],
     standards: ["API 610 context", "ISO 10821"],
     knobs: { serviceFactor: 1.3, loadFactor: 1.1, targetSafetyFactor: 2 },
@@ -108,40 +113,46 @@ export const machineApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "general_rotating",
     label: "General rotating machinery",
-    description: "Shafts, gears, and bearings for typical industrial duty.",
+    description:
+      "Handbook screening factors for shafts, gears, and rotating parts. Geometry and catalog type stay free.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["Machinery's Handbook", "Shigley's Mechanical Engineering Design"],
+    calculationNotes: ["Sets SF / service / load factors only — does not select shaft, gear, or bearing type."],
     knobs: { loadFactor: 1, targetSafetyFactor: 2, serviceFactor: 1.25 },
   },
   {
     id: "agma_gear_us",
-    label: "Power transmission (AGMA)",
-    description: "US gear and shaft screening with AGMA service context.",
+    label: "AGMA service context (US)",
+    description:
+      "US AGMA-style service and load factors for power-transmission screening. Does not lock gear type.",
     designCodes: ["US"],
     standards: ["AGMA 2001", "AGMA 2101", "AGMA 6001"],
     knobs: { loadFactor: 1.15, targetSafetyFactor: 1.5, serviceFactor: 1.3 },
   },
   {
     id: "din_shaft_eu",
-    label: "Shaft fatigue (DIN 743)",
-    description: "EU shaft and rotating component fatigue screening.",
+    label: "DIN 743 / FKM fatigue (EU)",
+    description:
+      "EU fatigue screening factors for shafts and rotating members. Does not select shaft geometry.",
     designCodes: ["EU"],
     standards: ["DIN 743", "FKM Guideline"],
     fatigueSensitive: true,
     knobs: { loadFactor: 1.2, targetSafetyFactor: 2, serviceFactor: 1.4 },
   },
   {
-    id: "iso_bearing",
-    label: "Bearing life (ISO 281)",
-    description: "International bearing selection and life screening.",
+    id: "iso_machine_screening",
+    label: "ISO machine-element screening",
+    description:
+      "ISO-aligned service and safety factors for rotating machine elements. Product family remains free.",
     designCodes: ["ISO", "EU"],
-    standards: ["ISO 281", "ISO 76"],
+    standards: ["ISO 281 context", "ISO 6336 context", "Machinery's Handbook"],
     knobs: { serviceFactor: 1.2, targetSafetyFactor: 1.5, loadFactor: 1 },
   },
   {
     id: "high_speed",
-    label: "High-speed / critical speed sensitive",
-    description: "Turbomachinery and high-RPM drives with critical-speed margin.",
+    label: "High-speed / critical-speed margins",
+    description:
+      "Elevated SF and stiffness targets for high-RPM and turbomachinery duty. Geometry stays user-selected.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["API 617 context", "DIN 743"],
     fatigueSensitive: true,
@@ -152,16 +163,18 @@ export const machineApplicationPresets: ModuleApplicationPreset[] = [
 export const springApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "general_spring",
-    label: "General spring application",
-    description: "Standard compression, extension, or torsion spring screening.",
+    label: "General spring screening",
+    description:
+      "Standard SF / service factors for compression, extension, or torsion springs. Spring type stays free.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["Machinery's Handbook", "Wahl / Spring Design Manual"],
     knobs: { loadFactor: 1, targetSafetyFactor: 1.5, serviceFactor: 1.1 },
   },
   {
     id: "automotive_spring",
-    label: "Automotive / suspension",
-    description: "Suspension and chassis spring context with fatigue awareness.",
+    label: "Automotive / suspension duty",
+    description:
+      "Fatigue-aware duty factors for suspension context. Does not select spring form or wire size.",
     designCodes: ["US", "EU", "ISO"],
     standards: ["SAE J1123 context", "ISO 10243"],
     fatigueSensitive: true,
@@ -169,8 +182,9 @@ export const springApplicationPresets: ModuleApplicationPreset[] = [
   },
   {
     id: "precision_spring",
-    label: "Precision instrument",
-    description: "Low-rate or instrument springs with tight deflection control.",
+    label: "Precision / instrument duty",
+    description:
+      "Tight deflection and SF targets for instrument springs. Geometry remains user-selected.",
     designCodes: ["INDICATIVE", "ISO"],
     standards: ["ISO 10243", "Instrument spring practice"],
     knobs: { loadFactor: 1, targetSafetyFactor: 2, deflectionLimitRatio: 500 },
@@ -180,32 +194,36 @@ export const springApplicationPresets: ModuleApplicationPreset[] = [
 export const fastenerApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "general_joint",
-    label: "General bolted / welded joint",
-    description: "Standard joint screening for bolts, welds, and pins.",
+    label: "General joint screening",
+    description:
+      "Standard SF / load factors for bolts, welds, and pins. Does not select designation or weld type.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["ISO 898-1", "DIN EN ISO 4014", "ANSI/AISC 360", "ASME B1.1", "Machinery's Handbook"],
     knobs: { loadFactor: 1, targetSafetyFactor: 2 },
   },
   {
     id: "iso_fastener",
-    label: "Metric fasteners (ISO)",
-    description: "ISO coarse threads, property classes, and clearance fits for bolted joints.",
+    label: "ISO fastener calculation context",
+    description:
+      "ISO property-class and fit screening knobs. Bolt size / designation remain user-selected.",
     designCodes: ["ISO", "EU"],
     standards: ["ISO 898-1", "ISO 724", "ISO 4014", "ISO 273"],
     knobs: { loadFactor: 1, targetSafetyFactor: 1.5 },
   },
   {
     id: "din_fastener_eu",
-    label: "DIN metric fasteners",
-    description: "DIN EN ISO bolt and nut dimensions with VDI 2230 preload context.",
+    label: "DIN / VDI 2230 preload context",
+    description:
+      "EU preload and load-factor context (VDI 2230). Does not lock catalog bolt geometry.",
     designCodes: ["EU"],
     standards: ["DIN EN ISO 4014", "DIN 931", "VDI 2230"],
     knobs: { loadFactor: 1.35, targetSafetyFactor: 1.5 },
   },
   {
     id: "ansi_fastener_us",
-    label: "US inch fasteners (ANSI)",
-    description: "ANSI inch-series bolts and structural connection screening.",
+    label: "ANSI / AISC connection context",
+    description:
+      "US inch-series joint screening factors. Does not select bolt diameter or series.",
     designCodes: ["US"],
     standards: ["ANSI B18.2.1", "ANSI/AISC 360"],
     knobs: { loadFactor: 1.2, targetSafetyFactor: 1.67 },
@@ -213,23 +231,26 @@ export const fastenerApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "asme_fastener_us",
     label: "ASME thread & pressure context",
-    description: "ASME unified threads and pressure-equipment bolt screening context.",
+    description:
+      "ASME unified-thread / pressure-equipment screening knobs. Catalog selection stays free.",
     designCodes: ["US"],
     standards: ["ASME B1.1", "ASME B18.2.1", "ASME BPVC VIII"],
     knobs: { loadFactor: 1.1, targetSafetyFactor: 2 },
   },
   {
     id: "aisc_connection_us",
-    label: "Structural connection (AISC / AWS)",
-    description: "US steel connection and weld screening.",
+    label: "AISC / AWS structural connection",
+    description:
+      "US steel connection and weld screening factors. Joint detail geometry is user-selected.",
     designCodes: ["US"],
     standards: ["AISC 360 J3", "AWS D1.1"],
     knobs: { loadFactor: 1.2, targetSafetyFactor: 1.67 },
   },
   {
     id: "en_joint_eu",
-    label: "Structural joint (EN 1993-1-8)",
-    description: "EU bolted and welded joint screening.",
+    label: "EN 1993-1-8 joint screening",
+    description:
+      "EU bolted / welded joint load and SF context. Does not force connection type.",
     designCodes: ["EU"],
     standards: ["EN 1993-1-8", "VDI 2230"],
     knobs: { loadFactor: 1.35, targetSafetyFactor: 1.5 },
@@ -237,7 +258,8 @@ export const fastenerApplicationPresets: ModuleApplicationPreset[] = [
   {
     id: "high_vibration_joint",
     label: "High-vibration / fatigue joint",
-    description: "Joints in rotating or cyclic-load equipment.",
+    description:
+      "Elevated SF for cyclic or rotating equipment joints. Fastener type remains free.",
     designCodes: ALL_DESIGN_CODES,
     standards: ["VDI 2230", "FKM welded joint context"],
     fatigueSensitive: true,

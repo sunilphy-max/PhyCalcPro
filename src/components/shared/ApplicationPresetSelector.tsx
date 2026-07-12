@@ -124,14 +124,14 @@ export default function ApplicationPresetSelector({ moduleId }: Props) {
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-800 dark:text-violet-200">
-            Application preset
+            Calculation standard
           </p>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Screening context for{" "}
+            Sets screening knobs for{" "}
             <span className="font-medium text-slate-800 dark:text-slate-200">
               {designCodeOption.shortLabel}
             </span>{" "}
-            practice
+            practice — not product type or catalog geometry
           </p>
         </div>
         {selected.fatigueSensitive ? (
@@ -152,7 +152,7 @@ export default function ApplicationPresetSelector({ moduleId }: Props) {
           designCodeLabel={designCodeOption.shortLabel}
         />
         {other.length ? (
-          <PresetOptionGroup label="Other applications" presets={other} designCodeLabel="all" />
+          <PresetOptionGroup label="Other standards" presets={other} designCodeLabel="all" />
         ) : null}
       </select>
 

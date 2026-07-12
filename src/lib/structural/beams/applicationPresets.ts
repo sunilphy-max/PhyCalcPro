@@ -26,7 +26,8 @@ export const beamApplicationPresets: BeamApplicationPreset[] = [
   {
     id: "general_mechanics",
     label: "General mechanics beam",
-    description: "Elastic beam mechanics for brackets, rails, and non-code machine members.",
+    description:
+      "Elastic beam screening factors for brackets and machine members. Does not select cross-section.",
     standards: ["Roark's Formulas", "Timoshenko beam theory", "Machinery's Handbook"],
     loadFactor: 1,
     allowableStressRatio: 0.6,
@@ -35,6 +36,7 @@ export const beamApplicationPresets: BeamApplicationPreset[] = [
     calculationNotes: [
       "Uses entered loads directly.",
       "Checks stress against 0.60 x material yield as a conservative mechanical screening value.",
+      "Preset sets load / stress / deflection knobs only — beam section is free.",
     ],
     limitations: [
       "Not a building-code design check.",
