@@ -14,6 +14,7 @@ export {
 export {
   getBearingPresetDefaults,
   getPlainBearingPresetDefaults,
+  getHousingPresetDefaults,
   FAMILY_RECOMMENDED_PRESET,
   rollingBearingApplicationPresets,
   plainBearingApplicationPresets,

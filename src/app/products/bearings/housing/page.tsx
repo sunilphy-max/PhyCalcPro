@@ -3,10 +3,13 @@
 import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
+import { useHousingPresetSync } from "@/hooks/useBearingPresetSync";
+import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
+import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
@@ -14,11 +17,30 @@ import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
 import HousingInputs from "@/components/machine/housing/HousingInputs";
 import HousingResults from "@/components/machine/housing/HousingResults";
+import HousingCopilotPanel from "@/components/machine/housing/HousingCopilotPanel";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveHousingEngine } from "@/lib/machine/housing/engine";
-import type { HousingMountStyle, HousingResult } from "@/lib/machine/housing/types";
+import { diagnoseHousing, type HousingDiagnosis } from "@/lib/machine/housing/diagnosis";
+import { buildHousingReportInputRows } from "@/lib/machine/housing/reportInputs";
+import type { HousingConfig, HousingMountStyle, HousingResult } from "@/lib/machine/housing/types";
+import type { HousingCopilotApplyPayload } from "@/lib/copilot/housingCopilot";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
+
+type HousingProjectData = {
+  boreDiameter: number;
+  radialLoad: number;
+  axialLoad: number;
+  speed: number;
+  mountStyle: HousingMountStyle;
+  boltCount: number;
+  boltCircleDiameter: number;
+  yieldStress: number;
+  lengthUnit: string;
+  forceUnit: string;
+  stressUnit: string;
+  name?: string;
+};
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
@@ -44,10 +66,16 @@ export default function Page() {
   const [forceUnit, setForceUnit] = useState("N");
   const [stressUnit, setStressUnit] = useState("MPa");
   const [result, setResult] = useState<WithCalculationSpec<HousingResult> | null>(null);
+  const [diagnosis, setDiagnosis] = useState<HousingDiagnosis | null>(null);
+  const [lastConfig, setLastConfig] = useState<HousingConfig | null>(null);
   const completePowerTrainStep = usePowerTrainStepCompletion();
+  const { projectName, setProjectName, saving, savedProjects, saveProject } =
+    useSavedProjects<HousingProjectData>("housing", "Housing Project");
+
+  useHousingPresetSync();
 
   const buildConfig = useCallback(
-    () => ({
+    (): HousingConfig => ({
       boreDiameter: toBase(boreDiameter, "length", lengthUnit),
       radialLoad: toBase(radialLoad, "force", forceUnit),
       axialLoad: toBase(axialLoad, "force", forceUnit),
@@ -73,8 +101,11 @@ export default function Page() {
   );
 
   const runCheck = useCallback(() => {
-    const raw = solveHousingEngine(buildConfig());
+    const config = buildConfig();
+    const raw = solveHousingEngine(config);
+    setLastConfig(config);
     setResult(wrapResult(raw));
+    setDiagnosis(diagnoseHousing(raw, config));
 
     publishHandoff("bolts", {
       fromModuleId: "housing",
@@ -92,7 +123,14 @@ export default function Page() {
       shear: raw.boltShearPerBolt,
       boltCount,
     });
-  }, [buildConfig, boltCount, boltCircleDiameter, lengthUnit, wrapResult, completePowerTrainStep]);
+  }, [
+    buildConfig,
+    boltCount,
+    boltCircleDiameter,
+    lengthUnit,
+    wrapResult,
+    completePowerTrainStep,
+  ]);
 
   const designUserInputs = useMemo(
     (): ModuleUserInputs => ({
@@ -108,6 +146,8 @@ export default function Page() {
 
   const applyDesignFields = useApplyDesignFields({
     boltCount: (v) => setBoltCount(typeof v === "number" ? v : Number(v)),
+    boltCircleDiameter: (v) =>
+      setBoltCircleDiameter(typeof v === "number" ? v : Number(v)),
   });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
@@ -120,12 +160,88 @@ export default function Page() {
     runCheck();
   };
 
+  const applyCopilot = (payload: HousingCopilotApplyPayload) => {
+    if (payload.boreMm != null) {
+      setBoreDiameter(fromBase(payload.boreMm / 1000, "length", lengthUnit));
+    }
+    if (payload.radialLoad != null) {
+      setRadialLoad(fromBase(payload.radialLoad, "force", forceUnit));
+    }
+    if (payload.axialLoad != null) {
+      setAxialLoad(fromBase(payload.axialLoad, "force", forceUnit));
+    }
+    if (payload.speed != null) setSpeed(payload.speed);
+    if (payload.mountStyle != null) setMountStyle(payload.mountStyle);
+    if (payload.boltCount != null) setBoltCount(payload.boltCount);
+    if (payload.boltCircleDiameterMm != null) {
+      setBoltCircleDiameter(
+        fromBase(payload.boltCircleDiameterMm / 1000, "length", lengthUnit)
+      );
+    }
+    if (payload.yieldStressMPa != null) {
+      setYieldStress(fromBase(payload.yieldStressMPa * 1e6, "stress", stressUnit));
+    }
+    queueMicrotask(() => calculate());
+  };
+
+  const inputRows = useMemo(
+    () =>
+      buildHousingReportInputRows({
+        boreDiameter,
+        radialLoad,
+        axialLoad,
+        speed,
+        mountStyle,
+        boltCount,
+        boltCircleDiameter,
+        yieldStress,
+        lengthUnit,
+        forceUnit,
+        stressUnit,
+      }),
+    [
+      boreDiameter,
+      radialLoad,
+      axialLoad,
+      speed,
+      mountStyle,
+      boltCount,
+      boltCircleDiameter,
+      yieldStress,
+      lengthUnit,
+      forceUnit,
+      stressUnit,
+    ]
+  );
+
+  const loadProject = (project: HousingProjectData & { name?: string }) => {
+    if (project.name) setProjectName(project.name);
+    setBoreDiameter(project.boreDiameter);
+    setRadialLoad(project.radialLoad);
+    setAxialLoad(project.axialLoad);
+    setSpeed(project.speed);
+    setMountStyle(project.mountStyle);
+    setBoltCount(project.boltCount);
+    setBoltCircleDiameter(project.boltCircleDiameter);
+    setYieldStress(project.yieldStress);
+    setLengthUnit(project.lengthUnit);
+    setForceUnit(project.forceUnit);
+    setStressUnit(project.stressUnit);
+  };
+
   return (
     <CalculatorLayout
       moduleId="housing"
       title="Bearing Housing"
+      footer={
+        <SavedProjectsFooter
+          projects={savedProjects}
+          onLoad={(project) => loadProject(project as unknown as HousingProjectData & { name: string })}
+        />
+      }
       inputs={
         <div className="space-y-4">
+          <HousingCopilotPanel onApply={applyCopilot} />
           <CrossCalcHandoffBanner
             moduleId="housing"
             onApply={(params) => {
@@ -168,10 +284,49 @@ export default function Page() {
             stressUnit={stressUnit}
             setStressUnit={setStressUnit}
             onCalculate={calculate}
+            onSave={() =>
+              saveProject({
+                boreDiameter,
+                radialLoad,
+                axialLoad,
+                speed,
+                mountStyle,
+                boltCount,
+                boltCircleDiameter,
+                yieldStress,
+                lengthUnit,
+                forceUnit,
+                stressUnit,
+              })
+            }
+            saving={saving}
+            projectName={projectName}
+            setProjectName={setProjectName}
           />
         </div>
       }
-      results={<HousingResults result={result} />}
+      results={
+        <HousingResults
+          result={result}
+          config={lastConfig}
+          diagnosis={diagnosis}
+          workflowMode={workflowMode}
+          inputRows={inputRows}
+          onApplyAdjustment={(fields) => {
+            if (fields.boltCount != null) setBoltCount(fields.boltCount);
+            if (fields.boltCircleDiameterMm != null) {
+              setBoltCircleDiameter(
+                fromBase(fields.boltCircleDiameterMm / 1000, "length", lengthUnit)
+              );
+            }
+            if (fields.yieldStressMPa != null) {
+              setYieldStress(fromBase(fields.yieldStressMPa * 1e6, "stress", stressUnit));
+            }
+            if (fields.mountStyle != null) setMountStyle(fields.mountStyle);
+            queueMicrotask(() => calculate());
+          }}
+        />
+      }
     />
   );
 }

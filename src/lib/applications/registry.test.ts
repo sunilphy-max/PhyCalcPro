@@ -47,6 +47,15 @@ describe("application preset registry", () => {
     expect(machine.every((p) => p.id !== "iso_bearing")).toBe(true);
   });
 
+  it("housing and plain presets expose knobs-only defaults", () => {
+    const housing = getPresetsForModule("housing");
+    const plain = getPresetsForModule("plain-bearings");
+    expect(housing.every((p) => p.knobs.targetSafetyFactor != null || p.knobs.serviceFactor != null)).toBe(
+      true
+    );
+    expect(plain.every((p) => p.knobs.targetSafetyFactor != null)).toBe(true);
+  });
+
   it("picks a US-aligned default for structural modules", () => {
     const id = getDefaultPresetId("columns", "US");
     const preset = getPresetsForModule("columns").find((p) => p.id === id);

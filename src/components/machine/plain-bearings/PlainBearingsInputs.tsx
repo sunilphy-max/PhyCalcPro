@@ -1,11 +1,13 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { Box, Gauge, Layers, Ruler } from "lucide-react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
+import CalculatorInputSteps from "@/components/machine/bearings-shared/CalculatorInputSteps";
 import type { PlainBearingType } from "@/lib/machine/plain-bearings/types";
 
 type Props = {
@@ -32,7 +34,38 @@ type Props = {
   lengthUnit: string;
   setLengthUnit: Dispatch<SetStateAction<string>>;
   onCalculate: () => void;
+  onSave?: () => void;
+  saving?: boolean;
+  projectName?: string;
+  setProjectName?: (name: string) => void;
 };
+
+const STEPS = [
+  {
+    id: "application",
+    label: "Application",
+    description: "Bearing family — journal, thrust pad, or tilting pad",
+    icon: Layers,
+  },
+  {
+    id: "loads",
+    label: "Loads",
+    description: "Applied load for film and specific-pressure screening",
+    icon: Box,
+  },
+  {
+    id: "operating",
+    label: "Operating",
+    description: "Speed and lubricant viscosity",
+    icon: Gauge,
+  },
+  {
+    id: "geometry",
+    label: "Geometry",
+    description: "Diameter, length/pads, and clearance",
+    icon: Ruler,
+  },
+];
 
 export default function PlainBearingsInputs(props: Props) {
   const isJournal = props.bearingType === "journal";
@@ -40,76 +73,168 @@ export default function PlainBearingsInputs(props: Props) {
   return (
     <CalculatorInputPanel
       title="Plain bearing"
-      description="Hydrodynamic journal, thrust pad and tilting-pad thrust screening."
-      footer={<CalculatorCalculateButton onClick={props.onCalculate} label="Calculate bearing" designAware />}
+      description="Hydrodynamic journal, thrust pad and tilting-pad thrust screening. Calculation standard is set above — type stays free."
+      footer={
+        <div className="flex flex-wrap items-center gap-2">
+          {props.onSave && props.setProjectName != null ? (
+            <>
+              <input
+                type="text"
+                value={props.projectName ?? ""}
+                onChange={(e) => props.setProjectName?.(e.target.value)}
+                className="min-w-[10rem] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                placeholder="Project name"
+              />
+              <button
+                type="button"
+                onClick={props.onSave}
+                disabled={props.saving}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+              >
+                {props.saving ? "Saving…" : "Save"}
+              </button>
+            </>
+          ) : null}
+          <CalculatorCalculateButton onClick={props.onCalculate} label="Calculate bearing" designAware />
+        </div>
+      }
     >
-      <label className="space-y-2 text-sm text-slate-700 block">
-        <span>Bearing type</span>
-        <select
-          value={props.bearingType}
-          onChange={(e) => props.setBearingType(e.target.value as PlainBearingType)}
-          className={calculatorNumberInputClass}
-        >
-          <option value="journal">Journal (radial)</option>
-          <option value="thrust_pad">Thrust pad (flat)</option>
-          <option value="tilting_pad">Tilting-pad thrust</option>
-        </select>
-      </label>
-      <div className={calculatorInputGridClass}>
-        <CalculatorUnitField
-          label={isJournal ? "Radial load" : "Axial thrust load"}
-          value={props.load}
-          onChange={props.setLoad}
-          unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="load" value={props.loadUnit} onChange={props.setLoadUnit} />
-          }
-        />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Shaft speed (rpm)</span>
-          <input type="number" value={props.speed} onChange={(e) => props.setSpeed(Number(e.target.value))} className={calculatorNumberInputClass} />
-        </label>
-        <CalculatorUnitField
-          label={isJournal ? "Journal diameter" : "Pad outer diameter"}
-          value={props.diameter}
-          onChange={props.setDiameter}
-          unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="diameter" value={props.lengthUnit} onChange={props.setLengthUnit} />
-          }
-        />
-        {isJournal ? (
-          <CalculatorUnitField
-            label="Bearing length"
-            value={props.length}
-            onChange={props.setLength}
-            unit={
-              <ModuleUnitSelect moduleId="plain-bearings" fieldKey="length" value={props.lengthUnit} onChange={props.setLengthUnit} />
-            }
-          />
-        ) : (
-          <label className="space-y-2 text-sm text-slate-700">
-            <span>Outer / inner diameter ratio</span>
-            <input type="number" step="0.1" value={props.padDiameterRatio} onChange={(e) => props.setPadDiameterRatio(Number(e.target.value))} className={calculatorNumberInputClass} />
-          </label>
+      <CalculatorInputSteps steps={STEPS} ariaLabel="Plain bearing input steps">
+        {(activeTab) => (
+          <>
+            {activeTab === "application" ? (
+              <div className="space-y-3">
+                <label className="block space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                  <span>Bearing type</span>
+                  <select
+                    value={props.bearingType}
+                    onChange={(e) => props.setBearingType(e.target.value as PlainBearingType)}
+                    className={calculatorNumberInputClass}
+                  >
+                    <option value="journal">Journal (radial) — ISO 7902</option>
+                    <option value="thrust_pad">Thrust pad (flat) — ISO 12131</option>
+                    <option value="tilting_pad">Tilting-pad thrust — ISO 12130</option>
+                  </select>
+                </label>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Application presets set safety / service factors only — they do not lock this type.
+                </p>
+              </div>
+            ) : null}
+
+            {activeTab === "loads" ? (
+              <div className={calculatorInputGridClass}>
+                <CalculatorUnitField
+                  label={isJournal ? "Radial load" : "Axial thrust load"}
+                  value={props.load}
+                  onChange={props.setLoad}
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="plain-bearings"
+                      fieldKey="load"
+                      value={props.loadUnit}
+                      onChange={props.setLoadUnit}
+                    />
+                  }
+                />
+              </div>
+            ) : null}
+
+            {activeTab === "operating" ? (
+              <div className={calculatorInputGridClass}>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                  <span>Shaft speed (rpm)</span>
+                  <input
+                    type="number"
+                    value={props.speed}
+                    onChange={(e) => props.setSpeed(Number(e.target.value))}
+                    className={calculatorNumberInputClass}
+                  />
+                </label>
+                <label className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                  <span>Dynamic viscosity (Pa·s)</span>
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={props.viscosity}
+                    onChange={(e) => props.setViscosity(Number(e.target.value))}
+                    className={calculatorNumberInputClass}
+                  />
+                </label>
+              </div>
+            ) : null}
+
+            {activeTab === "geometry" ? (
+              <div className={calculatorInputGridClass}>
+                <CalculatorUnitField
+                  label={isJournal ? "Journal diameter" : "Pad outer diameter"}
+                  value={props.diameter}
+                  onChange={props.setDiameter}
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="plain-bearings"
+                      fieldKey="diameter"
+                      value={props.lengthUnit}
+                      onChange={props.setLengthUnit}
+                    />
+                  }
+                />
+                {isJournal ? (
+                  <CalculatorUnitField
+                    label="Bearing length"
+                    value={props.length}
+                    onChange={props.setLength}
+                    unit={
+                      <ModuleUnitSelect
+                        moduleId="plain-bearings"
+                        fieldKey="length"
+                        value={props.lengthUnit}
+                        onChange={props.setLengthUnit}
+                      />
+                    }
+                  />
+                ) : (
+                  <label className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                    <span>Outer / inner diameter ratio</span>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={props.padDiameterRatio}
+                      onChange={(e) => props.setPadDiameterRatio(Number(e.target.value))}
+                      className={calculatorNumberInputClass}
+                    />
+                  </label>
+                )}
+                <CalculatorUnitField
+                  label="Clearance / film gap"
+                  value={props.clearance}
+                  onChange={props.setClearance}
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="plain-bearings"
+                      fieldKey="clearance"
+                      value={props.lengthUnit}
+                      onChange={props.setLengthUnit}
+                    />
+                  }
+                />
+                {props.bearingType === "tilting_pad" ? (
+                  <label className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
+                    <span>Number of pads</span>
+                    <input
+                      type="number"
+                      min={3}
+                      value={props.padCount}
+                      onChange={(e) => props.setPadCount(Number(e.target.value))}
+                      className={calculatorNumberInputClass}
+                    />
+                  </label>
+                ) : null}
+              </div>
+            ) : null}
+          </>
         )}
-        <CalculatorUnitField
-          label="Clearance / film gap"
-          value={props.clearance}
-          onChange={props.setClearance}
-          unit={
-            <ModuleUnitSelect moduleId="plain-bearings" fieldKey="clearance" value={props.lengthUnit} onChange={props.setLengthUnit} />
-          }
-        />
-        <label className="space-y-2 text-sm text-slate-700">
-          <span>Dynamic viscosity (Pa·s)</span>
-          <input type="number" step="0.001" value={props.viscosity} onChange={(e) => props.setViscosity(Number(e.target.value))} className={calculatorNumberInputClass} />
-        </label>
-        {props.bearingType === "tilting_pad" ? (
-          <label className="space-y-2 text-sm text-slate-700">
-            <span>Number of pads</span>
-            <input type="number" min={3} value={props.padCount} onChange={(e) => props.setPadCount(Number(e.target.value))} className={calculatorNumberInputClass} />
-          </label>
-        ) : null}
-      </div>
+      </CalculatorInputSteps>
     </CalculatorInputPanel>
   );
 }

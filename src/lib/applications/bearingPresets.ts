@@ -299,6 +299,24 @@ export function getPlainBearingPresetDefaults(
   return PLAIN_BEARING_PRESET_DEFAULTS[presetId];
 }
 
+/** Housing presets: knobs only (never force mount style). */
+export const HOUSING_PRESET_DEFAULTS: Record<
+  string,
+  { targetSafetyFactor?: number; serviceFactor?: number; loadFactor?: number }
+> = {
+  housing_general_iso: { targetSafetyFactor: 2, serviceFactor: 1.2, loadFactor: 1 },
+  housing_compact_envelope: { targetSafetyFactor: 2, serviceFactor: 1.15, loadFactor: 1.1 },
+  housing_heavy_shock: { targetSafetyFactor: 1.8, serviceFactor: 1.4, loadFactor: 1.35 },
+  housing_precision_stiffness: { targetSafetyFactor: 1.3, serviceFactor: 1, loadFactor: 1 },
+  housing_maintainability: { targetSafetyFactor: 1.8, serviceFactor: 1.2, loadFactor: 1.15 },
+};
+
+export function getHousingPresetDefaults(
+  presetId: string
+): { targetSafetyFactor?: number; serviceFactor?: number; loadFactor?: number } | undefined {
+  return HOUSING_PRESET_DEFAULTS[presetId];
+}
+
 /**
  * @deprecated Presets no longer map to bearing families. Kept for callers; always
  * returns the ISO 281 baseline so type changes do not rewrite the calculation method.

@@ -5,6 +5,7 @@ import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { getModuleApplicationPreset } from "@/lib/applications";
 import {
   getBearingPresetDefaults,
+  getHousingPresetDefaults,
   getPlainBearingPresetDefaults,
 } from "@/lib/applications/bearingPresets";
 import type { BearingReliability, LubricationClass, LubricantType } from "@/lib/machine/bearings/types";
@@ -43,7 +44,6 @@ export function useRollingBearingPresetSync(handlers: RollingSyncHandlers) {
     if (defaults.shockFactor != null && handlers.setShockFactor) {
       handlers.setShockFactor(defaults.shockFactor);
     }
-    // Enable modified-life lubrication path without locking bearing family
     if (defaults.preferModifiedLife && handlers.setLubricantType) {
       handlers.setLubricantType("oil");
       handlers.setContamination?.("normal_clean");
@@ -53,7 +53,6 @@ export function useRollingBearingPresetSync(handlers: RollingSyncHandlers) {
 }
 
 type PlainSyncHandlers = {
-  /** Optional local SF field — presets never change bearing type / pad geometry. */
   setSafetyFactor?: (v: number) => void;
   setServiceFactor?: (v: number) => void;
 };
@@ -63,7 +62,7 @@ type PlainSyncHandlers = {
  * Does not change journal / thrust / tilting-pad selection.
  */
 export function usePlainBearingPresetSync(handlers: PlainSyncHandlers = {}) {
-  const { mergedUserInputs } = useDesignWorkflow();
+  const { mergedUserInputs, patchDesignTarget } = useDesignWorkflow();
   const presetId = mergedUserInputs.applicationPresetId;
 
   useEffect(() => {
@@ -71,11 +70,48 @@ export function usePlainBearingPresetSync(handlers: PlainSyncHandlers = {}) {
     const defaults = getPlainBearingPresetDefaults(presetId);
     if (!defaults) return;
 
-    if (defaults.targetSafetyFactor != null && handlers.setSafetyFactor) {
-      handlers.setSafetyFactor(defaults.targetSafetyFactor);
+    if (defaults.targetSafetyFactor != null) {
+      handlers.setSafetyFactor?.(defaults.targetSafetyFactor);
+      patchDesignTarget("targetSafetyFactor", defaults.targetSafetyFactor);
     }
-    if (defaults.serviceFactor != null && handlers.setServiceFactor) {
-      handlers.setServiceFactor(defaults.serviceFactor);
+    if (defaults.serviceFactor != null) {
+      handlers.setServiceFactor?.(defaults.serviceFactor);
+      patchDesignTarget("serviceFactor", defaults.serviceFactor);
+    }
+    if (defaults.loadFactor != null) {
+      patchDesignTarget("loadFactor", defaults.loadFactor);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync on preset id only
+  }, [presetId]);
+}
+
+type HousingSyncHandlers = {
+  setSafetyFactor?: (v: number) => void;
+  setServiceFactor?: (v: number) => void;
+};
+
+/**
+ * Apply housing calculation knobs only — never forces mount style.
+ */
+export function useHousingPresetSync(handlers: HousingSyncHandlers = {}) {
+  const { mergedUserInputs, patchDesignTarget } = useDesignWorkflow();
+  const presetId = mergedUserInputs.applicationPresetId;
+
+  useEffect(() => {
+    if (!presetId) return;
+    const defaults = getHousingPresetDefaults(presetId);
+    if (!defaults) return;
+
+    if (defaults.targetSafetyFactor != null) {
+      handlers.setSafetyFactor?.(defaults.targetSafetyFactor);
+      patchDesignTarget("targetSafetyFactor", defaults.targetSafetyFactor);
+    }
+    if (defaults.serviceFactor != null) {
+      handlers.setServiceFactor?.(defaults.serviceFactor);
+      patchDesignTarget("serviceFactor", defaults.serviceFactor);
+    }
+    if (defaults.loadFactor != null) {
+      patchDesignTarget("loadFactor", defaults.loadFactor);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync on preset id only
   }, [presetId]);

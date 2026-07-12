@@ -6,6 +6,10 @@ import type { CopilotBrief, CopilotParams, DesignPlan, DesignSession } from "./t
 
 export { runBearingCopilotSession, BEARING_COPILOT_EXAMPLES } from "./bearingCopilot";
 export type { BearingCopilotApplyPayload, BearingCopilotSession } from "./bearingCopilot";
+export { runPlainBearingCopilotSession, PLAIN_BEARING_COPILOT_EXAMPLES } from "./plainBearingCopilot";
+export type { PlainBearingCopilotApplyPayload, PlainBearingCopilotSession } from "./plainBearingCopilot";
+export { runHousingCopilotSession, HOUSING_COPILOT_EXAMPLES } from "./housingCopilot";
+export type { HousingCopilotApplyPayload, HousingCopilotSession } from "./housingCopilot";
 export type { CopilotBrief, CopilotParams, DesignPlan, DesignSession } from "./types";
 export { parseBrief, deriveParams } from "./paramParser";
 export { matchStartModule } from "./moduleMatch";
