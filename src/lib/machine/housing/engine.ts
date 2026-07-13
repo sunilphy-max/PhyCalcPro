@@ -23,7 +23,11 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
   const radial = Math.max(0, config.radialLoad);
   const axial = Math.abs(config.axialLoad);
   const moment = radial * arm + axial * config.boreDiameter * 0.5;
-  const sectionHeight = Math.max(config.boreDiameter * 1.6, 0.04);
+  const stiffK = config.stiffnessFactor ?? 1;
+  const sectionHeight = Math.max(
+    config.baseHeightM ?? config.boreDiameter * 1.6,
+    0.04
+  );
   const sectionWidth = Math.max(config.boreDiameter * 1.2, 0.03);
   const I = (sectionWidth * sectionHeight ** 3) / 12;
   const c = sectionHeight / 2;
@@ -32,7 +36,8 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
   const boltTensionPerBolt = moment / (n * dBolt * 0.5);
   const boltShearPerBolt = Math.hypot(radial, axial) / n;
   const E = 210e9;
-  const housingDeflection = (moment * arm ** 2) / (2 * E * Math.max(I, 1e-12));
+  const housingDeflection =
+    (moment * arm ** 2) / (2 * E * Math.max(I, 1e-12) * stiffK);
   const stiffnessEstimate = radial / Math.max(housingDeflection, 1e-9);
 
   let recommendedBoltSize = "M12";
@@ -77,6 +82,8 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
     recommendedShaftFit: fitRecommendation.shaftFit,
     recommendedHousingFit: fitRecommendation.housingFit,
     estimatedOperatingClearanceUm: fitRecommendation.estimatedOperatingClearanceUm,
+    housingSku: config.housingSku,
+    catalogStiffnessFactor: stiffK,
   };
 }
 

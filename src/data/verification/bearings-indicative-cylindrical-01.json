@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-cylindrical-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Cylindrical roller NU — pure radial",
+  "inputs": {
+    "radialLoad": 6000,
+    "axialLoad": 0,
+    "speed": 2000,
+    "lifeHours": 20000,
+    "safetyFactor": 1.5,
+    "bearingType": "cylindrical_roller",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 28600,
+      "staticRatingFactor": 27000,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 6000,
+    "requiredDynamicRating": 92962.09061335154,
+    "staticSafetyFactor": 4.5
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — cylindrical roller"
+}

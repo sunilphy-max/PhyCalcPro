@@ -3,6 +3,7 @@
  */
 
 import { ALL_SERIES_TEMPLATES } from "./seriesData";
+import { estimateDatasheetFatigueLoadLimitN } from "./fatigueLoadLimit";
 import {
   cageTypeForFamily,
   estimateBearingMassKg,
@@ -38,11 +39,45 @@ function scaleRating(value: number, factor: number): number {
   return Math.round(value * factor);
 }
 
+function resolveFatigueLoadLimit(
+  template: SeriesTemplate,
+  scaledDynamicN: number,
+  scaledStaticN: number,
+  factors: { dynamic: number; static: number }
+): { pu: number; fromDatasheet: boolean } {
+  if (template.fatigueLoadLimitN != null && template.fatigueLoadLimitN > 0) {
+    // Scale datasheet Pu with the same OEM static factor (Pu tracks material capacity).
+    return {
+      pu: scaleRating(template.fatigueLoadLimitN, factors.static),
+      fromDatasheet: true,
+    };
+  }
+  return {
+    pu: estimateDatasheetFatigueLoadLimitN({
+      type: template.type,
+      dynamicRatingN: scaledDynamicN,
+      staticRatingN: scaledStaticN,
+    }),
+    fromDatasheet: false,
+  };
+}
+
 function templateToEntry(
   template: SeriesTemplate,
   manufacturer: BearingManufacturer
 ): BearingCatalogEntry {
   const factors = MANUFACTURER_FACTORS[manufacturer];
+  const dynamicRatingN = scaleRating(template.dynamicRatingN, factors.dynamic);
+  const staticRatingN = scaleRating(template.staticRatingN, factors.static);
+  const { pu, fromDatasheet } = resolveFatigueLoadLimit(
+    template,
+    dynamicRatingN,
+    staticRatingN,
+    factors
+  );
+  const unitSystem = template.unitSystem ?? (template.dimensionSeries === "inch" ? "inch" : "metric");
+  const mmToIn = 1 / 25.4;
+
   return {
     designation: formatDesignation(manufacturer, template),
     type: template.type,
@@ -50,6 +85,7 @@ function templateToEntry(
     manufacturer,
     series: template.series,
     dimensionSeries: template.dimensionSeries,
+    unitSystem,
     sealType: template.sealType ?? "open",
     clearance: template.clearance ?? "CN",
     mountingRole: template.mountingRole ?? "either",
@@ -57,8 +93,12 @@ function templateToEntry(
     boreMm: template.boreMm,
     outerDiameterMm: template.outerDiameterMm,
     widthMm: template.widthMm,
-    dynamicRatingN: scaleRating(template.dynamicRatingN, factors.dynamic),
-    staticRatingN: scaleRating(template.staticRatingN, factors.static),
+    boreIn: unitSystem === "inch" ? Math.round(template.boreMm * mmToIn * 1000) / 1000 : undefined,
+    outerDiameterIn:
+      unitSystem === "inch" ? Math.round(template.outerDiameterMm * mmToIn * 1000) / 1000 : undefined,
+    widthIn: unitSystem === "inch" ? Math.round(template.widthMm * mmToIn * 1000) / 1000 : undefined,
+    dynamicRatingN,
+    staticRatingN,
     limitingSpeedRpm: scaleRating(template.limitingSpeedRpm, factors.speed),
     referenceSpeedRpm: template.referenceSpeedRpm
       ? scaleRating(template.referenceSpeedRpm, factors.speed)
@@ -67,9 +107,9 @@ function templateToEntry(
     massKg: estimateBearingMassKg(template.boreMm, template.outerDiameterMm, template.widthMm),
     cageType: cageTypeForFamily(template.family),
     costIndex: estimateCostIndex(template, manufacturer),
-    fatigueLoadLimitN: Math.round(
-      template.dynamicRatingN * (template.family.includes("roller") ? 0.03 : 0.025)
-    ),
+    fatigueLoadLimitN: pu,
+    fatigueLoadLimitFromDatasheet: fromDatasheet,
+    contactAngleDeg: template.contactAngleDeg,
     catalogFactors: template.catalogFactors,
   };
 }
@@ -84,7 +124,11 @@ function estimateCostIndex(
   if (template.type === "angular_contact") cost *= 1.35;
   if (template.type === "tapered_roller") cost *= 1.2;
   if (template.type === "spherical_roller") cost *= 1.8;
+  if (template.type === "toroidal_roller") cost *= 1.9;
   if (template.type === "needle_roller") cost *= 0.85;
+  if (template.type === "thrust_cylindrical_roller") cost *= 1.3;
+  if (template.type === "thrust_spherical_roller") cost *= 1.7;
+  if (template.unitSystem === "inch" || template.dimensionSeries === "inch") cost *= 1.05;
   if (manufacturer === "TIMKEN") cost *= 1.05;
   if (manufacturer === "SKF") cost *= 1.08;
   return Math.round(cost * 100) / 100;
@@ -126,7 +170,6 @@ export function findBearing(designation: string): BearingCatalogEntry | undefine
   );
   if (byIso) return byIso;
 
-  // Prefix match for short ISO sizes like "6205" → first open SKF 6205
   if (key.length >= 4) {
     const prefix = bearingCatalog.find(
       (b) =>
@@ -160,6 +203,14 @@ export function bearingsOfType(
 ): BearingCatalogEntry[] {
   const pool = manufacturer ? bearingsOfManufacturer(manufacturer) : bearingCatalog;
   return pool.filter((b) => b.type === type);
+}
+
+export function bearingsOfUnitSystem(
+  unitSystem: import("./types").BearingUnitSystem,
+  manufacturer?: BearingManufacturer
+): BearingCatalogEntry[] {
+  const pool = manufacturer ? bearingsOfManufacturer(manufacturer) : bearingCatalog;
+  return pool.filter((b) => b.unitSystem === unitSystem);
 }
 
 export function equivalentDesignation(

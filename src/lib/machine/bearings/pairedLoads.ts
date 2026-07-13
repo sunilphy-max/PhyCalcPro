@@ -85,7 +85,13 @@ export function splitLocatingFloatingLoads(
 /** Tandem pair dynamic rating for predominantly axial load (ISO / manufacturer convention). */
 export function tandemAxialRatingMultiplier(bearingType: BearingType, FaOverFr: number): number {
   if (FaOverFr < 0.5) return 1;
-  const axialTypes: BearingType[] = ["angular_contact", "tapered_roller", "thrust_ball"];
+  const axialTypes: BearingType[] = [
+    "angular_contact",
+    "tapered_roller",
+    "thrust_ball",
+    "thrust_cylindrical_roller",
+    "thrust_spherical_roller",
+  ];
   if (!axialTypes.includes(bearingType)) return 1;
   return 2;
 }

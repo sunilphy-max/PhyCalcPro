@@ -180,8 +180,13 @@ function inferBearingType(text: string): BearingType | undefined {
   if (/\bnj\b|cylindrical.*nj/.test(hay)) return "cylindrical_nj";
   if (/cylindrical\s*roller|\bnu\b/.test(hay)) return "cylindrical_roller";
   if (/tapered\s*roller/.test(hay)) return "tapered_roller";
+  if (/spherical\s*roller\s*thrust|thrust\s*spherical/.test(hay)) return "thrust_spherical_roller";
+  if (/cylindrical\s*roller\s*thrust|thrust\s*cylindrical|811\d{2}/.test(hay)) {
+    return "thrust_cylindrical_roller";
+  }
   if (/spherical\s*roller/.test(hay)) return "spherical_roller";
-  if (/needle\s*roller/.test(hay)) return "needle_roller";
+  if (/toroidal|carb\b|\bc\s*22/.test(hay)) return "toroidal_roller";
+  if (/needle\s*roller|\bhk\b|\bnk\b|\brna\b/.test(hay)) return "needle_roller";
   if (/self[- ]align/.test(hay)) return "self_aligning_ball";
   if (/thrust\s*ball/.test(hay)) return "thrust_ball";
   return undefined;

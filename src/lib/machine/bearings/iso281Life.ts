@@ -3,17 +3,8 @@
  * Reference: ISO 281, SKF rating life methodology (screening implementation).
  */
 
+import { isRollerBearingType } from "@/data/catalogs/bearing/types";
 import type { BearingType } from "./types";
-
-const ROLLER_TYPES: BearingType[] = [
-  "cylindrical_roller",
-  "cylindrical_nj",
-  "cylindrical_nup",
-  "tapered_roller",
-  "spherical_roller",
-  "needle_roller",
-  "thrust_ball",
-];
 
 /** ISO 281 contamination factor eC (ηc) — cleanliness classes. */
 export type ContaminationLevel =
@@ -59,10 +50,9 @@ export type ModifiedLifeFactors = {
   fatigueLoadLimitN: number;
 };
 
-/** Estimate Pu when not in catalog (ISO 281 typical ratios). */
+/** Estimate Pu when not in catalog (ISO 281 typical ratios from C). Prefer datasheet Pu. */
 export function estimateFatigueLoadLimitN(dynamicRatingN: number, bearingType: BearingType): number {
-  const roller = ROLLER_TYPES.includes(bearingType);
-  return (roller ? 0.03 : 0.025) * dynamicRatingN;
+  return (isRollerBearingType(bearingType) ? 0.03 : 0.025) * dynamicRatingN;
 }
 
 /** Rated kinematic viscosity ν₁ at operating temperature (mm²/s). */

@@ -14,6 +14,7 @@ const REPORT_SECTIONS = [
   "Catalog designation and geometry",
   "ISO 281 equivalent load P and static P₀",
   "Basic L10 and modified Lnm life with κ, eC, aISO",
+  "Life model ceiling factors (ISO 16281 / stress-life / hybrid) when enabled",
   "Static safety, speed margin, and min-load checks",
   "Pass / marginal / fail summary",
   "Life vs load and sensitivity charts (when captured)",

@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-spherical-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Spherical roller heavy radial — static SF screening",
+  "inputs": {
+    "radialLoad": 12000,
+    "axialLoad": 2000,
+    "speed": 900,
+    "lifeHours": 25000,
+    "safetyFactor": 1.5,
+    "bearingType": "spherical_roller",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 90000,
+      "staticRatingFactor": 85000,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 12000,
+    "requiredDynamicRating": 156448.94384262842,
+    "staticSafetyFactor": 7.083333333333333
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — spherical roller"
+}

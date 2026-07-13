@@ -10,9 +10,12 @@ const CAGE_BY_FAMILY: Record<string, string> = {
   cylindrical_roller: "Pressed steel",
   tapered_roller: "Pressed steel",
   spherical_roller: "Machined brass",
+  toroidal_roller: "Machined brass",
   needle_roller: "Pressed steel",
   self_aligning_ball: "Pressed steel",
   thrust_ball: "Pressed steel",
+  thrust_cylindrical_roller: "Pressed steel",
+  thrust_spherical_roller: "Machined brass",
 };
 
 /** Screening mass estimate from geometry (kg). */
@@ -68,6 +71,14 @@ export function formatOemDesignation(
   }
 
   // Open / angular contact / rollers — manufacturer-specific spacing
+  if (template.unitSystem === "inch" || template.dimensionSeries === "inch") {
+    // Inch / ABMA designations are unique per size (R 4, LM11949/LM11910).
+    if (manufacturer === "TIMKEN" || (template.manufacturers?.length ?? 0) === 1) {
+      return base;
+    }
+    return `${manufacturer} ${base}`;
+  }
+
   if (template.type === "angular_contact") {
     switch (manufacturer) {
       case "NSK":

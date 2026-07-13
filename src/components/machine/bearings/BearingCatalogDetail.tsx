@@ -30,10 +30,36 @@ export default function BearingCatalogDetail({ entry }: Props) {
           <dt className="text-slate-400">Static C₀</dt>
           <dd className="font-medium tabular-nums">{(entry.staticRatingN / 1000).toFixed(2)} kN</dd>
         </div>
+        {entry.fatigueLoadLimitN != null ? (
+          <div>
+            <dt className="text-slate-400">
+              Fatigue limit Pu
+              {entry.fatigueLoadLimitFromDatasheet ? " (datasheet)" : " (est.)"}
+            </dt>
+            <dd className="font-medium tabular-nums">
+              {(entry.fatigueLoadLimitN / 1000).toFixed(2)} kN
+            </dd>
+          </div>
+        ) : null}
         <div>
           <dt className="text-slate-400">Limiting speed</dt>
           <dd className="font-medium tabular-nums">{entry.limitingSpeedRpm} rpm</dd>
         </div>
+        {entry.unitSystem === "inch" ? (
+          <div>
+            <dt className="text-slate-400">Inch size</dt>
+            <dd className="font-medium tabular-nums">
+              {entry.boreIn?.toFixed(3)} × {entry.outerDiameterIn?.toFixed(3)} ×{" "}
+              {entry.widthIn?.toFixed(3)} in
+            </dd>
+          </div>
+        ) : null}
+        {entry.contactAngleDeg != null ? (
+          <div>
+            <dt className="text-slate-400">Contact angle</dt>
+            <dd className="font-medium tabular-nums">{entry.contactAngleDeg}°</dd>
+          </div>
+        ) : null}
         {entry.referenceSpeedRpm != null ? (
           <div>
             <dt className="text-slate-400">Reference speed</dt>

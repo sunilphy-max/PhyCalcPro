@@ -31,6 +31,16 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
         <CalculatorMetricCard label="Catalog designation" value={result.designation ?? "—"} tone="blue" />
         <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
         <CalculatorMetricCard
+          label="Life method"
+          value={
+            result.lifeMethod === "iso16281_screen"
+              ? "ISO 16281 screen"
+              : result.lifeMethod === "stress_life_screen"
+                ? "Stress-life screen"
+                : "ISO 281 / aSKF"
+          }
+        />
+        <CalculatorMetricCard
           label="Equivalent load P"
           numericValue={fromBase(result.equivalentLoad, "force", loadUnit)}
           unit={loadUnit}
@@ -43,13 +53,54 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           tone="blue"
         />
         <CalculatorMetricCard
-          label="SKF rating life Lnm"
+          label="Modified rating life Lnm"
           numericValue={result.modifiedLife}
           unit="h"
           tone="purple"
           size="lg"
         />
-        <CalculatorMetricCard label="Life factor aSKF" numericValue={result.aIso} unit="—" tone="blue" />
+        <CalculatorMetricCard
+          label="Life factor (effective)"
+          numericValue={result.aIso}
+          unit="—"
+          tone="blue"
+        />
+        {result.misalignmentUsedMrad != null && result.misalignmentUsedMrad > 0 ? (
+          <CalculatorMetricCard
+            label="Misalignment used"
+            numericValue={result.misalignmentUsedMrad}
+            unit="mrad"
+          />
+        ) : null}
+        {result.advancedLifeFactors && result.advancedLifeFactors.aStress !== 1 ? (
+          <CalculatorMetricCard
+            label="a_stress (not GBLM)"
+            numericValue={result.advancedLifeFactors.aStress}
+            unit="—"
+          />
+        ) : null}
+        {result.advancedLifeFactors && result.advancedLifeFactors.hybridLifeFactor !== 1 ? (
+          <CalculatorMetricCard
+            label="Hybrid life factor"
+            numericValue={result.advancedLifeFactors.hybridLifeFactor}
+            unit="—"
+          />
+        ) : null}
+        {result.adjustedReferenceSpeed && result.adjustedReferenceSpeed.nAdjRpm > 0 ? (
+          <CalculatorMetricCard
+            label="n_θ / n (adjusted)"
+            numericValue={result.adjustedReferenceSpeed.nAdjMargin}
+            unit="—"
+            status={result.adjustedReferenceSpeed.nAdjMargin >= 1 ? "safe" : "warning"}
+          />
+        ) : null}
+        {result.energyCo2 ? (
+          <CalculatorMetricCard
+            label="Annual CO₂ (friction)"
+            numericValue={result.energyCo2.annualCo2Kg}
+            unit="kg"
+          />
+        ) : null}
         {result.referenceSpeedMargin != null ? (
           <CalculatorMetricCard
             label="Ref. speed margin n_ref/n"
@@ -136,10 +187,26 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
             label="Ratings C / C₀"
             value={`${formatDisplayNumber(fromBase(result.dynamicLoadRatingN, "force", loadUnit))} / ${formatDisplayNumber(fromBase(result.staticLoadRatingN, "force", loadUnit))} ${loadUnit}`}
           />
+          {result.modifiedLifeFactors?.fatigueLoadLimitN != null ? (
+            <CalculatorMetricCard
+              label={
+                catalogEntry?.fatigueLoadLimitFromDatasheet
+                  ? "Fatigue limit Pu (datasheet)"
+                  : "Fatigue limit Pu (est.)"
+              }
+              value={`${formatDisplayNumber(fromBase(result.modifiedLifeFactors.fatigueLoadLimitN, "force", loadUnit))} ${loadUnit}`}
+            />
+          ) : null}
           <CalculatorMetricCard
             label="Manufacturer"
             value={catalogEntry ? BEARING_MANUFACTURER_LABELS[catalogEntry.manufacturer] : "—"}
           />
+          {catalogEntry?.unitSystem === "inch" && catalogEntry.boreIn != null ? (
+            <CalculatorMetricCard
+              label="Inch size"
+              value={`${catalogEntry.boreIn.toFixed(3)} × ${catalogEntry.outerDiameterIn?.toFixed(3)} × ${catalogEntry.widthIn?.toFixed(3)} in`}
+            />
+          ) : null}
           {result.limitingSpeedRpm != null ? (
             <CalculatorMetricCard
               label="Limiting speed"

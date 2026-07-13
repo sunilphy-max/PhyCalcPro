@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-tapered-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Tapered roller combined load — ISO 281 P and required C",
+  "inputs": {
+    "radialLoad": 8000,
+    "axialLoad": 5000,
+    "speed": 1200,
+    "lifeHours": 15000,
+    "safetyFactor": 1.5,
+    "bearingType": "tapered_roller",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 28600,
+      "staticRatingFactor": 27000,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 8200,
+    "requiredDynamicRating": 99984.3984597429,
+    "staticSafetyFactor": 2.6470588235294117
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — tapered roller"
+}

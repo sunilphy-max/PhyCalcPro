@@ -26,6 +26,12 @@ import type { HousingConfig, HousingMountStyle, HousingResult } from "@/lib/mach
 import type { HousingCopilotApplyPayload } from "@/lib/copilot/housingCopilot";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
+import {
+  nearestHousingForBore,
+  type HousingCatalogEntry,
+  type HousingSealOption,
+} from "@/data/catalogs/housing";
+import { buildMountedBom } from "@/lib/machine/housing/mountedBom";
 
 type HousingProjectData = {
   boreDiameter: number;
@@ -65,6 +71,10 @@ export default function Page() {
   const [lengthUnit, setLengthUnit] = useState("mm");
   const [forceUnit, setForceUnit] = useState("N");
   const [stressUnit, setStressUnit] = useState("MPa");
+  const [housingSku, setHousingSku] = useState("");
+  const [housingSeal, setHousingSeal] = useState<HousingSealOption>("labyrinth");
+  const [stiffnessFactor, setStiffnessFactor] = useState(1);
+  const [baseHeightMm, setBaseHeightMm] = useState<number | undefined>(undefined);
   const [result, setResult] = useState<WithCalculationSpec<HousingResult> | null>(null);
   const [diagnosis, setDiagnosis] = useState<HousingDiagnosis | null>(null);
   const [lastConfig, setLastConfig] = useState<HousingConfig | null>(null);
@@ -84,6 +94,10 @@ export default function Page() {
       boltCount: Math.max(2, Math.round(boltCount)),
       boltCircleDiameter: toBase(boltCircleDiameter, "length", lengthUnit),
       yieldStress: toBase(yieldStress, "stress", stressUnit),
+      housingSku: housingSku || undefined,
+      stiffnessFactor,
+      baseHeightM:
+        baseHeightMm != null ? toBase(baseHeightMm, "length", "mm") : undefined,
     }),
     [
       boreDiameter,
@@ -97,8 +111,36 @@ export default function Page() {
       lengthUnit,
       forceUnit,
       stressUnit,
+      housingSku,
+      stiffnessFactor,
+      baseHeightMm,
     ]
   );
+
+  const onSelectHousingSku = useCallback(
+    (entry: HousingCatalogEntry) => {
+      setHousingSku(entry.sku);
+      setMountStyle(entry.mountStyle);
+      setBoltCount(entry.boltCount);
+      setBoltCircleDiameter(fromBase(entry.boltSpanMm / 1000, "length", lengthUnit));
+      setBoreDiameter(fromBase(entry.boreMm / 1000, "length", lengthUnit));
+      setStiffnessFactor(entry.stiffnessFactor);
+      setBaseHeightMm(entry.baseHeightMm);
+      setHousingSeal(entry.defaultSeal);
+    },
+    [lengthUnit]
+  );
+
+  const mountedBom = useMemo(() => {
+    const boreMm =
+      lengthUnit === "mm" ? boreDiameter : fromBase(toBase(boreDiameter, "length", lengthUnit), "length", "mm");
+    return buildMountedBom({
+      boreMm,
+      housingSku: housingSku || undefined,
+      seal: housingSeal,
+      bearingDesignation: undefined,
+    });
+  }, [boreDiameter, lengthUnit, housingSku, housingSeal]);
 
   const runCheck = useCallback(() => {
     const config = buildConfig();
@@ -247,9 +289,14 @@ export default function Page() {
             onApply={(params) => {
               if (params.boreMm != null) {
                 setBoreDiameter(fromBase(params.boreMm, "length", lengthUnit));
+                const boreMm = params.boreMm * 1000;
+                const nearest = nearestHousingForBore(boreMm);
+                if (nearest) onSelectHousingSku(nearest);
               }
               if (params.shaftDiameter != null) {
                 setBoreDiameter(fromBase(params.shaftDiameter, "length", lengthUnit));
+                const nearest = nearestHousingForBore(params.shaftDiameter * 1000);
+                if (nearest) onSelectHousingSku(nearest);
               }
               if (params.radialLoad != null) {
                 setRadialLoad(fromBase(params.radialLoad, "force", forceUnit));
@@ -283,6 +330,11 @@ export default function Page() {
             setForceUnit={setForceUnit}
             stressUnit={stressUnit}
             setStressUnit={setStressUnit}
+            housingSku={housingSku}
+            onSelectHousingSku={onSelectHousingSku}
+            mountedBom={mountedBom}
+            housingSeal={housingSeal}
+            setHousingSeal={setHousingSeal}
             onCalculate={calculate}
             onSave={() =>
               saveProject({

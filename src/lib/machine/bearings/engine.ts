@@ -34,6 +34,7 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
         ...config,
         dynamicLoadRatingN: entry.dynamicRatingN,
         staticLoadRatingN: entry.staticRatingN,
+        fatigueLoadLimitN: entry.fatigueLoadLimitN ?? config.fatigueLoadLimitN,
         limitingSpeedRpm: entry.limitingSpeedRpm,
         referenceSpeedRpm: entry.referenceSpeedRpm,
         designation: entry.designation,

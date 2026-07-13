@@ -242,12 +242,20 @@ function ShaftsPageContent() {
       const spanM =
         sorted.length >= 2 ? Math.abs(sorted[1]!.position - sorted[0]!.position) : undefined;
 
+      const slopesSorted = [...raw.bearingSlopes].sort((a, b) => a.position - b.position);
+      const slope0 = slopesSorted[0]?.slopeRad;
+      const slope1 = slopesSorted[1]?.slopeRad;
+      const maxBearingSlope = Math.max(
+        ...raw.bearingSlopes.map((s) => s.slopeRad),
+        0
+      );
+
       publishHandoff(
         "bearings",
         {
           fromModuleId: "shafts",
           fromTitle: "Shaft Analysis",
-          summary: `Bearing reactions from shaft FEM — Fr₀ ≈ ${(fr0 / 1000).toFixed(2)} kN${fr1 != null ? `, Fr₁ ≈ ${(fr1 / 1000).toFixed(2)} kN` : ""}, shaft ⌀ ${(shaftDiameterM * 1000).toFixed(1)} mm. Station loads and span applied automatically.`,
+          summary: `Bearing reactions from shaft FEM — Fr₀ ≈ ${(fr0 / 1000).toFixed(2)} kN${fr1 != null ? `, Fr₁ ≈ ${(fr1 / 1000).toFixed(2)} kN` : ""}, max slope ${(maxBearingSlope * 1000).toFixed(2)} mrad, shaft ⌀ ${(shaftDiameterM * 1000).toFixed(1)} mm.`,
           params: {
             radialLoad: maxReaction,
             ...(maxAxial > 0 ? { axialLoad: maxAxial } : {}),
@@ -257,6 +265,9 @@ function ShaftsPageContent() {
             station0Radial: fr0,
             ...(fr1 != null ? { station1Radial: fr1 } : {}),
             ...(spanM != null ? { bearingSpanMm: spanM * 1000 } : {}),
+            ...(slope0 != null ? { station0Slope: slope0 } : {}),
+            ...(slope1 != null ? { station1Slope: slope1 } : {}),
+            ...(maxBearingSlope > 0 ? { maxBearingSlope } : {}),
           },
         },
         { autoApply: true }

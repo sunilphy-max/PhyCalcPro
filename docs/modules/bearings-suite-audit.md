@@ -203,22 +203,29 @@ Eight cross-family profiles in `applicationMeta.ts`:
 
 ### P2 — Optional product depth
 
-- [ ] Thrust **roller** family
 - [ ] Cross-OEM interchange table at scale (beyond same-bore heuristic)
 - [ ] Housing / seal SKU catalog (SNL, UCP, …)
 - [ ] Defect frequencies, adjusted reference speed
-- [ ] Misalignment angle input for self-aligning / spherical Y factors
+- [x] Misalignment angle input for self-aligning / spherical Y factors (screening derate + ISO 16281 P path)
 
 ### P3 — Out of scope unless requested
 
 - Catalog expansion to MITCalc/SKF scale (5k–10k SKUs)
-- Bearinx-style elastic shaft / Hertzian per-roller analysis
-- SKF GBLM / hybrid ceramic super-precision life
+- Bearinx-style iterative elastic shaft / Hertzian per-roller analysis
+- Vendor SKF GBLM / AFC table matching (PhyCalcPro offers transparent stress-life **screening** only)
 - Dedicated per-family routes (e.g. `/products/bearings/tapered`)
 
 ### Completed (formerly P0/P1)
 
 - [x] Full ISO 281 modified life from κ, eC, Pu (`iso281Life.ts`)
+- [x] Life model ceiling screening: ISO 16281-inspired P, stress-life (not GBLM), hybrid ceramic, shaft slope handoff
+- [x] Defect frequencies BPFO/BPFI/BSF/FTF (screening geometry)
+- [x] Grease life L₁₀h vs relubrication interval tf
+- [x] Adjusted reference speed n_θ screening
+- [x] Friction energy + CO₂ screening
+- [x] Side-by-side bearing compare under same duty
+- [x] Housing SNL/UCP/FY/SAF-class screening catalog + mounted BOM
+- [x] Expanded rolling verification JSON cases (indicative regression)
 - [x] Duplex/paired angular & tapered life (`pairedLoads.ts`)
 - [x] Variable load spectrum ISO 281-1 (`variableLoad.ts`)
 - [x] Fit recommendation + clearance C2/CN/C3/C4 (`fitsClearance.ts`)
@@ -226,6 +233,7 @@ Eight cross-family profiles in `applicationMeta.ts`:
 - [x] Minimum load, friction torque, power loss (`auxiliaryChecks.ts`)
 - [x] Plain journal Raimondi–Boyd + ISO 7902 screening (`iso7902.ts`)
 - [x] Housing fit recommendation
+- [x] Thrust roller + toroidal + inch catalog expansion (datasheet Pu)
 
 ---
 

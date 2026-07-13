@@ -2,7 +2,8 @@
  * ISO 281 equivalent dynamic load P — shared by solver and paired-bearing analysis.
  */
 
-import type { BearingArrangement, BearingConfig, BearingType } from "./types";
+import { isRollerBearingType, isThrustBearingType } from "@/data/catalogs/bearing/types";
+import type { BearingConfig, BearingType } from "./types";
 
 const bearingCoefficients: Record<BearingType, { X: number; Y: number; e: number }> = {
   deep_groove: { X: 0.56, Y: 1.6, e: 0.3 },
@@ -12,23 +13,16 @@ const bearingCoefficients: Record<BearingType, { X: number; Y: number; e: number
   cylindrical_nup: { X: 1.0, Y: 0.45, e: 0.4 },
   tapered_roller: { X: 0.4, Y: 1.0, e: 0.4 },
   spherical_roller: { X: 1.0, Y: 2.1, e: 0.65 },
+  toroidal_roller: { X: 1.0, Y: 0.0, e: Infinity },
   needle_roller: { X: 1.0, Y: 0.0, e: Infinity },
   self_aligning_ball: { X: 1.0, Y: 2.3, e: 0.65 },
   thrust_ball: { X: 0.0, Y: 1.0, e: 0.0 },
+  thrust_cylindrical_roller: { X: 0.0, Y: 1.0, e: 0.0 },
+  thrust_spherical_roller: { X: 0.0, Y: 1.0, e: 0.0 },
 };
 
-const ROLLER_TYPES: BearingType[] = [
-  "cylindrical_roller",
-  "cylindrical_nj",
-  "cylindrical_nup",
-  "tapered_roller",
-  "spherical_roller",
-  "needle_roller",
-  "thrust_ball",
-];
-
 export function lifeExponentFor(type: BearingType): number {
-  return ROLLER_TYPES.includes(type) ? 10 / 3 : 3;
+  return isRollerBearingType(type) ? 10 / 3 : 3;
 }
 
 function resolveCoefficients(config: BearingConfig): { X: number; Y: number; e: number } {
@@ -40,7 +34,7 @@ export function calculateBearingEquivalentLoad(config: BearingConfig): number {
   const Fr = Math.abs(config.radialLoad);
   const Fa = Math.abs(config.axialLoad);
 
-  if (config.bearingType === "thrust_ball") {
+  if (isThrustBearingType(config.bearingType)) {
     return Math.max(Fa, 1e-9);
   }
 

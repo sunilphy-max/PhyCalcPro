@@ -23,7 +23,13 @@ export const APPLICATION_PROFILE_META: Record<BearingApplicationProfile, Applica
   heavy_shock: {
     label: "Heavy load / shock / misalignment",
     description: "Mining, crushers, paper machines — misalignment tolerance needed",
-    suggestedTypes: ["spherical_roller", "tapered_roller", "self_aligning_ball", "cylindrical_nup"],
+    suggestedTypes: [
+      "spherical_roller",
+      "toroidal_roller",
+      "tapered_roller",
+      "self_aligning_ball",
+      "cylindrical_nup",
+    ],
   },
   high_speed: {
     label: "High speed",
@@ -39,7 +45,7 @@ export const APPLICATION_PROFILE_META: Record<BearingApplicationProfile, Applica
   pure_thrust: {
     label: "Pure thrust / axial locate",
     description: "Vertical shafts, screw thrust — axial load governs",
-    suggestedTypes: ["thrust_ball"],
+    suggestedTypes: ["thrust_ball", "thrust_cylindrical_roller", "thrust_spherical_roller"],
     suggestedMountingRoles: ["locating"],
   },
   locating_bearing: {
@@ -50,8 +56,8 @@ export const APPLICATION_PROFILE_META: Record<BearingApplicationProfile, Applica
   },
   floating_bearing: {
     label: "Floating bearing (free axial)",
-    description: "Allows thermal expansion — deep groove or NU cylindrical",
-    suggestedTypes: ["deep_groove", "cylindrical_roller", "needle_roller"],
+    description: "Allows thermal expansion — deep groove, NU cylindrical, or CARB toroidal",
+    suggestedTypes: ["deep_groove", "cylindrical_roller", "toroidal_roller", "needle_roller"],
     suggestedMountingRoles: ["non_locating"],
   },
 };

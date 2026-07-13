@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-combined-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Deep-groove Fr=5 kN Fa=1.5 kN — Fa/Fr ≤ e so P=Fr",
+  "inputs": {
+    "radialLoad": 5000,
+    "axialLoad": 1500,
+    "speed": 1800,
+    "lifeHours": 20000,
+    "safetyFactor": 1.5,
+    "bearingType": "deep_groove",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 14800,
+      "staticRatingFactor": 7800,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 5000,
+    "requiredDynamicRating": 96949.56105143475,
+    "staticSafetyFactor": 1.56
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — combined load deep groove"
+}

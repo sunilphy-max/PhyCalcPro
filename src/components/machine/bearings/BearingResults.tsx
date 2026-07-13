@@ -16,6 +16,8 @@ import BearingThermalCard from "@/components/machine/bearings/BearingThermalCard
 import BearingDuplexStiffnessCard from "@/components/machine/bearings/BearingDuplexStiffnessCard";
 import BearingThermalEquilibriumCard from "@/components/machine/bearings/BearingThermalEquilibriumCard";
 import BearingRelubricationCard from "@/components/machine/bearings/BearingRelubricationCard";
+import BearingDefectFrequenciesCard from "@/components/machine/bearings/BearingDefectFrequenciesCard";
+import BearingAuxSpeedEnergyCard from "@/components/machine/bearings/BearingAuxSpeedEnergyCard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
   EngineeringPlotPicker,
@@ -26,6 +28,11 @@ import BearingReferenceVisual from "@/components/machine/bearings/BearingReferen
 import BearingStatusBanner from "@/components/machine/bearings/BearingStatusBanner";
 import BearingResultsMetrics from "@/components/machine/bearings/BearingResultsMetrics";
 import BearingRecommendations from "@/components/machine/bearings/BearingRecommendations";
+import BearingCompareTable, {
+  type BearingCompareRow,
+} from "@/components/machine/bearings/BearingCompareTable";
+import MountedBomPanel from "@/components/machine/housing/MountedBomPanel";
+import type { MountedBomResult } from "@/lib/machine/housing/mountedBom";
 import BearingDiagnosisPanel from "@/components/machine/bearings/BearingDiagnosisPanel";
 import BearingReportPreview from "@/components/machine/bearings/BearingReportPreview";
 import BearingResultsViewTabs, {
@@ -41,6 +48,8 @@ type Props = {
   workflowMode?: DesignWorkflowMode;
   diagnosis?: BearingDiagnosis | null;
   crossManufacturerRecommendation?: CrossManufacturerRecommendation | null;
+  compareRows?: BearingCompareRow[];
+  mountedBom?: MountedBomResult | null;
   inputRows?: ReportRow[];
   onSelectDesignation?: (designation: string) => void;
 };
@@ -53,6 +62,8 @@ export default function BearingResults({
   workflowMode,
   diagnosis,
   crossManufacturerRecommendation = null,
+  compareRows = [],
+  mountedBom = null,
   inputRows = [],
   onSelectDesignation,
 }: Props) {
@@ -178,6 +189,8 @@ export default function BearingResults({
           onSelect={onSelectDesignation}
         />
       ) : null}
+      {compareRows.length >= 2 ? <BearingCompareTable rows={compareRows} /> : null}
+      {mountedBom ? <MountedBomPanel bom={mountedBom} compact /> : null}
 
       <BearingLifeFactorsCard result={result} />
       <BearingPairedStationsCard result={result} loadUnit={loadUnit} />
@@ -185,6 +198,8 @@ export default function BearingResults({
       <BearingThermalEquilibriumCard result={result} />
       <BearingThermalCard result={result} />
       <BearingRelubricationCard result={result} />
+      <BearingAuxSpeedEnergyCard result={result} />
+      <BearingDefectFrequenciesCard result={result} />
       {result.bearingType ? (
         <BearingReferenceVisual
           bearingType={result.bearingType}

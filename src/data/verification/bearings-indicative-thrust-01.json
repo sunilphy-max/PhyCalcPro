@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-thrust-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Thrust ball — pure axial, P=Fa",
+  "inputs": {
+    "radialLoad": 0.001,
+    "axialLoad": 12000,
+    "speed": 600,
+    "lifeHours": 20000,
+    "safetyFactor": 1.5,
+    "bearingType": "thrust_ball",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 25500,
+      "staticRatingFactor": 56000,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 12000,
+    "requiredDynamicRating": 161330.5708760579,
+    "staticSafetyFactor": 4.666666666666667
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — thrust ball"
+}

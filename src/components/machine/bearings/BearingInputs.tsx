@@ -25,6 +25,10 @@ import type {
   LubricantType,
   BearingPreloadClass,
 } from "@/lib/machine/bearings/types";
+import type {
+  BearingLifeMethod,
+  RollingElementMaterial,
+} from "@/lib/machine/bearings/types";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import BearingTypePicker from "@/components/machine/bearings/BearingTypePicker";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
@@ -44,6 +48,7 @@ import {
   BEARING_MANUFACTURER_LABELS,
   BEARING_TYPE_LABELS,
   SEAL_TYPE_LABELS,
+  type BearingUnitSystem,
 } from "@/data/catalogs/bearingCatalog";
 
 export type LoadSpectrumUiStep = {
@@ -88,6 +93,8 @@ type Props = {
   setSeriesFilter: (series: string | "all") => void;
   sealFilter: BearingSealType | "all";
   setSealFilter: (seal: BearingSealType | "all") => void;
+  unitSystemFilter: BearingUnitSystem | "all";
+  setUnitSystemFilter: (unit: BearingUnitSystem | "all") => void;
   arrangement: BearingArrangement;
   setArrangement: (a: BearingArrangement) => void;
   lubricantType: LubricantType;
@@ -120,6 +127,12 @@ type Props = {
   setAvailableFloatMm?: (v: number) => void;
   useThermalEquilibrium?: boolean;
   setUseThermalEquilibrium?: (v: boolean) => void;
+  lifeMethod: BearingLifeMethod;
+  setLifeMethod: (v: BearingLifeMethod) => void;
+  misalignmentAngleMrad: number | "";
+  setMisalignmentAngleMrad: (v: number | "") => void;
+  rollingElementMaterial: RollingElementMaterial;
+  setRollingElementMaterial: (v: RollingElementMaterial) => void;
   stationRadialLoadsN?: number[];
   workflowMode?: DesignWorkflowMode;
   mountingSystem?: BearingMountingSystemId;
@@ -176,6 +189,8 @@ export default function BearingInputs({
   setSeriesFilter,
   sealFilter,
   setSealFilter,
+  unitSystemFilter,
+  setUnitSystemFilter,
   arrangement,
   setArrangement,
   lubricantType,
@@ -208,6 +223,12 @@ export default function BearingInputs({
   setAvailableFloatMm,
   useThermalEquilibrium = true,
   setUseThermalEquilibrium,
+  lifeMethod,
+  setLifeMethod,
+  misalignmentAngleMrad,
+  setMisalignmentAngleMrad,
+  rollingElementMaterial,
+  setRollingElementMaterial,
   stationRadialLoadsN,
   workflowMode,
   mountingSystem = "single",
@@ -220,15 +241,21 @@ export default function BearingInputs({
   setProjectName,
 }: Props) {
   const manufacturerPool = useMemo(
-    () => filterCatalog(bearingCatalog, { manufacturer, applicationProfile }),
-    [manufacturer, applicationProfile]
+    () => filterCatalog(bearingCatalog, { manufacturer, applicationProfile, unitSystem: unitSystemFilter }),
+    [manufacturer, applicationProfile, unitSystemFilter]
   );
 
   const availableTypes = useMemo(() => uniqueTypes(manufacturerPool), [manufacturerPool]);
 
   const typePool = useMemo(
-    () => filterCatalog(bearingCatalog, { manufacturer, applicationProfile, type: bearingType }),
-    [manufacturer, applicationProfile, bearingType]
+    () =>
+      filterCatalog(bearingCatalog, {
+        manufacturer,
+        applicationProfile,
+        type: bearingType,
+        unitSystem: unitSystemFilter,
+      }),
+    [manufacturer, applicationProfile, bearingType, unitSystemFilter]
   );
 
   const seriesOptions = useMemo(() => uniqueSeries(typePool), [typePool]);
@@ -241,8 +268,17 @@ export default function BearingInputs({
         type: bearingType,
         series: seriesFilter,
         sealType: sealFilter,
+        unitSystem: unitSystemFilter,
       }).filter((entry) => (maxOuterMm === "" ? true : entry.outerDiameterMm <= maxOuterMm)),
-    [manufacturer, applicationProfile, bearingType, seriesFilter, sealFilter, maxOuterMm]
+    [
+      manufacturer,
+      applicationProfile,
+      bearingType,
+      seriesFilter,
+      sealFilter,
+      unitSystemFilter,
+      maxOuterMm,
+    ]
   );
 
   const selected = findBearing(designation);
@@ -651,6 +687,60 @@ export default function BearingInputs({
                 ) : null}
               </div>
             </CalculatorFormSection>
+
+            <CalculatorFormSection
+              title="Life model ceiling"
+              description="Optional screening methods above ISO 281. Advanced paths are labeled screening — not vendor GBLM / Bearinx."
+            >
+              <div className={calculatorInputGridClass}>
+                <CalculatorSelectField
+                  label="Life method"
+                  value={lifeMethod}
+                  onChange={(value) => setLifeMethod(value as BearingLifeMethod)}
+                >
+                  <option value="iso281">ISO 281 / aSKF (default)</option>
+                  <option value="iso16281_screen">ISO 16281 screen (P adj.)</option>
+                  <option value="stress_life_screen">Stress-life screen (not GBLM)</option>
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Rolling elements"
+                  value={rollingElementMaterial}
+                  onChange={(value) => setRollingElementMaterial(value as RollingElementMaterial)}
+                >
+                  <option value="steel">Steel</option>
+                  <option value="hybrid_ceramic">Hybrid ceramic (ISO 20056-inspired)</option>
+                  <option value="full_ceramic">Full ceramic</option>
+                </CalculatorSelectField>
+                <div className="min-w-0 space-y-1.5">
+                  <label className={calculatorFieldLabelClass}>Misalignment (mrad)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min={0}
+                    value={misalignmentAngleMrad}
+                    onChange={(event) =>
+                      setMisalignmentAngleMrad(
+                        event.target.value === "" ? "" : Number(event.target.value)
+                      )
+                    }
+                    placeholder="0 or from shaft handoff"
+                    className={calculatorNumberInputClass}
+                  />
+                </div>
+              </div>
+              {lifeMethod === "iso16281_screen" ? (
+                <p className="mt-2 text-xs text-slate-500">
+                  ISO 16281-inspired screening adjusts P for clearance, misalignment, and load
+                  distribution — not full ISO 16281:2025 contact analysis.
+                </p>
+              ) : null}
+              {lifeMethod === "stress_life_screen" ? (
+                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                  Stress-life screening uses a transparent contact-pressure / film modifier. This is
+                  not SKF GBLM or AFC.
+                </p>
+              ) : null}
+            </CalculatorFormSection>
           </div>
         );
 
@@ -672,6 +762,15 @@ export default function BearingInputs({
                       {BEARING_MANUFACTURER_LABELS[mfr]}
                     </option>
                   ))}
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Dimension system"
+                  value={unitSystemFilter}
+                  onChange={(value) => setUnitSystemFilter(value as BearingUnitSystem | "all")}
+                >
+                  <option value="all">Metric + inch</option>
+                  <option value="metric">Metric (ISO)</option>
+                  <option value="inch">Inch (ABMA / Timken)</option>
                 </CalculatorSelectField>
                 <CalculatorSelectField
                   label="Series"
@@ -708,8 +807,11 @@ export default function BearingInputs({
               >
                 {catalogOptions.map((entry) => (
                   <option key={entry.designation} value={entry.designation}>
-                    {entry.designation} — d {entry.boreMm} mm, D {entry.outerDiameterMm} mm, C{" "}
-                    {(entry.dynamicRatingN / 1000).toFixed(1)} kN
+                    {entry.designation} —{" "}
+                    {entry.unitSystem === "inch" && entry.boreIn != null
+                      ? `d ${entry.boreIn.toFixed(3)} in, D ${entry.outerDiameterIn?.toFixed(3)} in`
+                      : `d ${entry.boreMm} mm, D ${entry.outerDiameterMm} mm`}
+                    , C {(entry.dynamicRatingN / 1000).toFixed(1)} kN
                     {entry.sealType !== "open" ? ` · ${SEAL_TYPE_LABELS[entry.sealType]}` : ""}
                   </option>
                 ))}
@@ -723,7 +825,7 @@ export default function BearingInputs({
             setFloatingDesignation ? (
               <CalculatorFormSection
                 title="Floating station designation"
-                description="NU / NJ cylindrical roller for the non-locating end — sized separately from the locating bearing."
+                description="NU / NJ cylindrical or CARB toroidal for the non-locating end — sized separately from the locating bearing."
               >
                 <CalculatorSelectField
                   label="Floating bearing"
@@ -737,7 +839,8 @@ export default function BearingInputs({
                         e.manufacturer === manufacturer &&
                         (e.type === "cylindrical_roller" ||
                           e.type === "cylindrical_nj" ||
-                          e.type === "cylindrical_nup")
+                          e.type === "cylindrical_nup" ||
+                          e.type === "toroidal_roller")
                     )
                     .map((entry) => (
                       <option key={entry.designation} value={entry.designation}>

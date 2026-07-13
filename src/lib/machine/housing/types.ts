@@ -15,6 +15,12 @@ export type HousingConfig = {
   yieldStress: number;
   bearingClearance?: BearingClearance;
   operatingTempDeltaC?: number;
+  /** Catalog SKU (SNL / UCP / …) when selected. */
+  housingSku?: string;
+  /** Relative stiffness vs generic cantilever (from housing catalog). */
+  stiffnessFactor?: number;
+  /** Catalog base / center height (m) — scales section estimate. */
+  baseHeightM?: number;
 };
 
 export type HousingResult = {
@@ -32,4 +38,6 @@ export type HousingResult = {
   recommendedShaftFit: string;
   recommendedHousingFit: string;
   estimatedOperatingClearanceUm: number;
+  housingSku?: string;
+  catalogStiffnessFactor?: number;
 };

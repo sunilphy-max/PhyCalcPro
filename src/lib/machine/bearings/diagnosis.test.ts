@@ -28,6 +28,7 @@ function baseResult(overrides: Partial<BearingResult> = {}): BearingResult {
     bearingType: "deep_groove",
     designation: "6205",
     geometry: { boreMm: 25, outerDiameterMm: 52, widthMm: 15 },
+    referenceSpeedMargin: null,
     designStatus: "safe",
     isSafe: true,
     governingFailureMode: "Life utilization",
@@ -38,6 +39,7 @@ function baseResult(overrides: Partial<BearingResult> = {}): BearingResult {
     frictionTorqueNm: 0.05,
     powerLossW: 50,
     temperatureDeratingFactor: 1,
+    lifeMethod: "iso281",
     ...overrides,
   };
 }

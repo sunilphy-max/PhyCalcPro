@@ -125,6 +125,66 @@ export default function BearingCrossSectionSvg({
             <line x1={cx} y1={6} x2={cx} y2={24} stroke="#1e293b" strokeWidth={4} />
           </>
         );
+      case "toroidal_roller":
+        return (
+          <>
+            <ellipse cx={cx} cy={cy} rx={40} ry={30} fill="#e2e8f0" stroke="#475569" strokeWidth={2.5} />
+            <circle cx={cx} cy={cy} r={15} fill="#f8fafc" stroke="#94a3b8" />
+            {[ -18, -6, 6, 18 ].map((dx) => (
+              <ellipse
+                key={dx}
+                cx={cx + dx}
+                cy={cy}
+                rx={5}
+                ry={12}
+                fill={`url(#${gradId})`}
+                stroke="#0369a1"
+              />
+            ))}
+            <line x1={cx} y1={6} x2={cx} y2={24} stroke="#1e293b" strokeWidth={4} />
+            <path d="M108 50 L122 50" stroke="#059669" strokeWidth={2} strokeDasharray="3 2" />
+          </>
+        );
+      case "thrust_cylindrical_roller":
+        return (
+          <>
+            <rect x={18} y={30} width={104} height={12} fill="#475569" rx={2} />
+            <rect x={18} y={58} width={104} height={12} fill="#475569" rx={2} />
+            {[28, 42, 56, 70, 84, 98, 112].map((x) => (
+              <rect
+                key={x}
+                x={x - 3}
+                y={cy - 10}
+                width={6}
+                height={20}
+                rx={1}
+                fill={`url(#${gradId})`}
+                stroke="#0369a1"
+              />
+            ))}
+            <path d="M70 8 L70 24 M64 8 L76 8" stroke="#dc2626" strokeWidth={2.5} markerEnd={`url(#${arrowId})`} />
+          </>
+        );
+      case "thrust_spherical_roller":
+        return (
+          <>
+            <path d="M20 36 Q70 22 120 36 L120 48 Q70 36 20 48 Z" fill="#475569" />
+            <path d="M20 64 Q70 52 120 64 L120 76 Q70 64 20 76 Z" fill="#475569" />
+            {[36, 52, 68, 84, 100].map((x, i) => (
+              <ellipse
+                key={x}
+                cx={x}
+                cy={cy}
+                rx={6}
+                ry={10}
+                fill={`url(#${gradId})`}
+                stroke="#0369a1"
+                transform={`rotate(${-8 + i * 2} ${x} ${cy})`}
+              />
+            ))}
+            <path d="M70 8 L70 24 M64 8 L76 8" stroke="#dc2626" strokeWidth={2.5} markerEnd={`url(#${arrowId})`} />
+          </>
+        );
       case "self_aligning_ball":
         return (
           <>

@@ -10,9 +10,12 @@ export type CatalogBearingType =
   | "cylindrical_nup"
   | "tapered_roller"
   | "spherical_roller"
+  | "toroidal_roller"
   | "needle_roller"
   | "self_aligning_ball"
-  | "thrust_ball";
+  | "thrust_ball"
+  | "thrust_cylindrical_roller"
+  | "thrust_spherical_roller";
 
 export type BearingManufacturer = "SKF" | "FAG" | "NSK" | "TIMKEN" | "NTN";
 
@@ -22,9 +25,12 @@ export type BearingFamily =
   | "cylindrical_roller"
   | "tapered_roller"
   | "spherical_roller"
+  | "toroidal_roller"
   | "needle_roller"
   | "self_aligning_ball"
-  | "thrust_ball";
+  | "thrust_ball"
+  | "thrust_cylindrical_roller"
+  | "thrust_spherical_roller";
 
 export type BearingSealType = "open" | "shielded" | "sealed" | "contact_sealed";
 
@@ -39,7 +45,11 @@ export type BearingDimensionSeries =
   | "heavy"
   | "thin_section"
   | "tapered_light"
-  | "tapered_medium";
+  | "tapered_medium"
+  | "inch";
+
+/** Catalog dimension system — metric ISO or inch (ABMA / Timken). */
+export type BearingUnitSystem = "metric" | "inch";
 
 export type BearingApplicationProfile =
   | "general_radial"
@@ -69,9 +79,11 @@ export type BearingCatalogEntry = {
   type: CatalogBearingType;
   family: BearingFamily;
   manufacturer: BearingManufacturer;
-  /** Catalog series label, e.g. 62xx, 302xx, 222xx */
+  /** Catalog series label, e.g. 62xx, 302xx, 222xx, C22xx, LM */
   series: string;
   dimensionSeries?: BearingDimensionSeries;
+  /** Metric ISO vs inch ABMA / Timken cone-cup. */
+  unitSystem: BearingUnitSystem;
   sealType: BearingSealType;
   clearance: BearingClearance;
   mountingRole: BearingMountingRole;
@@ -79,6 +91,10 @@ export type BearingCatalogEntry = {
   boreMm: number;
   outerDiameterMm: number;
   widthMm: number;
+  /** Bore in inches when unitSystem is inch (screening display). */
+  boreIn?: number;
+  outerDiameterIn?: number;
+  widthIn?: number;
   dynamicRatingN: number;
   staticRatingN: number;
   limitingSpeedRpm: number;
@@ -92,8 +108,15 @@ export type BearingCatalogEntry = {
   cageType?: string;
   /** Relative cost index (1.0 = baseline open deep groove). */
   costIndex?: number;
-  /** Fatigue load limit Pu (N) when known from catalog. */
+  /**
+   * Fatigue load limit Pu (N) from datasheet when available.
+   * Critical for aSKF / aISO at high P/C — prefer this over C-ratio estimates.
+   */
   fatigueLoadLimitN?: number;
+  /** True when Pu came from an explicit datasheet value (not a ratio estimate). */
+  fatigueLoadLimitFromDatasheet?: boolean;
+  /** Contact angle (deg) for angular contact / tapered screening notes. */
+  contactAngleDeg?: number;
   catalogFactors?: BearingCatalogFactors;
 };
 
@@ -103,6 +126,7 @@ export type SeriesTemplate = {
   family: BearingFamily;
   series: string;
   dimensionSeries?: BearingDimensionSeries;
+  unitSystem?: BearingUnitSystem;
   sealType?: BearingSealType;
   clearance?: BearingClearance;
   mountingRole?: BearingMountingRole;
@@ -114,6 +138,12 @@ export type SeriesTemplate = {
   staticRatingN: number;
   limitingSpeedRpm: number;
   referenceSpeedRpm?: number;
+  /**
+   * Datasheet fatigue load limit Pu (N). When set, catalog build stores it
+   * (OEM-scaled) and the solver uses it for aISO instead of estimating from C.
+   */
+  fatigueLoadLimitN?: number;
+  contactAngleDeg?: number;
   catalogFactors?: BearingCatalogFactors;
   /** Limit expansion to specific manufacturers (e.g. Timken inch series) */
   manufacturers?: BearingManufacturer[];
@@ -141,9 +171,12 @@ export const BEARING_FAMILY_LABELS: Record<BearingFamily, string> = {
   cylindrical_roller: "Cylindrical roller (NU)",
   tapered_roller: "Tapered roller",
   spherical_roller: "Spherical roller",
+  toroidal_roller: "Toroidal roller (CARB)",
   needle_roller: "Needle roller",
   self_aligning_ball: "Self-aligning ball",
   thrust_ball: "Thrust ball",
+  thrust_cylindrical_roller: "Cylindrical roller thrust",
+  thrust_spherical_roller: "Spherical roller thrust",
 };
 
 export const BEARING_TYPE_LABELS: Record<CatalogBearingType, string> = {
@@ -154,9 +187,12 @@ export const BEARING_TYPE_LABELS: Record<CatalogBearingType, string> = {
   cylindrical_nup: "Cylindrical roller (NUP — locate)",
   tapered_roller: "Tapered roller",
   spherical_roller: "Spherical roller",
+  toroidal_roller: "Toroidal roller (CARB)",
   needle_roller: "Needle roller",
   self_aligning_ball: "Self-aligning ball",
   thrust_ball: "Thrust ball",
+  thrust_cylindrical_roller: "Cylindrical roller thrust",
+  thrust_spherical_roller: "Spherical roller thrust",
 };
 
 export const SEAL_TYPE_LABELS: Record<BearingSealType, string> = {
@@ -165,6 +201,31 @@ export const SEAL_TYPE_LABELS: Record<BearingSealType, string> = {
   sealed: "Sealed (RS/2RS)",
   contact_sealed: "Contact sealed",
 };
+
+/** Roller families use life exponent p = 10/3; ball families use p = 3. */
+export const ROLLER_BEARING_TYPES: readonly CatalogBearingType[] = [
+  "cylindrical_roller",
+  "cylindrical_nj",
+  "cylindrical_nup",
+  "tapered_roller",
+  "spherical_roller",
+  "toroidal_roller",
+  "needle_roller",
+  "thrust_cylindrical_roller",
+  "thrust_spherical_roller",
+] as const;
+
+export function isRollerBearingType(type: CatalogBearingType): boolean {
+  return (ROLLER_BEARING_TYPES as readonly string[]).includes(type);
+}
+
+export function isThrustBearingType(type: CatalogBearingType): boolean {
+  return (
+    type === "thrust_ball" ||
+    type === "thrust_cylindrical_roller" ||
+    type === "thrust_spherical_roller"
+  );
+}
 
 export function familyForType(type: CatalogBearingType): BearingFamily {
   const map: Record<CatalogBearingType, BearingFamily> = {
@@ -175,9 +236,12 @@ export function familyForType(type: CatalogBearingType): BearingFamily {
     cylindrical_nup: "cylindrical_roller",
     tapered_roller: "tapered_roller",
     spherical_roller: "spherical_roller",
+    toroidal_roller: "toroidal_roller",
     needle_roller: "needle_roller",
     self_aligning_ball: "self_aligning_ball",
     thrust_ball: "thrust_ball",
+    thrust_cylindrical_roller: "thrust_cylindrical_roller",
+    thrust_spherical_roller: "thrust_spherical_roller",
   };
   return map[type];
 }

@@ -1,4 +1,5 @@
 import type { BearingConfig, BearingResult, BearingReliability } from "./types";
+import { isThrustBearingType } from "@/data/catalogs/bearing/types";
 import { calculateStaticEquivalentLoad, staticSafetyFactor } from "./staticLoad";
 import { calculateBearingEquivalentLoad, lifeExponentFor } from "./equivalentLoad";
 import {
@@ -18,7 +19,10 @@ import {
 } from "./pairedLoads";
 import { calculateThermalExpansion } from "./thermalExpansion";
 import { calculateThermalEquilibrium } from "./thermalEquilibrium";
-import { calculateRelubricationInterval } from "./relubrication";
+import { calculateGreaseService } from "./greaseLife";
+import { calculateDefectFrequencies } from "./defectFrequencies";
+import { calculateAdjustedReferenceSpeed } from "./adjustedReferenceSpeed";
+import { calculateEnergyCo2 } from "./energyCo2";
 import {
   calculateDuplexStiffness,
   effectiveAxialWithPreload,
@@ -32,6 +36,8 @@ import {
   type LoadSpectrumStep,
 } from "./variableLoad";
 import { minimumRadialLoadN } from "./auxiliaryChecks";
+import { resolveLifeModelCeiling } from "./advancedLife";
+import type { AdvancedLifeFactors, BearingLifeMethod } from "./types";
 
 const A1_FACTORS: Record<BearingReliability, number> = {
   90: 1.0,
@@ -403,27 +409,64 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
       modifiedLifeRevolutions > 0 ? modifiedLifeRevolutions / (60 * speed) : 0;
   }
 
+  // --- Life model ceiling (ISO 16281 screen / stress-life / hybrid ceramic) ---
+  const meanDiameterMmEarly =
+    config.boreMm != null && config.outerDiameterMm != null
+      ? (config.boreMm + config.outerDiameterMm) / 2
+      : 25;
+  const ceiling = resolveLifeModelCeiling({
+    config,
+    equivalentLoadN: equivalentLoad,
+    dynamicRatingN: dynamicLoadRatingN,
+    meanDiameterMm: meanDiameterMmEarly,
+    kappa: modifiedLifeFactors.kappa,
+    eC: modifiedLifeFactors.eC,
+    puOverP: modifiedLifeFactors.puOverP,
+  });
+  const advancedLifeFactors: AdvancedLifeFactors = ceiling.factors;
+  const lifeMethod: BearingLifeMethod = ceiling.lifeMethod;
+
+  const PbaseForScale = Math.max(equivalentLoad, 1e-9);
+  const CbaseForScale = Math.max(dynamicLoadRatingN, 1e-9);
+  const lifeScale =
+    ceiling.aAdvanced *
+    Math.pow(ceiling.dynamicRatingForLifeN / CbaseForScale, p) *
+    Math.pow(PbaseForScale / Math.max(ceiling.equivalentLoadForLifeN, 1e-9), p);
+
+  modifiedLife *= lifeScale;
+  if (weibullSystemLifeHours != null) weibullSystemLifeHours *= lifeScale;
+  if (systemMinLifeHours != null) systemMinLifeHours *= lifeScale;
+  if (pairedStations) {
+    pairedStations = pairedStations.map((s) => ({
+      ...s,
+      modifiedLifeHours: s.modifiedLifeHours * lifeScale,
+    }));
+  }
+
+  // Report life-governing P and effective C (hybrid) for utilization / required C
+  equivalentLoad = ceiling.equivalentLoadForLifeN;
+  const dynamicLoadRatingForLifeN = ceiling.dynamicRatingForLifeN;
+  const aIsoEffective = aIso * ceiling.aAdvanced;
+
   const requiredRevolutions = config.lifeHours * speed * 60;
-  // Include aISO so required C matches SKF rating life Lnm (poor κ/ηc → larger C).
-  const aIsoForSizing = Math.max(aIso, 1e-6);
+  // Include aISO (+ advanced) so required C matches modified rating life.
+  const aIsoForSizing = Math.max(aIsoEffective, 1e-6);
   const requiredDynamicRating =
     equivalentLoad *
     Math.pow(requiredRevolutions / (a1 * aIsoForSizing * 1e6), 1 / p) *
     config.safetyFactor;
   const requiredStaticRating = staticEquivalentLoad * targetStaticSf * config.safetyFactor;
 
-  const dynamicUtilization = equivalentLoad / Math.max(dynamicLoadRatingN, 1);
+  const dynamicUtilization = equivalentLoad / Math.max(dynamicLoadRatingForLifeN, 1);
   const staticSf = staticSafetyFactor(staticLoadRatingN, staticEquivalentLoad);
-  const limitingSpeedRpm = config.limitingSpeedRpm ?? null;
+  let limitingSpeedRpm =
+    config.limitingSpeedRpm != null ? config.limitingSpeedRpm * ceiling.speedFactor : null;
   const speedMargin =
     limitingSpeedRpm != null && limitingSpeedRpm > 0 ? limitingSpeedRpm / speed : null;
 
   // Gate pass/fail on modified life Lnm (ISO 281 / SKF), not basic L10 alone.
   // (Finalized after thermal equilibrium adjustment below.)
-  const meanDiameterMm =
-    config.boreMm != null && config.outerDiameterMm != null
-      ? (config.boreMm + config.outerDiameterMm) / 2
-      : 25;
+  const meanDiameterMm = meanDiameterMmEarly;
 
   const thermalExpansion =
     locatingFloating && config.bearingSpanMm != null && config.bearingSpanMm > 0
@@ -446,7 +489,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     bearingType: config.bearingType,
   });
   const minLoadOk =
-    config.bearingType === "thrust_ball" || Math.abs(config.radialLoad) >= minLoadN;
+    isThrustBearingType(config.bearingType) || Math.abs(config.radialLoad) >= minLoadN;
 
   const thermalEquilibrium = calculateThermalEquilibrium({
     equivalentLoadN: equivalentLoad,
@@ -481,7 +524,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
   const lifeUtilizationFinal = modifiedLife > 0 ? config.lifeHours / modifiedLife : Infinity;
   const lifeSafetyFactorFinal = config.lifeHours > 0 ? modifiedLife / config.lifeHours : 0;
 
-  const relubrication = calculateRelubricationInterval({
+  const greaseService = calculateGreaseService({
     speedRpm: speed,
     meanDiameterMm,
     operatingTempC: config.useThermalEquilibrium
@@ -492,6 +535,48 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     lubricantType: config.lubricantType,
     contamination: config.contamination,
     sealed: config.sealed,
+  });
+  const relubrication = {
+    intervalHours: greaseService.governingIntervalHours,
+    speedFactorNdm: greaseService.speedFactorNdm,
+    temperatureFactor: greaseService.temperatureFactor,
+    loadFactor: greaseService.loadFactor,
+    contaminationFactor: greaseService.contaminationFactor,
+    status: greaseService.status,
+    note: greaseService.note,
+    mode: greaseService.mode,
+    greaseLifeHours: greaseService.greaseLifeHours,
+    relubricationIntervalHours: greaseService.relubricationIntervalHours,
+    fillFactor: greaseService.fillFactor,
+  };
+
+  const boreForDefect = config.boreMm ?? meanDiameterMm * 0.65;
+  const odForDefect = config.outerDiameterMm ?? meanDiameterMm * 1.35;
+  const defectFrequencies = calculateDefectFrequencies({
+    speedRpm: speed,
+    bearingType: config.bearingType,
+    boreMm: boreForDefect,
+    outerDiameterMm: odForDefect,
+    contactAngleDeg: config.contactAngleDeg,
+  });
+
+  const adjustedReferenceSpeed = calculateAdjustedReferenceSpeed({
+    speedRpm: speed,
+    referenceSpeedRpm:
+      config.referenceSpeedRpm != null
+        ? config.referenceSpeedRpm * ceiling.speedFactor
+        : null,
+    limitingSpeedRpm: limitingSpeedRpm,
+    dynamicUtilization,
+    kappa: modifiedLifeFactors.kappa > 0 ? modifiedLifeFactors.kappa : undefined,
+    lubricantType: config.lubricantType,
+    sealed: config.sealed,
+    isoVgGrade: config.isoVgGrade,
+  });
+
+  const energyCo2 = calculateEnergyCo2({
+    powerLossW: thermalEquilibrium.powerLossW * ceiling.frictionFactor,
+    operatingHoursPerYear: Math.min(Math.max(config.lifeHours, 1000), 8760),
   });
 
   let designStatus: BearingResult["designStatus"] = "safe";
@@ -536,19 +621,19 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     expectedLife,
     modifiedLife,
     expectedLifeRevolutions,
-    dynamicLoadRatingN,
+    dynamicLoadRatingN: dynamicLoadRatingForLifeN,
     staticLoadRatingN,
     limitingSpeedRpm,
     lifeExponent: p,
     a1,
-    aIso,
+    aIso: aIsoEffective,
     modifiedLifeFactors,
     dynamicUtilization,
     staticSafetyFactor: staticSf,
     speedMargin,
     referenceSpeedMargin:
       config.referenceSpeedRpm != null && config.referenceSpeedRpm > 0
-        ? config.referenceSpeedRpm / speed
+        ? (config.referenceSpeedRpm * ceiling.speedFactor) / speed
         : null,
     lifeUtilization: lifeUtilizationFinal,
     safetyFactor: config.safetyFactor,
@@ -565,15 +650,33 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     duplexStiffness: duplexStiffnessResult,
     thermalEquilibrium,
     relubrication,
+    defectFrequencies: {
+      shaftHz: defectFrequencies.shaftHz,
+      bpfoHz: defectFrequencies.bpfoHz,
+      bpfiHz: defectFrequencies.bpfiHz,
+      bsfHz: defectFrequencies.bsfHz,
+      ftfHz: defectFrequencies.ftfHz,
+      bpfoOrder: defectFrequencies.bpfoOrder,
+      bpfiOrder: defectFrequencies.bpfiOrder,
+      bsfOrder: defectFrequencies.bsfOrder,
+      ftfOrder: defectFrequencies.ftfOrder,
+      rollingElementCount: defectFrequencies.rollingElementCount,
+      note: defectFrequencies.note,
+    },
+    adjustedReferenceSpeed,
+    energyCo2,
     systemMinLifeHours,
     weibullSystemLifeHours,
     lifeSafetyFactor: lifeSafetyFactorFinal,
     minimumRadialLoadN: minLoadN,
     minLoadSatisfied: minLoadOk,
-    frictionTorqueNm: thermalEquilibrium.frictionTorqueNm,
-    powerLossW: thermalEquilibrium.powerLossW,
+    frictionTorqueNm: thermalEquilibrium.frictionTorqueNm * ceiling.frictionFactor,
+    powerLossW: thermalEquilibrium.powerLossW * ceiling.frictionFactor,
     temperatureDeratingFactor: tempFactor,
     fitRecommendation: config.fitRecommendation,
+    lifeMethod,
+    misalignmentUsedMrad: advancedLifeFactors.misalignmentUsedMrad,
+    advancedLifeFactors,
   };
 }
 

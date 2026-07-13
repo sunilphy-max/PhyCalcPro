@@ -3,16 +3,8 @@
  * tf based on speed factor A = n·dm, temperature, load ratio, contamination.
  */
 
+import { isRollerBearingType } from "@/data/catalogs/bearing/types";
 import type { BearingType, ContaminationLevel, LubricantType } from "./types";
-
-const ROLLER: BearingType[] = [
-  "cylindrical_roller",
-  "cylindrical_nj",
-  "cylindrical_nup",
-  "tapered_roller",
-  "spherical_roller",
-  "needle_roller",
-];
 
 export type RelubricationInput = {
   speedRpm: number;
@@ -86,7 +78,7 @@ export function calculateRelubricationInterval(input: RelubricationInput): Relub
   const n = Math.max(input.speedRpm, 1);
   const dm = Math.max(input.meanDiameterMm, 1);
   const ndm = n * dm;
-  const roller = ROLLER.includes(input.bearingType);
+  const roller = isRollerBearingType(input.bearingType);
   const sealed = input.sealed === true;
   const isGrease = input.lubricantType === "grease" || input.lubricantType == null || sealed;
 

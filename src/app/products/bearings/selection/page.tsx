@@ -29,6 +29,8 @@ import { solveBearingEngine } from "@/lib/machine/bearings/engine";
 import { diagnoseBearing, type BearingDiagnosis } from "@/lib/machine/bearings/diagnosis";
 import { buildCrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
 import { buildBearingReportInputRows } from "@/lib/machine/bearings/reportInputs";
+import { buildMountedBom } from "@/lib/machine/housing/mountedBom";
+import { BEARING_TYPE_LABELS } from "@/data/catalogs/bearingCatalog";
 import type {
   BearingResult,
   BearingMaterial,
@@ -45,6 +47,8 @@ import type {
   LubricantType,
   LoadSpectrumStep,
   BearingPreloadClass,
+  BearingLifeMethod,
+  RollingElementMaterial,
 } from "@/lib/machine/bearings/types";
 import {
   findBearing,
@@ -52,6 +56,7 @@ import {
   catalogTierToManufacturer,
   filterCatalog,
   bearingCatalog,
+  type BearingUnitSystem,
 } from "@/data/catalogs/bearingCatalog";
 import type { BearingCopilotApplyPayload } from "@/lib/copilot/bearingCopilot";
 
@@ -69,6 +74,7 @@ type BearingProjectData = {
   applicationProfile?: BearingApplicationProfile | "all";
   seriesFilter?: string | "all";
   sealFilter?: BearingSealType | "all";
+  unitSystemFilter?: BearingUnitSystem | "all";
   catalogTier?: BearingCatalogTier;
   arrangement: BearingArrangement;
   maxBoreMm: number | "";
@@ -84,6 +90,9 @@ type BearingProjectData = {
   lifeRevolutions: number;
   maxOuterMm: number | "";
   mountingSystem?: BearingMountingSystemId;
+  lifeMethod?: BearingLifeMethod;
+  misalignmentAngleMrad?: number | "";
+  rollingElementMaterial?: RollingElementMaterial;
   /** @deprecated migrated to loadSpectrumSteps */
   variableLoadPercent?: number;
   /** @deprecated migrated to loadSpectrumSteps */
@@ -125,6 +134,7 @@ export default function Page() {
   const [manufacturer, setManufacturer] = useState<BearingManufacturer>("SKF");
   const [seriesFilter, setSeriesFilter] = useState<string | "all">("all");
   const [sealFilter, setSealFilter] = useState<BearingSealType | "all">("all");
+  const [unitSystemFilter, setUnitSystemFilter] = useState<BearingUnitSystem | "all">("all");
   const [arrangement, setArrangement] = useState<BearingArrangement>("single");
   const [lubricantType, setLubricantType] = useState<LubricantType>("oil");
   const [isoVgGrade, setIsoVgGrade] = useState(68);
@@ -142,7 +152,12 @@ export default function Page() {
   const [bearingSpanMm, setBearingSpanMm] = useState(400);
   const [availableFloatMm, setAvailableFloatMm] = useState(1);
   const [useThermalEquilibrium, setUseThermalEquilibrium] = useState(true);
+  const [lifeMethod, setLifeMethod] = useState<BearingLifeMethod>("iso281");
+  const [misalignmentAngleMrad, setMisalignmentAngleMrad] = useState<number | "">("");
+  const [rollingElementMaterial, setRollingElementMaterial] =
+    useState<RollingElementMaterial>("steel");
   const [stationRadialLoadsN, setStationRadialLoadsN] = useState<number[] | undefined>(undefined);
+  const [stationSlopesMrad, setStationSlopesMrad] = useState<number[] | undefined>(undefined);
   const [result, setResult] = useState<BearingResult | null>(null);
   const [diagnosis, setDiagnosis] = useState<BearingDiagnosis | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
@@ -184,6 +199,7 @@ export default function Page() {
       designation: catalogEntry?.designation ?? (designation.trim() || undefined),
       dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
       staticLoadRatingN: catalogEntry?.staticRatingN,
+      fatigueLoadLimitN: catalogEntry?.fatigueLoadLimitN,
       limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
       referenceSpeedRpm: catalogEntry?.referenceSpeedRpm,
       catalogFactors: catalogEntry?.catalogFactors,
@@ -223,6 +239,11 @@ export default function Page() {
       stationRadialLoadsN,
       useThermalEquilibrium,
       ambientTempC: 20,
+      lifeMethod,
+      misalignmentAngleMrad:
+        misalignmentAngleMrad === "" ? undefined : misalignmentAngleMrad,
+      stationSlopesMrad,
+      rollingElementMaterial,
       material: LEGACY_MATERIAL,
     };
 
@@ -312,6 +333,8 @@ export default function Page() {
     setShockFactor,
     setLubricantType,
     setContamination,
+    setLifeMethod,
+    setRollingElementMaterial,
   });
 
   const calculate = () => {
@@ -341,6 +364,7 @@ export default function Page() {
     setApplicationProfile(p.applicationProfile ?? "all");
     setSeriesFilter(p.seriesFilter ?? "all");
     setSealFilter(p.sealFilter ?? "all");
+    setUnitSystemFilter(p.unitSystemFilter ?? "all");
     if (p.arrangement) setArrangement(p.arrangement);
     setMaxBoreMm(p.maxBoreMm ?? "");
     if (p.lubricantType) setLubricantType(p.lubricantType);
@@ -363,6 +387,9 @@ export default function Page() {
     setLifeRevolutions(p.lifeRevolutions ?? 90e6);
     setMaxOuterMm(p.maxOuterMm ?? "");
     if (p.mountingSystem) setMountingSystem(p.mountingSystem);
+    if (p.lifeMethod) setLifeMethod(p.lifeMethod);
+    if (p.misalignmentAngleMrad !== undefined) setMisalignmentAngleMrad(p.misalignmentAngleMrad);
+    if (p.rollingElementMaterial) setRollingElementMaterial(p.rollingElementMaterial);
   };
 
   const syncDesignation = (
@@ -371,7 +398,8 @@ export default function Page() {
     profile: BearingApplicationProfile | "all",
     series: string | "all",
     seal: BearingSealType | "all",
-    current: string
+    current: string,
+    unitSystem: BearingUnitSystem | "all" = unitSystemFilter
   ) => {
     const pool = filterCatalog(bearingCatalog, {
       manufacturer: mfr,
@@ -379,6 +407,7 @@ export default function Page() {
       applicationProfile: profile,
       series,
       sealType: seal,
+      unitSystem,
     });
     if (pool.some((b) => b.designation === current)) return;
     const mapped = equivalentDesignation(current, mfr);
@@ -480,6 +509,91 @@ export default function Page() {
     designation,
   ]);
 
+  const compareRows = useMemo(() => {
+    if (!result || !crossManufacturerRecommendation) return [];
+    const candidates = [
+      crossManufacturerRecommendation.primary,
+      ...crossManufacturerRecommendation.alternatives.slice(0, 2),
+    ].filter(Boolean);
+    const rows = [];
+    const Fr = toBase(radialLoad, "force", radialUnit) * shockFactor;
+    const Fa = toBase(axialLoad, "force", axialUnit) * shockFactor;
+    for (const c of candidates) {
+      if (!c) continue;
+      const entry = c.entry;
+      try {
+        const solved = solveBearingEngine({
+          radialLoad: Fr,
+          axialLoad: Fa,
+          speed,
+          lifeHours,
+          safetyFactor,
+          bearingType: entry.type,
+          designation: entry.designation,
+          dynamicLoadRatingN: entry.dynamicRatingN,
+          staticLoadRatingN: entry.staticRatingN,
+          fatigueLoadLimitN: entry.fatigueLoadLimitN,
+          limitingSpeedRpm: entry.limitingSpeedRpm,
+          referenceSpeedRpm: entry.referenceSpeedRpm,
+          catalogFactors: entry.catalogFactors,
+          boreMm: entry.boreMm,
+          outerDiameterMm: entry.outerDiameterMm,
+          reliabilityPercent: reliability,
+          lubricantType: lubricantType === "none" ? undefined : lubricantType,
+          isoVgGrade: lubricantType === "none" ? undefined : isoVgGrade,
+          operatingTempC,
+          contamination: lubricantType === "none" ? undefined : contamination,
+          clearance: clearanceOverride || entry.clearance,
+          manufacturer: entry.manufacturer,
+          lifeMethod,
+          misalignmentAngleMrad:
+            misalignmentAngleMrad === "" ? undefined : misalignmentAngleMrad,
+          stationSlopesMrad,
+          rollingElementMaterial,
+          material: LEGACY_MATERIAL,
+        });
+        rows.push({
+          designation: entry.designation,
+          result: solved,
+          costIndex: entry.costIndex,
+        });
+      } catch {
+        /* skip invalid */
+      }
+    }
+    return rows;
+  }, [
+    result,
+    crossManufacturerRecommendation,
+    radialLoad,
+    radialUnit,
+    axialLoad,
+    axialUnit,
+    shockFactor,
+    speed,
+    lifeHours,
+    safetyFactor,
+    reliability,
+    lubricantType,
+    isoVgGrade,
+    operatingTempC,
+    contamination,
+    clearanceOverride,
+    lifeMethod,
+    misalignmentAngleMrad,
+    stationSlopesMrad,
+    rollingElementMaterial,
+  ]);
+
+  const mountedBom = useMemo(() => {
+    if (!result?.geometry?.boreMm) return null;
+    return buildMountedBom({
+      boreMm: result.geometry.boreMm,
+      bearingDesignation: result.designation,
+      bearingTypeLabel: BEARING_TYPE_LABELS[result.bearingType],
+    });
+  }, [result]);
+
   const applyDesignation = useCallback((next: string) => {
     if (findBearing(next)) setDesignation(next);
   }, []);
@@ -551,6 +665,7 @@ export default function Page() {
         designation: catalogEntry?.designation,
         dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
         staticLoadRatingN: catalogEntry?.staticRatingN,
+        fatigueLoadLimitN: catalogEntry?.fatigueLoadLimitN,
         limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
         referenceSpeedRpm: catalogEntry?.referenceSpeedRpm,
         catalogFactors: catalogEntry?.catalogFactors,
@@ -565,6 +680,11 @@ export default function Page() {
         manufacturer: nextMfr,
         applicationProfile: nextProfile,
         arrangement: nextArrangement,
+        lifeMethod,
+        misalignmentAngleMrad:
+          misalignmentAngleMrad === "" ? undefined : misalignmentAngleMrad,
+        stationSlopesMrad,
+        rollingElementMaterial,
         material: LEGACY_MATERIAL,
       });
       setResult(wrapResult(raw));
@@ -581,16 +701,20 @@ export default function Page() {
       designation,
       isoVgGrade,
       lifeHours,
+      lifeMethod,
       lubricantType,
       manufacturer,
       maxBoreMm,
+      misalignmentAngleMrad,
       operatingTempC,
       radialLoad,
       radialUnit,
       reliability,
+      rollingElementMaterial,
       safetyFactor,
       shockFactor,
       speed,
+      stationSlopesMrad,
       wrapResult,
     ]
   );
@@ -627,6 +751,19 @@ export default function Page() {
                 );
               }
               if (params.bearingSpanMm != null) setBearingSpanMm(params.bearingSpanMm);
+              const slopes: number[] = [];
+              if (params.station0Slope != null) slopes.push(params.station0Slope * 1000);
+              if (params.station1Slope != null) slopes.push(params.station1Slope * 1000);
+              if (slopes.length > 0) {
+                setStationSlopesMrad(slopes);
+              } else if (params.maxBearingSlope != null) {
+                setStationSlopesMrad([params.maxBearingSlope * 1000]);
+              }
+              if (params.maxBearingSlope != null && misalignmentAngleMrad === "") {
+                setMisalignmentAngleMrad(Math.round(params.maxBearingSlope * 1000 * 100) / 100);
+              } else if (slopes.length > 0 && misalignmentAngleMrad === "") {
+                setMisalignmentAngleMrad(Math.round(Math.max(...slopes) * 100) / 100);
+              }
             }}
           />
           <BearingInputs
@@ -693,6 +830,20 @@ export default function Page() {
               setSealFilter(seal);
               syncDesignation(manufacturer, bearingType, applicationProfile, seriesFilter, seal, designation);
             }}
+            unitSystemFilter={unitSystemFilter}
+            setUnitSystemFilter={(unit) => {
+              setUnitSystemFilter(unit);
+              setSeriesFilter("all");
+              syncDesignation(
+                manufacturer,
+                bearingType,
+                applicationProfile,
+                "all",
+                sealFilter,
+                designation,
+                unit
+              );
+            }}
             arrangement={arrangement}
             setArrangement={setArrangement}
             lubricantType={lubricantType}
@@ -725,6 +876,12 @@ export default function Page() {
             setAvailableFloatMm={setAvailableFloatMm}
             useThermalEquilibrium={useThermalEquilibrium}
             setUseThermalEquilibrium={setUseThermalEquilibrium}
+            lifeMethod={lifeMethod}
+            setLifeMethod={setLifeMethod}
+            misalignmentAngleMrad={misalignmentAngleMrad}
+            setMisalignmentAngleMrad={setMisalignmentAngleMrad}
+            rollingElementMaterial={rollingElementMaterial}
+            setRollingElementMaterial={setRollingElementMaterial}
             stationRadialLoadsN={stationRadialLoadsN}
             workflowMode={workflowMode}
             onCalculate={calculate}
@@ -743,6 +900,7 @@ export default function Page() {
                 applicationProfile,
                 seriesFilter,
                 sealFilter,
+                unitSystemFilter,
                 arrangement,
                 maxBoreMm,
                 lubricantType,
@@ -757,6 +915,9 @@ export default function Page() {
                 lifeRevolutions,
                 maxOuterMm,
                 mountingSystem,
+                lifeMethod,
+                misalignmentAngleMrad,
+                rollingElementMaterial,
               })
             }
             saving={saving}
@@ -774,6 +935,8 @@ export default function Page() {
           workflowMode={workflowMode}
           diagnosis={diagnosis}
           crossManufacturerRecommendation={crossManufacturerRecommendation}
+          compareRows={compareRows}
+          mountedBom={mountedBom}
           inputRows={reportInputRows}
           onSelectDesignation={applyDesignation}
         />

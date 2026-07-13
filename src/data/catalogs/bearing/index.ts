@@ -5,10 +5,12 @@ export {
   catalogTierToManufacturer,
   bearingsOfManufacturer,
   bearingsOfType,
+  bearingsOfUnitSystem,
   equivalentDesignation,
   catalogSource,
   bearingsOfTier,
 } from "./buildCatalog";
+export { estimateDatasheetFatigueLoadLimitN } from "./fatigueLoadLimit";
 export {
   filterCatalog,
   uniqueSeries,

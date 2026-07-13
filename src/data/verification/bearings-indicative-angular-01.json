@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-angular-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Angular contact equal Fr/Fa — X/Y screening",
+  "inputs": {
+    "radialLoad": 4000,
+    "axialLoad": 4000,
+    "speed": 3000,
+    "lifeHours": 10000,
+    "safetyFactor": 1.5,
+    "bearingType": "angular_contact",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 16800,
+      "staticRatingFactor": 9800,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 4000,
+    "requiredDynamicRating": 72986.4239468808,
+    "staticSafetyFactor": 1.7013888888888888
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — angular contact"
+}

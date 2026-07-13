@@ -8,7 +8,13 @@ import {
   getHousingPresetDefaults,
   getPlainBearingPresetDefaults,
 } from "@/lib/applications/bearingPresets";
-import type { BearingReliability, LubricationClass, LubricantType } from "@/lib/machine/bearings/types";
+import type {
+  BearingReliability,
+  LubricationClass,
+  LubricantType,
+  BearingLifeMethod,
+  RollingElementMaterial,
+} from "@/lib/machine/bearings/types";
 
 type RollingSyncHandlers = {
   setReliability: (v: BearingReliability) => void;
@@ -17,6 +23,8 @@ type RollingSyncHandlers = {
   setShockFactor?: (v: number) => void;
   setLubricantType?: (v: LubricantType) => void;
   setContamination?: (v: import("@/lib/machine/bearings/types").ContaminationLevel) => void;
+  setLifeMethod?: (v: BearingLifeMethod) => void;
+  setRollingElementMaterial?: (v: RollingElementMaterial) => void;
 };
 
 /**
@@ -47,6 +55,12 @@ export function useRollingBearingPresetSync(handlers: RollingSyncHandlers) {
     if (defaults.preferModifiedLife && handlers.setLubricantType) {
       handlers.setLubricantType("oil");
       handlers.setContamination?.("normal_clean");
+    }
+    if (defaults.preferLifeMethod && handlers.setLifeMethod) {
+      handlers.setLifeMethod(defaults.preferLifeMethod);
+    }
+    if (defaults.preferRollingElementMaterial && handlers.setRollingElementMaterial) {
+      handlers.setRollingElementMaterial(defaults.preferRollingElementMaterial);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- sync on preset id only
   }, [presetId]);

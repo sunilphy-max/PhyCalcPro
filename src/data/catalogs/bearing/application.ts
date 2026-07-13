@@ -7,6 +7,7 @@ import type {
   BearingCatalogEntry,
   BearingMountingRole,
   BearingSealType,
+  BearingUnitSystem,
   CatalogBearingType,
 } from "./types";
 import { APPLICATION_PROFILE_META } from "./applicationMeta";
@@ -18,6 +19,8 @@ export type CatalogFilterOptions = {
   series?: string | "all";
   sealType?: BearingSealType | "all";
   mountingRole?: BearingMountingRole | "all";
+  /** Metric ISO vs inch / ABMA (MITCalc Module II class). */
+  unitSystem?: BearingUnitSystem | "all";
 };
 
 export function filterCatalog(
@@ -51,6 +54,9 @@ export function filterCatalog(
     pool = pool.filter(
       (b) => b.mountingRole === options.mountingRole || b.mountingRole === "either"
     );
+  }
+  if (options.unitSystem && options.unitSystem !== "all") {
+    pool = pool.filter((b) => b.unitSystem === options.unitSystem);
   }
 
   return pool;

@@ -128,7 +128,14 @@ describe("bearing ISO 281 regression", () => {
       applicationProfile: "pure_thrust",
     });
     expect(thrust.length).toBeGreaterThan(0);
-    expect(thrust.every((e) => e.type === "thrust_ball")).toBe(true);
+    expect(
+      thrust.every(
+        (e) =>
+          e.type === "thrust_ball" ||
+          e.type === "thrust_cylindrical_roller" ||
+          e.type === "thrust_spherical_roller"
+      )
+    ).toBe(true);
   });
 });
 

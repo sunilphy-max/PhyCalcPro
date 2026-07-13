@@ -23,6 +23,10 @@ export type BearingPresetDefaults = {
    * (does not change bearing type).
    */
   preferModifiedLife?: boolean;
+  /** Optional life-model ceiling method (screening). */
+  preferLifeMethod?: import("@/lib/machine/bearings/types").BearingLifeMethod;
+  /** Optional rolling-element material screening. */
+  preferRollingElementMaterial?: import("@/lib/machine/bearings/types").RollingElementMaterial;
 };
 
 const K = {
@@ -113,6 +117,32 @@ export const rollingBearingApplicationPresets: ModuleApplicationPreset[] = [
     standards: ["ISO 281 (indicative)", "ISO 76 (indicative)"],
     limitations: ["Not a substitute for OEM catalog validation or project design codes."],
     knobs: { loadFactor: 1, serviceFactor: 1, targetSafetyFactor: 1.3 },
+  },
+  {
+    id: "iso16281_screen",
+    label: "ISO 16281 screening",
+    description:
+      "ISO 16281-inspired P adjustment for clearance, misalignment, and load distribution. Screening only — not full contact FEA.",
+    designCodes: ["ISO", "EU", "INDICATIVE"],
+    standards: ["ISO 16281 (inspired screening)", "ISO 281"],
+    calculationNotes: [
+      "Adjusts equivalent load P with f_clearance · f_misalign · f_distrib.",
+      "Not a substitute for full ISO 16281:2025 internal load distribution.",
+    ],
+    knobs: K.skfModified,
+  },
+  {
+    id: "stress_life_screen",
+    label: "Stress-life screening",
+    description:
+      "Transparent contact-pressure / film life modifier. Not SKF GBLM or AFC.",
+    designCodes: ["ISO", "EU", "INDICATIVE"],
+    standards: ["ISO 281", "PhyCalcPro stress-life screening"],
+    calculationNotes: [
+      "Lnm uses a₁ · aISO · a_stress · (C/P)^p.",
+      "Explicitly not vendor GBLM / AFC.",
+    ],
+    knobs: K.skfModified,
   },
 ];
 
@@ -274,6 +304,20 @@ export const BEARING_PRESET_DEFAULTS: Record<string, BearingPresetDefaults> = {
     targetStaticSafetyFactor: 1,
     preferModifiedLife: false,
   },
+  iso16281_screen: {
+    reliability: 90,
+    shockFactor: 1,
+    targetStaticSafetyFactor: 1,
+    preferModifiedLife: true,
+    preferLifeMethod: "iso16281_screen",
+  },
+  stress_life_screen: {
+    reliability: 90,
+    shockFactor: 1,
+    targetStaticSafetyFactor: 1,
+    preferModifiedLife: true,
+    preferLifeMethod: "stress_life_screen",
+  },
 };
 
 /** Plain bearing presets: knobs only (no geometry). */
@@ -329,7 +373,10 @@ export const FAMILY_RECOMMENDED_PRESET: Partial<Record<CatalogBearingType, strin
   cylindrical_nup: "iso281_general",
   tapered_roller: "iso281_general",
   spherical_roller: "iso281_general",
+  toroidal_roller: "iso281_general",
   needle_roller: "iso281_general",
   self_aligning_ball: "iso281_general",
   thrust_ball: "iso281_general",
+  thrust_cylindrical_roller: "iso281_general",
+  thrust_spherical_roller: "iso281_general",
 };

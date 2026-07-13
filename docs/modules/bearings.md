@@ -18,7 +18,18 @@ Modified rating life (ISO 281:2007):
 L_{nm} = a_1 \cdot a_{ISO} \cdot (C/P)^p \cdot 10^6 / (60n)
 \]
 
-where **aISO** is computed from viscosity ratio κ = ν/ν₁, contamination factor eC, and fatigue load limit Pu (estimated as 0.025C for ball, 0.03C for roller when not in catalog).
+where **aISO** is computed from viscosity ratio κ = ν/ν₁, contamination factor eC, and fatigue load limit Pu (catalog datasheet Pu when available; otherwise estimated as 0.025C for ball, 0.03C for roller).
+
+**Life model ceiling (screening, opt-in):**
+
+| Method | Behavior |
+|--------|----------|
+| ISO 281 (default) | Lnm = a₁ · aISO · (C/P)^p; optional misalignment life derate a_mis |
+| ISO 16281 screen | Adjusts P → P_adj = P · f_clearance · f_misalign · f_distrib (not full ISO 16281:2025 FEA) |
+| Stress-life screen | Lnm uses a₁ · aISO · a_stress · … — transparent PhyCalcPro curve; **not SKF GBLM / AFC** |
+| Hybrid / full ceramic | ISO 20056-inspired C / speed / life factors on rolling elements |
+
+Shaft FEM handoff can publish bearing slopes (rad) → misalignment (mrad) for the ceiling path.
 
 Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static load.
 
@@ -41,6 +52,9 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 | Reliability a₁ | 90–99% |
 | Lubricant | Oil or grease (ISO VG) + operating temperature |
 | Contamination eC | ISO 281 cleanliness classes |
+| Life method | ISO 281 / ISO 16281 screen / stress-life screen |
+| Misalignment | Manual mrad and/or shaft FEM slopes |
+| Rolling elements | Steel / hybrid ceramic / full ceramic |
 | Internal clearance | C2 / CN / C3 / C4 (fit recommendation) |
 | Mounting arrangement | Single, back-to-back (O), face-to-face (X), tandem (T) |
 | Variable load spectrum | Optional ISO 281-1 duty cycle |
@@ -50,6 +64,11 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 
 - Equivalent loads P and P₀ (paired per-station when applicable)
 - Basic L₁₀ and modified Lnm life with κ, eC, aISO breakdown
+- Defect frequencies BPFO / BPFI / BSF / FTF (screening geometry)
+- Grease life L₁₀h and/or relubrication interval tf
+- Adjusted reference speed n_θ and friction energy / CO₂ screening
+- Side-by-side OEM compare under the same duty
+- Mounted kit BOM (housing SNL/UCP/FY/SAF-class + seal + grease)
 - Dynamic utilization P/C, static safety C₀/P₀, speed margin n_lim/n
 - Minimum load (skidding), friction torque, power loss
 - Recommended shaft/housing fits and operating clearance
@@ -61,20 +80,24 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 - **ISO 281:2007** — Basic and modified rating life
 - **ISO 76** — Static load rating screening
 - Catalog limiting speed (grease) and reference speed (oil) where listed
+- Defect frequencies — kinematic screening (verify Z, Bd against OEM for CM)
 
 **Assumptions & limitations**
 
 - Constant load and speed unless variable spectrum is enabled
-- Pu estimated from C when not in catalog entry
+- Pu from catalog when present; otherwise estimated from C
 - Representative catalog — not full vendor databases
+- ISO 16281 and stress-life paths are **screening** only — not vendor GBLM, AFC, Bearinx, or full ISO 16281:2025
+- Housing SKUs are screening-class (SNL/UCP/…) — not full OEM mounted-product databases
+- CO₂ from friction power only — not a product LCA
 - Duplex paired C catalog multipliers use tandem axial convention (screening)
 - Temperature derating on C above 120 °C (screening factor)
 
 **Verification**
 
-- CI: `bearings-indicative-01.json`
-- Vitest: `src/lib/machine/bearings/engine.test.ts`
-- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md) (Machine → bearings)
+- CI: `bearings-indicative-*.json` (multiple rolling cases)
+- Vitest: `engine.test.ts`, `lifeModelCeiling.test.ts`, `auxMounted.test.ts`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md) (Machine → bearings) — **pending ±5% vendor benchmark**
 
 **Design workflow**
 

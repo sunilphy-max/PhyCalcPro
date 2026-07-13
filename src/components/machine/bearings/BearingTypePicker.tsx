@@ -10,9 +10,10 @@ export type BearingFamilyId =
   | "cylindrical"
   | "tapered_roller"
   | "spherical_roller"
+  | "toroidal_roller"
   | "needle_roller"
   | "self_aligning_ball"
-  | "thrust_ball";
+  | "thrust";
 
 type FamilyCard = {
   id: BearingFamilyId;
@@ -59,9 +60,16 @@ export const BEARING_FAMILY_CARDS: FamilyCard[] = [
     defaultType: "spherical_roller",
   },
   {
+    id: "toroidal_roller",
+    label: "Toroidal roller (CARB)",
+    description: "Misalignment + axial float in one bearing",
+    types: ["toroidal_roller"],
+    defaultType: "toroidal_roller",
+  },
+  {
     id: "needle_roller",
     label: "Needle roller",
-    description: "Compact envelope, high load density",
+    description: "Compact envelope — NA / NK / HK / RNA",
     types: ["needle_roller"],
     defaultType: "needle_roller",
   },
@@ -73,10 +81,10 @@ export const BEARING_FAMILY_CARDS: FamilyCard[] = [
     defaultType: "self_aligning_ball",
   },
   {
-    id: "thrust_ball",
-    label: "Thrust ball",
-    description: "Pure axial load, low speed",
-    types: ["thrust_ball"],
+    id: "thrust",
+    label: "Thrust bearings",
+    description: "Ball, cylindrical roller, or spherical roller thrust",
+    types: ["thrust_ball", "thrust_cylindrical_roller", "thrust_spherical_roller"],
     defaultType: "thrust_ball",
   },
 ];
@@ -96,6 +104,7 @@ type Props = {
 export default function BearingTypePicker({ value, availableTypes, onChange, compact = false }: Props) {
   const activeFamily = familyForType(value);
   const showCylindricalVariants = activeFamily === "cylindrical";
+  const showThrustVariants = activeFamily === "thrust";
 
   const pickFamily = (card: FamilyCard) => {
     const next = card.types.find((t) => availableTypes.includes(t)) ?? card.defaultType;
@@ -148,6 +157,31 @@ export default function BearingTypePicker({ value, availableTypes, onChange, com
       {showCylindricalVariants ? (
         <div className="flex flex-wrap gap-1.5">
           {(["cylindrical_roller", "cylindrical_nj", "cylindrical_nup"] as BearingType[]).map((variant) => {
+            if (!availableTypes.includes(variant)) return null;
+            const active = value === variant;
+            return (
+              <button
+                key={variant}
+                type="button"
+                onClick={() => onChange(variant)}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                  active
+                    ? "bg-cyan-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                }`}
+              >
+                {BEARING_TYPE_LABELS[variant]}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {showThrustVariants ? (
+        <div className="flex flex-wrap gap-1.5">
+          {(
+            ["thrust_ball", "thrust_cylindrical_roller", "thrust_spherical_roller"] as BearingType[]
+          ).map((variant) => {
             if (!availableTypes.includes(variant)) return null;
             const active = value === variant;
             return (

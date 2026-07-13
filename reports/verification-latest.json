@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-09T04:01:49.744Z",
-  "total": 75,
-  "passed": 73,
+  "ranAt": "2026-07-13T03:43:38.843Z",
+  "total": 81,
+  "passed": 79,
   "failed": 2,
   "skipped": 0,
   "results": [
@@ -77,6 +77,156 @@
           "field": "equivalentLoad",
           "expected": 6200,
           "actual": 6200,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-angular-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 4000,
+          "actual": 4000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 72986.4239468808,
+          "actual": 72986.4239468808,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 1.7013888888888888,
+          "actual": 1.7013888888888888,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-combined-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 5000,
+          "actual": 5000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 96949.56105143475,
+          "actual": 96949.56105143475,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 1.56,
+          "actual": 1.56,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-cylindrical-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 6000,
+          "actual": 6000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 92962.09061335154,
+          "actual": 92962.09061335154,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 4.5,
+          "actual": 4.5,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-spherical-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 12000,
+          "actual": 12000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 156448.94384262842,
+          "actual": 156448.94384262842,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 7.083333333333333,
+          "actual": 7.083333333333333,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-tapered-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 8200,
+          "actual": 8200,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 99984.3984597429,
+          "actual": 99984.3984597429,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 2.6470588235294117,
+          "actual": 2.6470588235294117,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-thrust-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 12000,
+          "actual": 12000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 161330.5708760579,
+          "actual": 161330.5708760579,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 4.666666666666667,
+          "actual": 4.666666666666667,
           "pass": true
         }
       ]

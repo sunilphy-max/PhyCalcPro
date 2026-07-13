@@ -2,6 +2,7 @@
  * ISO 76 static equivalent load P₀ for rolling bearings (screening values).
  */
 
+import { isThrustBearingType } from "@/data/catalogs/bearing/types";
 import type { BearingType } from "./types";
 
 export function calculateStaticEquivalentLoad(
@@ -13,13 +14,14 @@ export function calculateStaticEquivalentLoad(
   const Fa = Math.abs(axialLoad);
   const ratio = Fr > 0 ? Fa / Fr : Fa > 0 ? Number.POSITIVE_INFINITY : 0;
 
-  if (bearingType === "thrust_ball") {
+  if (isThrustBearingType(bearingType)) {
     return Fa;
   }
 
   if (
     bearingType === "cylindrical_roller" ||
-    bearingType === "needle_roller"
+    bearingType === "needle_roller" ||
+    bearingType === "toroidal_roller"
   ) {
     return Fr;
   }

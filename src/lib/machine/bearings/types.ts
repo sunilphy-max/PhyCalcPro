@@ -104,6 +104,83 @@ export type RelubricationCheck = {
   contaminationFactor: number;
   status: "ok" | "frequent" | "critical";
   note: string;
+  /** grease_life | relubrication | oil_service | none */
+  mode?: "grease_life" | "relubrication" | "oil_service" | "none";
+  /** Sealed / for-life grease L10h (hours). */
+  greaseLifeHours?: number | null;
+  /** Open bearing replenishment interval (hours). */
+  relubricationIntervalHours?: number | null;
+  fillFactor?: number;
+};
+
+export type DefectFrequenciesCheck = {
+  shaftHz: number;
+  bpfoHz: number;
+  bpfiHz: number;
+  bsfHz: number;
+  ftfHz: number;
+  bpfoOrder: number;
+  bpfiOrder: number;
+  bsfOrder: number;
+  ftfOrder: number;
+  rollingElementCount: number;
+  note: string;
+};
+
+export type AdjustedReferenceSpeedCheck = {
+  nRefBaseRpm: number;
+  nAdjRpm: number;
+  nAdjMargin: number;
+  loadFactor: number;
+  viscosityFactor: number;
+  lubricantFactor: number;
+  sealFactor: number;
+  note: string;
+};
+
+export type EnergyCo2Check = {
+  powerLossW: number;
+  annualEnergyKwh: number;
+  annualCo2Kg: number;
+  operatingHoursPerYear: number;
+  gridKgCo2PerKwh: number;
+  note: string;
+};
+
+/**
+ * Life calculation method.
+ * - iso281: basic ISO 281 L₁₀ / Lnm (a₁·aISO)
+ * - iso16281_screen: ISO 16281-inspired P adjustment (clearance, misalignment, distribution)
+ * - stress_life_screen: transparent contact/film stress-life modifier (not SKF GBLM/AFC)
+ */
+export type BearingLifeMethod = "iso281" | "iso16281_screen" | "stress_life_screen";
+
+export type RollingElementMaterial = "steel" | "hybrid_ceramic" | "full_ceramic";
+
+/** Screening-grade advanced life factor breakdown (ISO 16281 / stress-life / hybrid). */
+export type AdvancedLifeFactors = {
+  lifeMethod: BearingLifeMethod;
+  misalignmentUsedMrad: number;
+  misalignmentCapacityMrad: number;
+  /** Multiplier on equivalent load P (ISO 16281 screen path). */
+  fClearance: number;
+  fMisalign: number;
+  fDistrib: number;
+  /** ISO 281 P before advanced adjustment. */
+  PbaseN: number;
+  /** P used for life (may equal Pbase for iso281 / stress-life). */
+  PadjN: number;
+  /** Stress-life surface modifier (1 when method is not stress_life_screen). */
+  aStress: number;
+  /** Misalignment life derate when not folded into P (iso281 / stress-life). */
+  aMis: number;
+  hybridLifeFactor: number;
+  hybridDynamicRatingFactor: number;
+  hybridSpeedFactor: number;
+  /** Combined life modification beyond a₁·aISO applied to Lnm. */
+  aAdvanced: number;
+  contactPressureProxyMpa: number | null;
+  note: string;
 };
 
 export type BearingConfig = {
@@ -174,6 +251,19 @@ export type BearingConfig = {
   targetSpeedMargin?: number;
   material: BearingMaterial;
   fitRecommendation?: FitRecommendation;
+  /** Life model method — default iso281. */
+  lifeMethod?: BearingLifeMethod;
+  /** Manual misalignment angle (mrad). Combined with stationSlopesMrad as max. */
+  misalignmentAngleMrad?: number;
+  /**
+   * Per-station shaft slopes at bearings (mrad) from shaft FEM handoff.
+   * Effective misalignment = max(manual, …stationSlopes).
+   */
+  stationSlopesMrad?: number[];
+  /** Rolling-element material — ISO 20056-inspired hybrid/full ceramic modifiers. */
+  rollingElementMaterial?: RollingElementMaterial;
+  /** Override operating clearance (μm) for ISO 16281 screening; else from fits. */
+  operatingClearanceUm?: number;
 };
 
 export type BearingGeometry = {
@@ -219,6 +309,9 @@ export type BearingResult = {
   duplexStiffness?: DuplexStiffnessCheck;
   thermalEquilibrium?: ThermalEquilibriumCheck;
   relubrication?: RelubricationCheck;
+  defectFrequencies?: DefectFrequenciesCheck;
+  adjustedReferenceSpeed?: AdjustedReferenceSpeedCheck;
+  energyCo2?: EnergyCo2Check;
   /** First-failure (min station) modified life. */
   systemMinLifeHours?: number;
   /** Weibull multi-bearing system life L_sys. */
@@ -231,4 +324,10 @@ export type BearingResult = {
   powerLossW: number;
   temperatureDeratingFactor: number;
   fitRecommendation?: FitRecommendation;
+  /** Active life method used for Lnm. */
+  lifeMethod: BearingLifeMethod;
+  /** Effective misalignment angle used (mrad). */
+  misalignmentUsedMrad?: number;
+  /** Screening advanced-life factor breakdown (16281 / stress-life / hybrid). */
+  advancedLifeFactors?: AdvancedLifeFactors;
 };

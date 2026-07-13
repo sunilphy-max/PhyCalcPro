@@ -2,17 +2,8 @@
  * Minimum load and friction torque screening (SKF / ISO indicative).
  */
 
+import { isRollerBearingType } from "@/data/catalogs/bearing/types";
 import type { BearingType } from "./types";
-
-const ROLLER_TYPES: BearingType[] = [
-  "cylindrical_roller",
-  "cylindrical_nj",
-  "cylindrical_nup",
-  "tapered_roller",
-  "spherical_roller",
-  "needle_roller",
-  "thrust_ball",
-];
 
 /** Minimum radial load to avoid skidding (N) — SKF indicative for ball bearings. */
 export function minimumRadialLoadN(params: {
@@ -22,7 +13,7 @@ export function minimumRadialLoadN(params: {
 }): number {
   const { dynamicRatingN, speedRpm, bearingType } = params;
   const n = Math.max(speedRpm, 1);
-  if (ROLLER_TYPES.includes(bearingType)) {
+  if (isRollerBearingType(bearingType)) {
     return 0.01 * dynamicRatingN;
   }
   if (bearingType === "angular_contact") {
@@ -50,7 +41,7 @@ export function estimateFriction(params: {
 }): FrictionEstimate {
   const dm = params.meanDiameterMm / 1000;
   const P = Math.max(params.equivalentLoadN, 1);
-  const muBase = ROLLER_TYPES.includes(params.bearingType) ? 0.002 : 0.0015;
+  const muBase = isRollerBearingType(params.bearingType) ? 0.002 : 0.0015;
   const mu = params.sealed ? muBase * 1.4 : muBase;
   const M = 0.5 * mu * P * dm;
   const omega = (2 * Math.PI * params.speedRpm) / 60;

@@ -67,7 +67,10 @@ export default function BearingReferenceVisual({
 }
 
 function LoadDirectionHint({ type }: { type: BearingType }) {
-  const isThrust = type === "thrust_ball";
+  const isThrust =
+    type === "thrust_ball" ||
+    type === "thrust_cylindrical_roller" ||
+    type === "thrust_spherical_roller";
   const isAngular = type === "angular_contact" || type === "tapered_roller";
   const text = isThrust
     ? "Primary load: axial Fa (thrust direction shown ↕)"

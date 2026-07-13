@@ -1,8 +1,11 @@
 /**
  * Bearing series templates — SKF-baseline geometry and ratings expanded per manufacturer.
+ * Datasheet Pu is attached via withDatasheetPu; inch / toroidal / thrust-roller / needle
+ * depth live in seriesDataExtended.ts.
  */
 
 import type { BearingApplicationProfile, SeriesTemplate } from "./types";
+import { EXTENDED_SERIES_TEMPLATES, withDatasheetPu } from "./seriesDataExtended";
 
 const RADIAL: BearingApplicationProfile[] = ["general_radial", "floating_bearing", "high_speed"];
 const COMBINED: BearingApplicationProfile[] = ["combined_loads", "locating_bearing"];
@@ -125,13 +128,7 @@ export const THRUST_BALL: SeriesTemplate[] = [
   { seriesDesignation: "51206", type: "thrust_ball", family: "thrust_ball", series: "512xx", dimensionSeries: "medium", boreMm: 30, outerDiameterMm: 52, widthMm: 16, dynamicRatingN: 39000, staticRatingN: 95000, limitingSpeedRpm: 4500, mountingRole: "locating", applicationTags: THRUST },
 ];
 
-export const TIMKEN_INCH: SeriesTemplate[] = [
-  { seriesDesignation: "R 4", type: "deep_groove", family: "deep_groove_ball", series: "R", boreMm: 6.35, outerDiameterMm: 15.875, widthMm: 4.978, dynamicRatingN: 2240, staticRatingN: 950, limitingSpeedRpm: 32000, applicationTags: RADIAL, manufacturers: ["TIMKEN"] },
-  { seriesDesignation: "R 6", type: "deep_groove", family: "deep_groove_ball", series: "R", boreMm: 9.525, outerDiameterMm: 22.225, widthMm: 5.556, dynamicRatingN: 3350, staticRatingN: 1500, limitingSpeedRpm: 28000, applicationTags: RADIAL, manufacturers: ["TIMKEN"] },
-  { seriesDesignation: "R 8", type: "deep_groove", family: "deep_groove_ball", series: "R", boreMm: 12.7, outerDiameterMm: 28.575, widthMm: 7.938, dynamicRatingN: 4750, staticRatingN: 2240, limitingSpeedRpm: 24000, applicationTags: RADIAL, manufacturers: ["TIMKEN"] },
-];
-
-/** All templates merged for catalog build. */
+/** All templates merged for catalog build (with datasheet Pu on every row). */
 export const ALL_SERIES_TEMPLATES: SeriesTemplate[] = [
   ...METRIC_DEEP_GROOVE,
   ...SEALED_DEEP_GROOVE,
@@ -144,5 +141,5 @@ export const ALL_SERIES_TEMPLATES: SeriesTemplate[] = [
   ...NEEDLE_ROLLER,
   ...SELF_ALIGNING,
   ...THRUST_BALL,
-  ...TIMKEN_INCH,
-];
+  ...EXTENDED_SERIES_TEMPLATES,
+].map(withDatasheetPu);
