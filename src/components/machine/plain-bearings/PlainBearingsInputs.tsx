@@ -75,27 +75,27 @@ export default function PlainBearingsInputs(props: Props) {
       title="Plain bearing"
       description="Hydrodynamic journal, thrust pad and tilting-pad thrust screening. Calculation standard is set above — type stays free."
       footer={
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="space-y-2">
+          <CalculatorCalculateButton onClick={props.onCalculate} label="Calculate bearing" designAware />
           {props.onSave && props.setProjectName != null ? (
             <>
               <input
                 type="text"
                 value={props.projectName ?? ""}
                 onChange={(e) => props.setProjectName?.(e.target.value)}
-                className="min-w-[10rem] flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
                 placeholder="Project name"
               />
               <button
                 type="button"
                 onClick={props.onSave}
                 disabled={props.saving}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+                className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
               >
-                {props.saving ? "Saving…" : "Save"}
+                {props.saving ? "Saving..." : "Save project"}
               </button>
             </>
           ) : null}
-          <CalculatorCalculateButton onClick={props.onCalculate} label="Calculate bearing" designAware />
         </div>
       }
     >
