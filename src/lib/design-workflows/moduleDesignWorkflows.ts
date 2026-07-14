@@ -340,10 +340,18 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   housing: {
     maturity: "solver-backed",
+    modes: [
+      ...DEFAULT_WORKFLOW_MODES,
+      {
+        id: "diagnose" as DesignWorkflowMode,
+        label: WORKFLOW_MODE_META.diagnose.label,
+        description: WORKFLOW_MODE_META.diagnose.description,
+      },
+    ],
     designInputs: ["Bearing bore", "Radial/axial load", "Mount style", "Bolt pattern"],
     autoSizingTargets: ["Body safety factor", "Bolt size", "Bolt tension and shear"],
     linkedWorkflowModuleIds: ["bolts", "bearings", "shafts", "frames"],
-    expertNotes: ["Bridges bearing selection to fastener design in the power-train workflow."],
+    expertNotes: ["Bridges bearing selection to fastener design in the power-train workflow. Diagnose mode screens body SF, bolts, deflection, and fit risks."],
   },
   "keys-splines": {
     maturity: "solver-backed",
@@ -397,9 +405,18 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   "plain-bearings": {
     maturity: "solver-backed",
+    modes: [
+      ...DEFAULT_WORKFLOW_MODES,
+      {
+        id: "diagnose" as DesignWorkflowMode,
+        label: WORKFLOW_MODE_META.diagnose.label,
+        description: WORKFLOW_MODE_META.diagnose.description,
+      },
+    ],
     designInputs: ["Radial load", "Speed", "Diameter", "Clearance", "Viscosity"],
     autoSizingTargets: ["Sommerfeld number", "Eccentricity", "Min film thickness"],
     linkedWorkflowModuleIds: ["shafts", "bearings", "hydraulics"],
+    expertNotes: ["Diagnose mode screens film thickness, specific load, thermal rise, and clearance risks for journal and pad bearings."],
   },
   "brakes-clutches": {
     maturity: "solver-backed",

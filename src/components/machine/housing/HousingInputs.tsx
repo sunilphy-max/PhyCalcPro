@@ -15,6 +15,8 @@ import {
   type HousingCatalogEntry,
 } from "@/data/catalogs/housing";
 import MountedBomPanel from "@/components/machine/housing/MountedBomPanel";
+import HousingMountTypePicker from "@/components/machine/housing/HousingMountTypePicker";
+import HousingReferenceVisual from "@/components/machine/housing/HousingReferenceVisual";
 import type { MountedBomResult } from "@/lib/machine/housing/mountedBom";
 import type { HousingSealOption } from "@/data/catalogs/housing";
 
@@ -197,19 +199,12 @@ export default function HousingInputs({
             ) : null}
 
             {activeTab === "application" ? (
-              <div className="space-y-3">
-                <label className="flex flex-col gap-1 text-sm">
-                  <span className="font-medium text-slate-700 dark:text-slate-200">Mount style</span>
-                  <select
-                    value={mountStyle}
-                    onChange={(e) => setMountStyle(e.target.value as HousingMountStyle)}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"
-                  >
-                    <option value="pillow_block">Pillow block</option>
-                    <option value="flange">Flange</option>
-                    <option value="foot">Foot mount</option>
-                  </select>
-                </label>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Mount style</p>
+                  <HousingMountTypePicker value={mountStyle} onChange={setMountStyle} />
+                </div>
+                <HousingReferenceVisual mountStyle={mountStyle} />
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Application presets set SF / service factors only — they do not force pillow vs flange geometry.
                 </p>

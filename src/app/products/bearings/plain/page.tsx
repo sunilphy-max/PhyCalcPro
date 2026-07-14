@@ -102,7 +102,9 @@ export default function Page() {
     const raw = solvePlainBearingEngine(config);
     setLastConfig(config);
     setResult(wrapResult(raw));
-    setDiagnosis(diagnosePlainBearing(raw, config));
+    setDiagnosis(
+      workflowMode === "diagnose" ? diagnosePlainBearing(raw, config) : null
+    );
 
     publishHandoff("housing", {
       fromModuleId: "plain-bearings",
@@ -116,7 +118,7 @@ export default function Page() {
         speed,
       },
     });
-  }, [buildConfig, wrapResult, bearingType, speed]);
+  }, [buildConfig, wrapResult, bearingType, speed, workflowMode]);
 
   const designUserInputs = useMemo(
     (): ModuleUserInputs => ({
@@ -186,7 +188,9 @@ export default function Page() {
       const raw = solvePlainBearingEngine(config);
       setLastConfig(config);
       setResult(wrapResult(raw));
-      setDiagnosis(diagnosePlainBearing(raw, config));
+      setDiagnosis(
+        workflowMode === "diagnose" ? diagnosePlainBearing(raw, config) : null
+      );
     });
   };
 

@@ -147,7 +147,7 @@ export default function Page() {
     const raw = solveHousingEngine(config);
     setLastConfig(config);
     setResult(wrapResult(raw));
-    setDiagnosis(diagnoseHousing(raw, config));
+    setDiagnosis(workflowMode === "diagnose" ? diagnoseHousing(raw, config) : null);
 
     publishHandoff("bolts", {
       fromModuleId: "housing",
@@ -172,6 +172,7 @@ export default function Page() {
     lengthUnit,
     wrapResult,
     completePowerTrainStep,
+    workflowMode,
   ]);
 
   const designUserInputs = useMemo(

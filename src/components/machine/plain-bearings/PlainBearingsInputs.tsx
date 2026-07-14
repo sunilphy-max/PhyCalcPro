@@ -8,6 +8,8 @@ import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorInputGridClass, calculatorNumberInputClass } from "@/components/calculator/styles";
 import CalculatorInputSteps from "@/components/machine/bearings-shared/CalculatorInputSteps";
+import PlainBearingTypePicker from "@/components/machine/plain-bearings/PlainBearingTypePicker";
+import PlainBearingReferenceVisual from "@/components/machine/plain-bearings/PlainBearingReferenceVisual";
 import type { PlainBearingType } from "@/lib/machine/plain-bearings/types";
 
 type Props = {
@@ -103,19 +105,15 @@ export default function PlainBearingsInputs(props: Props) {
         {(activeTab) => (
           <>
             {activeTab === "application" ? (
-              <div className="space-y-3">
-                <label className="block space-y-2 text-sm text-slate-700 dark:text-slate-200">
-                  <span>Bearing type</span>
-                  <select
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200">Bearing type</p>
+                  <PlainBearingTypePicker
                     value={props.bearingType}
-                    onChange={(e) => props.setBearingType(e.target.value as PlainBearingType)}
-                    className={calculatorNumberInputClass}
-                  >
-                    <option value="journal">Journal (radial) — ISO 7902</option>
-                    <option value="thrust_pad">Thrust pad (flat) — ISO 12131</option>
-                    <option value="tilting_pad">Tilting-pad thrust — ISO 12130</option>
-                  </select>
-                </label>
+                    onChange={props.setBearingType}
+                  />
+                </div>
+                <PlainBearingReferenceVisual bearingType={props.bearingType} />
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   Application presets set safety / service factors only — they do not lock this type.
                 </p>

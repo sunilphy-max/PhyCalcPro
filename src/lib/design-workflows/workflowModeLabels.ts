@@ -52,13 +52,13 @@ export const WORKFLOW_MODE_META: Record<DesignWorkflowMode, WorkflowModeMeta> = 
   diagnose: {
     label: "Diagnose",
     description:
-      "Analyze an installed bearing under current operating conditions — flag overload, lubrication, misalignment, and speed risks.",
+      "Analyze installed operating conditions — flag overload, lubrication, film, misalignment, bolt, and speed risks.",
     calculateLabel: "Diagnose failure risk",
-    headline: "Diagnose — why is this bearing failing?",
+    headline: "Diagnose — why is this failing?",
     steps: [
-      "Enter the installed designation and actual operating loads, speed, and lubrication.",
-      "Click Diagnose to run ISO 281/76 checks and risk screening.",
-      "Review failure modes, root-cause hints, and catalog replacement options.",
+      "Enter the installed geometry or designation and actual operating loads, speed, and lubrication.",
+      "Click Diagnose to run rating and risk screening checks.",
+      "Review failure modes, root-cause hints, and recommended adjustments.",
     ],
   },
 };

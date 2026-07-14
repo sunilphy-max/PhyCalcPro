@@ -17,6 +17,7 @@ import CalculatorResultsViewTabs, {
 } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
 import GenericDiagnosisPanel from "@/components/machine/bearings-shared/GenericDiagnosisPanel";
 import ModuleReportPreview from "@/components/machine/bearings-shared/ModuleReportPreview";
+import PlainBearingReferenceVisual from "@/components/machine/plain-bearings/PlainBearingReferenceVisual";
 import type { PlainBearingResult, PlainBearingConfig } from "@/lib/machine/plain-bearings/types";
 import {
   diagnosePlainBearing,
@@ -28,6 +29,7 @@ import { solvePlainBearingEngine } from "@/lib/machine/plain-bearings/engine";
 import type { ReportRow } from "@/lib/export/reportPayload";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import type { CalculatorResultsViewTab } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
 
 type Props = {
   result: (PlainBearingResult & { calculationSpec?: CalculationSpec }) | null;
@@ -60,9 +62,9 @@ export default function PlainBearingsResults({
 }: Props) {
   const diagnosis = useMemo(() => {
     if (diagnosisProp) return diagnosisProp;
-    if (!result || !config) return null;
+    if (workflowMode !== "diagnose" || !result || !config) return null;
     return diagnosePlainBearing(result, config);
-  }, [diagnosisProp, result, config]);
+  }, [diagnosisProp, result, config, workflowMode]);
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result || !config) return [];
@@ -147,8 +149,198 @@ export default function PlainBearingsResults({
     ];
   }, [result, config]);
 
+  const viewTabs = useMemo((): CalculatorResultsViewTab[] => {
+    if (!result) return [];
+
+    const tabs: CalculatorResultsViewTab[] = [
+      {
+        id: "summary",
+        label: "Summary",
+        icon: CALCULATOR_VIEW_ICONS.summary,
+        content: (
+          <div className="space-y-4">
+            <DesignStatusBanner
+              designStatus={result.designStatus}
+              subtitle={result.status}
+              detail={
+                result.bearingType === "journal"
+                  ? "Journal (ISO 7902)"
+                  : result.bearingType === "thrust_pad"
+                    ? "Thrust pad (ISO 12131)"
+                    : "Tilting pad (ISO 12130)"
+              }
+              highlights={[
+                {
+                  label: "h_min",
+                  value: `${formatDisplayNumber(fromBase(result.minFilmThickness, "length", lengthUnit))} ${lengthUnit}`,
+                },
+                {
+                  label: "Sommerfeld",
+                  value: formatDisplayNumber(result.sommerfeldNumber),
+                },
+                {
+                  label: "Power loss",
+                  value: `${formatDisplayNumber(result.powerLoss)} W`,
+                },
+                {
+                  label: "Outlet T",
+                  value:
+                    result.outletTempC != null
+                      ? `${formatDisplayNumber(result.outletTempC)} °C`
+                      : "—",
+                },
+              ]}
+            />
+
+            <CalculatorMetricGrid cols={2}>
+              <CalculatorMetricCard
+                label="Sommerfeld S"
+                numericValue={result.sommerfeldNumber}
+                unit="—"
+                tone="blue"
+              />
+              {result.bearingType === "journal" ? (
+                <CalculatorMetricCard
+                  label="Eccentricity ε"
+                  numericValue={result.eccentricityRatio}
+                  unit="—"
+                  tone="purple"
+                />
+              ) : null}
+              {result.specificLoadPa != null ? (
+                <CalculatorMetricCard
+                  label="Specific load"
+                  numericValue={result.specificLoadPa}
+                  unit="Pa"
+                  tone="orange"
+                />
+              ) : null}
+              {result.unitLoad != null ? (
+                <CalculatorMetricCard
+                  label="Unit load"
+                  numericValue={result.unitLoad}
+                  unit="Pa"
+                  tone="orange"
+                />
+              ) : null}
+              <CalculatorMetricCard
+                label="Minimum film thickness"
+                numericValue={fromBase(result.minFilmThickness, "length", lengthUnit)}
+                unit={lengthUnit}
+                status={result.isSafe ? "safe" : "danger"}
+              />
+              <CalculatorMetricCard
+                label="Power loss"
+                numericValue={result.powerLoss}
+                unit="W"
+                tone="orange"
+              />
+              {result.temperatureRiseC != null ? (
+                <CalculatorMetricCard
+                  label="Temperature rise"
+                  numericValue={result.temperatureRiseC}
+                  unit="°C"
+                />
+              ) : null}
+              {result.outletTempC != null ? (
+                <CalculatorMetricCard
+                  label="Outlet temperature"
+                  numericValue={Number(result.outletTempC.toFixed(1))}
+                  unit="°C"
+                />
+              ) : null}
+            </CalculatorMetricGrid>
+
+            {result.shaftFit ? (
+              <CalculatorMetricGrid cols={3}>
+                <CalculatorMetricCard label="Shaft fit" value={result.shaftFit} tone="blue" />
+                <CalculatorMetricCard
+                  label="Housing fit"
+                  value={result.housingFit ?? "—"}
+                  tone="blue"
+                />
+                <CalculatorMetricCard
+                  label="Min clearance"
+                  value={
+                    result.minRecommendedClearanceUm != null
+                      ? `${result.minRecommendedClearanceUm.toFixed(0)} µm`
+                      : "—"
+                  }
+                />
+              </CalculatorMetricGrid>
+            ) : null}
+
+            <PlainBearingReferenceVisual bearingType={result.bearingType} compact />
+          </div>
+        ),
+      },
+      {
+        id: "charts",
+        label: "Charts",
+        icon: CALCULATOR_VIEW_ICONS.charts,
+        content:
+          plotTabs.length > 0 ? (
+            <EngineeringPlotPicker tabs={plotTabs} />
+          ) : (
+            <p className="text-sm text-slate-500">Charts require a calculated result.</p>
+          ),
+      },
+      {
+        id: "report",
+        label: "Report",
+        icon: CALCULATOR_VIEW_ICONS.report,
+        content: (
+          <ModuleReportPreview
+            title="Professional plain bearing report (PDF)"
+            description="Structured export with film, load, thermal screening, and assumptions."
+            sections={REPORT_SECTIONS}
+            inputRows={inputRows}
+            hasResult={Boolean(result)}
+          />
+        ),
+      },
+    ];
+
+    if (workflowMode === "diagnose" && diagnosis) {
+      tabs.splice(2, 0, {
+        id: "diagnose",
+        label: "Diagnose",
+        icon: CALCULATOR_VIEW_ICONS.diagnose,
+        content: (
+          <GenericDiagnosisPanel
+            overallRisk={diagnosis.overallRisk}
+            summary={diagnosis.summary}
+            findings={diagnosis.findings.map((f) => ({
+              category: f.category,
+              categoryLabel: plainDiagnosisCategoryLabel(f.category),
+              level: f.level,
+              title: f.title,
+              detail: f.detail,
+            }))}
+            recommendations={diagnosis.adjustments.map((a) => ({
+              id: a.id,
+              label: a.label,
+              detail: a.detail,
+              onApply: onApplyAdjustment ? () => onApplyAdjustment(a.fields) : undefined,
+            }))}
+          />
+        ),
+      });
+    }
+
+    return tabs;
+  }, [
+    result,
+    lengthUnit,
+    plotTabs,
+    inputRows,
+    workflowMode,
+    diagnosis,
+    onApplyAdjustment,
+  ]);
+
   const defaultView =
-    workflowMode === "diagnose" ? ("diagnose" as const) : ("summary" as const);
+    workflowMode === "diagnose" && diagnosis ? ("diagnose" as const) : ("summary" as const);
 
   return (
     <CalculatorResultsShell
@@ -175,182 +367,10 @@ export default function PlainBearingsResults({
     >
       {result ? (
         <CalculatorResultsViewTabs
+          key={defaultView}
           ariaLabel="Plain bearing results views"
           defaultTab={defaultView}
-          tabs={[
-            {
-              id: "summary",
-              label: "Summary",
-              icon: CALCULATOR_VIEW_ICONS.summary,
-              content: (
-                <div className="space-y-4">
-                  <DesignStatusBanner
-                    designStatus={result.designStatus}
-                    subtitle={result.status}
-                    detail={
-                      result.bearingType === "journal"
-                        ? "Journal (ISO 7902)"
-                        : result.bearingType === "thrust_pad"
-                          ? "Thrust pad (ISO 12131)"
-                          : "Tilting pad (ISO 12130)"
-                    }
-                    highlights={[
-                      {
-                        label: "h_min",
-                        value: `${formatDisplayNumber(fromBase(result.minFilmThickness, "length", lengthUnit))} ${lengthUnit}`,
-                      },
-                      {
-                        label: "Sommerfeld",
-                        value: formatDisplayNumber(result.sommerfeldNumber),
-                      },
-                      {
-                        label: "Power loss",
-                        value: `${formatDisplayNumber(result.powerLoss)} W`,
-                      },
-                      {
-                        label: "Outlet T",
-                        value:
-                          result.outletTempC != null
-                            ? `${formatDisplayNumber(result.outletTempC)} °C`
-                            : "—",
-                      },
-                    ]}
-                  />
-
-                  <CalculatorMetricGrid cols={2}>
-                    <CalculatorMetricCard
-                      label="Sommerfeld S"
-                      numericValue={result.sommerfeldNumber}
-                      unit="—"
-                      tone="blue"
-                    />
-                    {result.bearingType === "journal" ? (
-                      <CalculatorMetricCard
-                        label="Eccentricity ε"
-                        numericValue={result.eccentricityRatio}
-                        unit="—"
-                        tone="purple"
-                      />
-                    ) : null}
-                    {result.specificLoadPa != null ? (
-                      <CalculatorMetricCard
-                        label="Specific load"
-                        numericValue={result.specificLoadPa}
-                        unit="Pa"
-                        tone="orange"
-                      />
-                    ) : null}
-                    {result.unitLoad != null ? (
-                      <CalculatorMetricCard
-                        label="Unit load"
-                        numericValue={result.unitLoad}
-                        unit="Pa"
-                        tone="orange"
-                      />
-                    ) : null}
-                    <CalculatorMetricCard
-                      label="Minimum film thickness"
-                      numericValue={fromBase(result.minFilmThickness, "length", lengthUnit)}
-                      unit={lengthUnit}
-                      status={result.isSafe ? "safe" : "danger"}
-                    />
-                    <CalculatorMetricCard
-                      label="Power loss"
-                      numericValue={result.powerLoss}
-                      unit="W"
-                      tone="orange"
-                    />
-                    {result.temperatureRiseC != null ? (
-                      <CalculatorMetricCard
-                        label="Temperature rise"
-                        numericValue={result.temperatureRiseC}
-                        unit="°C"
-                      />
-                    ) : null}
-                    {result.outletTempC != null ? (
-                      <CalculatorMetricCard
-                        label="Outlet temperature"
-                        numericValue={Number(result.outletTempC.toFixed(1))}
-                        unit="°C"
-                      />
-                    ) : null}
-                  </CalculatorMetricGrid>
-
-                  {result.shaftFit ? (
-                    <CalculatorMetricGrid cols={3}>
-                      <CalculatorMetricCard label="Shaft fit" value={result.shaftFit} tone="blue" />
-                      <CalculatorMetricCard
-                        label="Housing fit"
-                        value={result.housingFit ?? "—"}
-                        tone="blue"
-                      />
-                      <CalculatorMetricCard
-                        label="Min clearance"
-                        value={
-                          result.minRecommendedClearanceUm != null
-                            ? `${result.minRecommendedClearanceUm.toFixed(0)} µm`
-                            : "—"
-                        }
-                      />
-                    </CalculatorMetricGrid>
-                  ) : null}
-                </div>
-              ),
-            },
-            {
-              id: "charts",
-              label: "Charts",
-              icon: CALCULATOR_VIEW_ICONS.charts,
-              content:
-                plotTabs.length > 0 ? (
-                  <EngineeringPlotPicker tabs={plotTabs} />
-                ) : (
-                  <p className="text-sm text-slate-500">Charts require a calculated result.</p>
-                ),
-            },
-            {
-              id: "diagnose",
-              label: "Diagnose",
-              icon: CALCULATOR_VIEW_ICONS.diagnose,
-              content: diagnosis ? (
-                <GenericDiagnosisPanel
-                  overallRisk={diagnosis.overallRisk}
-                  summary={diagnosis.summary}
-                  findings={diagnosis.findings.map((f) => ({
-                    category: f.category,
-                    categoryLabel: plainDiagnosisCategoryLabel(f.category),
-                    level: f.level,
-                    title: f.title,
-                    detail: f.detail,
-                  }))}
-                  recommendations={diagnosis.adjustments.map((a) => ({
-                    id: a.id,
-                    label: a.label,
-                    detail: a.detail,
-                    onApply: onApplyAdjustment
-                      ? () => onApplyAdjustment(a.fields)
-                      : undefined,
-                  }))}
-                />
-              ) : (
-                <p className="text-sm text-slate-500">Run calculate to generate diagnosis findings.</p>
-              ),
-            },
-            {
-              id: "report",
-              label: "Report",
-              icon: CALCULATOR_VIEW_ICONS.report,
-              content: (
-                <ModuleReportPreview
-                  title="Professional plain bearing report (PDF)"
-                  description="Structured export with film, load, thermal screening, and assumptions."
-                  sections={REPORT_SECTIONS}
-                  inputRows={inputRows}
-                  hasResult={Boolean(result)}
-                />
-              ),
-            },
-          ]}
+          tabs={viewTabs}
         />
       ) : null}
     </CalculatorResultsShell>

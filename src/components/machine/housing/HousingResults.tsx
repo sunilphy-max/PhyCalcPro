@@ -18,6 +18,7 @@ import CalculatorResultsViewTabs, {
 } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
 import GenericDiagnosisPanel from "@/components/machine/bearings-shared/GenericDiagnosisPanel";
 import ModuleReportPreview from "@/components/machine/bearings-shared/ModuleReportPreview";
+import HousingReferenceVisual from "@/components/machine/housing/HousingReferenceVisual";
 import type { HousingConfig, HousingResult } from "@/lib/machine/housing/types";
 import {
   diagnoseHousing,
@@ -28,6 +29,7 @@ import {
 import { solveHousingEngine } from "@/lib/machine/housing/engine";
 import type { ReportRow } from "@/lib/export/reportPayload";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import type { CalculatorResultsViewTab } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
 
 type Props = {
   result: WithCalculationSpec<HousingResult> | null;
@@ -58,9 +60,9 @@ export default function HousingResults({
 }: Props) {
   const diagnosis = useMemo(() => {
     if (diagnosisProp) return diagnosisProp;
-    if (!result || !config) return null;
+    if (workflowMode !== "diagnose" || !result || !config) return null;
     return diagnoseHousing(result, config);
-  }, [diagnosisProp, result, config]);
+  }, [diagnosisProp, result, config, workflowMode]);
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result || !config) return [];
@@ -144,8 +146,168 @@ export default function HousingResults({
     ];
   }, [result, config]);
 
+  const viewTabs = useMemo((): CalculatorResultsViewTab[] => {
+    if (!result) return [];
+
+    const tabs: CalculatorResultsViewTab[] = [
+      {
+        id: "summary",
+        label: "Summary",
+        icon: CALCULATOR_VIEW_ICONS.summary,
+        content: (
+          <div className="space-y-4">
+            <DesignStatusBanner
+              designStatus={result.designStatus}
+              subtitle={result.governingFailureMode}
+              detail={`Recommended bolt ${result.recommendedBoltSize}`}
+              highlights={[
+                {
+                  label: "Body SF",
+                  value: formatDisplayNumber(result.bodySafetyFactor),
+                },
+                {
+                  label: "Bolt T",
+                  value: `${formatDisplayNumber(result.boltTensionPerBolt)} N`,
+                },
+                {
+                  label: "Bolt V",
+                  value: `${formatDisplayNumber(result.boltShearPerBolt)} N`,
+                },
+                {
+                  label: "Deflection",
+                  value: `${formatDisplayNumber(result.housingDeflection * 1000)} mm`,
+                },
+              ]}
+            />
+
+            <CalculatorMetricGrid cols={2}>
+              <CalculatorMetricCard
+                label="Body safety factor"
+                numericValue={result.bodySafetyFactor}
+                unit="—"
+                tone={
+                  result.designStatus === "safe"
+                    ? "green"
+                    : result.designStatus === "warning"
+                      ? "orange"
+                      : "red"
+                }
+              />
+              <CalculatorMetricCard
+                label="Recommended bolt"
+                value={result.recommendedBoltSize}
+                tone="blue"
+              />
+              <CalculatorMetricCard
+                label="Bolt tension / bolt"
+                numericValue={result.boltTensionPerBolt}
+                unit="N"
+                tone="purple"
+              />
+              <CalculatorMetricCard
+                label="Bolt shear / bolt"
+                numericValue={result.boltShearPerBolt}
+                unit="N"
+                tone="purple"
+              />
+              <CalculatorMetricCard
+                label="Body stress"
+                numericValue={result.bodyStress / 1e6}
+                unit="MPa"
+                tone="blue"
+              />
+              <CalculatorMetricCard
+                label="Housing deflection"
+                numericValue={result.housingDeflection * 1000}
+                unit="mm"
+                tone="blue"
+              />
+              <CalculatorMetricCard
+                label="Shaft fit (ISO 286)"
+                value={result.recommendedShaftFit}
+                tone="purple"
+              />
+              <CalculatorMetricCard
+                label="Housing fit"
+                value={result.recommendedHousingFit}
+                tone="purple"
+              />
+              <CalculatorMetricCard
+                label="Est. operating clearance"
+                numericValue={Number(result.estimatedOperatingClearanceUm.toFixed(0))}
+                unit="µm"
+              />
+              <CalculatorMetricCard
+                label="Stiffness estimate"
+                numericValue={result.stiffnessEstimate / 1e6}
+                unit="MN/m"
+                tone="blue"
+              />
+            </CalculatorMetricGrid>
+
+            {config ? <HousingReferenceVisual mountStyle={config.mountStyle} compact /> : null}
+          </div>
+        ),
+      },
+      {
+        id: "charts",
+        label: "Charts",
+        icon: CALCULATOR_VIEW_ICONS.charts,
+        content:
+          plotTabs.length > 0 ? (
+            <EngineeringPlotPicker tabs={plotTabs} />
+          ) : (
+            <p className="text-sm text-slate-500">Charts require a calculated result.</p>
+          ),
+      },
+      {
+        id: "report",
+        label: "Report",
+        icon: CALCULATOR_VIEW_ICONS.report,
+        content: (
+          <ModuleReportPreview
+            title="Professional housing report (PDF)"
+            description="Structured export with body SF, bolt reactions, fits, and assumptions."
+            sections={REPORT_SECTIONS}
+            inputRows={inputRows}
+            hasResult={Boolean(result)}
+          />
+        ),
+      },
+    ];
+
+    if (workflowMode === "diagnose" && diagnosis) {
+      tabs.splice(2, 0, {
+        id: "diagnose",
+        label: "Diagnose",
+        icon: CALCULATOR_VIEW_ICONS.diagnose,
+        content: (
+          <GenericDiagnosisPanel
+            overallRisk={diagnosis.overallRisk}
+            summary={diagnosis.summary}
+            findings={diagnosis.findings.map((f) => ({
+              category: f.category,
+              categoryLabel: housingDiagnosisCategoryLabel(f.category),
+              level: f.level,
+              title: f.title,
+              detail: f.detail,
+            }))}
+            recommendations={diagnosis.adjustments.map((a) => ({
+              id: a.id,
+              label: a.label,
+              detail: a.detail,
+              onApply: onApplyAdjustment ? () => onApplyAdjustment(a.fields) : undefined,
+            }))}
+          />
+        ),
+      });
+    }
+
+    return tabs;
+  }, [result, config, plotTabs, inputRows, workflowMode, diagnosis, onApplyAdjustment]);
+
   const defaultView =
-    workflowMode === "diagnose" ? ("diagnose" as const) : ("summary" as const);
+    workflowMode === "diagnose" && diagnosis ? ("diagnose" as const) : ("summary" as const);
 
   return (
     <CalculatorResultsShell
@@ -170,160 +332,10 @@ export default function HousingResults({
     >
       {result ? (
         <CalculatorResultsViewTabs
+          key={defaultView}
           ariaLabel="Housing results views"
           defaultTab={defaultView}
-          tabs={[
-            {
-              id: "summary",
-              label: "Summary",
-              icon: CALCULATOR_VIEW_ICONS.summary,
-              content: (
-                <div className="space-y-4">
-                  <DesignStatusBanner
-                    designStatus={result.designStatus}
-                    subtitle={result.governingFailureMode}
-                    detail={`Recommended bolt ${result.recommendedBoltSize}`}
-                    highlights={[
-                      {
-                        label: "Body SF",
-                        value: formatDisplayNumber(result.bodySafetyFactor),
-                      },
-                      {
-                        label: "Bolt T",
-                        value: `${formatDisplayNumber(result.boltTensionPerBolt)} N`,
-                      },
-                      {
-                        label: "Bolt V",
-                        value: `${formatDisplayNumber(result.boltShearPerBolt)} N`,
-                      },
-                      {
-                        label: "Deflection",
-                        value: `${formatDisplayNumber(result.housingDeflection * 1000)} mm`,
-                      },
-                    ]}
-                  />
-
-                  <CalculatorMetricGrid cols={2}>
-                    <CalculatorMetricCard
-                      label="Body safety factor"
-                      numericValue={result.bodySafetyFactor}
-                      unit="—"
-                      tone={
-                        result.designStatus === "safe"
-                          ? "green"
-                          : result.designStatus === "warning"
-                            ? "orange"
-                            : "red"
-                      }
-                    />
-                    <CalculatorMetricCard
-                      label="Recommended bolt"
-                      value={result.recommendedBoltSize}
-                      tone="blue"
-                    />
-                    <CalculatorMetricCard
-                      label="Bolt tension / bolt"
-                      numericValue={result.boltTensionPerBolt}
-                      unit="N"
-                      tone="purple"
-                    />
-                    <CalculatorMetricCard
-                      label="Bolt shear / bolt"
-                      numericValue={result.boltShearPerBolt}
-                      unit="N"
-                      tone="purple"
-                    />
-                    <CalculatorMetricCard
-                      label="Body stress"
-                      numericValue={result.bodyStress / 1e6}
-                      unit="MPa"
-                      tone="blue"
-                    />
-                    <CalculatorMetricCard
-                      label="Housing deflection"
-                      numericValue={result.housingDeflection * 1000}
-                      unit="mm"
-                      tone="blue"
-                    />
-                    <CalculatorMetricCard
-                      label="Shaft fit (ISO 286)"
-                      value={result.recommendedShaftFit}
-                      tone="purple"
-                    />
-                    <CalculatorMetricCard
-                      label="Housing fit"
-                      value={result.recommendedHousingFit}
-                      tone="purple"
-                    />
-                    <CalculatorMetricCard
-                      label="Est. operating clearance"
-                      numericValue={Number(result.estimatedOperatingClearanceUm.toFixed(0))}
-                      unit="µm"
-                    />
-                    <CalculatorMetricCard
-                      label="Stiffness estimate"
-                      numericValue={result.stiffnessEstimate / 1e6}
-                      unit="MN/m"
-                      tone="blue"
-                    />
-                  </CalculatorMetricGrid>
-                </div>
-              ),
-            },
-            {
-              id: "charts",
-              label: "Charts",
-              icon: CALCULATOR_VIEW_ICONS.charts,
-              content:
-                plotTabs.length > 0 ? (
-                  <EngineeringPlotPicker tabs={plotTabs} />
-                ) : (
-                  <p className="text-sm text-slate-500">Charts require a calculated result.</p>
-                ),
-            },
-            {
-              id: "diagnose",
-              label: "Diagnose",
-              icon: CALCULATOR_VIEW_ICONS.diagnose,
-              content: diagnosis ? (
-                <GenericDiagnosisPanel
-                  overallRisk={diagnosis.overallRisk}
-                  summary={diagnosis.summary}
-                  findings={diagnosis.findings.map((f) => ({
-                    category: f.category,
-                    categoryLabel: housingDiagnosisCategoryLabel(f.category),
-                    level: f.level,
-                    title: f.title,
-                    detail: f.detail,
-                  }))}
-                  recommendations={diagnosis.adjustments.map((a) => ({
-                    id: a.id,
-                    label: a.label,
-                    detail: a.detail,
-                    onApply: onApplyAdjustment
-                      ? () => onApplyAdjustment(a.fields)
-                      : undefined,
-                  }))}
-                />
-              ) : (
-                <p className="text-sm text-slate-500">Run calculate to generate diagnosis findings.</p>
-              ),
-            },
-            {
-              id: "report",
-              label: "Report",
-              icon: CALCULATOR_VIEW_ICONS.report,
-              content: (
-                <ModuleReportPreview
-                  title="Professional housing report (PDF)"
-                  description="Structured export with body SF, bolt reactions, fits, and assumptions."
-                  sections={REPORT_SECTIONS}
-                  inputRows={inputRows}
-                  hasResult={Boolean(result)}
-                />
-              ),
-            },
-          ]}
+          tabs={viewTabs}
         />
       ) : null}
     </CalculatorResultsShell>
