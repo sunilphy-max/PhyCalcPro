@@ -17,6 +17,7 @@ const CATEGORY_LABELS = {
   contamination: "Contamination",
   min_load: "Min load",
   thermal: "Thermal",
+  arrangement: "Arrangement",
 } as const;
 
 type Props = {

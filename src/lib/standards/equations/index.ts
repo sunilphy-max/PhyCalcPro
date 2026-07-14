@@ -5,9 +5,11 @@ import { gearsEquations } from "./gears";
 import { combinedLoadingEquations } from "./combined-loading";
 import { weldsEquations } from "./welds";
 import { generatedModuleEquations } from "./generated";
+import { bearingsEquations } from "./bearings";
 
 const REGISTRY: Record<string, EquationReference[]> = {
   ...generatedModuleEquations,
+  bearings: bearingsEquations,
   beams: beamsEquations,
   columns: columnsEquations,
   gears: gearsEquations,
@@ -24,4 +26,4 @@ export function registerModuleEquations(moduleId: string, equations: EquationRef
   REGISTRY[moduleId] = equations;
 }
 
-export { beamsEquations, columnsEquations, gearsEquations, combinedLoadingEquations, weldsEquations };
+export { beamsEquations, columnsEquations, gearsEquations, combinedLoadingEquations, weldsEquations, bearingsEquations };

@@ -2,13 +2,13 @@
 
 **Purpose**
 
-Screen hydrodynamic journal bearings using Sommerfeld number, minimum film thickness, and power loss estimates. Supports preliminary bearing design before detailed Reynolds equation solution.
+Screen hydrodynamic journal and thrust pad bearings (ISO 7902 / ISO 12130 / ISO 12131 screening) with Sommerfeld number, minimum film thickness, power loss, and temperature rise. Supports preliminary bearing design before detailed Reynolds equation solution.
 
 **Physics & theory**
 
 In a journal bearing, rotating shaft (journal) separates from the bushing by a lubricant film when sufficient speed generates hydrodynamic pressure. The Sommerfeld number \( S = (\mu n / p)(r/c)^2 \) characterizes operation, where \( \mu \) is viscosity, \( n \) is speed, \( p \) is unit load, \( r \) is radius, and \( c \) is radial clearance.
 
-Minimum film thickness \( h_{\min} \) occurs near the maximum pressure arc; it must exceed composite surface roughness to avoid boundary contact. Eccentricity ratio \( \varepsilon \) relates to \( S \) through film theory charts (Sommerfeld, Ocvirk, or short-bearing approximations). Power loss is viscous shear in the film: \( P \propto \mu n^2 r^3 L / c \).
+Minimum film thickness \( h_{\min} \) occurs near the maximum pressure arc; it must exceed composite surface roughness to avoid boundary contact. Eccentricity ratio \( \varepsilon \) is interpolated from Raimondi–Boyd \( \varepsilon(S) \) charts (full journal, \( L/D \approx 1 \) screening). Power loss is viscous shear in the film. Outlet temperature uses a light **2–3 pass ΔT ↔ viscosity** iteration (Walther screening scale on the user viscosity); short-bearing / single-zone limits remain.
 
 **Governing equations**
 
@@ -20,40 +20,46 @@ S = \frac{\mu n}{p}\left(\frac{r}{c}\right)^2, \quad p = \frac{W}{2 r L}
 h_{\min} = c(1 - \varepsilon)
 \]
 
-\[
-P_{\mathrm{loss}} = \frac{2\pi^2 \mu n^2 r^3 L}{c}
-\]
-
 **Numerical method**
 
-Sommerfeld screening with chart-based or approximate \( \varepsilon(S) \) relations. Inputs: diameter, length, clearance, load, speed, viscosity. Outputs: \( S \), \( h_{\min} \), eccentricity, power loss, temperature rise estimate (optional simplified).
+Sommerfeld + Raimondi–Boyd \( \varepsilon(S) \), iterative mean-film temperature viscosity. Inputs: diameter, length, clearance, load, speed, viscosity, ambient temperature. Outputs: \( S \), \( h_{\min} \), eccentricity, power loss, specific load, outlet T, shaft/housing fit recommendation.
 
 **Inputs**
 
 | Parameter | Description |
 |-----------|-------------|
-| Journal diameter, length | Bearing geometry |
+| Journal / pad diameter, length | Bearing geometry |
 | Radial clearance \( c \) | Assembly clearance |
 | `load`, `speed` | Operating W and rpm |
-| Oil viscosity \( \mu \) | At operating temperature |
-| Surface roughness | For film ratio \( h_{\min}/R_q \) |
+| Oil viscosity \( \mu \) | At ambient / stated reference temperature |
+| Ambient temperature | For ΔT iteration and outlet T |
+| Bearing type | Journal / thrust pad / tilting pad |
 
 **Outputs**
 
-- Sommerfeld number, eccentricity ratio, minimum film thickness, film ratio, power loss, unit load.
+- Sommerfeld number, eccentricity ratio, minimum film thickness, film parameter / specific load, power loss, outlet temperature
+- Live **Design Summary** rail (S, \( h_{\min} \), specific load, outlet T, status)
+- Deterministic **plain advisor** (L/D, clearance, viscosity, pad count rationale + alternatives)
+- Sectioned PDF / Excel (Design Summary, film factors, recommendation)
+- Status banner with ε, film ratio, load-limit highlights
 
 **Design codes & checks**
 
-- **Indicative:** Sommerfeld screening, minimum film thickness
-- **ISO:** ISO 7902 plain bearing calculation (reference)
-
+- **ISO 7902** — Hydrodynamic plain journal screening
+- **ISO 12130 / 12131** — Tilting-pad / thrust pad screening
+- Specific load and temperature screening limits
 
 **Assumptions & limitations**
 
-- Full journal, steady-state, isoviscous lubrication.
-- Short-bearing or Sommerfeld boundary — not full finite-length Reynolds solution.
+- Full journal, steady-state; viscosity corrected only via Walther-scale iteration (not a full oil-database heat balance).
+- Short-bearing / Raimondi–Boyd \( L/D \approx 1 \) — not full finite-length Reynolds solution.
 - No dynamic instability (oil whirl/whip) analysis.
-- Thermal viscosity variation simplified or user-adjusted.
+- No MITCalc-IV-class sliding material + oil flow database.
+
+**Design workflow**
+
+- **Validate / Calculate:** Forward ISO 7902/12130 screening with mode-aware Calculate label.
+- **Auto-design:** Available via design workflow where wired.
 
 **References**
 
@@ -61,5 +67,4 @@ Sommerfeld screening with chart-based or approximate \( \varepsilon(S) \) relati
 2. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 12.
 3. ISO 7902-1:2020. *Calculation of plain bearings — Hydrodynamic plain journal bearings*.
 4. Bassani, R., & Piccigallo, B. *Hydrostatic Lubrication*. Elsevier.
-5. PhyCalcPro verification benchmarks in `src/data/verification/` where available for this module.
-6. Beer, F. P., et al. *Mechanics of Materials*, 8th ed. McGraw-Hill — foundational stress and deformation theory.
+5. PhyCalcPro verification benchmarks in `src/data/verification/` (`plain-bearings-indicative-*.json`).

@@ -78,7 +78,7 @@ export default function PlainBearingsInputs(props: Props) {
       description="Hydrodynamic journal, thrust pad and tilting-pad thrust screening. Calculation standard is set above — type stays free."
       footer={
         <div className="space-y-2">
-          <CalculatorCalculateButton onClick={props.onCalculate} label="Calculate bearing" designAware />
+          <CalculatorCalculateButton onClick={props.onCalculate} label="Calculate plain bearing" designAware />
           {props.onSave && props.setProjectName != null ? (
             <>
               <input

@@ -23,11 +23,22 @@ function utilizationStatus(value: number, limit: number, higherIsSafe: boolean):
   return higherIsSafe ? (value >= limit ? "safe" : "danger") : value <= limit ? "safe" : "danger";
 }
 
+/** True when lubricant path supplied κ / eC / aISO (vs basic L10 only). */
+function hasLubricationFactors(result: BearingResult): boolean {
+  return result.modifiedLifeFactors.nu1Cst > 0 || result.modifiedLifeFactors.aIso !== 1;
+}
+
 /** Registers all bearing metrics into the unified results table (cards render nothing). */
 export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }: Props) {
+  const f = result.modifiedLifeFactors;
+  const aIsoBase = f.aIso;
+  const aSkfEffective = result.aIso;
+  const showBaseAiso = Math.abs(aIsoBase - aSkfEffective) > 1e-6;
+  const lubeOk = hasLubricationFactors(result);
+
   return (
     <>
-      <CalculatorMetricGrid cols={4} section="SKF / ISO 281 life">
+      <CalculatorMetricGrid cols={4} section="ISO 281 / SKF rating life">
         <CalculatorMetricCard label="Catalog designation" value={result.designation ?? "—"} tone="blue" />
         <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
         <CalculatorMetricCard
@@ -47,12 +58,6 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           tone="orange"
         />
         <CalculatorMetricCard
-          label={`Basic L10 (a1=${result.a1})`}
-          numericValue={result.expectedLife}
-          unit="h"
-          tone="blue"
-        />
-        <CalculatorMetricCard
           label="Modified rating life Lnm"
           numericValue={result.modifiedLife}
           unit="h"
@@ -60,11 +65,30 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           size="lg"
         />
         <CalculatorMetricCard
-          label="Life factor (effective)"
-          numericValue={result.aIso}
+          label="Basic rating life L₁₀"
+          numericValue={result.expectedLife}
+          unit="h"
+          tone="blue"
+        />
+        <CalculatorMetricCard
+          label="Reliability factor a₁"
+          numericValue={result.a1}
           unit="—"
           tone="blue"
         />
+        <CalculatorMetricCard
+          label="aSKF (≡ aISO)"
+          numericValue={aSkfEffective}
+          unit="—"
+          tone="blue"
+        />
+        {showBaseAiso ? (
+          <CalculatorMetricCard
+            label="aISO (base, before a_adv)"
+            numericValue={aIsoBase}
+            unit="—"
+          />
+        ) : null}
         {result.misalignmentUsedMrad != null && result.misalignmentUsedMrad > 0 ? (
           <CalculatorMetricCard
             label="Misalignment used"
@@ -111,6 +135,41 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
         ) : null}
       </CalculatorMetricGrid>
 
+      <CalculatorMetricGrid cols={4} section="ISO 281 life factors (κ · eC · Pu/P)">
+        {lubeOk && f.kappa > 0 ? (
+          <CalculatorMetricCard label="Viscosity ratio κ = ν/ν₁" numericValue={f.kappa} unit="—" tone="blue" />
+        ) : (
+          <CalculatorMetricCard label="Viscosity ratio κ = ν/ν₁" value="—" />
+        )}
+        {lubeOk ? (
+          <CalculatorMetricCard
+            label="Contamination factor eC (ηc)"
+            numericValue={f.eC}
+            unit="—"
+            tone="blue"
+          />
+        ) : (
+          <CalculatorMetricCard label="Contamination factor eC (ηc)" value="—" />
+        )}
+        <CalculatorMetricCard label="Fatigue ratio Pu / P" numericValue={f.puOverP} unit="—" />
+        {f.nuCst > 0 ? (
+          <CalculatorMetricCard label="Operating viscosity ν" numericValue={f.nuCst} unit="cSt" />
+        ) : (
+          <CalculatorMetricCard label="Operating viscosity ν" value="—" />
+        )}
+        {f.nu1Cst > 0 ? (
+          <CalculatorMetricCard label="Rated viscosity ν₁" numericValue={f.nu1Cst} unit="cSt" />
+        ) : (
+          <CalculatorMetricCard label="Rated viscosity ν₁" value="—" />
+        )}
+        <CalculatorMetricCard
+          label="Min. radial load"
+          numericValue={fromBase(result.minimumRadialLoadN, "force", loadUnit)}
+          unit={loadUnit}
+          status={result.minLoadSatisfied ? "safe" : "danger"}
+        />
+      </CalculatorMetricGrid>
+
       <CalculatorMetricGrid cols={4} section="Safety checks">
         <CalculatorMetricCard
           label="P / C"
@@ -119,7 +178,7 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           status={utilizationStatus(result.dynamicUtilization, 1, false)}
         />
         <CalculatorMetricCard
-          label="Static s₀"
+          label="Static s₀ (ISO 76)"
           numericValue={result.staticSafetyFactor}
           unit="—"
           status={utilizationStatus(result.staticSafetyFactor, 1, true)}
@@ -134,18 +193,6 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           numericValue={result.lifeUtilization}
           unit="—"
           status={utilizationStatus(result.lifeUtilization, 1, false)}
-        />
-      </CalculatorMetricGrid>
-
-      <CalculatorMetricGrid cols={4} section="Lubrication factors">
-        <CalculatorMetricCard label="κ (viscosity ratio)" numericValue={result.modifiedLifeFactors.kappa} unit="—" />
-        <CalculatorMetricCard label="Contamination eC" numericValue={result.modifiedLifeFactors.eC} />
-        <CalculatorMetricCard label="Pu / P" numericValue={result.modifiedLifeFactors.puOverP} />
-        <CalculatorMetricCard
-          label="Min. radial load"
-          numericValue={fromBase(result.minimumRadialLoadN, "force", loadUnit)}
-          unit={loadUnit}
-          status={result.minLoadSatisfied ? "safe" : "danger"}
         />
       </CalculatorMetricGrid>
 

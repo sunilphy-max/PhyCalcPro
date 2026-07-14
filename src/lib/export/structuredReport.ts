@@ -291,6 +291,16 @@ export async function generateStructuredReportPdf(payload: ReportPayload): Promi
 
   const spec = payload.spec;
 
+  // Named engineer sections first (Design Summary, ISO factors, arrangement, advisor).
+  if (payload.sections?.length) {
+    for (const section of payload.sections) {
+      writer.sectionTitle(section.title);
+      if (section.narrative) writer.paragraph(section.narrative);
+      if (section.bullets?.length) writer.bulletList(section.bullets);
+      if (section.rows?.length) writer.dataTable(section.rows);
+    }
+  }
+
   if (payload.inputRows.length > 0) {
     writer.sectionTitle("Input parameters");
     writer.dataTable(payload.inputRows);
@@ -301,8 +311,16 @@ export async function generateStructuredReportPdf(payload: ReportPayload): Promi
     writer.paragraph(spec.method);
   }
 
-  if (payload.resultRows.length > 0) {
+  // Flat results only when no named sections covered the metrics.
+  if (payload.resultRows.length > 0 && !(payload.sections?.length)) {
     writer.sectionTitle("Results");
+    writer.dataTable(payload.resultRows);
+  } else if (
+    payload.resultRows.length > 0 &&
+    payload.sections?.length &&
+    !payload.sections.some((s) => s.id === "results" || s.id === "domain_factors")
+  ) {
+    writer.sectionTitle("Additional results");
     writer.dataTable(payload.resultRows);
   }
 

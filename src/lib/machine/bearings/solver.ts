@@ -24,10 +24,11 @@ import { calculateDefectFrequencies } from "./defectFrequencies";
 import { calculateAdjustedReferenceSpeed } from "./adjustedReferenceSpeed";
 import { calculateEnergyCo2 } from "./energyCo2";
 import {
-  calculateDuplexStiffness,
   effectiveAxialWithPreload,
+  PRELOAD_FRACTION_OF_C,
   type DuplexPreloadClass,
 } from "./duplexStiffness";
+import { calculateArrangementAnalysis } from "./arrangementAnalysis";
 import { sizeLocatingFloatingStations } from "./systemSizing";
 import {
   combinedLifeFromSpectrum,
@@ -183,6 +184,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
   let modifiedLifeFactors: BearingResult["modifiedLifeFactors"];
   let pairedStations: BearingResult["pairedStations"];
   let duplexStiffnessResult: BearingResult["duplexStiffness"] = undefined;
+  let arrangementAnalysisResult: BearingResult["arrangementAnalysis"] = undefined;
   let systemMinLifeHours: number | undefined;
   let weibullSystemLifeHours: number | undefined;
 
@@ -214,25 +216,69 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     expectedLifeRevolutions = expectedLife * 60 * speed;
   } else if (paired || locatingFloating) {
     const preloadClass = (config.preloadClass ?? "none") as DuplexPreloadClass;
-    const duplex =
-      paired
-        ? calculateDuplexStiffness({
-            arrangement,
-            dynamicRatingN: dynamicLoadRatingN,
-            meanDiameterMm:
-              config.boreMm != null && config.outerDiameterMm != null
-                ? (config.boreMm + config.outerDiameterMm) / 2
-                : 40,
-            contactAngleDeg: config.contactAngleDeg,
-            preloadClass,
-            preloadForceN: config.preloadForceN,
-            bearingType: config.bearingType,
-          })
-        : null;
+    const meanDiameterMmDuplex =
+      config.boreMm != null && config.outerDiameterMm != null
+        ? (config.boreMm + config.outerDiameterMm) / 2
+        : 40;
+    const preloadForceN =
+      config.preloadForceN != null
+        ? config.preloadForceN
+        : PRELOAD_FRACTION_OF_C[preloadClass] * dynamicLoadRatingN;
 
     const effectiveFa = paired
-      ? effectiveAxialWithPreload(config.axialLoad, duplex?.preloadForceN ?? 0, arrangement)
+      ? effectiveAxialWithPreload(config.axialLoad, preloadForceN, arrangement)
       : Math.abs(config.axialLoad);
+
+    if (paired && arrangement !== "single") {
+      const analysis = calculateArrangementAnalysis({
+        arrangement,
+        dynamicRatingN: dynamicLoadRatingN,
+        meanDiameterMm: meanDiameterMmDuplex,
+        contactAngleDeg: config.contactAngleDeg,
+        preloadClass,
+        preloadForceN: config.preloadForceN,
+        bearingType: config.bearingType,
+        externalAxialLoadN: config.axialLoad,
+        effectiveAxialLoadN: effectiveFa,
+        operatingTempC: config.operatingTempC,
+        ambientTempC: config.ambientTempC,
+        spanMm: config.bearingSpanMm,
+      });
+      arrangementAnalysisResult = {
+        arrangement: analysis.arrangement,
+        arrangementLabel: analysis.arrangementLabel,
+        preloadForceN: analysis.preloadForceN,
+        preloadClass: analysis.preloadClass,
+        axialStiffnessNPerUm: analysis.axialStiffnessNPerUm,
+        radialStiffnessNPerUm: analysis.radialStiffnessNPerUm,
+        momentStiffnessNmPerMrad: analysis.momentStiffnessNmPerMrad,
+        axialDisplacementUm: analysis.axialDisplacement.underExternalFaUm,
+        axialDisplacementUnderEffectiveFaUm: analysis.axialDisplacement.underEffectiveFaUm,
+        axialDisplacementStatus: analysis.axialDisplacement.status,
+        axialDisplacementNote: analysis.axialDisplacement.note,
+        thermalGrowthUm: analysis.thermal?.thermalGrowthUm ?? null,
+        thermalPreloadChangeN: analysis.thermal?.thermalPreloadChangeN ?? null,
+        thermalNote: analysis.thermal?.note ?? null,
+        rigidityComparison: analysis.rigidityComparison,
+        comparisonNote: analysis.comparisonNote,
+        status: analysis.status,
+        note: analysis.note,
+      };
+      duplexStiffnessResult = {
+        preloadForceN: analysis.preloadForceN,
+        preloadClass: analysis.preloadClass,
+        axialStiffnessNPerUm: analysis.axialStiffnessNPerUm,
+        radialStiffnessNPerUm: analysis.radialStiffnessNPerUm,
+        momentStiffnessNmPerMrad: analysis.momentStiffnessNmPerMrad,
+        arrangementLabel: analysis.arrangementLabel,
+        comparisonNote: analysis.comparisonNote,
+        axialDisplacementUm: analysis.axialDisplacement.underExternalFaUm,
+        axialDisplacementStatus: analysis.axialDisplacement.status,
+        thermalGrowthUm: analysis.thermal?.thermalGrowthUm,
+        thermalPreloadChangeN: analysis.thermal?.thermalPreloadChangeN,
+        rigidityComparison: analysis.rigidityComparison,
+      };
+    }
 
     if (locatingFloating) {
       const locatingType = config.locatingBearingType ?? config.bearingType;
@@ -371,18 +417,6 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
       equivalentLoad = gov.equivalentLoad;
       staticEquivalentLoad = Math.max(...stationLives.map((s) => s.staticEquivalentLoad));
     }
-
-    duplexStiffnessResult = duplex
-      ? {
-          preloadForceN: duplex.preloadForceN,
-          preloadClass: duplex.preloadClass,
-          axialStiffnessNPerUm: duplex.axialStiffnessNPerUm,
-          radialStiffnessNPerUm: duplex.radialStiffnessNPerUm,
-          momentStiffnessNmPerMrad: duplex.momentStiffnessNmPerMrad,
-          arrangementLabel: duplex.arrangementLabel,
-          comparisonNote: duplex.comparisonNote,
-        }
-      : undefined;
   } else {
     equivalentLoad = calculateBearingEquivalentLoad({ ...config, arrangement: "single" });
     staticEquivalentLoad = calculateStaticEquivalentLoad(
@@ -587,6 +621,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     staticSf < targetStaticSf ||
     (speedMargin != null && speedMargin < targetSpeedMargin) ||
     thermalExpansion?.status === "insufficient" ||
+    arrangementAnalysisResult?.status === "critical" ||
     relubrication.status === "critical"
   ) {
     designStatus = "critical";
@@ -596,6 +631,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     staticSf < targetStaticSf * 1.2 ||
     (speedMargin != null && speedMargin < targetSpeedMargin * 1.2) ||
     thermalExpansion?.status === "marginal" ||
+    arrangementAnalysisResult?.status === "warning" ||
     relubrication.status === "frequent"
   ) {
     designStatus = "warning";
@@ -648,6 +684,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     arrangement,
     thermalExpansion,
     duplexStiffness: duplexStiffnessResult,
+    arrangementAnalysis: arrangementAnalysisResult,
     thermalEquilibrium,
     relubrication,
     defectFrequencies: {

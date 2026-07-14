@@ -36,10 +36,29 @@ export default function BearingStatusBanner({ result }: Props) {
   const style = STATUS_STYLES[result.designStatus];
   const Icon = style.icon;
 
+  const f = result.modifiedLifeFactors;
+  const hasLube = f.nu1Cst > 0 || f.aIso !== 1;
+
   const highlights = [
     {
-      label: "SKF Lnm",
+      label: "Lnm",
       value: `${formatDisplayNumber(result.modifiedLife)} h`,
+    },
+    {
+      label: "a₁",
+      value: formatDisplayNumber(result.a1),
+    },
+    {
+      label: "aSKF",
+      value: formatDisplayNumber(result.aIso),
+    },
+    {
+      label: "κ",
+      value: hasLube && f.kappa > 0 ? formatDisplayNumber(f.kappa) : "—",
+    },
+    {
+      label: "eC",
+      value: hasLube ? formatDisplayNumber(f.eC) : "—",
     },
     {
       label: "P / C",
@@ -85,7 +104,7 @@ export default function BearingStatusBanner({ result }: Props) {
           </div>
         </div>
 
-        <dl className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 md:max-w-xl">
+        <dl className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 md:max-w-2xl lg:grid-cols-5">
           {highlights.map((item) => (
             <div
               key={item.label}

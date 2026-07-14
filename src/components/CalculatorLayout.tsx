@@ -24,10 +24,13 @@ import { calculatorSidebarClass, calculatorWorkspaceClass } from "@/components/c
 
 /**
  * Module layout: full-width inputs before first calculation; inputs left + results right after.
+ * Optional `summary` renders a persistent sticky Design Summary rail on the right.
  */
 type Props = {
   inputs?: ReactNode;
   results?: ReactNode;
+  /** Persistent right-rail Design Summary (always visible when provided). */
+  summary?: ReactNode;
   left?: ReactNode;
   center?: ReactNode;
   right?: ReactNode;
@@ -41,6 +44,7 @@ type Props = {
 function CalculatorLayoutBody({
   inputs,
   results,
+  summary,
   left,
   center,
   right,
@@ -74,6 +78,20 @@ function CalculatorLayoutBody({
 
   const resultColumn = results ?? right;
   const showSplitLayout = Boolean(inputColumn && resultColumn && resultsStageActive);
+  const showSummaryRail = Boolean(summary);
+
+  const stageGridClass = [
+    "calculator-stage-grid grid min-w-0 grid-cols-1 gap-5 transition-[grid-template-columns] duration-300 ease-out",
+    showSplitLayout && showSummaryRail
+      ? "xl:grid-cols-[minmax(260px,320px)_minmax(0,1fr)_minmax(240px,280px)]"
+      : showSplitLayout
+        ? "xl:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]"
+        : showSummaryRail && inputColumn
+          ? "xl:grid-cols-[minmax(0,1fr)_minmax(240px,280px)]"
+          : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="calculator-module-shell min-h-full p-4 md:p-6 lg:p-8">
@@ -142,12 +160,8 @@ function CalculatorLayoutBody({
             <PowerTrainWorkflowStepper moduleId={moduleId} assembly={powerTrainAssembly} />
           ) : null}
 
-          {/* Input stage: full-width inputs. Output stage: inputs left, results right. */}
-          <div
-            className={`calculator-stage-grid grid min-w-0 grid-cols-1 gap-5 transition-[grid-template-columns] duration-300 ease-out ${
-              showSplitLayout ? "xl:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]" : ""
-            }`}
-          >
+          {/* Input stage: full-width inputs (+ optional summary). Output: inputs | results | summary. */}
+          <div className={stageGridClass}>
             {inputColumn ? (
               <aside
                 className={`${calculatorWorkspaceClass} max-w-full min-w-0 transition-all duration-300 ease-out ${
@@ -174,6 +188,13 @@ function CalculatorLayoutBody({
               >
                 {resultColumn}
               </div>
+            ) : null}
+            {summary ? (
+              <aside
+                className="calculator-design-summary order-first min-w-0 xl:sticky xl:top-5 xl:order-none xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:overscroll-contain"
+              >
+                {summary}
+              </aside>
             ) : null}
           </div>
 

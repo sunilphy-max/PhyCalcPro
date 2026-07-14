@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { calculateThermalExpansion } from "./thermalExpansion";
 import { calculateDuplexStiffness, effectiveAxialWithPreload } from "./duplexStiffness";
+import { calculateArrangementAnalysis } from "./arrangementAnalysis";
 import { solveBearingEngine } from "./engine";
 
 const MATERIAL = {
@@ -52,6 +53,50 @@ describe("duplex preload and stiffness", () => {
   });
 });
 
+describe("arrangement analysis object", () => {
+  it("returns preload, stiffness, δa, thermal, and O/X/T rigidity comparison", () => {
+    const analysis = calculateArrangementAnalysis({
+      arrangement: "back_to_back",
+      dynamicRatingN: 30000,
+      meanDiameterMm: 40,
+      preloadClass: "medium",
+      bearingType: "angular_contact",
+      externalAxialLoadN: 2000,
+      effectiveAxialLoadN: 3500,
+      operatingTempC: 80,
+      ambientTempC: 20,
+      spanMm: 80,
+    });
+    expect(analysis.preloadForceN).toBeGreaterThan(0);
+    expect(analysis.axialStiffnessNPerUm).toBeGreaterThan(0);
+    expect(analysis.axialDisplacement.underExternalFaUm).toBeCloseTo(
+      2000 / analysis.axialStiffnessNPerUm,
+      5
+    );
+    expect(analysis.thermal).not.toBeNull();
+    expect(analysis.thermal!.thermalGrowthUm).toBeGreaterThan(0);
+    expect(analysis.rigidityComparison).toHaveLength(3);
+    const o = analysis.rigidityComparison.find((r) => r.arrangement === "back_to_back")!;
+    const x = analysis.rigidityComparison.find((r) => r.arrangement === "face_to_face")!;
+    expect(o.isSelected).toBe(true);
+    expect(o.momentStiffnessNmPerMrad).toBeGreaterThan(x.momentStiffnessNmPerMrad);
+    expect(o.momentStiffnessRatioVsO).toBeCloseTo(1);
+  });
+
+  it("flags high axial displacement when Fa/Ka is large", () => {
+    const analysis = calculateArrangementAnalysis({
+      arrangement: "face_to_face",
+      dynamicRatingN: 5000,
+      meanDiameterMm: 25,
+      preloadClass: "none",
+      bearingType: "angular_contact",
+      externalAxialLoadN: 8000,
+    });
+    expect(analysis.axialDisplacement.status).not.toBe("ok");
+    expect(analysis.status).not.toBe("ok");
+  });
+});
+
 describe("locating + floating system", () => {
   it("sizes two stations with thermal check", () => {
     const res = solveBearingEngine({
@@ -83,7 +128,7 @@ describe("locating + floating system", () => {
 });
 
 describe("duplex O with preload", () => {
-  it("returns stiffness and paired stations", () => {
+  it("returns arrangement analysis and paired stations", () => {
     const res = solveBearingEngine({
       radialLoad: 4000,
       axialLoad: 2000,
@@ -100,6 +145,10 @@ describe("duplex O with preload", () => {
       contamination: "normal_clean",
       material: MATERIAL,
     });
+    expect(res.arrangementAnalysis).toBeDefined();
+    expect(res.arrangementAnalysis!.arrangementLabel).toContain("O");
+    expect(res.arrangementAnalysis!.axialDisplacementUm).toBeGreaterThan(0);
+    expect(res.arrangementAnalysis!.rigidityComparison).toHaveLength(3);
     expect(res.duplexStiffness).toBeDefined();
     expect(res.duplexStiffness!.arrangementLabel).toContain("O");
     expect(res.pairedStations?.length).toBe(2);

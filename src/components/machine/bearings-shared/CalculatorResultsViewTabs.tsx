@@ -60,7 +60,20 @@ export default function CalculatorResultsViewTabs({
       </div>
 
       <div role="tabpanel" className="min-w-0 space-y-4">
-        {active.content}
+        {tabs.map((tab) => {
+          const isActive = tab.id === active.id;
+          return (
+            <div
+              key={tab.id}
+              className={isActive ? "min-w-0 space-y-4" : "hidden"}
+              aria-hidden={!isActive}
+              // Keep charts mounted for PDF/Excel capture even when another tab is active.
+              data-export-tab={tab.id}
+            >
+              {tab.content}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

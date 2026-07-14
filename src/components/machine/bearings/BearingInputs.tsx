@@ -515,8 +515,8 @@ export default function BearingInputs({
               mountingSystem === "duplex_angular") &&
             setPreloadClass ? (
               <CalculatorFormSection
-                title="Duplex preload"
-                description="Preload increases stiffness and adds to axial load for life. O has higher moment stiffness than X."
+                title="Duplex arrangement engineering"
+                description="Preload, Ka/Kr/Km stiffness, axial displacement δa = Fa/Ka, thermal preload shift, and O vs X vs T rigidity comparison."
               >
                 <CalculatorSelectField
                   label="Preload class"
@@ -595,23 +595,23 @@ export default function BearingInputs({
                   <option value="C4">C4 (loose)</option>
                 </CalculatorSelectField>
                 <CalculatorSelectField
-                  label="Reliability (ISO 281 a1)"
+                  label="Reliability factor a₁ (ISO 281)"
                   value={String(reliability)}
                   onChange={(value) => setReliability(Number(value) as BearingReliability)}
                 >
-                  <option value="90">90% (a1 = 1.00)</option>
-                  <option value="95">95% (a1 = 0.64)</option>
-                  <option value="96">96% (a1 = 0.55)</option>
-                  <option value="97">97% (a1 = 0.47)</option>
-                  <option value="98">98% (a1 = 0.37)</option>
-                  <option value="99">99% (a1 = 0.25)</option>
+                  <option value="90">90% — a₁ = 1.00</option>
+                  <option value="95">95% — a₁ = 0.64</option>
+                  <option value="96">96% — a₁ = 0.55</option>
+                  <option value="97">97% — a₁ = 0.47</option>
+                  <option value="98">98% — a₁ = 0.37</option>
+                  <option value="99">99% — a₁ = 0.25</option>
                 </CalculatorSelectField>
               </div>
             </CalculatorFormSection>
 
             <CalculatorFormSection
               title="Lubrication & environment"
-              description="Modified life a_ISO uses viscosity ratio κ and contamination factor eC."
+              description="Modified life Lnm = a₁ · aSKF · (C/P)^p. aSKF ≡ ISO 281 aISO from viscosity ratio κ, contamination eC (ηc), and Pu/P."
             >
               <div className={calculatorInputGridClass}>
                 <CalculatorSelectField
@@ -619,7 +619,7 @@ export default function BearingInputs({
                   value={lubricantType}
                   onChange={(value) => setLubricantType(value as LubricantType)}
                 >
-                  <option value="none">Basic L10 only (aISO = 1)</option>
+                  <option value="none">Basic L₁₀ only (aSKF = 1)</option>
                   <option value="oil">Oil (ISO VG)</option>
                   <option value="grease">Grease (base oil VG)</option>
                 </CalculatorSelectField>
@@ -646,16 +646,16 @@ export default function BearingInputs({
                       />
                     </div>
                     <CalculatorSelectField
-                      label="Contamination"
+                      label="Contamination factor eC (ηc)"
                       value={contamination}
                       onChange={(value) => setContamination(value as ContaminationLevel)}
                     >
-                      <option value="extreme_clean">Clean</option>
-                      <option value="high_clean">High cleanliness</option>
-                      <option value="normal_clean">Moderate</option>
-                      <option value="slight_contamination">Slight contamination</option>
-                      <option value="typical_contamination">Typical / severe</option>
-                      <option value="heavy_contamination">Heavy contamination</option>
+                      <option value="extreme_clean">Extreme clean — eC = 1.0</option>
+                      <option value="high_clean">High cleanliness — eC = 0.8</option>
+                      <option value="normal_clean">Normal clean — eC = 0.5</option>
+                      <option value="slight_contamination">Slight contamination — eC = 0.3</option>
+                      <option value="typical_contamination">Typical / severe — eC = 0.1</option>
+                      <option value="heavy_contamination">Heavy contamination — eC = 0.05</option>
                     </CalculatorSelectField>
                   </>
                 ) : (

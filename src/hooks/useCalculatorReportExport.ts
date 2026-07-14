@@ -23,6 +23,7 @@ export type CalculatorReportExportConfig = {
   reportMeta?: ReportMeta;
   csvRows?: CsvRow[];
   inputRows?: ReportRow[];
+  reportSections?: import("@/lib/export/reportSections").ReportSection[];
 };
 
 function downloadCsv(fileName: string, rows: CsvRow[]) {
@@ -74,6 +75,7 @@ async function collectExportPayload(
     spec: config.calculationSpec,
     resultRows: config.csvRows,
     inputRows: config.inputRows,
+    sections: config.reportSections,
     userInputs,
     chartImages,
     plotData,

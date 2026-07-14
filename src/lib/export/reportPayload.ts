@@ -10,6 +10,8 @@ import {
   REPORT_TAGLINE,
 } from "@/lib/site/reportBrand";
 import type { ReportChartImage, ReportMeta } from "@/lib/export/structuredReportTypes";
+import type { ReportSection } from "@/lib/export/reportSections";
+import { sectionRowsAsReportRows } from "@/lib/export/reportSections";
 
 export type ReportRow = {
   parameter: string;
@@ -49,6 +51,8 @@ export type ReportPayload = {
   spec: CalculationSpec | null;
   inputRows: ReportRow[];
   resultRows: ReportRow[];
+  /** Named engineer sections (Design Summary, ISO 281, arrangement, advisor, …). */
+  sections: ReportSection[];
   chartImages: ReportChartImage[];
   plotData: PlotDataExport[];
   siteUrl: string;
@@ -67,6 +71,8 @@ export type BuildReportPayloadOptions = {
   spec?: CalculationSpec | null;
   resultRows?: CsvRow[];
   inputRows?: ReportRow[];
+  /** Optional named sections for PDF / Excel structure. */
+  sections?: ReportSection[];
   userInputs?: ModuleUserInputs;
   chartImages?: ReportChartImage[];
   plotData?: PlotDataExport[];
@@ -227,7 +233,12 @@ export function buildReportPayload(options: BuildReportPayloadOptions): ReportPa
     ? buildInputRowsFromUserInputs(options.userInputs)
     : [];
   const inputRows = explicitInputs.length > 0 ? explicitInputs : contextInputs;
-  const resultRows = normalizeResultRows(options.resultRows);
+  const sections = options.sections ?? [];
+  const flatFromSections = sectionRowsAsReportRows(sections);
+  const resultRows =
+    normalizeResultRows(options.resultRows).length > 0
+      ? normalizeResultRows(options.resultRows)
+      : flatFromSections;
   const spec = options.spec ?? null;
   const checkSummary =
     spec && spec.checks.length > 0
@@ -241,6 +252,7 @@ export function buildReportPayload(options: BuildReportPayloadOptions): ReportPa
     spec,
     inputRows,
     resultRows,
+    sections,
     chartImages: options.chartImages ?? [],
     plotData: options.plotData ?? [],
     siteUrl: getReportSiteUrl(),

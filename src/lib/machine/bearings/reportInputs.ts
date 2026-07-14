@@ -15,7 +15,16 @@ import type {
   LubricantType,
 } from "./types";
 import type { ContaminationLevel } from "./iso281Life";
+import { CONTAMINATION_EC } from "./iso281Life";
 
+const A1_BY_RELIABILITY: Record<number, number> = {
+  90: 1.0,
+  95: 0.64,
+  96: 0.55,
+  97: 0.47,
+  98: 0.37,
+  99: 0.25,
+};
 export type BearingReportInputContext = {
   radialLoad: number;
   radialUnit: string;
@@ -64,7 +73,11 @@ export function buildBearingReportInputRows(ctx: BearingReportInputContext): Rep
     { parameter: "Manufacturer", value: BEARING_MANUFACTURER_LABELS[ctx.manufacturer] },
     { parameter: "Application profile", value: ctx.applicationProfile },
     { parameter: "Arrangement", value: ctx.arrangement },
-    { parameter: "Reliability a1", value: `${ctx.reliability}%` },
+    {
+      parameter: "Reliability factor a₁",
+      value: String(A1_BY_RELIABILITY[ctx.reliability] ?? 1),
+      unit: `${ctx.reliability}%`,
+    },
     { parameter: "Lubricant", value: ctx.lubricantType },
   ];
 
@@ -72,7 +85,11 @@ export function buildBearingReportInputRows(ctx: BearingReportInputContext): Rep
     rows.push(
       { parameter: "ISO VG @ 40 °C", value: String(ctx.isoVgGrade) },
       { parameter: "Operating temperature", value: String(ctx.operatingTempC), unit: "°C" },
-      { parameter: "Contamination class", value: ctx.contamination }
+      {
+        parameter: "Contamination factor eC (ηc)",
+        value: String(CONTAMINATION_EC[ctx.contamination]),
+        unit: ctx.contamination,
+      }
     );
   }
 

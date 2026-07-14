@@ -25,11 +25,11 @@ Engineering software manual for the **66 active product modules** shipped under 
 ### 1.1 Navigation and layout
 
 - **Single sidebar:** `src/app/products/layout.tsx` renders the category sidebar. Category layouts are passthrough wrappers — no nested sidebars.
-- **Module chrome:** Each calculator page uses `CalculatorLayout` with a **two-column** workspace beside the sidebar:
+- **Module chrome:** Each calculator page uses `CalculatorLayout` with a workspace beside the sidebar:
   - **Inputs column** — parameters, mesh controls, calculate/save (`CalculatorInputPanel` where adopted).
   - **Results column** — plots, metric cards, engineering checks, export (`CalculatorResultsShell` / `ExportableReport`).
-- **Layout contract:** All product pages pass explicit `inputs` / `results` props to `CalculatorLayout`. The legacy `left` / `center` / `right` API is removed; `npm run validate:layout` enforces the contract in CI.
-
+  - **Optional Design Summary rail** (`summary` prop) — persistent sticky checklist that can update live from inputs (bearings selection, plain bearings, housing).
+- **Layout contract:** All product pages pass explicit `inputs` / `results` props to `CalculatorLayout`. The legacy `left` / `center` / `right` API is removed; `npm run validate:layout` enforces the contract in CI. Optional `summary` is allowed.
 ### 1.2 Calculation pipeline
 
 Standard module contract (see homogenization roadmap):
@@ -70,7 +70,7 @@ Changing design code sets **default units** via `useDesignCodeUnits` / `modulePr
 
 `ExportableReport` with `moduleId` enables:
 
-- **Structured PDF reports** via `src/lib/export/structuredReport.ts` — title block, input summary, metric results, engineering checks, formula steps, and embedded chart images (`collectChartImages` from Plotly).
+- **Structured PDF reports** via `src/lib/export/structuredReport.ts` — title block, optional **named `sections`** (Design Summary, ISO 281 / film / housing factors, arrangement, recommendation), curated inputs, metric results, engineering checks, formula steps, and embedded chart images (`collectChartImages` from Plotly). Flat `resultRows` remain supported for older modules. Excel mirrors section groups as extra sheets when present.
 - CSV export from solver output.
 - Quality checklist from `moduleQualityDefaults`.
 - Engineering checks panel when `calculationSpec` is present.

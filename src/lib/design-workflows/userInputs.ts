@@ -101,6 +101,17 @@ export type ModuleUserInputs = {
   bearingManufacturer?: "SKF" | "FAG" | "NSK" | "TIMKEN" | "NTN";
   bearingApplicationProfile?: "general_radial" | "combined_loads" | "heavy_shock" | "high_speed" | "space_limited" | "pure_thrust" | "locating_bearing" | "floating_bearing" | "all";
   bearingArrangement?: "single" | "back_to_back" | "face_to_face" | "tandem";
+  /** ISO VG grade for design-mode life / ranking (default 68). */
+  bearingIsoVgGrade?: number;
+  bearingLubricantType?: "oil" | "grease" | "none";
+  bearingOperatingTempC?: number;
+  bearingContamination?:
+    | "extreme_clean"
+    | "high_clean"
+    | "normal_clean"
+    | "slight_contamination"
+    | "typical_contamination"
+    | "heavy_contamination";
   bore?: number;
   diameter?: number;
   shaftDiameterMm?: number;

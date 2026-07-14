@@ -202,6 +202,7 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
   const targetSf = userInputs.targetSafetyFactor ?? 1.5;
 
   try {
+    const lubricantType = userInputs.bearingLubricantType ?? "oil";
     const req = solveBearingEngine({
       radialLoad: radial,
       axialLoad: userInputs.axialLoad ?? 0,
@@ -210,10 +211,11 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
       safetyFactor: targetSf,
       bearingType,
       arrangement: userInputs.bearingArrangement ?? "single",
-      lubricantType: "oil",
-      isoVgGrade: 68,
-      operatingTempC: 70,
-      contamination: "normal_clean",
+      lubricantType: lubricantType === "none" ? undefined : lubricantType,
+      isoVgGrade: lubricantType === "none" ? undefined : (userInputs.bearingIsoVgGrade ?? 68),
+      operatingTempC: userInputs.bearingOperatingTempC ?? 70,
+      contamination:
+        lubricantType === "none" ? undefined : (userInputs.bearingContamination ?? "normal_clean"),
       material: BEARING_MATERIAL,
     });
 

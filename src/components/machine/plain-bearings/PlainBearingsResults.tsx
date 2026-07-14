@@ -30,6 +30,9 @@ import type { ReportRow } from "@/lib/export/reportPayload";
 import type { CalculationSpec } from "@/lib/standards/types";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import type { CalculatorResultsViewTab } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
+import ExplainRecommendationCard from "@/components/machine/bearings-shared/ExplainRecommendationCard";
+import type { PlainRecommendationAdvisor } from "@/lib/machine/plain-bearings/recommendationAdvisor";
+import type { ReportSection } from "@/lib/export/reportSections";
 
 type Props = {
   result: (PlainBearingResult & { calculationSpec?: CalculationSpec }) | null;
@@ -38,16 +41,18 @@ type Props = {
   diagnosis?: PlainBearingDiagnosis | null;
   workflowMode?: DesignWorkflowMode;
   inputRows?: ReportRow[];
+  advisor?: PlainRecommendationAdvisor | null;
   onApplyAdjustment?: (fields: PlainBearingAdjustment["fields"]) => void;
 };
 
 const REPORT_SECTIONS = [
-  "Project metadata and calculation standard",
+  "Design summary (PASS / MARGINAL / FAIL + film / load / temperature)",
   "Input summary (type, load, speed, geometry, viscosity)",
   "Sommerfeld / film / eccentricity screening",
+  "Engineering advisor recommendation narrative",
   "Specific load and temperature rise",
   "Fit and clearance notes",
-  "Pass / marginal / fail summary",
+  "Engineering checks, formulas, and standards",
   "Sensitivity charts (when captured)",
 ];
 
@@ -58,6 +63,7 @@ export default function PlainBearingsResults({
   diagnosis: diagnosisProp,
   workflowMode,
   inputRows = [],
+  advisor = null,
   onApplyAdjustment,
 }: Props) {
   const diagnosis = useMemo(() => {
@@ -159,6 +165,25 @@ export default function PlainBearingsResults({
         icon: CALCULATOR_VIEW_ICONS.summary,
         content: (
           <div className="space-y-4">
+            {advisor ? (
+              <ExplainRecommendationCard
+                advisor={advisor}
+                statusLabel={
+                  result.designStatus === "safe"
+                    ? "PASS"
+                    : result.designStatus === "warning"
+                      ? "MARGINAL"
+                      : "FAIL"
+                }
+                statusTone={
+                  result.designStatus === "safe"
+                    ? "safe"
+                    : result.designStatus === "warning"
+                      ? "warning"
+                      : "critical"
+                }
+              />
+            ) : null}
             <DesignStatusBanner
               designStatus={result.designStatus}
               subtitle={result.status}
@@ -179,6 +204,13 @@ export default function PlainBearingsResults({
                   value: formatDisplayNumber(result.sommerfeldNumber),
                 },
                 {
+                  label: "ε",
+                  value:
+                    result.bearingType === "journal"
+                      ? formatDisplayNumber(result.eccentricityRatio)
+                      : "—",
+                },
+                {
                   label: "Power loss",
                   value: `${formatDisplayNumber(result.powerLoss)} W`,
                 },
@@ -187,6 +219,13 @@ export default function PlainBearingsResults({
                   value:
                     result.outletTempC != null
                       ? `${formatDisplayNumber(result.outletTempC)} °C`
+                      : "—",
+                },
+                {
+                  label: "p / unit",
+                  value:
+                    result.specificLoadPa != null || result.unitLoad != null
+                      ? `${formatDisplayNumber(((result.specificLoadPa ?? result.unitLoad)! / 1e6))} MPa`
                       : "—",
                 },
               ]}
@@ -337,7 +376,57 @@ export default function PlainBearingsResults({
     workflowMode,
     diagnosis,
     onApplyAdjustment,
+    advisor,
   ]);
+
+  const reportSections = useMemo((): ReportSection[] | undefined => {
+    if (!result) return undefined;
+    const sections: ReportSection[] = [
+      {
+        id: "design_summary",
+        title: "Design summary",
+        rows: [
+          {
+            parameter: "Status",
+            value:
+              result.designStatus === "safe"
+                ? "PASS"
+                : result.designStatus === "warning"
+                  ? "MARGINAL"
+                  : "FAIL",
+          },
+          { parameter: "Note", value: result.status },
+          {
+            parameter: "h_min",
+            value: formatDisplayNumber(result.minFilmThickness * 1e6),
+            unit: "µm",
+          },
+          {
+            parameter: "Sommerfeld S",
+            value: formatDisplayNumber(result.sommerfeldNumber),
+          },
+          {
+            parameter: "Power loss",
+            value: formatDisplayNumber(result.powerLoss),
+            unit: "W",
+          },
+        ],
+      },
+    ];
+    if (advisor) {
+      sections.push({
+        id: "recommendation",
+        title: "Engineering advisor recommendation",
+        narrative: advisor.narrative,
+        bullets: advisor.reasons,
+        rows: [
+          { parameter: "Summary", value: advisor.summary },
+          { parameter: "Cost band", value: advisor.costBand },
+        ],
+      });
+    }
+    return sections;
+  }, [result, advisor]);
 
   const defaultView =
     workflowMode === "diagnose" && diagnosis ? ("diagnose" as const) : ("summary" as const);
@@ -352,15 +441,25 @@ export default function PlainBearingsResults({
       empty={!result}
       emptyMessage="Enter bearing data and calculate."
       heading="Plain bearing results"
+      inputRows={inputRows}
+      reportSections={reportSections}
+      reportMeta={{
+        project: result?.bearingType ?? "Plain bearing",
+        notes: advisor?.narrative,
+      }}
       csvRows={
         result
           ? [
               { metric: "bearingType", value: result.bearingType },
+              { metric: "designStatus", value: result.designStatus },
               { metric: "sommerfeldNumber", value: result.sommerfeldNumber },
-              { metric: "minFilmThickness", value: result.minFilmThickness },
-              { metric: "powerLoss", value: result.powerLoss },
-              { metric: "specificLoadPa", value: result.specificLoadPa ?? 0 },
-              { metric: "outletTempC", value: result.outletTempC ?? 0 },
+              { metric: "eccentricityRatio", value: result.eccentricityRatio },
+              { metric: "minFilmThickness_um", value: result.minFilmThickness * 1e6 },
+              { metric: "powerLoss_W", value: result.powerLoss },
+              { metric: "specificLoad_Pa", value: result.specificLoadPa ?? result.unitLoad ?? 0 },
+              { metric: "outletTemp_C", value: result.outletTempC ?? 0 },
+              { metric: "shaftFit", value: result.shaftFit ?? "" },
+              { metric: "housingFit", value: result.housingFit ?? "" },
             ]
           : undefined
       }

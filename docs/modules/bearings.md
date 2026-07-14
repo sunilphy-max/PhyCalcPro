@@ -12,13 +12,13 @@ Basic rating life L₁₀ is the life in revolutions (or hours at speed n) excee
 L_{10h} = \frac{a_1 \cdot 10^6}{60 n} \left(\frac{C}{P}\right)^p, \quad p = 3 \text{ (ball)}, \; 10/3 \text{ (roller)}
 \]
 
-Modified rating life (ISO 281:2007):
+Modified rating life (ISO 281:2007 / SKF):
 
 \[
-L_{nm} = a_1 \cdot a_{ISO} \cdot (C/P)^p \cdot 10^6 / (60n)
+L_{nm} = a_1 \cdot a_{\mathrm{SKF}} \cdot (C/P)^p \cdot 10^6 / (60n), \quad a_{\mathrm{SKF}} \equiv a_{\mathrm{ISO}}
 \]
 
-where **aISO** is computed from viscosity ratio κ = ν/ν₁, contamination factor eC, and fatigue load limit Pu (catalog datasheet Pu when available; otherwise estimated as 0.025C for ball, 0.03C for roller).
+where **aSKF** (ISO 281 **aISO**) is computed from viscosity ratio κ = ν/ν₁, contamination factor eC (ηc), and fatigue load limit Pu (catalog datasheet Pu when available; otherwise estimated as 0.025C for ball, 0.03C for roller).
 
 **Life model ceiling (screening, opt-in):**
 
@@ -33,7 +33,17 @@ Shaft FEM handoff can publish bearing slopes (rad) → misalignment (mrad) for t
 
 Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static load.
 
-**Paired arrangements (O / X / T):** loads are split per bearing; system life is governed by the minimum station modified life.
+**Paired arrangements (O / X / T):** treated as first-class engineering objects with:
+
+| Property | Screening model |
+|----------|-----------------|
+| Preload | Class as % of C (light/medium/heavy) or override force; folded into life Fa |
+| Stiffness | Ka / Kr / Km with O ≫ X ≫ T moment multipliers |
+| Axial displacement | δa = Fa / Ka (µm) |
+| Thermal | Differential growth → preload shift; locating+floating float check |
+| Rigidity comparison | Side-by-side O / X / T Ka, Km, δa, Km ratio vs O |
+
+Loads are split per bearing; system life is governed by the Weibull combination of station modified lives.
 
 **Variable load (ISO 281-1):** optional two-step spectrum computes equivalent load and Palmgren-Miner combined life.
 
@@ -57,17 +67,23 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 | Rolling elements | Steel / hybrid ceramic / full ceramic |
 | Internal clearance | C2 / CN / C3 / C4 (fit recommendation) |
 | Mounting arrangement | Single, back-to-back (O), face-to-face (X), tandem (T) |
+| Duplex preload class | None / light / medium / heavy (or override force) |
+| Bearing span / float | Locating+floating thermal float; duplex thermal preload span |
 | Variable load spectrum | Optional ISO 281-1 duty cycle |
 | Max bore | Shaft diameter constraint for auto-selection |
 
 **Outputs**
 
 - Equivalent loads P and P₀ (paired per-station when applicable)
-- Basic L₁₀ and modified Lnm life with κ, eC, aISO breakdown
+- Modified Lnm and basic L₁₀ with first-class factors: a₁, aSKF (≡ aISO), κ, eC (ηc), ν / ν₁, Pu/P
+- Arrangement analysis: preload, Ka/Kr/Km, axial displacement δa, thermal preload shift, O/X/T rigidity comparison
 - Defect frequencies BPFO / BPFI / BSF / FTF (screening geometry)
 - Grease life L₁₀h and/or relubrication interval tf
 - Adjusted reference speed n_θ and friction energy / CO₂ screening
 - Side-by-side OEM compare under the same duty
+- Intelligent recommendation with life / safety / cost and **Explain Recommendation** (Engineering Advisor narrative)
+- Persistent **Design Summary** right rail (bearing type, loads, Lnm, safety, ISO 281, catalog, status) — updates continuously as inputs change
+- PDF / Excel packages with named sections: Design Summary, Inputs, Catalog, ISO 281 factors, Arrangement, Recommendation, Checks, Formulas, Standards, Charts
 - Mounted kit BOM (housing SNL/UCP/FY/SAF-class + seal + grease)
 - Dynamic utilization P/C, static safety C₀/P₀, speed margin n_lim/n
 - Minimum load (skidding), friction torque, power loss
@@ -102,7 +118,7 @@ Static safety (ISO 76): s₀ = C₀/P₀ where P₀ is the equivalent static loa
 **Design workflow**
 
 - **Validate:** ISO 281/76 forward check on selected designation.
-- **Auto-design:** Ranks catalog entries by manufacturer, application profile, life utilization, static SF, and speed margin within bore limit.
+- **Auto-design:** Ranks catalog entries by manufacturer, application profile, life utilization, static SF, and speed margin within bore limit. Design mode passes the UI lubricant type, ISO VG, operating temperature, and contamination into ISO 281 screening (not fixed VG68 / normal_clean).
 - **Handoff:** Receives Fr, Fa, speed from **shafts** module (manual apply today).
 
 **References**

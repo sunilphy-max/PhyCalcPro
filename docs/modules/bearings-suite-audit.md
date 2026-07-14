@@ -1,6 +1,6 @@
 # Bearings Suite — Industry Audit & Roadmap
 
-**Last updated:** post ISO 281 physics upgrade (κ, eC, Pu, paired loads, variable spectrum, fits).
+**Last updated:** bearing suite UX parity (Design Summary / advisors / sectioned PDF-Excel) + plain ΔT iteration + design-mode lube wiring.
 
 **Scope:** Rolling element selection, plain hydrodynamic bearings, and bearing housing — standalone **Bearings** category in PhyCalcPro.
 
@@ -18,7 +18,7 @@
 
 PhyCalcPro is a **browser-native, multi-OEM ISO 281 screening calculator inside an integrated power-train platform** — competitive with MITCalc for day-to-day rolling-bearing sizing, but not a replacement for SKF Product Select on release drawings or Bearinx for elastic shaft / Hertzian analysis.
 
-**Deliberately out of scope:** full vendor catalog parity (5k–10k SKUs), FEA / elastic system simulation, grease-life / relubrication maintenance workflows.
+**Deliberately out of scope:** full vendor catalog parity (5k–10k SKUs), FEA / elastic system simulation, vendor GBLM / AFC table matching.
 
 ---
 
@@ -43,6 +43,8 @@ Legacy routes redirect permanently from `/products/machine/bearings`, `plain-bea
 | Lubricant viscosity | ISO VG + ASTM D341 screening | `lubrication.ts` — ν at operating temperature; grease effective ν |
 | Static equivalent load P₀ | ISO 76 | `staticLoad.ts` — family-specific tables |
 | Paired O / X / T | MITCalc / SKF arrangement practice | `pairedLoads.ts` — load split, min station life, tandem axial rating |
+| Arrangement analysis | MITCalc / SKF duplex practice | `arrangementAnalysis.ts` — preload, Ka/Kr/Km, δa, thermal, O/X/T compare |
+| Duplex stiffness / preload | Screening | `duplexStiffness.ts` |
 | Variable load | ISO 281-1 | `variableLoad.ts` — equivalent P + Palmgren-Miner combined life |
 | Fits & clearance | ISO 286 / SKF tables (screening) | `fitsClearance.ts` — shaft/housing recommendation, operating clearance |
 | Minimum load (skidding) | SKF indicative | `auxiliaryChecks.ts` |
@@ -63,11 +65,12 @@ Legacy routes redirect permanently from `/products/machine/bearings`, `plain-bea
 | Journal Sommerfeld number | ISO 7902 | Implemented |
 | Eccentricity ε | Raimondi–Boyd interpolation | `iso7902.ts` (replaces ε ≈ 1/(1+S)) |
 | Specific load | ISO 7902 screening | Implemented |
-| Temperature rise / outlet T | Single-pass screening | Implemented |
+| Temperature rise / outlet T | Light iterative ΔT ↔ ν (2–3 passes) | Implemented (Walther-scale; short-bearing limits remain) |
 | Shaft/housing fits | ISO 3547 screening | `recommendPlainJournalFits` |
 | Thrust pad | ISO 12131 screening | Implemented |
 | Tilting pad | ISO 12130 screening | Implemented |
-| Sliding material DB, oil DB, flow rate, iterative ΔT | MITCalc IV | **Not implemented** |
+| Design Summary + advisor + sectioned export | Suite UX parity | Implemented |
+| Sliding material DB, oil DB, flow rate (MITCalc IV) | MITCalc IV | **Not implemented** |
 
 ### Housing (`housing`)
 
@@ -76,7 +79,9 @@ Legacy routes redirect permanently from `/products/machine/bearings`, `plain-bea
 | Cantilever body bending + bolt von Mises | Implemented |
 | ISO 286 fit recommendation (from bearing logic) | Implemented |
 | Operating clearance estimate | Implemented |
-| Housing SKU catalog (SNL, UCP, …), seal selection | **Not implemented** |
+| Housing SKU catalog (SNL, UCP, FY, SAF-class) + seal + mounted BOM | Implemented (screening catalog) |
+| Design Summary + SKU advisor + sectioned export | Implemented |
+| Full FEA / OEM mounted-product databases | **Not implemented** |
 
 ---
 
@@ -90,16 +95,17 @@ Legacy routes redirect permanently from `/products/machine/bearings`, `plain-bea
 | Variable load spectrum | Multi load cases | Yes | Mean-load helper | **Yes** (2-step ISO 281-1) |
 | Fit / clearance C2–C4 | Full | Operating clearance wizard | Limited | **Yes** (screening recommendation) |
 | Temperature | Full (rings, ν, fit) | Full | No | **Partial** (ν at T, C derating > 120 °C) |
-| Grease life / relubrication | **Yes** | Yes | No | No |
+| Grease life / relubrication | **Yes** | Yes | No | **Yes** (screening L₁₀h / tf) |
 | Friction / power loss | Detailed | Hertzian-level | Limited | **Screening** |
 | Minimum load (skidding) | Yes | Yes | Limited | **Yes** |
-| Defect frequencies | Yes | Yes | No | No |
+| Defect frequencies | Yes | Yes | No | **Yes** (kinematic screening) |
 | Catalog size | 10k+ SKF | Full Schaeffler | 5k–10k per module | **~413 rep. × 5 OEMs** (by design) |
 | Multi-OEM in one UI | No | No | Separate modules | **Yes** |
+| Design Summary + advisor + sectioned PDF/xlsx | Vendor packs | Vendor packs | Report export | **Yes** |
 | Shaft deflection → bearing loads | Simple arrangements | **FEA + elastic** | No | Manual handoff from shafts |
 | Power-train workflow | No | No | Desktop assembly | **Shaft → bearing → housing → bolts** |
 | Web / no install | Yes | Partial | Desktop | **Yes** |
-| Engineer sign-off benchmarks | Vendor gold standard | Vendor gold standard | Reference | **18 Vitest; no ±5% vendor suite** |
+| Engineer sign-off benchmarks | Vendor gold standard | Vendor gold standard | Reference | **Vitest + 7 CI JSON; no ±5% vendor suite** |
 
 ---
 
@@ -107,12 +113,13 @@ Legacy routes redirect permanently from `/products/machine/bearings`, `plain-bea
 
 | Capability | MITCalc IV | SKF | PhyCalcPro |
 |------------|------------|-----|------------|
-| ISO 7902 journal (full) | Yes | Yes | Screening (Raimondi–Boyd) |
+| ISO 7902 journal (full) | Yes | Yes | Screening (Raimondi–Boyd + light ΔT iteration) |
 | Thrust / tilting pad | Yes | Yes | Screening |
 | Material + oil databases | Yes | Yes | No |
-| Temperature iteration | Iterative | Yes | Single-pass |
-| Housing SKU + seals | Generic | **Mounted solutions** | Structural screening only |
+| Temperature iteration | Iterative | Yes | Light 2–3 pass ΔT ↔ ν |
+| Housing SKU + seals | Generic | **Mounted solutions** | Screening SNL/UCP/FY/SAF + BOM |
 | Fit recommendation | Yes | Yes | **Yes** (rolling + plain + housing) |
+| Design Summary / advisor / sectioned export | Report | Report | **Yes** (suite parity) |
 
 ---
 
@@ -195,17 +202,17 @@ Eight cross-family profiles in `applicationMeta.ts`:
 
 ### P1 — Workflow & maintenance (no catalog expansion required)
 
-- [ ] Grease life / relubrication interval (SKF method screening)
 - [ ] Two-bearing shaft wizard (locating + floating auto-design as a system)
-- [ ] Design mode passes lubricant, arrangement, contamination into ranking (partially wired)
-- [ ] Plain bearings in CI benchmark runner (`moduleSolverRegistry`)
-- [ ] Plain bearing temperature **iteration** (friction ↔ heat ↔ ν)
+- [x] Design mode passes lubricant, arrangement, contamination into ranking
+- [x] Plain bearings in CI benchmark runner (`moduleSolverRegistry`)
+- [x] Plain bearing temperature **iteration** (friction ↔ heat ↔ ν, light Walther-scale)
 
 ### P2 — Optional product depth
 
 - [ ] Cross-OEM interchange table at scale (beyond same-bore heuristic)
-- [ ] Housing / seal SKU catalog (SNL, UCP, …)
-- [ ] Defect frequencies, adjusted reference speed
+- [x] Housing / seal SKU catalog (SNL, UCP, …) + mounted BOM
+- [x] Defect frequencies, adjusted reference speed
+- [x] Design Summary + Explain advisor + sectioned PDF/Excel across selection / plain / housing
 - [x] Misalignment angle input for self-aligning / spherical Y factors (screening derate + ISO 16281 P path)
 
 ### P3 — Out of scope unless requested
@@ -256,10 +263,17 @@ src/lib/machine/bearings/
 src/lib/machine/plain-bearings/
   iso7902.ts / engine.ts                     — Journal + thrust screening
 src/lib/machine/housing/engine.ts            — Body + bolts + fits
+src/lib/machine/housing/mountedBom.ts        — SNL/UCP/FY/SAF screening BOM
+src/lib/machine/bearings-shared/             — Design Summary, Explain card, view tabs, report preview
+src/lib/export/reportSections.ts             — Named PDF/Excel section builders
 src/hooks/useBearingPresetSync.ts
 src/app/products/bearings/                   — selection, plain, housing routes
 src/components/machine/bearings/             — Inputs, results, reference visuals
+src/components/machine/plain-bearings/
+src/components/machine/housing/
 docs/modules/bearings.md                     — Module reference (user-facing)
+docs/modules/plain-bearings.md
+docs/modules/housing.md
 ```
 
 ---
@@ -268,13 +282,13 @@ docs/modules/bearings.md                     — Module reference (user-facing)
 
 | Module | Vitest | CI JSON | Engineer sign-off |
 |--------|--------|---------|-------------------|
-| Rolling bearings | `engine.test.ts` (10) + `iso281Life.test.ts` (8) = **18** | `bearings-indicative-01.json` (1 case) | Pending vendor benchmark suite |
-| Plain bearings | Limited | 3 JSON cases | Not in benchmark runner |
-| Housing | `engine.test.ts` (1) | `housing-indicative-01.json` | Workflow integration only |
+| Rolling bearings | `engine.test.ts`, `iso281Life.test.ts`, `systemDepth.test.ts`, arrangement/aux suites | **7** `bearings-indicative-*.json` | Pending vendor benchmark suite |
+| Plain bearings | Engine screening | **3** `plain-bearings-indicative-*.json` (in registry) | Screening only |
+| Housing | `engine.test.ts` | `housing-indicative-01.json` | Workflow integration + screening BOM |
 
 **Target for tier-A sign-off:** L₁₀h, C, static SF, speed margin, aISO within ±5% of SKF Product Select or MITCalc on an agreed benchmark set (15–25 cases).
 
-**Current tier:** **B (professional screening)** for rolling; **C** for plain and housing.
+**Current tier:** **B (professional screening)** for rolling; plain / housing elevated to suite UX parity with screening physics (**C→B−** for workflow completeness, still not FEA / oil-DB sign-off).
 
 ---
 

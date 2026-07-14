@@ -10,6 +10,7 @@ import type { CalculationSpec } from "@/lib/standards/types";
 import type { ModuleQualityChecklist } from "@/lib/calculation/qualityChecklist";
 import type { ReportMeta } from "@/lib/export/structuredReport";
 import type { ReportRow } from "@/lib/export/reportPayload";
+import type { ReportSection } from "@/lib/export/reportSections";
 
 type Props = {
   fileName: string;
@@ -19,6 +20,8 @@ type Props = {
   description?: string;
   csvRows?: CsvRow[];
   inputRows?: ReportRow[];
+  /** Named PDF/Excel sections (Design Summary, ISO 281, arrangement, advisor). */
+  reportSections?: ReportSection[];
   calculationSpec?: CalculationSpec | null;
   result?: Record<string, unknown> | null;
   qualityOverrides?: Partial<ModuleQualityChecklist>;
@@ -36,6 +39,7 @@ export default function ExportableReport({
   description,
   csvRows,
   inputRows,
+  reportSections,
   calculationSpec,
   result,
   qualityOverrides,
@@ -71,6 +75,10 @@ export default function ExportableReport({
     () => JSON.stringify(inputRows ?? null),
     [inputRows]
   );
+  const reportSectionsKey = useMemo(
+    () => JSON.stringify(reportSections ?? null),
+    [reportSections]
+  );
 
   useEffect(() => {
     if (!registerReport || !moduleId) return;
@@ -82,6 +90,7 @@ export default function ExportableReport({
       description,
       csvRows: mergedCsv,
       inputRows,
+      reportSections,
       calculationSpec,
       reportMeta,
       qualityOverrides,
@@ -98,6 +107,7 @@ export default function ExportableReport({
     description,
     mergedCsvKey,
     inputRowsKey,
+    reportSectionsKey,
     calculationSpecKey,
     reportMetaKey,
     qualityOverridesKey,

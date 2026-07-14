@@ -20,6 +20,7 @@ type Props = {
   result?: Record<string, unknown> | null;
   csvRows?: CsvRow[];
   inputRows?: ReportRow[];
+  reportSections?: import("@/lib/export/reportSections").ReportSection[];
   qualityOverrides?: Partial<ModuleQualityChecklist>;
   showQualityChecklist?: boolean;
   /** Title block metadata (project, engineer) for the structured PDF report */

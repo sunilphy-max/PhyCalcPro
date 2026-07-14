@@ -301,13 +301,41 @@ export async function generateStructuredReportExcel(payload: ReportPayload): Pro
 
   buildReportSheet(workbook, payload);
 
+  if (payload.sections?.length) {
+    for (const section of payload.sections) {
+      const sheetName = section.title.slice(0, 28).replace(/[\\/?*\[\]]/g, "");
+      const sheet = workbook.addWorksheet(sheetName || section.id);
+      let row = 1;
+      if (section.narrative) {
+        sheet.getCell(row, 1).value = section.narrative;
+        sheet.getCell(row, 1).alignment = { wrapText: true };
+        sheet.getColumn(1).width = 80;
+        row += 2;
+      }
+      if (section.bullets?.length) {
+        section.bullets.forEach((bullet, idx) => {
+          sheet.getCell(row + idx, 1).value = `• ${bullet}`;
+          sheet.getCell(row + idx, 1).alignment = { wrapText: true };
+        });
+        sheet.getColumn(1).width = 80;
+        row += section.bullets.length + 1;
+      }
+      if (section.rows?.length) {
+        writeDataTable(sheet, row, section.rows);
+        addBrandedFooter(sheet, row + section.rows.length + 2, payload);
+      } else {
+        addBrandedFooter(sheet, row + 2, payload);
+      }
+    }
+  }
+
   if (payload.inputRows.length > 0) {
     const sheet = workbook.addWorksheet("Inputs");
     writeDataTable(sheet, 1, payload.inputRows);
     addBrandedFooter(sheet, payload.inputRows.length + 3, payload);
   }
 
-  if (payload.resultRows.length > 0) {
+  if (payload.resultRows.length > 0 && !(payload.sections?.length)) {
     const sheet = workbook.addWorksheet("Results");
     writeDataTable(sheet, 1, payload.resultRows);
     addBrandedFooter(sheet, payload.resultRows.length + 3, payload);

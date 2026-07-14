@@ -6,7 +6,7 @@ import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useHousingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useDeferredValue } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -18,6 +18,8 @@ import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContex
 import HousingInputs from "@/components/machine/housing/HousingInputs";
 import HousingResults from "@/components/machine/housing/HousingResults";
 import HousingCopilotPanel from "@/components/machine/housing/HousingCopilotPanel";
+import HousingDesignSummaryPanel from "@/components/machine/housing/HousingDesignSummaryPanel";
+import { explainHousingRecommendation } from "@/lib/machine/housing/recommendationAdvisor";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveHousingEngine } from "@/lib/machine/housing/engine";
 import { diagnoseHousing, type HousingDiagnosis } from "@/lib/machine/housing/diagnosis";
@@ -141,6 +143,22 @@ export default function Page() {
       bearingDesignation: undefined,
     });
   }, [boreDiameter, lengthUnit, housingSku, housingSeal]);
+
+  const livePreview = useMemo(() => {
+    try {
+      const config = buildConfig();
+      if (!(config.boreDiameter > 0) || !(config.radialLoad >= 0)) return null;
+      return solveHousingEngine(config);
+    } catch {
+      return null;
+    }
+  }, [buildConfig]);
+  const deferredLive = useDeferredValue(livePreview);
+
+  const advisor = useMemo(() => {
+    if (!result || !lastConfig) return null;
+    return explainHousingRecommendation(result, lastConfig, mountedBom);
+  }, [result, lastConfig, mountedBom]);
 
   const runCheck = useCallback(() => {
     const config = buildConfig();
@@ -276,6 +294,9 @@ export default function Page() {
     <CalculatorLayout
       moduleId="housing"
       title="Bearing Housing"
+      summary={
+        <HousingDesignSummaryPanel preview={deferredLive} committed={result != null} />
+      }
       footer={
         <SavedProjectsFooter
           projects={savedProjects}
@@ -365,6 +386,8 @@ export default function Page() {
           diagnosis={diagnosis}
           workflowMode={workflowMode}
           inputRows={inputRows}
+          advisor={advisor}
+          mountedBom={mountedBom}
           onApplyAdjustment={(fields) => {
             if (fields.boltCount != null) setBoltCount(fields.boltCount);
             if (fields.boltCircleDiameterMm != null) {

@@ -4,7 +4,7 @@ import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignC
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRollingBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useDeferredValue } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -18,6 +18,7 @@ import BearingMountingSystem, {
   type BearingMountingSystemId,
 } from "@/components/machine/bearings/BearingMountingSystem";
 import BearingResults from "@/components/machine/bearings/BearingResults";
+import BearingDesignSummaryPanel from "@/components/machine/bearings/BearingDesignSummaryPanel";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
@@ -90,6 +91,11 @@ type BearingProjectData = {
   lifeRevolutions: number;
   maxOuterMm: number | "";
   mountingSystem?: BearingMountingSystemId;
+  floatingDesignation?: string;
+  preloadClass?: BearingPreloadClass;
+  bearingSpanMm?: number;
+  availableFloatMm?: number;
+  useThermalEquilibrium?: boolean;
   lifeMethod?: BearingLifeMethod;
   misalignmentAngleMrad?: number | "";
   rollingElementMaterial?: RollingElementMaterial;
@@ -297,6 +303,10 @@ export default function Page() {
     bearingApplicationProfile: applicationProfile,
     bearingArrangement: arrangement,
     shaftDiameterMm: maxBoreMm === "" ? undefined : maxBoreMm,
+    bearingLubricantType: lubricantType,
+    bearingIsoVgGrade: isoVgGrade,
+    bearingOperatingTempC: operatingTempC,
+    bearingContamination: contamination,
   }), [
     radialLoad,
     radialUnit,
@@ -312,6 +322,10 @@ export default function Page() {
     applicationProfile,
     maxBoreMm,
     arrangement,
+    lubricantType,
+    isoVgGrade,
+    operatingTempC,
+    contamination,
   ]);
 
   useSyncDesignInputs("bearings", designUserInputs);
@@ -387,6 +401,11 @@ export default function Page() {
     setLifeRevolutions(p.lifeRevolutions ?? 90e6);
     setMaxOuterMm(p.maxOuterMm ?? "");
     if (p.mountingSystem) setMountingSystem(p.mountingSystem);
+    if (p.floatingDesignation != null) setFloatingDesignation(p.floatingDesignation);
+    if (p.preloadClass) setPreloadClass(p.preloadClass);
+    if (p.bearingSpanMm != null) setBearingSpanMm(p.bearingSpanMm);
+    if (p.availableFloatMm != null) setAvailableFloatMm(p.availableFloatMm);
+    if (p.useThermalEquilibrium != null) setUseThermalEquilibrium(p.useThermalEquilibrium);
     if (p.lifeMethod) setLifeMethod(p.lifeMethod);
     if (p.misalignmentAngleMrad !== undefined) setMisalignmentAngleMrad(p.misalignmentAngleMrad);
     if (p.rollingElementMaterial) setRollingElementMaterial(p.rollingElementMaterial);
@@ -479,6 +498,8 @@ export default function Page() {
 
   const crossManufacturerRecommendation = useMemo(() => {
     if (!result || workflowMode === "diagnose") return null;
+    const Fr = toBase(radialLoad, "force", radialUnit) * shockFactor;
+    const Fa = toBase(axialLoad, "force", axialUnit) * shockFactor;
     return buildCrossManufacturerRecommendation(
       {
         bearingType: result.bearingType,
@@ -493,7 +514,16 @@ export default function Page() {
         widthMaxMm: maxWidthMm === "" ? undefined : maxWidthMm,
         boreMaxMm: maxBoreMm === "" ? undefined : maxBoreMm,
       },
-      designation
+      designation,
+      {
+        result,
+        radialLoadN: Fr,
+        axialLoadN: Fa,
+        requiredLifeHours: lifeHours,
+        contamination: lubricantType === "none" ? undefined : contamination,
+        sealFilter,
+        preferredManufacturer: manufacturer,
+      }
     );
   }, [
     result,
@@ -507,6 +537,14 @@ export default function Page() {
     maxOuterMm,
     maxWidthMm,
     designation,
+    radialLoad,
+    radialUnit,
+    axialLoad,
+    axialUnit,
+    shockFactor,
+    lifeHours,
+    lubricantType,
+    contamination,
   ]);
 
   const compareRows = useMemo(() => {
@@ -593,6 +631,138 @@ export default function Page() {
       bearingTypeLabel: BEARING_TYPE_LABELS[result.bearingType],
     });
   }, [result]);
+
+  /** Continuous Design Summary preview — rebuilds on every input change. */
+  const livePreviewSource = useMemo(() => {
+    const catalogEntry = findBearing(designation);
+    const Fr = toBase(radialLoad, "force", radialUnit) * shockFactor;
+    const Fa = toBase(axialLoad, "force", axialUnit) * shockFactor;
+    const effectiveLifeHours =
+      lifeInputMode === "hours"
+        ? lifeHours
+        : lifeRevolutions / (60 * Math.max(speed, 1));
+
+    if (!(Fr >= 0) || !(Fa >= 0) || !(speed > 0) || !(effectiveLifeHours > 0)) {
+      return null;
+    }
+
+    let loadSpectrum: LoadSpectrumStep[] | undefined;
+    if (useVariableLoad) {
+      const totalDuration = loadSpectrumSteps.reduce(
+        (sum, step) => sum + Math.max(step.durationPercent, 0),
+        0
+      );
+      loadSpectrum = loadSpectrumSteps.map((step) => ({
+        durationFraction: Math.max(step.durationPercent, 0) / Math.max(totalDuration, 1),
+        radialLoad: Fr * (step.loadPercent / 100),
+        axialLoad: Fa * (step.loadPercent / 100),
+      }));
+    }
+
+    try {
+      return {
+        requiredLifeHours: effectiveLifeHours,
+        preview: solveBearingEngine({
+          radialLoad: Fr,
+          axialLoad: Fa,
+          speed,
+          lifeHours: effectiveLifeHours,
+          safetyFactor,
+          bearingType: catalogEntry?.type ?? bearingType,
+          designation: catalogEntry?.designation ?? (designation.trim() || undefined),
+          dynamicLoadRatingN: catalogEntry?.dynamicRatingN,
+          staticLoadRatingN: catalogEntry?.staticRatingN,
+          fatigueLoadLimitN: catalogEntry?.fatigueLoadLimitN,
+          limitingSpeedRpm: catalogEntry?.limitingSpeedRpm,
+          referenceSpeedRpm: catalogEntry?.referenceSpeedRpm,
+          catalogFactors: catalogEntry?.catalogFactors,
+          boreMm: catalogEntry?.boreMm,
+          outerDiameterMm: catalogEntry?.outerDiameterMm,
+          reliabilityPercent: reliability,
+          lubricationClass: lubricantType === "none" ? lubricationClass || undefined : undefined,
+          lubricantType: lubricantType === "none" ? undefined : lubricantType,
+          isoVgGrade: lubricantType === "none" ? undefined : isoVgGrade,
+          operatingTempC,
+          contamination: lubricantType === "none" ? undefined : contamination,
+          clearance: clearanceOverride || catalogEntry?.clearance,
+          loadSpectrum,
+          manufacturer,
+          applicationProfile,
+          arrangement,
+          mountingSystem: (
+            mountingSystem === "locating_dg_floating_nu" ||
+            mountingSystem === "locating_ac_floating_nu"
+              ? "locating_floating"
+              : mountingSystem === "duplex_angular"
+                ? "duplex"
+                : "single"
+          ) as "single" | "locating_floating" | "duplex",
+          locatingBearingType: (mountingSystem === "locating_dg_floating_nu"
+            ? "deep_groove"
+            : mountingSystem === "locating_ac_floating_nu"
+              ? "angular_contact"
+              : undefined) as BearingType | undefined,
+          floatingBearingType: (mountingSystem === "locating_dg_floating_nu" ||
+          mountingSystem === "locating_ac_floating_nu"
+            ? "cylindrical_roller"
+            : undefined) as BearingType | undefined,
+          floatingDesignation: floatingDesignation || undefined,
+          preloadClass,
+          bearingSpanMm,
+          availableFloatMm,
+          stationRadialLoadsN,
+          useThermalEquilibrium,
+          ambientTempC: 20,
+          lifeMethod,
+          misalignmentAngleMrad:
+            misalignmentAngleMrad === "" ? undefined : misalignmentAngleMrad,
+          stationSlopesMrad,
+          rollingElementMaterial,
+          material: LEGACY_MATERIAL,
+        }),
+      };
+    } catch {
+      return null;
+    }
+  }, [
+    designation,
+    radialLoad,
+    radialUnit,
+    axialLoad,
+    axialUnit,
+    shockFactor,
+    speed,
+    lifeInputMode,
+    lifeHours,
+    lifeRevolutions,
+    safetyFactor,
+    bearingType,
+    reliability,
+    lubricantType,
+    lubricationClass,
+    isoVgGrade,
+    operatingTempC,
+    contamination,
+    clearanceOverride,
+    useVariableLoad,
+    loadSpectrumSteps,
+    manufacturer,
+    applicationProfile,
+    arrangement,
+    mountingSystem,
+    floatingDesignation,
+    preloadClass,
+    bearingSpanMm,
+    availableFloatMm,
+    stationRadialLoadsN,
+    useThermalEquilibrium,
+    lifeMethod,
+    misalignmentAngleMrad,
+    stationSlopesMrad,
+    rollingElementMaterial,
+  ]);
+
+  const deferredLivePreview = useDeferredValue(livePreviewSource);
 
   const applyDesignation = useCallback((next: string) => {
     if (findBearing(next)) setDesignation(next);
@@ -723,6 +893,14 @@ export default function Page() {
     <CalculatorLayout
       moduleId="bearings"
       title="Bearing Load Rating & Life (SKF / ISO 281)"
+      summary={
+        <BearingDesignSummaryPanel
+          preview={deferredLivePreview?.preview ?? null}
+          manufacturer={manufacturer}
+          requiredLifeHours={deferredLivePreview?.requiredLifeHours}
+          committed={result != null}
+        />
+      }
       footer={
         <SavedProjectsFooter
           projects={savedProjects}
@@ -915,6 +1093,11 @@ export default function Page() {
                 lifeRevolutions,
                 maxOuterMm,
                 mountingSystem,
+                floatingDesignation,
+                preloadClass,
+                bearingSpanMm,
+                availableFloatMm,
+                useThermalEquilibrium,
                 lifeMethod,
                 misalignmentAngleMrad,
                 rollingElementMaterial,

@@ -16,7 +16,8 @@ export type BearingDiagnosisCategory =
   | "speed"
   | "contamination"
   | "min_load"
-  | "thermal";
+  | "thermal"
+  | "arrangement";
 
 export type BearingDiagnosisFinding = {
   category: BearingDiagnosisCategory;
@@ -186,6 +187,76 @@ export function diagnoseBearing(
       title: "Elevated friction losses",
       detail: `Estimated power loss ${result.powerLossW.toFixed(0)} W — check preload, seal drag, and lubricant viscosity at operating temperature.`,
     });
+  }
+
+  if (result.thermalExpansion?.status === "insufficient") {
+    pushFinding(findings, {
+      category: "thermal",
+      level: "high",
+      title: "Insufficient thermal float",
+      detail: result.thermalExpansion.note,
+    });
+  } else if (result.thermalExpansion?.status === "marginal") {
+    pushFinding(findings, {
+      category: "thermal",
+      level: "medium",
+      title: "Marginal thermal float",
+      detail: result.thermalExpansion.note,
+    });
+  }
+
+  const arr = result.arrangementAnalysis;
+  if (arr) {
+    if (arr.axialDisplacementStatus === "critical") {
+      pushFinding(findings, {
+        category: "arrangement",
+        level: "high",
+        title: "Excessive axial displacement",
+        detail: arr.axialDisplacementNote,
+      });
+    } else if (arr.axialDisplacementStatus === "warning") {
+      pushFinding(findings, {
+        category: "arrangement",
+        level: "medium",
+        title: "Elevated axial displacement",
+        detail: arr.axialDisplacementNote,
+      });
+    }
+
+    if (
+      arr.thermalPreloadChangeN != null &&
+      arr.preloadForceN > 0 &&
+      Math.abs(arr.thermalPreloadChangeN) > 0.4 * arr.preloadForceN
+    ) {
+      pushFinding(findings, {
+        category: "arrangement",
+        level: "medium",
+        title: "Thermal preload shift",
+        detail:
+          arr.thermalNote ??
+          `Warm-up changes preload by ~${(arr.thermalPreloadChangeN / 1000).toFixed(2)} kN — verify stiffness at operating temperature.`,
+      });
+    }
+
+    if (arr.arrangement === "tandem") {
+      pushFinding(findings, {
+        category: "arrangement",
+        level: "low",
+        title: "Tandem axial capacity",
+        detail:
+          "Tandem shares axial load in one direction only — pair with reverse thrust support. O has ~12× higher moment stiffness for comparison.",
+      });
+    } else if (arr.arrangement === "face_to_face") {
+      const oRow = arr.rigidityComparison.find((r) => r.arrangement === "back_to_back");
+      if (oRow && arr.momentStiffnessNmPerMrad < 0.5 * oRow.momentStiffnessNmPerMrad) {
+        pushFinding(findings, {
+          category: "arrangement",
+          level: "low",
+          title: "X vs O moment rigidity",
+          detail: `X moment stiffness is ${(100 * arr.momentStiffnessNmPerMrad / Math.max(oRow.momentStiffnessNmPerMrad, 1e-9)).toFixed(0)}% of O — prefer back-to-back for overhanging loads / spindles.`,
+        });
+      }
+    }
   }
 
   const arrangement = config.arrangement ?? "single";

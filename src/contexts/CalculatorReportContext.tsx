@@ -17,6 +17,7 @@ import type { CalculationSpec } from "@/lib/standards/types";
 import type { CsvRow } from "@/lib/export/csvRows";
 import type { ReportRow } from "@/lib/export/reportPayload";
 import type { ReportMeta } from "@/lib/export/structuredReport";
+import type { ReportSection } from "@/lib/export/reportSections";
 import { allModules } from "@/data/modules";
 
 export type CalculatorReportRegistration = {
@@ -26,6 +27,7 @@ export type CalculatorReportRegistration = {
   description?: string;
   csvRows?: CsvRow[];
   inputRows?: ReportRow[];
+  reportSections?: ReportSection[];
   calculationSpec?: CalculationSpec | null;
   reportMeta?: ReportMeta;
   qualityOverrides?: Partial<ModuleQualityChecklist>;
@@ -84,6 +86,7 @@ export function CalculatorReportProvider({
       reportMeta: registration.reportMeta,
       csvRows: registration.csvRows,
       inputRows: registration.inputRows,
+      reportSections: registration.reportSections,
     };
   }, [moduleId, registration]);
 
@@ -107,7 +110,8 @@ export function CalculatorReportProvider({
         JSON.stringify(prev.reportMeta) === JSON.stringify(next.reportMeta) &&
         JSON.stringify(prev.qualityOverrides) === JSON.stringify(next.qualityOverrides) &&
         JSON.stringify(prev.csvRows) === JSON.stringify(next.csvRows) &&
-        JSON.stringify(prev.inputRows) === JSON.stringify(next.inputRows)
+        JSON.stringify(prev.inputRows) === JSON.stringify(next.inputRows) &&
+        JSON.stringify(prev.reportSections) === JSON.stringify(next.reportSections)
       ) {
         return prev;
       }

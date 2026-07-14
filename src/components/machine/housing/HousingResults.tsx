@@ -30,6 +30,11 @@ import { solveHousingEngine } from "@/lib/machine/housing/engine";
 import type { ReportRow } from "@/lib/export/reportPayload";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import type { CalculatorResultsViewTab } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
+import ExplainRecommendationCard from "@/components/machine/bearings-shared/ExplainRecommendationCard";
+import MountedBomPanel from "@/components/machine/housing/MountedBomPanel";
+import type { HousingRecommendationAdvisor } from "@/lib/machine/housing/recommendationAdvisor";
+import type { MountedBomResult } from "@/lib/machine/housing/mountedBom";
+import type { ReportSection } from "@/lib/export/reportSections";
 
 type Props = {
   result: WithCalculationSpec<HousingResult> | null;
@@ -37,17 +42,20 @@ type Props = {
   diagnosis?: HousingDiagnosis | null;
   workflowMode?: DesignWorkflowMode;
   inputRows?: ReportRow[];
+  advisor?: HousingRecommendationAdvisor | null;
+  mountedBom?: MountedBomResult | null;
   onApplyAdjustment?: (fields: HousingAdjustment["fields"]) => void;
 };
 
 const REPORT_SECTIONS = [
-  "Project metadata and calculation standard",
+  "Design summary (PASS / MARGINAL / FAIL + body SF / bolts)",
   "Input summary (bore, loads, mount, bolts)",
   "Body bending stress and safety factor",
   "Bolt tension / shear and recommended size",
+  "Engineering advisor recommendation narrative",
+  "Mounted BOM (SKU, seal, grease)",
   "Deflection, stiffness, and fit notes",
-  "Pass / marginal / fail summary",
-  "Sensitivity charts (when captured)",
+  "Engineering checks and sensitivity charts",
 ];
 
 export default function HousingResults({
@@ -56,6 +64,8 @@ export default function HousingResults({
   diagnosis: diagnosisProp,
   workflowMode,
   inputRows = [],
+  advisor = null,
+  mountedBom = null,
   onApplyAdjustment,
 }: Props) {
   const diagnosis = useMemo(() => {
@@ -156,6 +166,25 @@ export default function HousingResults({
         icon: CALCULATOR_VIEW_ICONS.summary,
         content: (
           <div className="space-y-4">
+            {advisor ? (
+              <ExplainRecommendationCard
+                advisor={advisor}
+                statusLabel={
+                  result.designStatus === "safe"
+                    ? "PASS"
+                    : result.designStatus === "warning"
+                      ? "MARGINAL"
+                      : "FAIL"
+                }
+                statusTone={
+                  result.designStatus === "safe"
+                    ? "safe"
+                    : result.designStatus === "warning"
+                      ? "warning"
+                      : "critical"
+                }
+              />
+            ) : null}
             <DesignStatusBanner
               designStatus={result.designStatus}
               subtitle={result.governingFailureMode}
@@ -167,18 +196,27 @@ export default function HousingResults({
                 },
                 {
                   label: "Bolt T",
-                  value: `${formatDisplayNumber(result.boltTensionPerBolt)} N`,
+                  value: `${formatDisplayNumber(result.boltTensionPerBolt / 1000)} kN`,
                 },
                 {
                   label: "Bolt V",
-                  value: `${formatDisplayNumber(result.boltShearPerBolt)} N`,
+                  value: `${formatDisplayNumber(result.boltShearPerBolt / 1000)} kN`,
                 },
                 {
                   label: "Deflection",
                   value: `${formatDisplayNumber(result.housingDeflection * 1000)} mm`,
                 },
+                {
+                  label: "SKU",
+                  value: result.housingSku ?? "—",
+                },
+                {
+                  label: "Fits",
+                  value: `${result.recommendedShaftFit}/${result.recommendedHousingFit}`,
+                },
               ]}
             />
+            {mountedBom ? <MountedBomPanel bom={mountedBom} compact /> : null}
 
             <CalculatorMetricGrid cols={2}>
               <CalculatorMetricCard
@@ -304,7 +342,54 @@ export default function HousingResults({
     }
 
     return tabs;
-  }, [result, config, plotTabs, inputRows, workflowMode, diagnosis, onApplyAdjustment]);
+  }, [result, config, plotTabs, inputRows, workflowMode, diagnosis, onApplyAdjustment, advisor, mountedBom]);
+
+  const reportSections = useMemo((): ReportSection[] | undefined => {
+    if (!result) return undefined;
+    const sections: ReportSection[] = [
+      {
+        id: "design_summary",
+        title: "Design summary",
+        rows: [
+          {
+            parameter: "Status",
+            value:
+              result.designStatus === "safe"
+                ? "PASS"
+                : result.designStatus === "warning"
+                  ? "MARGINAL"
+                  : "FAIL",
+          },
+          { parameter: "Governing mode", value: result.governingFailureMode },
+          {
+            parameter: "Body safety factor",
+            value: formatDisplayNumber(result.bodySafetyFactor),
+          },
+          {
+            parameter: "Recommended bolt",
+            value: result.recommendedBoltSize,
+          },
+          {
+            parameter: "Housing SKU",
+            value: result.housingSku ?? "—",
+          },
+        ],
+      },
+    ];
+    if (advisor) {
+      sections.push({
+        id: "recommendation",
+        title: "Engineering advisor recommendation",
+        narrative: advisor.narrative,
+        bullets: advisor.reasons,
+        rows: [
+          { parameter: "Summary", value: advisor.summary },
+          { parameter: "Cost band", value: advisor.costBand },
+        ],
+      });
+    }
+    return sections;
+  }, [result, advisor]);
 
   const defaultView =
     workflowMode === "diagnose" && diagnosis ? ("diagnose" as const) : ("summary" as const);
@@ -319,13 +404,25 @@ export default function HousingResults({
       empty={!result}
       emptyMessage="Enter housing loads and run the check."
       heading="Housing results"
+      inputRows={inputRows}
+      reportSections={reportSections}
+      reportMeta={{
+        project: result?.housingSku ?? "Bearing housing",
+        notes: advisor?.narrative,
+      }}
       csvRows={
         result
           ? [
+              { metric: "designStatus", value: result.designStatus },
               { metric: "bodySafetyFactor", value: result.bodySafetyFactor },
-              { metric: "boltTensionPerBolt", value: result.boltTensionPerBolt },
-              { metric: "boltShearPerBolt", value: result.boltShearPerBolt },
+              { metric: "bodyStress_Pa", value: result.bodyStress },
+              { metric: "boltTensionPerBolt_N", value: result.boltTensionPerBolt },
+              { metric: "boltShearPerBolt_N", value: result.boltShearPerBolt },
               { metric: "recommendedBoltSize", value: result.recommendedBoltSize },
+              { metric: "housingDeflection_mm", value: result.housingDeflection * 1000 },
+              { metric: "housingSku", value: result.housingSku ?? "" },
+              { metric: "shaftFit", value: result.recommendedShaftFit },
+              { metric: "housingFit", value: result.recommendedHousingFit },
             ]
           : undefined
       }

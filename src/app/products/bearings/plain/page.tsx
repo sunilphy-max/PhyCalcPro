@@ -5,7 +5,7 @@ import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignC
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { usePlainBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useDeferredValue } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
@@ -16,6 +16,8 @@ import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import PlainBearingsInputs from "@/components/machine/plain-bearings/PlainBearingsInputs";
 import PlainBearingsResults from "@/components/machine/plain-bearings/PlainBearingsResults";
 import PlainBearingCopilotPanel from "@/components/machine/plain-bearings/PlainBearingCopilotPanel";
+import PlainBearingDesignSummaryPanel from "@/components/machine/plain-bearings/PlainBearingDesignSummaryPanel";
+import { explainPlainBearingRecommendation } from "@/lib/machine/plain-bearings/recommendationAdvisor";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { toBase, fromBase } from "@/lib/units/conversions";
@@ -224,6 +226,22 @@ export default function Page() {
     ]
   );
 
+  const livePreview = useMemo(() => {
+    try {
+      const config = buildConfig();
+      if (!(config.load > 0) || !(config.speed > 0) || !(config.diameter > 0)) return null;
+      return { config, preview: solvePlainBearingEngine(config) };
+    } catch {
+      return null;
+    }
+  }, [buildConfig]);
+
+  const deferredLive = useDeferredValue(livePreview);
+  const advisor = useMemo(() => {
+    if (!result || !lastConfig) return null;
+    return explainPlainBearingRecommendation(result, lastConfig);
+  }, [result, lastConfig]);
+
   const loadProject = (project: PlainProjectData & { name?: string }) => {
     if (project.name) setProjectName(project.name);
     setBearingType(project.bearingType);
@@ -243,6 +261,13 @@ export default function Page() {
     <CalculatorLayout
       moduleId="plain-bearings"
       title="Plain Bearings"
+      summary={
+        <PlainBearingDesignSummaryPanel
+          preview={deferredLive?.preview ?? null}
+          lengthUnit={lengthUnit}
+          committed={result != null}
+        />
+      }
       footer={
         <SavedProjectsFooter
           projects={savedProjects}
@@ -319,6 +344,7 @@ export default function Page() {
           diagnosis={diagnosis}
           workflowMode={workflowMode}
           inputRows={inputRows}
+          advisor={advisor}
           onApplyAdjustment={(fields) => {
             if (fields.clearanceUm != null) {
               setClearance(fromBase(fields.clearanceUm * 1e-6, "length", lengthUnit));

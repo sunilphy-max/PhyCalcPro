@@ -73,6 +73,43 @@ export type ThermalExpansionCheck = {
   note: string;
 };
 
+/** Side-by-side O / X / T rigidity row (screening). */
+export type ArrangementRigidityRow = {
+  arrangement: Exclude<BearingArrangement, "single">;
+  arrangementLabel: string;
+  axialStiffnessNPerUm: number;
+  radialStiffnessNPerUm: number;
+  momentStiffnessNmPerMrad: number;
+  axialDisplacementUm: number;
+  momentStiffnessRatioVsO: number;
+  isSelected: boolean;
+};
+
+/**
+ * First-class duplex arrangement object:
+ * preload · stiffness · axial displacement · thermal · rigidity comparison.
+ */
+export type ArrangementAnalysisCheck = {
+  arrangement: Exclude<BearingArrangement, "single">;
+  arrangementLabel: string;
+  preloadForceN: number;
+  preloadClass: BearingPreloadClass;
+  axialStiffnessNPerUm: number;
+  radialStiffnessNPerUm: number;
+  momentStiffnessNmPerMrad: number;
+  axialDisplacementUm: number;
+  axialDisplacementUnderEffectiveFaUm: number;
+  axialDisplacementStatus: "ok" | "warning" | "critical";
+  axialDisplacementNote: string;
+  thermalGrowthUm: number | null;
+  thermalPreloadChangeN: number | null;
+  thermalNote: string | null;
+  rigidityComparison: ArrangementRigidityRow[];
+  comparisonNote: string;
+  status: "ok" | "warning" | "critical";
+  note: string;
+};
+
 export type DuplexStiffnessCheck = {
   preloadForceN: number;
   preloadClass: BearingPreloadClass;
@@ -81,6 +118,12 @@ export type DuplexStiffnessCheck = {
   momentStiffnessNmPerMrad: number;
   arrangementLabel: string;
   comparisonNote: string;
+  /** Screening δa = Fa_ext / Ka (µm). */
+  axialDisplacementUm?: number;
+  axialDisplacementStatus?: "ok" | "warning" | "critical";
+  thermalGrowthUm?: number;
+  thermalPreloadChangeN?: number;
+  rigidityComparison?: ArrangementRigidityRow[];
 };
 
 export type ThermalEquilibriumCheck = {
@@ -306,7 +349,10 @@ export type BearingResult = {
   arrangement: BearingArrangement;
   pairedStations?: PairedStationResult[];
   thermalExpansion?: ThermalExpansionCheck;
+  /** @deprecated Prefer arrangementAnalysis — kept for saved projects / older cards. */
   duplexStiffness?: DuplexStiffnessCheck;
+  /** First-class O / X / T arrangement engineering object. */
+  arrangementAnalysis?: ArrangementAnalysisCheck;
   thermalEquilibrium?: ThermalEquilibriumCheck;
   relubrication?: RelubricationCheck;
   defectFrequencies?: DefectFrequenciesCheck;

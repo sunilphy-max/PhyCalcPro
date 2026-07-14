@@ -35,9 +35,10 @@ import MountedBomPanel from "@/components/machine/housing/MountedBomPanel";
 import type { MountedBomResult } from "@/lib/machine/housing/mountedBom";
 import BearingDiagnosisPanel from "@/components/machine/bearings/BearingDiagnosisPanel";
 import BearingReportPreview from "@/components/machine/bearings/BearingReportPreview";
-import BearingResultsViewTabs, {
-  type BearingResultsViewId,
-} from "@/components/machine/bearings/BearingResultsViewTabs";
+import CalculatorResultsViewTabs, {
+  type CalculatorResultsViewId,
+} from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
+import { buildBearingCsvRows, buildBearingReportSections } from "@/lib/machine/bearings/reportSections";
 import { findBearing } from "@/data/catalogs/bearingCatalog";
 
 type Props = {
@@ -67,6 +68,16 @@ export default function BearingResults({
   inputRows = [],
   onSelectDesignation,
 }: Props) {
+  const reportSections = useMemo(() => {
+    if (!result) return undefined;
+    return buildBearingReportSections(result, crossManufacturerRecommendation?.advisor ?? null);
+  }, [result, crossManufacturerRecommendation?.advisor]);
+
+  const reportCsvRows = useMemo(() => {
+    if (!result) return undefined;
+    return buildBearingCsvRows(result, crossManufacturerRecommendation?.advisor ?? null);
+  }, [result, crossManufacturerRecommendation?.advisor]);
+
   const catalogEntry = result?.designation ? findBearing(result.designation) : undefined;
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
@@ -121,7 +132,7 @@ export default function BearingResults({
             xLabel="Equivalent load P"
             xUnit={loadUnit}
             unitLabel="h"
-            series={[{ y: modifiedLives, label: "Modified life Lnm (a_ISO)" }]}
+            series={[{ y: modifiedLives, label: "Modified life Lnm (aSKF)" }]}
             probeX={p0Display}
             showPeak={false}
           />
@@ -186,6 +197,7 @@ export default function BearingResults({
         <BearingRecommendations
           result={result}
           recommendation={crossManufacturerRecommendation}
+          compareRows={compareRows}
           onSelect={onSelectDesignation}
         />
       ) : null}
@@ -209,7 +221,8 @@ export default function BearingResults({
         />
       ) : null}
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        Full parameter table is above. SKF rating life Lnm uses a₁ · aSKF · (C/P)^p per ISO 281:2007.
+        Full parameter table is above. SKF rating life Lnm = a₁ · aSKF · (C/P)^p per ISO 281:2007
+        (aSKF ≡ aISO from κ, eC, Pu/P).
       </p>
     </div>
   ) : null;
@@ -218,7 +231,7 @@ export default function BearingResults({
     if (!result) return [];
 
     const tabs: {
-      id: BearingResultsViewId;
+      id: CalculatorResultsViewId;
       label: string;
       icon: typeof Table2;
       content: ReactNode;
@@ -272,33 +285,18 @@ export default function BearingResults({
       tableVariant="compact"
       qualityOverrides={chartModuleQuality()}
       inputRows={inputRows}
-      reportMeta={{ project: result?.designation ?? "Bearing selection" }}
-      csvRows={
-        result
-          ? [
-              { metric: "designation", value: result.designation ?? "" },
-              { metric: "designStatus", value: result.designStatus },
-              { metric: "governingFailureMode", value: result.governingFailureMode },
-              { metric: "equivalentLoad", value: result.equivalentLoad },
-              { metric: "staticEquivalentLoad", value: result.staticEquivalentLoad },
-              { metric: "requiredDynamicRating", value: result.requiredDynamicRating },
-              { metric: "expectedLife", value: result.expectedLife },
-              { metric: "modifiedLife", value: result.modifiedLife },
-              { metric: "dynamicUtilization", value: result.dynamicUtilization },
-              { metric: "staticSafetyFactor", value: result.staticSafetyFactor },
-              { metric: "speedMargin", value: result.speedMargin ?? 0 },
-              { metric: "lifeUtilization", value: result.lifeUtilization },
-              { metric: "kappa", value: result.modifiedLifeFactors.kappa },
-              { metric: "aIso", value: result.aIso },
-            ]
-          : undefined
-      }
+      reportSections={reportSections}
+      reportMeta={{
+        project: result?.designation ?? "Bearing selection",
+        notes: crossManufacturerRecommendation?.advisor?.narrative,
+      }}
+      csvRows={reportCsvRows}
     >
       {result ? (
         <div className="space-y-4">
           <BearingResultsMetrics result={result} loadUnit={loadUnit} catalogEntry={catalogEntry} />
           <BearingStatusBanner result={result} />
-          <BearingResultsViewTabs tabs={viewTabs} defaultTab="summary" />
+          <CalculatorResultsViewTabs tabs={viewTabs} defaultTab="summary" ariaLabel="Bearing results views" />
         </div>
       ) : null}
     </CalculatorResultsShell>
