@@ -27,6 +27,8 @@ import { buildPlainBearingReportInputRows } from "@/lib/machine/plain-bearings/r
 import type { PlainBearingConfig, PlainBearingResult } from "@/lib/machine/plain-bearings/types";
 import type { PlainBearingCopilotApplyPayload } from "@/lib/copilot/plainBearingCopilot";
 import type { CalculationSpec } from "@/lib/standards/types";
+import { PLAIN_BEARING_OILS } from "@/data/catalogs/plainBearingOils";
+import { PLAIN_BEARING_MATERIALS } from "@/data/catalogs/plainBearingMaterials";
 
 type PlainProjectData = {
   bearingType: PlainBearingConfig["bearingType"];
@@ -40,6 +42,8 @@ type PlainProjectData = {
   padDiameterRatio: number;
   padCount: number;
   lengthUnit: string;
+  oilId?: string;
+  materialId?: string;
   name?: string;
 };
 
@@ -65,6 +69,8 @@ export default function Page() {
   const [padDiameterRatio, setPadDiameterRatio] = useState(2);
   const [padCount, setPadCount] = useState(6);
   const [lengthUnit, setLengthUnit] = useState("mm");
+  const [oilId, setOilId] = useState(PLAIN_BEARING_OILS[3]!.id);
+  const [materialId, setMaterialId] = useState(PLAIN_BEARING_MATERIALS[2]!.id);
   const [result, setResult] = useState<(PlainBearingResult & { calculationSpec?: CalculationSpec }) | null>(null);
   const [diagnosis, setDiagnosis] = useState<PlainBearingDiagnosis | null>(null);
   const [lastConfig, setLastConfig] = useState<PlainBearingConfig | null>(null);
@@ -84,6 +90,8 @@ export default function Page() {
       viscosity,
       padDiameterRatio,
       padCount,
+      oilId,
+      materialId,
     };
   }, [
     bearingType,
@@ -97,6 +105,8 @@ export default function Page() {
     viscosity,
     padDiameterRatio,
     padCount,
+    oilId,
+    materialId,
   ]);
 
   const runCheck = useCallback(() => {
@@ -186,6 +196,8 @@ export default function Page() {
         viscosity: payload.viscosity ?? viscosity,
         padDiameterRatio,
         padCount: payload.padCount ?? padCount,
+        oilId,
+        materialId,
       };
       const raw = solvePlainBearingEngine(config);
       setLastConfig(config);
@@ -255,6 +267,8 @@ export default function Page() {
     setPadDiameterRatio(project.padDiameterRatio);
     setPadCount(project.padCount);
     setLengthUnit(project.lengthUnit);
+    if (project.oilId) setOilId(project.oilId);
+    if (project.materialId) setMaterialId(project.materialId);
   };
 
   return (
@@ -312,6 +326,10 @@ export default function Page() {
             setPadDiameterRatio={setPadDiameterRatio}
             padCount={padCount}
             setPadCount={setPadCount}
+            oilId={oilId}
+            setOilId={setOilId}
+            materialId={materialId}
+            setMaterialId={setMaterialId}
             lengthUnit={lengthUnit}
             setLengthUnit={setLengthUnit}
             onCalculate={calculate}
@@ -328,6 +346,8 @@ export default function Page() {
                 padDiameterRatio,
                 padCount,
                 lengthUnit,
+                oilId,
+                materialId,
               })
             }
             saving={saving}

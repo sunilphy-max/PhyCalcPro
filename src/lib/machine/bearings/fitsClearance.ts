@@ -14,6 +14,10 @@ export type FitRecommendation = {
   housingDeviationUm: number;
   clearanceReductionUm: number;
   estimatedOperatingClearanceUm: number;
+  /** Differential thermal clearance change (µm); positive = clearances close. */
+  thermalClearanceChangeUm: number;
+  innerRingTempC: number;
+  outerRingTempC: number;
   notes: string[];
 };
 
@@ -24,6 +28,9 @@ const CLEARANCE_MID_UM: Record<BearingClearance, number> = {
   C3: 28,
   C4: 42,
 };
+
+/** Linear expansion coefficient for bearing steel (1/K). */
+const ALPHA_STEEL = 12e-6;
 
 /** Reduction in radial internal clearance from interference fits (screening, rotating inner ring). */
 function clearanceReductionFromFits(
@@ -52,6 +59,23 @@ function clearanceReductionFromFits(
   return (shaftTightness[shaftFit] + housingTightness[housingFit]) * boreFactor;
 }
 
+/**
+ * Thermal clearance change from differential ring expansion (screening).
+ * Inner grows more than outer → clearance reduces.
+ */
+export function thermalClearanceChangeUm(params: {
+  boreMm: number;
+  innerRingTempC: number;
+  outerRingTempC: number;
+  ambientTempC?: number;
+}): number {
+  const ambient = params.ambientTempC ?? 20;
+  const dInner = params.innerRingTempC - ambient;
+  const dOuter = params.outerRingTempC - ambient;
+  // Δδ ≈ α · d · (ΔT_inner − ΔT_outer) in metres → µm
+  return params.boreMm * ALPHA_STEEL * (dInner - dOuter) * 1000;
+}
+
 export function recommendBearingFits(params: {
   boreMm: number;
   radialLoadN: number;
@@ -59,10 +83,15 @@ export function recommendBearingFits(params: {
   mountingRole: BearingMountingRole;
   clearance: BearingClearance;
   innerRingRotates?: boolean;
+  /** @deprecated Prefer innerRingTempC / outerRingTempC. */
   operatingTempDeltaC?: number;
+  innerRingTempC?: number;
+  outerRingTempC?: number;
+  ambientTempC?: number;
 }): FitRecommendation {
   const { boreMm, radialLoadN, speedRpm, mountingRole, clearance } = params;
   const innerRotates = params.innerRingRotates ?? true;
+  const ambient = params.ambientTempC ?? 20;
   const notes: string[] = [];
 
   const loadRatio = radialLoadN / Math.max(boreMm, 1);
@@ -97,10 +126,29 @@ export function recommendBearingFits(params: {
   }
 
   const clearanceReduction = clearanceReductionFromFits(boreMm, shaftFit, housingFit);
-  const tempDelta = params.operatingTempDeltaC ?? 30;
-  const tempExpansionUm = boreMm * 12e-6 * tempDelta;
+
+  let innerRingTempC = params.innerRingTempC;
+  let outerRingTempC = params.outerRingTempC;
+  if (innerRingTempC == null || outerRingTempC == null) {
+    const opDelta = params.operatingTempDeltaC ?? 30;
+    const operating = ambient + opDelta;
+    // Outer runs cooler than inner (housing sink) — screening defaults.
+    innerRingTempC = innerRingTempC ?? operating;
+    outerRingTempC = outerRingTempC ?? ambient + opDelta / 3;
+  }
+
+  const thermalChange = thermalClearanceChangeUm({
+    boreMm,
+    innerRingTempC,
+    outerRingTempC,
+    ambientTempC: ambient,
+  });
   const nominalClearance = CLEARANCE_MID_UM[clearance];
-  const operatingClearance = nominalClearance - clearanceReduction - tempExpansionUm * 0.5;
+  const operatingClearance = nominalClearance - clearanceReduction - thermalChange;
+
+  notes.push(
+    `Ring temps (screening): inner ${innerRingTempC.toFixed(0)} °C / outer ${outerRingTempC.toFixed(0)} °C → thermal Δδ ${thermalChange.toFixed(1)} µm.`
+  );
 
   if (operatingClearance < 5) {
     notes.push("Operating clearance is tight — consider C3/C4 or looser housing fit.");
@@ -113,6 +161,9 @@ export function recommendBearingFits(params: {
     housingDeviationUm: clearanceReduction * 0.45,
     clearanceReductionUm: clearanceReduction,
     estimatedOperatingClearanceUm: operatingClearance,
+    thermalClearanceChangeUm: thermalChange,
+    innerRingTempC,
+    outerRingTempC,
     notes,
   };
 }

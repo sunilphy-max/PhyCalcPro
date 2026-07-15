@@ -115,6 +115,8 @@ export type BearingCatalogEntry = {
   fatigueLoadLimitN?: number;
   /** True when Pu came from an explicit datasheet value (not a ratio estimate). */
   fatigueLoadLimitFromDatasheet?: boolean;
+  /** Provenance of Pu — preferred over the boolean when present. */
+  puSource?: "datasheet" | "c0_ratio" | "c_ratio";
   /** Contact angle (deg) for angular contact / tapered screening notes. */
   contactAngleDeg?: number;
   catalogFactors?: BearingCatalogFactors;
@@ -139,10 +141,13 @@ export type SeriesTemplate = {
   limitingSpeedRpm: number;
   referenceSpeedRpm?: number;
   /**
-   * Datasheet fatigue load limit Pu (N). When set, catalog build stores it
-   * (OEM-scaled) and the solver uses it for aISO instead of estimating from C.
+   * Fatigue load limit Pu (N). When set with puSource "datasheet", catalog build
+   * OEM-scales it. When puSource is "c0_ratio"/"c_ratio" (or omitted after
+   * withEstimatedPu), values are screening estimates — not datasheet.
    */
   fatigueLoadLimitN?: number;
+  /** Set "datasheet" only for literal OEM figures; estimators set "c0_ratio". */
+  puSource?: "datasheet" | "c0_ratio" | "c_ratio";
   contactAngleDeg?: number;
   catalogFactors?: BearingCatalogFactors;
   /** Limit expansion to specific manufacturers (e.g. Timken inch series) */

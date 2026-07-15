@@ -19,7 +19,7 @@ Shared components live in `src/components/calculator/`. See [AGENTS.md](../AGENT
 
 ## Layout
 
-- **Single sidebar** — only `src/app/products/layout.tsx` renders `Sidebar`.
+- **Single products nav** — only `src/app/products/layout.tsx` renders `Sidebar` (icon rail + overlay drawer).
 - **Category layouts** — passthrough wrappers only (no duplicate chrome).
 - **inputs / results** — two-column module chrome via `CalculatorLayout`; legacy `left/center/right` props are forbidden on product pages.
 

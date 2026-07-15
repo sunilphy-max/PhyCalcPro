@@ -196,20 +196,25 @@ Eight cross-family profiles in `applicationMeta.ts`:
 
 ### P0 — Sign-off & accuracy
 
-- [ ] **Vendor benchmark suite** — 15–25 cases, ±5% vs SKF Product Select / MITCalc on L₁₀h, P/C, s₀, n_lim/n
-- [ ] **Per-designation Pu** in catalog (or import from datasheets) — reduces aISO divergence at high P/C
-- [ ] **Engineer sign-off** on [validation-master-checklist.md](../validation-master-checklist.md)
+- [x] **Hybrid gold harness** — `npm run test:bearings-gold` + Vitest; screening_reference seeds active; vendor SKF/MITCalc cases `pending_vendor_gold` until pasted ([README](../../src/data/verification/bearings-gold/README.md))
+- [x] **Pu provenance** — `puSource` / `fatigueLoadLimitFromDatasheet` honest (datasheet vs C₀-ratio); custom C/C₀/Pu override UI
+- [ ] **Engineer sign-off** on [validation-master-checklist.md](../validation-master-checklist.md) after vendor gold is filled (±5%)
 
 ### P1 — Workflow & maintenance (no catalog expansion required)
 
-- [ ] Two-bearing shaft wizard (locating + floating auto-design as a system)
+- [x] Two-bearing shaft wizard (locating + floating auto-design as a system)
+- [x] Shaft handoff locate↔float swap + Fa-not-from-FEM warning
 - [x] Design mode passes lubricant, arrangement, contamination into ranking
 - [x] Plain bearings in CI benchmark runner (`moduleSolverRegistry`)
 - [x] Plain bearing temperature **iteration** (friction ↔ heat ↔ ν, light Walther-scale)
 
 ### P2 — Optional product depth
 
-- [ ] Cross-OEM interchange table at scale (beyond same-bore heuristic)
+- [x] Cross-OEM interchange candidates (same bore/type/C-class) with Apply
+- [x] N-step variable spectrum UI (up to 12) + optional per-step speed
+- [x] Ring ΔT operating clearance + SKF-inspired Mrr/Msl friction screening
+- [x] Plain oil + bushing material catalogs; multi-L/D Raimondi–Boyd
+- [x] Housing body/bolt utilization metrics
 - [x] Housing / seal SKU catalog (SNL, UCP, …) + mounted BOM
 - [x] Defect frequencies, adjusted reference speed
 - [x] Design Summary + Explain advisor + sectioned PDF/Excel across selection / plain / housing

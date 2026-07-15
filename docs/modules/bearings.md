@@ -69,8 +69,11 @@ Loads are split per bearing; system life is governed by the Weibull combination 
 | Mounting arrangement | Single, back-to-back (O), face-to-face (X), tandem (T) |
 | Duplex preload class | None / light / medium / heavy (or override force) |
 | Bearing span / float | Locating+floating thermal float; duplex thermal preload span |
-| Variable load spectrum | Optional ISO 281-1 duty cycle |
+| Variable load spectrum | Up to 12 ISO 281-1 steps (optional per-step speed) |
+| Ring temperatures | Optional inner/outer temps for operating clearance |
+| Ratings override | User C / C₀ / Pu when datasheet differs from catalog |
 | Max bore | Shaft diameter constraint for auto-selection |
+| Two-bearing wizard | Locating + floating system size/apply |
 
 **Outputs**
 
@@ -86,8 +89,9 @@ Loads are split per bearing; system life is governed by the Weibull combination 
 - PDF / Excel packages with named sections: Design Summary, Inputs, Catalog, ISO 281 factors, Arrangement, Recommendation, Checks, Formulas, Standards, Charts
 - Mounted kit BOM (housing SNL/UCP/FY/SAF-class + seal + grease)
 - Dynamic utilization P/C, static safety C₀/P₀, speed margin n_lim/n
-- Minimum load (skidding), friction torque, power loss
-- Recommended shaft/housing fits and operating clearance
+- Minimum load (skidding), SKF-inspired Mrr/Msl friction torque and power loss (screening)
+- Recommended shaft/housing fits and differential ring-ΔT operating clearance
+- Cross-OEM interchange candidates (same bore/type/C class)
 - Required C and C₀ for target life
 - Governing failure mode
 
@@ -101,8 +105,9 @@ Loads are split per bearing; system life is governed by the Weibull combination 
 **Assumptions & limitations**
 
 - Constant load and speed unless variable spectrum is enabled
-- Pu from catalog when present; otherwise estimated from C
+- Pu from catalog with explicit datasheet vs C₀-ratio provenance; user override available
 - Representative catalog — not full vendor databases
+- Friction is screening Mrr/Msl — not full SKF four-component model
 - ISO 16281 and stress-life paths are **screening** only — not vendor GBLM, AFC, Bearinx, or full ISO 16281:2025
 - Housing SKUs are screening-class (SNL/UCP/…) — not full OEM mounted-product databases
 - CO₂ from friction power only — not a product LCA
@@ -112,14 +117,16 @@ Loads are split per bearing; system life is governed by the Weibull combination 
 **Verification**
 
 - CI: `bearings-indicative-*.json` (multiple rolling cases)
-- Vitest: `engine.test.ts`, `lifeModelCeiling.test.ts`, `auxMounted.test.ts`
-- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md) (Machine → bearings) — **pending ±5% vendor benchmark**
+- Gold harness: `npm run test:bearings-gold` / Vitest `bearingsGold.test.ts` (screening_reference; vendor cases pending paste)
+- Vitest: `engine.test.ts`, `industryParity.test.ts`, `lifeModelCeiling.test.ts`, `auxMounted.test.ts`
+- Engineer sign-off: [validation-master-checklist.md](../validation-master-checklist.md) (Machine → bearings) — **pending ±5% vendor gold**
 
 **Design workflow**
 
 - **Validate:** ISO 281/76 forward check on selected designation.
 - **Auto-design:** Ranks catalog entries by manufacturer, application profile, life utilization, static SF, and speed margin within bore limit. Design mode passes the UI lubricant type, ISO VG, operating temperature, and contamination into ISO 281 screening (not fixed VG68 / normal_clean).
-- **Handoff:** Receives Fr, Fa, speed from **shafts** module (manual apply today).
+- **Handoff:** Receives Fr₀/Fr₁, span, slopes from **shafts** (auto-apply); Fa may still need gear/user input (planar FEM warning).
+- **System wizard:** Size locating + floating pair and apply both designations.
 
 **References**
 

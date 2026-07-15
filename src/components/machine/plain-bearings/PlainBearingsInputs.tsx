@@ -11,6 +11,9 @@ import CalculatorInputSteps from "@/components/machine/bearings-shared/Calculato
 import PlainBearingTypePicker from "@/components/machine/plain-bearings/PlainBearingTypePicker";
 import PlainBearingReferenceVisual from "@/components/machine/plain-bearings/PlainBearingReferenceVisual";
 import type { PlainBearingType } from "@/lib/machine/plain-bearings/types";
+import { PLAIN_BEARING_OILS } from "@/data/catalogs/plainBearingOils";
+import { PLAIN_BEARING_MATERIALS } from "@/data/catalogs/plainBearingMaterials";
+import CalculatorSelectField from "@/components/calculator/CalculatorSelectField";
 
 type Props = {
   bearingType: PlainBearingType;
@@ -33,6 +36,10 @@ type Props = {
   setPadDiameterRatio: Dispatch<SetStateAction<number>>;
   padCount: number;
   setPadCount: Dispatch<SetStateAction<number>>;
+  oilId: string;
+  setOilId: Dispatch<SetStateAction<string>>;
+  materialId: string;
+  setMaterialId: Dispatch<SetStateAction<string>>;
   lengthUnit: string;
   setLengthUnit: Dispatch<SetStateAction<string>>;
   onCalculate: () => void;
@@ -149,8 +156,30 @@ export default function PlainBearingsInputs(props: Props) {
                     className={calculatorNumberInputClass}
                   />
                 </label>
+                <CalculatorSelectField
+                  label="Lubricant oil"
+                  value={props.oilId}
+                  onChange={(value) => props.setOilId(value)}
+                >
+                  {PLAIN_BEARING_OILS.map((oil) => (
+                    <option key={oil.id} value={oil.id}>
+                      {oil.label}
+                    </option>
+                  ))}
+                </CalculatorSelectField>
+                <CalculatorSelectField
+                  label="Bearing material"
+                  value={props.materialId}
+                  onChange={(value) => props.setMaterialId(value)}
+                >
+                  {PLAIN_BEARING_MATERIALS.map((mat) => (
+                    <option key={mat.id} value={mat.id}>
+                      {mat.label}
+                    </option>
+                  ))}
+                </CalculatorSelectField>
                 <label className="space-y-2 text-sm text-slate-700 dark:text-slate-200">
-                  <span>Dynamic viscosity (Pa·s)</span>
+                  <span>Dynamic viscosity override (Pa·s)</span>
                   <input
                     type="number"
                     step="0.001"
@@ -158,6 +187,9 @@ export default function PlainBearingsInputs(props: Props) {
                     onChange={(e) => props.setViscosity(Number(e.target.value))}
                     className={calculatorNumberInputClass}
                   />
+                  <span className="block text-xs text-slate-500">
+                    Used when no oil catalog entry is selected; oil table overrides at operating T.
+                  </span>
                 </label>
               </div>
             ) : null}

@@ -41,16 +41,19 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
   const stiffnessEstimate = radial / Math.max(housingDeflection, 1e-9);
 
   let recommendedBoltSize = "M12";
+  let boltVonMisesPa = 0;
   for (const bolt of BOLT_SIZES) {
     const tensileStress = boltTensionPerBolt / bolt.tensileArea;
     const shearStress = boltShearPerBolt / bolt.area;
     const vonMises = Math.sqrt(tensileStress ** 2 + 3 * shearStress ** 2);
+    recommendedBoltSize = bolt.label;
+    boltVonMisesPa = vonMises;
     if (vonMises <= 0.7 * config.yieldStress) {
-      recommendedBoltSize = bolt.label;
       break;
     }
-    recommendedBoltSize = bolt.label;
   }
+  const bodyUtilization = bodyStress / Math.max(config.yieldStress, 1e-6);
+  const boltUtilization = boltVonMisesPa / Math.max(0.7 * config.yieldStress, 1e-6);
 
   const boreMm = config.boreDiameter * 1000;
   const fitRecommendation = recommendBearingFits({
@@ -69,15 +72,22 @@ export function solveHousingEngine(config: HousingConfig): HousingResult {
   return {
     bodyStress,
     bodySafetyFactor: bodySf,
+    bodyUtilization,
     boltTensionPerBolt,
     boltShearPerBolt,
+    boltUtilization,
+    boltVonMisesPa,
     housingDeflection,
     stiffnessEstimate,
     recommendedBoltSize,
     isSafe,
     designStatus,
     governingFailureMode:
-      bodySf < 1.5 ? "Housing body bending stress" : "Bolt combined tension and shear",
+      bodySf < 1.5
+        ? "Housing body bending stress"
+        : boltUtilization > 1
+          ? "Bolt combined tension and shear"
+          : "Bolt combined tension and shear",
     fitRecommendation,
     recommendedShaftFit: fitRecommendation.shaftFit,
     recommendedHousingFit: fitRecommendation.housingFit,

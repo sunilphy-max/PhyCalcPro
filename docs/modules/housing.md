@@ -21,8 +21,8 @@ Simplified cantilever bracket: overturning moment from radial load at arm length
 
 **Outputs**
 
-- Body safety factor, bolt tension and shear per bolt, deflection / fit estimate
-- Live **Design Summary** rail (body SF, bolt T/V, deflection/fit, SKU, status)
+- Body safety factor, body utilization, bolt T/V, bolt utilization (von Mises / allow), deflection / fit estimate
+- Live **Design Summary** rail (body SF/util, bolt util, deflection/fit, SKU, status)
 - Deterministic **housing SKU advisor** (why this SNL/UCP/…, cost band, seal note, alternatives)
 - Compact **mounted BOM** on results Summary and in PDF/Excel
 - Sectioned PDF / Excel with body/bolt domain factors + recommendation

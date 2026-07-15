@@ -74,7 +74,7 @@ Use this document to validate **physics, standards mapping, and design outputs**
 |--------|------|------------------------|
 | **shafts** | CI | DIN 743 / Shigley shaft example — bending, torsion, Kt, critical speed. |
 | **gears** | CI | ISO 6336 / AGMA bending + contact vs MITCalc or vendor software. |
-| **bearings** | CI | ISO 281 L10, ISO 76 static, speed margin vs SKF catalog example. |
+| **bearings** | CI | ISO 281 Lnm / L10, ISO 76 static, speed margin. Also `npm run test:bearings-gold` (screening_reference; paste vendor gold for ±5% SKF/MITCalc). |
 | **housing** | CI | Cantilever housing screen vs hand bracket moment; bolt loads vs VDI pattern. |
 | **cams** | CI | Displacement/velocity/acceleration vs polynomial cam design text. |
 | **flywheels** | CI | Energy storage vs ½Iω² hand calc. |

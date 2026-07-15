@@ -31,7 +31,9 @@ Sommerfeld + Raimondi–Boyd \( \varepsilon(S) \), iterative mean-film temperatu
 | Journal / pad diameter, length | Bearing geometry |
 | Radial clearance \( c \) | Assembly clearance |
 | `load`, `speed` | Operating W and rpm |
-| Oil viscosity \( \mu \) | At ambient / stated reference temperature |
+| Oil viscosity \( \mu \) | At ambient / stated reference temperature (or from oil catalog) |
+| Oil catalog | ~25 ISO VG mineral/PAO/ester grades → ν(T) |
+| Bushing material | ~12 materials with specific-load / PV / temp limits |
 | Ambient temperature | For ΔT iteration and outlet T |
 | Bearing type | Journal / thrust pad / tilting pad |
 
@@ -51,8 +53,8 @@ Sommerfeld + Raimondi–Boyd \( \varepsilon(S) \), iterative mean-film temperatu
 
 **Assumptions & limitations**
 
-- Full journal, steady-state; viscosity corrected only via Walther-scale iteration (not a full oil-database heat balance).
-- Short-bearing / Raimondi–Boyd \( L/D \approx 1 \) — not full finite-length Reynolds solution.
+- Full journal, steady-state; oil catalog + Walther ν(T); light ΔT ↔ viscosity iteration (not full flow heat balance).
+- Raimondi–Boyd ε(S) interpolated for L/D ∈ {0.25…1.5} — still not full finite-length Reynolds solution.
 - No dynamic instability (oil whirl/whip) analysis.
 - No MITCalc-IV-class sliding material + oil flow database.
 

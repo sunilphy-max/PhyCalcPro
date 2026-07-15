@@ -12,10 +12,12 @@ type Props = {
   moduleId: string;
   /** Receives the base-SI handoff params; apply them to the form state. */
   onApply: (params: Record<string, number>, handoff: CalcHandoff) => void;
+  /** Optional warning shown below the summary when handoff is pending. */
+  warningNote?: string;
 };
 
 /** Banner offering to import results published by an upstream calculator. */
-export default function CrossCalcHandoffBanner({ moduleId, onApply }: Props) {
+export default function CrossCalcHandoffBanner({ moduleId, onApply, warningNote }: Props) {
   const [handoff, setHandoff] = useState<CalcHandoff | null>(null);
   const [autoApplied, setAutoApplied] = useState(false);
 
@@ -32,6 +34,12 @@ export default function CrossCalcHandoffBanner({ moduleId, onApply }: Props) {
 
   if (!handoff) return null;
 
+  const resolvedWarning =
+    warningNote ??
+    (moduleId === "bearings" && handoff.params.axialLoad == null
+      ? "Axial Fa not from planar FEM — verify thrust manually."
+      : undefined);
+
   const dismiss = () => {
     clearHandoff(moduleId);
     setHandoff(null);
@@ -42,6 +50,9 @@ export default function CrossCalcHandoffBanner({ moduleId, onApply }: Props) {
       <div className="text-sm text-indigo-950 dark:text-indigo-100">
         <div className="font-semibold">Results available from {handoff.fromTitle}</div>
         <div className="mt-0.5 text-indigo-900/80 dark:text-indigo-200/80">{handoff.summary}</div>
+        {resolvedWarning ? (
+          <div className="mt-1 text-xs font-medium text-amber-800 dark:text-amber-200">{resolvedWarning}</div>
+        ) : null}
       </div>
       <div className="flex gap-2">
         <button

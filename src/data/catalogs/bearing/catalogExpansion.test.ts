@@ -10,13 +10,24 @@ import {
 import { solveBearingEngine } from "@/lib/machine/bearings/engine";
 
 describe("bearing catalog datasheet expansion", () => {
-  it("stores datasheet Pu on every catalog entry", () => {
+  it("stores Pu on every catalog entry with honest provenance", () => {
     expect(bearingCatalog.length).toBeGreaterThan(500);
     expect(bearingCatalog.every((e) => e.fatigueLoadLimitN != null && e.fatigueLoadLimitN > 0)).toBe(
       true
     );
-    const withDatasheet = bearingCatalog.filter((e) => e.fatigueLoadLimitFromDatasheet);
-    expect(withDatasheet.length).toBeGreaterThan(100);
+    const datasheet = bearingCatalog.filter((e) => e.fatigueLoadLimitFromDatasheet);
+    const estimated = bearingCatalog.filter((e) => !e.fatigueLoadLimitFromDatasheet);
+    expect(datasheet.length).toBeGreaterThan(100);
+    expect(estimated.length).toBeGreaterThan(200);
+    expect(estimated.every((e) => e.puSource === "c0_ratio" || e.puSource === "c_ratio")).toBe(true);
+    expect(datasheet.every((e) => e.puSource === "datasheet")).toBe(true);
+  });
+
+  it("marks common deep-groove sizes as C0-ratio estimates (not datasheet)", () => {
+    const entry = findBearing("6205");
+    expect(entry?.fatigueLoadLimitN).toBeGreaterThan(0);
+    expect(entry?.fatigueLoadLimitFromDatasheet).toBe(false);
+    expect(entry?.puSource).toBe("c0_ratio");
   });
 
   it("includes toroidal, thrust roller, and deeper needle families", () => {
@@ -39,7 +50,6 @@ describe("bearing catalog datasheet expansion", () => {
   it("wires catalog Pu into aISO via the engine", () => {
     const entry = findBearing("6205");
     expect(entry?.fatigueLoadLimitN).toBeDefined();
-    expect(entry?.fatigueLoadLimitFromDatasheet).toBe(true);
 
     const result = solveBearingEngine({
       radialLoad: 3000,

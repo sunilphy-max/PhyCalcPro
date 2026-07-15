@@ -44,12 +44,19 @@ function resolveFatigueLoadLimit(
   scaledDynamicN: number,
   scaledStaticN: number,
   factors: { dynamic: number; static: number }
-): { pu: number; fromDatasheet: boolean } {
+): {
+  pu: number;
+  fromDatasheet: boolean;
+  puSource: "datasheet" | "c0_ratio" | "c_ratio";
+} {
+  const source = template.puSource ?? (template.fatigueLoadLimitN != null ? "datasheet" : "c0_ratio");
   if (template.fatigueLoadLimitN != null && template.fatigueLoadLimitN > 0) {
-    // Scale datasheet Pu with the same OEM static factor (Pu tracks material capacity).
+    const fromDatasheet = source === "datasheet";
     return {
+      // Scale authored Pu with OEM static factor (tracks material capacity).
       pu: scaleRating(template.fatigueLoadLimitN, factors.static),
-      fromDatasheet: true,
+      fromDatasheet,
+      puSource: source,
     };
   }
   return {
@@ -59,6 +66,7 @@ function resolveFatigueLoadLimit(
       staticRatingN: scaledStaticN,
     }),
     fromDatasheet: false,
+    puSource: "c0_ratio",
   };
 }
 
@@ -69,7 +77,7 @@ function templateToEntry(
   const factors = MANUFACTURER_FACTORS[manufacturer];
   const dynamicRatingN = scaleRating(template.dynamicRatingN, factors.dynamic);
   const staticRatingN = scaleRating(template.staticRatingN, factors.static);
-  const { pu, fromDatasheet } = resolveFatigueLoadLimit(
+  const { pu, fromDatasheet, puSource } = resolveFatigueLoadLimit(
     template,
     dynamicRatingN,
     staticRatingN,
@@ -109,6 +117,7 @@ function templateToEntry(
     costIndex: estimateCostIndex(template, manufacturer),
     fatigueLoadLimitN: pu,
     fatigueLoadLimitFromDatasheet: fromDatasheet,
+    puSource,
     contactAngleDeg: template.contactAngleDeg,
     catalogFactors: template.catalogFactors,
   };

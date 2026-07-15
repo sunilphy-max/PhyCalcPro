@@ -12,9 +12,20 @@ const COMPACT: BearingApplicationProfile[] = ["space_limited", "general_radial"]
 const THRUST: BearingApplicationProfile[] = ["pure_thrust", "locating_bearing"];
 const MISALIGN: BearingApplicationProfile[] = ["heavy_shock", "general_radial", "floating_bearing"];
 
-/** Attach explicit datasheet Pu when missing (SKF-style C₀ ratios). */
+/**
+ * Attach C₀-ratio Pu screening when missing.
+ * Never marks estimated Pu as datasheet — use puSource: "c0_ratio".
+ * Templates that already have fatigueLoadLimitN keep their value; literal OEM
+ * figures should set puSource: "datasheet" (default when previously authored).
+ */
 export function withDatasheetPu(template: SeriesTemplate): SeriesTemplate {
-  if (template.fatigueLoadLimitN != null) return template;
+  if (template.fatigueLoadLimitN != null && template.fatigueLoadLimitN > 0) {
+    // Literal authored Pu without explicit source → treat as datasheet.
+    return {
+      ...template,
+      puSource: template.puSource ?? "datasheet",
+    };
+  }
   const C0 = template.staticRatingN;
   const C = template.dynamicRatingN;
   let pu: number;
@@ -35,7 +46,7 @@ export function withDatasheetPu(template: SeriesTemplate): SeriesTemplate {
     default:
       pu = Math.round(Math.max(0.04 * C0, 0.02 * C));
   }
-  return { ...template, fatigueLoadLimitN: pu };
+  return { ...template, fatigueLoadLimitN: pu, puSource: "c0_ratio" };
 }
 
 /** Toroidal roller (CARB / C22xx) — misalignment + axial float. */

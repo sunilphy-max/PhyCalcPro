@@ -9,6 +9,7 @@ import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import { BEARING_MANUFACTURER_LABELS } from "@/data/catalogs/bearingCatalog";
 import { sealLabelForOem } from "@/data/catalogs/bearing/manufacturerDesignations";
 import type { BearingCompareRow } from "@/components/machine/bearings/BearingCompareTable";
+import BearingInterchangeCard from "@/components/machine/bearings/BearingInterchangeCard";
 
 type Props = {
   result: BearingResult;
@@ -306,6 +307,13 @@ export default function BearingRecommendations({
             );
           })}
         </div>
+      ) : null}
+
+      {result.designation ? (
+        <BearingInterchangeCard
+          designation={result.designation}
+          onSelectDesignation={onSelect}
+        />
       ) : null}
 
       {result.pairedStations && result.pairedStations.length >= 2 ? (

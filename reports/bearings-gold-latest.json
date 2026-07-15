@@ -1,0 +1,560 @@
+{
+  "passed": 11,
+  "failed": 0,
+  "skipped": 2,
+  "results": [
+    {
+      "id": "gold-6205-iso281-baseline",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 135.73,
+          "actual": 135.72782251108367,
+          "pass": true,
+          "relErrorPct": 0.0016042797585772205
+        },
+        {
+          "field": "expectedLife",
+          "expected": 1334.07,
+          "actual": 1334.0707818930043,
+          "pass": true,
+          "relErrorPct": 0.00005860959352858562
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 3000,
+          "actual": 3000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 2.6,
+          "actual": 2.6,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1017,
+          "actual": 0.10173959609436178,
+          "pass": true,
+          "relErrorPct": 0.03893421274511812
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.2027,
+          "actual": 0.20270270270270271,
+          "pass": true,
+          "relErrorPct": 0.0013333511113579966
+        }
+      ]
+    },
+    {
+      "id": "gold-6208-radial",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 255.36,
+          "actual": 255.35618299603118,
+          "pass": true,
+          "relErrorPct": 0.0014947540604769295
+        },
+        {
+          "field": "expectedLife",
+          "expected": 2542.82,
+          "actual": 2542.824074074074,
+          "pass": true,
+          "relErrorPct": 0.0001602187364320691
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 5000,
+          "actual": 5000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 3.8,
+          "actual": 3.8,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1004,
+          "actual": 0.10042227679042828,
+          "pass": true,
+          "relErrorPct": 0.022188038275179293
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1538,
+          "actual": 0.15384615384615385,
+          "pass": true,
+          "relErrorPct": 0.03000900270082082
+        }
+      ]
+    },
+    {
+      "id": "gold-6305-combined",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 282.66,
+          "actual": 282.65638121667877,
+          "pass": true,
+          "relErrorPct": 0.0012802601433729492
+        },
+        {
+          "field": "expectedLife",
+          "expected": 2780.58,
+          "actual": 2780.578124999999,
+          "pass": true,
+          "relErrorPct": 0.00006743197465409141
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 4000,
+          "actual": 4000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 2.9,
+          "actual": 2.9,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1017,
+          "actual": 0.10165381748325407,
+          "pass": true,
+          "relErrorPct": 0.045410537606617056
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1709,
+          "actual": 0.17094017094017094,
+          "pass": true,
+          "relErrorPct": 0.023505523798096624
+        }
+      ]
+    },
+    {
+      "id": "gold-nu210-float",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 1804.75,
+          "actual": 1804.748540131494,
+          "pass": true,
+          "relErrorPct": 0.00008089034524947898
+        },
+        {
+          "field": "expectedLife",
+          "expected": 18047.43,
+          "actual": 18047.42853989346,
+          "pass": true,
+          "relErrorPct": 0.000008090384843406682
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 8000,
+          "actual": 8000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 9.75,
+          "actual": 9.75,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1,
+          "actual": 0.10000031506661104,
+          "pass": true,
+          "relErrorPct": 0.00031506661103686273
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1088,
+          "actual": 0.10884353741496598,
+          "pass": true,
+          "relErrorPct": 0.040016006402562865
+        }
+      ]
+    },
+    {
+      "id": "gold-30208-taper",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 12154.38,
+          "actual": 12154.37533111369,
+          "pass": true,
+          "relErrorPct": 0.000038413200092855025
+        },
+        {
+          "field": "expectedLife",
+          "expected": 121543.46,
+          "actual": 121543.46314162486,
+          "pass": true,
+          "relErrorPct": 0.0000025847749052190433
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 6000,
+          "actual": 6000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 12.6761,
+          "actual": 12.67605633802817,
+          "pass": true,
+          "relErrorPct": 0.0003444432580212645
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1,
+          "actual": 0.10000023873724224,
+          "pass": true,
+          "relErrorPct": 0.00023873724223910653
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.0694,
+          "actual": 0.06936416184971098,
+          "pass": true,
+          "relErrorPct": 0.05163998600724437
+        }
+      ]
+    },
+    {
+      "id": "gold-22210-spherical",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 2577.16,
+          "actual": 2577.1640406349306,
+          "pass": true,
+          "relErrorPct": 0.0001567863435249909
+        },
+        {
+          "field": "expectedLife",
+          "expected": 25771.14,
+          "actual": 25771.14032064728,
+          "pass": true,
+          "relErrorPct": 0.0000012442106918645115
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 15000,
+          "actual": 15000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 9.6667,
+          "actual": 9.666666666666666,
+          "pass": true,
+          "relErrorPct": 0.00034482639716180166
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1,
+          "actual": 0.10000194048728851,
+          "pass": true,
+          "relErrorPct": 0.0019404872885070423
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1181,
+          "actual": 0.11811023622047244,
+          "pass": true,
+          "relErrorPct": 0.008667417842881168
+        }
+      ]
+    },
+    {
+      "id": "gold-6205-high-contam",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 133.43,
+          "actual": 133.4326547905261,
+          "pass": true,
+          "relErrorPct": 0.001989650398031983
+        },
+        {
+          "field": "expectedLife",
+          "expected": 1334.07,
+          "actual": 1334.0707818930043,
+          "pass": true,
+          "relErrorPct": 0.00005860959352858562
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 3000,
+          "actual": 3000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 2.6,
+          "actual": 2.6,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1,
+          "actual": 0.10001917184723091,
+          "pass": true,
+          "relErrorPct": 0.01917184723090881
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.2027,
+          "actual": 0.20270270270270271,
+          "pass": true,
+          "relErrorPct": 0.0013333511113579966
+        }
+      ]
+    },
+    {
+      "id": "gold-6206-grease",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 166.26,
+          "actual": 166.25672618303415,
+          "pass": true,
+          "relErrorPct": 0.001969094770747257
+        },
+        {
+          "field": "expectedLife",
+          "expected": 1625.93,
+          "actual": 1625.9333333333334,
+          "pass": true,
+          "relErrorPct": 0.00020501087582677614
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 3500,
+          "actual": 3500,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 3.2,
+          "actual": 3.2,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1023,
+          "actual": 0.10225310151074304,
+          "pass": true,
+          "relErrorPct": 0.04584407551999799
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1724,
+          "actual": 0.1724137931034483,
+          "pass": true,
+          "relErrorPct": 0.008000640051212099
+        }
+      ]
+    },
+    {
+      "id": "gold-nj208-locate",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 939.08,
+          "actual": 939.0843119910751,
+          "pass": true,
+          "relErrorPct": 0.0004591718570347561
+        },
+        {
+          "field": "expectedLife",
+          "expected": 9390.7,
+          "actual": 9390.697497990404,
+          "pass": true,
+          "relErrorPct": 0.000026643483407578688
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 7000,
+          "actual": 7000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 7.8947,
+          "actual": 7.894736842105263,
+          "pass": true,
+          "relErrorPct": 0.0004666688444470065
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1,
+          "actual": 0.10000155070398527,
+          "pass": true,
+          "relErrorPct": 0.0015507039852619142
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1299,
+          "actual": 0.12987012987012986,
+          "pass": true,
+          "relErrorPct": 0.022994711216420192
+        }
+      ]
+    },
+    {
+      "id": "gold-6005-light",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 278.26,
+          "actual": 278.26033976076286,
+          "pass": true,
+          "relErrorPct": 0.00012210190572482595
+        },
+        {
+          "field": "expectedLife",
+          "expected": 2773.92,
+          "actual": 2773.924279835391,
+          "pass": true,
+          "relErrorPct": 0.00015428834974031872
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 1500,
+          "actual": 1500,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 4.3667,
+          "actual": 4.366666666666666,
+          "pass": true,
+          "relErrorPct": 0.0007633529515091879
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1003,
+          "actual": 0.10031288228865254,
+          "pass": true,
+          "relErrorPct": 0.012843757380396963
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.1261,
+          "actual": 0.12605042016806722,
+          "pass": true,
+          "relErrorPct": 0.03931786830512825
+        }
+      ]
+    },
+    {
+      "id": "gold-6205-override-c",
+      "pass": true,
+      "skipped": false,
+      "fields": [
+        {
+          "field": "modifiedLife",
+          "expected": 333.16,
+          "actual": 333.16279082639824,
+          "pass": true,
+          "relErrorPct": 0.0008376835148911231
+        },
+        {
+          "field": "expectedLife",
+          "expected": 3292.18,
+          "actual": 3292.1810699588486,
+          "pass": true,
+          "relErrorPct": 0.00003250001059487463
+        },
+        {
+          "field": "equivalentLoad",
+          "expected": 3000,
+          "actual": 3000,
+          "pass": true,
+          "relErrorPct": 0
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 3.3333,
+          "actual": 3.3333333333333335,
+          "pass": true,
+          "relErrorPct": 0.0010000100001065523
+        },
+        {
+          "field": "aIso",
+          "expected": 0.1012,
+          "actual": 0.10119819771351844,
+          "pass": true,
+          "relErrorPct": 0.0017809154956085894
+        },
+        {
+          "field": "dynamicUtilization",
+          "expected": 0.15,
+          "actual": 0.15,
+          "pass": true,
+          "relErrorPct": 0
+        }
+      ]
+    },
+    {
+      "id": "gold-6205-vendor-skf-pending",
+      "pass": true,
+      "skipped": true,
+      "reason": "pending_vendor_gold",
+      "fields": []
+    },
+    {
+      "id": "gold-30208-vendor-mitcalc-pending",
+      "pass": true,
+      "skipped": true,
+      "reason": "pending_vendor_gold",
+      "fields": []
+    }
+  ]
+}

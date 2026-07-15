@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { categories, type EngineeringModule } from "@/data/modules";
 
 type SidebarProps = {
   activeCategoryId?: string;
-  collapsed?: boolean;
-  onToggle?: () => void;
+  /** Whether the module catalog overlay is open. */
+  drawerOpen?: boolean;
+  onDrawerOpenChange?: (open: boolean) => void;
+  onToggleDrawer?: () => void;
 };
 
 function groupModulesBySubGroup(modules: EngineeringModule[]) {
@@ -29,36 +31,23 @@ function groupModulesBySubGroup(modules: EngineeringModule[]) {
   return groups;
 }
 
-function SidebarToggleButton({
-  collapsed,
-  onToggle,
-  className = "",
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      title={collapsed ? "Expand module sidebar" : "Collapse module sidebar"}
-      aria-label={collapsed ? "Expand module sidebar" : "Collapse module sidebar"}
-      aria-expanded={!collapsed}
-      className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white ${className}`}
-    >
-      {collapsed ? <ChevronRight className="h-4 w-4" aria-hidden /> : <ChevronLeft className="h-4 w-4" aria-hidden />}
-    </button>
-  );
-}
-
-export default function Sidebar({ activeCategoryId, collapsed = false, onToggle }: SidebarProps) {
+export default function Sidebar({
+  activeCategoryId,
+  drawerOpen = false,
+  onDrawerOpenChange,
+  onToggleDrawer,
+}: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
   const [manualOpenCategory, setManualOpenCategory] = useState<{
     pathname: string | null;
     categoryId: string | null;
   } | null>(null);
+
+  const toggleDrawer = () => {
+    if (onToggleDrawer) onToggleDrawer();
+    else onDrawerOpenChange?.(!drawerOpen);
+  };
 
   const visibleCategories = useMemo(
     () =>
@@ -101,6 +90,41 @@ export default function Sidebar({ activeCategoryId, collapsed = false, onToggle 
         .find((module) => pathname?.startsWith(module.route))?.title,
     [pathname, visibleCategories]
   );
+
+  // Close drawer on route change (module navigate).
+  useEffect(() => {
+    onDrawerOpenChange?.(false);
+  }, [pathname, onDrawerOpenChange]);
+
+  // Esc closes drawer.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onDrawerOpenChange?.(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [drawerOpen, onDrawerOpenChange]);
+
+  // Focus the drawer when opened for a11y.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const panel = drawerRef.current;
+    if (!panel) return;
+    const focusable = panel.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable?.focus();
+  }, [drawerOpen]);
+
+  const openCategoryInDrawer = (categoryId: string) => {
+    setManualOpenCategory({ pathname, categoryId });
+    onDrawerOpenChange?.(true);
+  };
+
+  const closeOnNavigate = () => {
+    onDrawerOpenChange?.(false);
+  };
 
   const navContent = (
     <nav className="space-y-3 p-4" aria-label="Engineering modules">
@@ -152,7 +176,7 @@ export default function Sidebar({ activeCategoryId, collapsed = false, onToggle 
                         <Link
                           key={mod.id}
                           href={mod.route}
-                          onClick={() => setMobileOpen(false)}
+                          onClick={closeOnNavigate}
                           className={`block rounded-xl px-3 py-2 text-sm transition ${
                             activeModuleRoute === mod.route
                               ? "bg-gradient-to-r from-cyan-600 to-sky-600 font-medium text-white shadow-sm shadow-cyan-500/20 hover:from-cyan-500 hover:to-sky-500"
@@ -174,12 +198,8 @@ export default function Sidebar({ activeCategoryId, collapsed = false, onToggle 
   );
 
   return (
-    <div
-      className={`products-sidebar-wrap shrink-0 ${
-        collapsed ? "products-sidebar-wrap--collapsed" : "products-sidebar-wrap--expanded"
-      }`}
-    >
-      {/* Mobile: compact bar + slide-over nav */}
+    <div className="products-sidebar-wrap shrink-0">
+      {/* Mobile: compact bar */}
       <div className="products-sidebar-mobile-bar sticky top-0 z-[61] flex items-center justify-between gap-3 border-b border-slate-200/70 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden dark:border-slate-700/60 dark:bg-slate-950/95">
         <div className="min-w-0">
           <div className="text-sm font-semibold text-slate-950 dark:text-white">PhyCalcPro</div>
@@ -191,71 +211,102 @@ export default function Sidebar({ activeCategoryId, collapsed = false, onToggle 
         </div>
         <button
           type="button"
-          onClick={() => setMobileOpen((open) => !open)}
-          aria-label={mobileOpen ? "Close module menu" : "Open module menu"}
-          aria-expanded={mobileOpen}
+          onClick={toggleDrawer}
+          aria-label={drawerOpen ? "Close module menu" : "Open module menu"}
+          aria-expanded={drawerOpen}
+          aria-controls="products-nav-drawer"
           className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-sm dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-200"
         >
-          {mobileOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+          {drawerOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
         </button>
       </div>
 
-      {mobileOpen ? (
+      {/* Desktop: permanent icon rail (always ~4rem, never pushes layout wider) */}
+      <aside
+        className="products-sidebar products-icon-rail hidden lg:flex lg:h-[100dvh] lg:max-h-[100dvh] lg:sticky lg:top-0 lg:z-[60] lg:isolate lg:w-full lg:flex-col lg:items-center lg:gap-1 lg:overflow-y-auto lg:border-r lg:border-slate-200/70 lg:bg-white/95 lg:py-4 lg:shadow-sm lg:backdrop-blur-md dark:lg:border-slate-700/60 dark:lg:bg-slate-950/95"
+        aria-label="Module categories"
+      >
+        <Link
+          href="/products"
+          title="PhyCalcPro"
+          className="mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
+        >
+          PC
+        </Link>
+        <button
+          type="button"
+          onClick={toggleDrawer}
+          title={drawerOpen ? "Close module catalog" : "Open module catalog"}
+          aria-label={drawerOpen ? "Close module catalog" : "Open module catalog"}
+          aria-expanded={drawerOpen}
+          aria-controls="products-nav-drawer"
+          className="mb-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
+        >
+          {drawerOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
+        </button>
+        <div className="flex w-full flex-col items-center gap-1 px-1.5">
+          {visibleCategories.map((cat) => {
+            const Icon = cat.icon;
+            const isActive = activeCategoryFromPath === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                title={cat.title}
+                aria-label={cat.title}
+                aria-current={isActive ? "true" : undefined}
+                onClick={() => openCategoryInDrawer(cat.id)}
+                className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
+                  isActive
+                    ? "bg-gradient-to-br from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-500/20"
+                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+                }`}
+              >
+                <Icon className="h-[1.125rem] w-[1.125rem]" aria-hidden />
+              </button>
+            );
+          })}
+        </div>
+      </aside>
+
+      {/* Overlay backdrop + drawer (mobile + desktop) */}
+      {drawerOpen ? (
         <div
-          className="fixed inset-0 z-[59] bg-slate-950/40 backdrop-blur-[2px] lg:hidden"
-          onClick={() => setMobileOpen(false)}
+          className="products-nav-backdrop fixed inset-0 z-[59] bg-slate-950/40 backdrop-blur-[2px]"
+          onClick={() => onDrawerOpenChange?.(false)}
           aria-hidden
         />
       ) : null}
 
-      <aside
-        className={`products-sidebar sticky top-0 z-[60] isolate shrink-0 self-start overflow-hidden border-slate-200/70 bg-white/95 text-slate-950 shadow-sm backdrop-blur-md transition-[width] duration-300 ease-out dark:border-slate-700/60 dark:bg-slate-950/95 dark:text-slate-100 ${
-          collapsed ? "products-sidebar--collapsed" : "products-sidebar--expanded"
-        } ${
-          mobileOpen
-            ? "fixed inset-y-0 left-0 z-[60] w-[min(100vw,20rem)] overflow-y-auto border-r shadow-xl lg:static lg:shadow-sm"
-            : "hidden lg:block lg:h-[100dvh] lg:max-h-[100dvh] lg:overflow-y-auto lg:border-r"
+      <div
+        ref={drawerRef}
+        id="products-nav-drawer"
+        role="dialog"
+        aria-modal={drawerOpen}
+        aria-label="Engineering modules"
+        aria-hidden={!drawerOpen}
+        className={`products-nav-drawer fixed inset-y-0 left-0 z-[60] flex w-[min(100vw,20rem)] flex-col overflow-hidden border-r border-slate-200/70 bg-white/95 text-slate-950 shadow-xl backdrop-blur-md transition-transform duration-300 ease-out dark:border-slate-700/60 dark:bg-slate-950/95 dark:text-slate-100 lg:left-16 ${
+          drawerOpen ? "translate-x-0" : "pointer-events-none -translate-x-full"
         }`}
+        hidden={!drawerOpen}
       >
-        {/* Expanded header */}
-        <div
-          className={`border-b border-slate-200/70 bg-slate-50/90 px-4 py-5 dark:border-slate-700/60 dark:bg-slate-900/60 ${
-            collapsed ? "lg:hidden" : ""
-          }`}
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-lg font-semibold tracking-tight text-slate-950 dark:text-white">PhyCalcPro</h1>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Engineering modules</p>
-            </div>
-            {onToggle ? (
-              <SidebarToggleButton
-                collapsed={collapsed}
-                onToggle={onToggle}
-                className="hidden lg:inline-flex"
-              />
-            ) : null}
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200/70 bg-slate-50/90 px-4 py-5 dark:border-slate-700/60 dark:bg-slate-900/60">
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold tracking-tight text-slate-950 dark:text-white">PhyCalcPro</h1>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Engineering modules</p>
           </div>
-        </div>
-
-        {/* Collapsed rail (desktop) */}
-        <div
-          className={`hidden h-[100dvh] flex-col items-center border-b border-slate-200/70 py-4 lg:flex ${
-            collapsed ? "lg:flex" : "lg:hidden"
-          }`}
-        >
-          <Link
-            href="/products"
-            title="PhyCalcPro"
-            className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
+          <button
+            type="button"
+            onClick={() => onDrawerOpenChange?.(false)}
+            title="Close module catalog"
+            aria-label="Close module catalog"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
           >
-            PC
-          </Link>
-          {onToggle ? <SidebarToggleButton collapsed={collapsed} onToggle={onToggle} /> : null}
+            <X className="h-4 w-4" aria-hidden />
+          </button>
         </div>
-
-        <div className={collapsed ? "lg:hidden" : ""}>{navContent}</div>
-      </aside>
+        <div className="min-h-0 flex-1 overflow-y-auto">{navContent}</div>
+      </div>
     </div>
   );
 }

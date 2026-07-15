@@ -14,6 +14,7 @@
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
     "generate:product-seo-layouts": "node scripts/generate-product-seo-layouts.mjs",
     "test:verification": "tsx scripts/run-verification.ts && tsx scripts/validate-maturity-gates.ts",
+    "test:bearings-gold": "tsx scripts/run-bearings-gold.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

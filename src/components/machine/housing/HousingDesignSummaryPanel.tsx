@@ -43,6 +43,18 @@ export default function HousingDesignSummaryPanel({ preview, committed = false }
         preview.bodySafetyFactor < 1 ? "fail" : preview.bodySafetyFactor < 1.5 ? "warn" : "ok",
     },
     {
+      label: "Body util.",
+      value: formatDisplayNumber(preview.bodyUtilization),
+      status:
+        preview.bodyUtilization > 1 ? "fail" : preview.bodyUtilization > 0.67 ? "warn" : "ok",
+    },
+    {
+      label: "Bolt util.",
+      value: formatDisplayNumber(preview.boltUtilization),
+      status:
+        preview.boltUtilization > 1 ? "fail" : preview.boltUtilization > 0.85 ? "warn" : "ok",
+    },
+    {
       label: "Bolt T",
       value: `${formatDisplayNumber(preview.boltTensionPerBolt / 1000)} kN`,
       status: "ok",

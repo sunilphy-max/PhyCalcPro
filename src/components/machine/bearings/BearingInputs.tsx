@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
@@ -36,6 +36,11 @@ import BearingInputTabs, { type BearingInputTabId } from "@/components/machine/b
 import BearingMountingSystem, { type BearingMountingSystemId } from "@/components/machine/bearings/BearingMountingSystem";
 import BearingArrangementGuide from "@/components/machine/bearings/BearingArrangementGuide";
 import BearingCatalogDetail from "@/components/machine/bearings/BearingCatalogDetail";
+import BearingSystemWizard, {
+  BearingSystemWizardButton,
+  type BearingSystemWizardValues,
+} from "@/components/machine/bearings/BearingSystemWizard";
+import type { BearingConfig } from "@/lib/machine/bearings/types";
 import {
   bearingCatalog,
   findBearing,
@@ -50,10 +55,12 @@ import {
   SEAL_TYPE_LABELS,
   type BearingUnitSystem,
 } from "@/data/catalogs/bearingCatalog";
+import { toBase } from "@/lib/units/conversions";
 
 export type LoadSpectrumUiStep = {
   loadPercent: number;
   durationPercent: number;
+  speedRpm?: number;
 };
 
 type Props = {
@@ -134,6 +141,25 @@ type Props = {
   rollingElementMaterial: RollingElementMaterial;
   setRollingElementMaterial: (v: RollingElementMaterial) => void;
   stationRadialLoadsN?: number[];
+  stationSlopesMrad?: number[];
+  onSwapStations?: () => void;
+  handoffAxialWarning?: boolean;
+  ratingsOverrideEnabled?: boolean;
+  setRatingsOverrideEnabled?: (v: boolean) => void;
+  overrideC?: number;
+  setOverrideC?: (v: number) => void;
+  overrideC0?: number;
+  setOverrideC0?: (v: number) => void;
+  overridePu?: number;
+  setOverridePu?: (v: number) => void;
+  overrideNote?: string;
+  setOverrideNote?: (v: string) => void;
+  innerRingTempC?: number | "";
+  setInnerRingTempC?: (v: number | "") => void;
+  outerRingTempC?: number | "";
+  setOuterRingTempC?: (v: number | "") => void;
+  systemWizardSizingConfig?: BearingConfig;
+  onSystemWizardApply?: (values: BearingSystemWizardValues) => void;
   workflowMode?: DesignWorkflowMode;
   mountingSystem?: BearingMountingSystemId;
   onMountingSystemChange?: (id: BearingMountingSystemId) => void;
@@ -230,6 +256,25 @@ export default function BearingInputs({
   rollingElementMaterial,
   setRollingElementMaterial,
   stationRadialLoadsN,
+  stationSlopesMrad,
+  onSwapStations,
+  handoffAxialWarning = false,
+  ratingsOverrideEnabled = false,
+  setRatingsOverrideEnabled,
+  overrideC = 0,
+  setOverrideC,
+  overrideC0 = 0,
+  setOverrideC0,
+  overridePu = 0,
+  setOverridePu,
+  overrideNote = "",
+  setOverrideNote,
+  innerRingTempC = "",
+  setInnerRingTempC,
+  outerRingTempC = "",
+  setOuterRingTempC,
+  systemWizardSizingConfig,
+  onSystemWizardApply,
   workflowMode,
   mountingSystem = "single",
   onMountingSystemChange,
@@ -240,6 +285,14 @@ export default function BearingInputs({
   projectName,
   setProjectName,
 }: Props) {
+  const [ratingsPanelOpen, setRatingsPanelOpen] = useState(ratingsOverrideEnabled);
+  const [wizardOpen, setWizardOpen] = useState(false);
+
+  const isLocatingSystem =
+    mountingSystem === "locating_dg_floating_nu" ||
+    mountingSystem === "locating_ac_floating_nu" ||
+    mountingSystem === "duplex_angular";
+
   const manufacturerPool = useMemo(
     () => filterCatalog(bearingCatalog, { manufacturer, applicationProfile, unitSystem: unitSystemFilter }),
     [manufacturer, applicationProfile, unitSystemFilter]
@@ -297,11 +350,18 @@ export default function BearingInputs({
               description="Locating + floating pairs (MITCalc / SKF shaft design step 2)."
             >
               {onMountingSystemChange ? (
-                <BearingMountingSystem
-                  value={mountingSystem}
-                  onChange={onMountingSystemChange}
-                  onSuggestType={onSuggestBearingType}
-                />
+                <>
+                  <BearingMountingSystem
+                    value={mountingSystem}
+                    onChange={onMountingSystemChange}
+                    onSuggestType={onSuggestBearingType}
+                  />
+                  {isLocatingSystem && onSystemWizardApply && systemWizardSizingConfig ? (
+                    <div className="mt-3">
+                      <BearingSystemWizardButton onClick={() => setWizardOpen(true)} />
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </CalculatorFormSection>
 
@@ -404,12 +464,13 @@ export default function BearingInputs({
               </label>
               {useVariableLoad ? (
                 <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_1fr] gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <span>Load (% of Fr/Fa)</span>
                     <span>Duration (%)</span>
+                    <span className="col-span-2">Speed (rpm, optional)</span>
                   </div>
                   {loadSpectrumSteps.map((step, index) => (
-                    <div key={index} className="grid min-w-0 grid-cols-2 gap-2">
+                    <div key={index} className="grid min-w-0 grid-cols-[1fr_1fr_1fr_auto] gap-2">
                       <input
                         type="number"
                         min={10}
@@ -436,13 +497,57 @@ export default function BearingInputs({
                         className={calculatorNumberInputClass}
                         aria-label={`Load step ${index + 1} duration percent`}
                       />
+                      <input
+                        type="number"
+                        min={0}
+                        value={step.speedRpm ?? ""}
+                        placeholder={String(speed)}
+                        onChange={(event) => {
+                          const next = [...loadSpectrumSteps];
+                          const raw = event.target.value;
+                          next[index] = {
+                            ...step,
+                            speedRpm: raw === "" ? undefined : Number(raw),
+                          };
+                          setLoadSpectrumSteps(next);
+                        }}
+                        className={calculatorNumberInputClass}
+                        aria-label={`Load step ${index + 1} speed rpm`}
+                      />
+                      <button
+                        type="button"
+                        disabled={loadSpectrumSteps.length <= 1}
+                        onClick={() => {
+                          setLoadSpectrumSteps(loadSpectrumSteps.filter((_, i) => i !== index));
+                        }}
+                        className="rounded-lg border border-slate-200 px-2 text-xs text-slate-500 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-600 dark:hover:bg-slate-800"
+                        aria-label={`Remove step ${index + 1}`}
+                      >
+                        −
+                      </button>
                     </div>
                   ))}
-                  <p
-                    className={`text-xs ${Math.abs(spectrumDurationTotal - 100) > 1 ? "text-amber-700 dark:text-amber-400" : "text-slate-500 dark:text-slate-400"}`}
-                  >
-                    Duration total: {spectrumDurationTotal}% (normalized on calculate)
-                  </p>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      disabled={loadSpectrumSteps.length >= 12}
+                      onClick={() =>
+                        setLoadSpectrumSteps([
+                          ...loadSpectrumSteps,
+                          { loadPercent: 100, durationPercent: 10 },
+                        ])
+                      }
+                      className="rounded-lg border border-cyan-300/80 bg-cyan-50 px-2.5 py-1 text-xs font-semibold text-cyan-800 hover:bg-cyan-100 disabled:opacity-40 dark:border-cyan-800/60 dark:bg-cyan-950/40 dark:text-cyan-100"
+                    >
+                      + Add step
+                    </button>
+                    <p
+                      className={`text-xs ${Math.abs(spectrumDurationTotal - 100) > 1 ? "text-amber-700 dark:text-amber-400" : "text-slate-500 dark:text-slate-400"}`}
+                    >
+                      {loadSpectrumSteps.length} step{loadSpectrumSteps.length === 1 ? "" : "s"} · duration{" "}
+                      {spectrumDurationTotal}% (normalized on calculate)
+                    </p>
+                  </div>
                 </div>
               ) : null}
             </CalculatorFormSection>
@@ -539,10 +644,26 @@ export default function BearingInputs({
                 description="Floating NU must accommodate shaft–housing differential growth over the bearing span."
               >
                 {stationRadialLoadsN && stationRadialLoadsN.length >= 2 ? (
-                  <p className="mb-2 rounded-lg border border-emerald-200/70 bg-emerald-50/60 px-2.5 py-1.5 text-[11px] text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-100">
-                    Shaft FBD reactions applied: Fr₀ = {(stationRadialLoadsN[0]! / 1000).toFixed(2)}{" "}
-                    kN (locating), Fr₁ = {(stationRadialLoadsN[1]! / 1000).toFixed(2)} kN (floating).
-                  </p>
+                  <div className="mb-2 space-y-2">
+                    <p className="rounded-lg border border-emerald-200/70 bg-emerald-50/60 px-2.5 py-1.5 text-[11px] text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-100">
+                      Shaft FBD reactions applied: Fr₀ = {(stationRadialLoadsN[0]! / 1000).toFixed(2)}{" "}
+                      kN (locating), Fr₁ = {(stationRadialLoadsN[1]! / 1000).toFixed(2)} kN (floating).
+                    </p>
+                    {handoffAxialWarning ? (
+                      <p className="rounded-lg border border-amber-200/70 bg-amber-50/60 px-2.5 py-1.5 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+                        Axial Fa not from planar FEM — enter thrust manually for locating bearing check.
+                      </p>
+                    ) : null}
+                    {onSwapStations ? (
+                      <button
+                        type="button"
+                        onClick={onSwapStations}
+                        className="rounded-md border border-violet-300/80 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-900 hover:bg-violet-100 dark:border-violet-800/60 dark:bg-violet-950/40 dark:text-violet-100"
+                      >
+                        Swap locate ↔ float
+                      </button>
+                    ) : null}
+                  </div>
                 ) : (
                   <p className="mb-2 text-[11px] text-slate-500">
                     Without shaft handoff, radial load is split Fr/2 per station. Run Shaft Analysis to
@@ -645,6 +766,38 @@ export default function BearingInputs({
                         className={calculatorNumberInputClass}
                       />
                     </div>
+                    {setInnerRingTempC ? (
+                      <div className="min-w-0 space-y-1.5">
+                        <label className={calculatorFieldLabelClass}>Inner ring T (°C, optional)</label>
+                        <input
+                          type="number"
+                          value={innerRingTempC}
+                          placeholder={String(operatingTempC)}
+                          onChange={(event) =>
+                            setInnerRingTempC(
+                              event.target.value === "" ? "" : Number(event.target.value)
+                            )
+                          }
+                          className={calculatorNumberInputClass}
+                        />
+                      </div>
+                    ) : null}
+                    {setOuterRingTempC ? (
+                      <div className="min-w-0 space-y-1.5">
+                        <label className={calculatorFieldLabelClass}>Outer ring T (°C, optional)</label>
+                        <input
+                          type="number"
+                          value={outerRingTempC}
+                          placeholder={String(operatingTempC)}
+                          onChange={(event) =>
+                            setOuterRingTempC(
+                              event.target.value === "" ? "" : Number(event.target.value)
+                            )
+                          }
+                          className={calculatorNumberInputClass}
+                        />
+                      </div>
+                    ) : null}
                     <CalculatorSelectField
                       label="Contamination factor eC (ηc)"
                       value={contamination}
@@ -818,6 +971,77 @@ export default function BearingInputs({
               </CalculatorSelectField>
 
               {selected ? <BearingCatalogDetail entry={selected} /> : null}
+
+              {setRatingsOverrideEnabled && setOverrideC && setOverrideC0 && setOverridePu && setOverrideNote ? (
+                <div className="mt-3 overflow-hidden rounded-xl border border-slate-200/80 dark:border-slate-700/60">
+                  <button
+                    type="button"
+                    onClick={() => setRatingsPanelOpen((v) => !v)}
+                    className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800/50"
+                    aria-expanded={ratingsPanelOpen}
+                  >
+                    <span>Catalog ratings override</span>
+                    <span className="text-xs text-slate-400">{ratingsOverrideEnabled ? "On" : "Off"}</span>
+                  </button>
+                  {ratingsPanelOpen ? (
+                    <div className="space-y-3 border-t border-slate-200/80 px-3 py-3 dark:border-slate-700/60">
+                      <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                        <input
+                          type="checkbox"
+                          checked={ratingsOverrideEnabled}
+                          onChange={(e) => setRatingsOverrideEnabled(e.target.checked)}
+                          className="h-4 w-4 rounded border-slate-300 text-cyan-600"
+                        />
+                        Use user-supplied C / C₀ / Pu instead of catalog
+                      </label>
+                      {ratingsOverrideEnabled ? (
+                        <div className={calculatorInputGridClass}>
+                          <div className="min-w-0 space-y-1.5">
+                            <label className={calculatorFieldLabelClass}>C dynamic (N)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={overrideC}
+                              onChange={(e) => setOverrideC(Number(e.target.value))}
+                              className={calculatorNumberInputClass}
+                            />
+                          </div>
+                          <div className="min-w-0 space-y-1.5">
+                            <label className={calculatorFieldLabelClass}>C₀ static (N)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={overrideC0}
+                              onChange={(e) => setOverrideC0(Number(e.target.value))}
+                              className={calculatorNumberInputClass}
+                            />
+                          </div>
+                          <div className="min-w-0 space-y-1.5">
+                            <label className={calculatorFieldLabelClass}>Pu fatigue (N)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={overridePu}
+                              onChange={(e) => setOverridePu(Number(e.target.value))}
+                              className={calculatorNumberInputClass}
+                            />
+                          </div>
+                          <div className="col-span-full min-w-0 space-y-1.5">
+                            <label className={calculatorFieldLabelClass}>Source note</label>
+                            <input
+                              type="text"
+                              value={overrideNote}
+                              onChange={(e) => setOverrideNote(e.target.value)}
+                              placeholder="e.g. OEM datasheet Rev B"
+                              className={calculatorTextInputClass}
+                            />
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </CalculatorFormSection>
 
             {(mountingSystem === "locating_dg_floating_nu" ||
@@ -936,6 +1160,30 @@ export default function BearingInputs({
       ) : null}
 
       <BearingInputTabs>{renderTab}</BearingInputTabs>
+
+      {wizardOpen && onSystemWizardApply && systemWizardSizingConfig ? (
+        <BearingSystemWizard
+          open={wizardOpen}
+          onClose={() => setWizardOpen(false)}
+          values={{
+            mountingSystem,
+            designation,
+            floatingDesignation,
+            stationRadialLoadsN: stationRadialLoadsN ?? [
+              toBase(radialLoad, "force", radialUnit) * shockFactor * 0.5,
+              toBase(radialLoad, "force", radialUnit) * shockFactor * 0.5,
+            ],
+            axialLoad: toBase(axialLoad, "force", axialUnit) * shockFactor,
+            bearingSpanMm,
+            availableFloatMm,
+          }}
+          sizingConfig={systemWizardSizingConfig}
+          manufacturer={manufacturer}
+          onMountingSystemChange={(id) => onMountingSystemChange?.(id)}
+          onSuggestBearingType={onSuggestBearingType}
+          onApply={onSystemWizardApply}
+        />
+      ) : null}
     </CalculatorInputPanel>
   );
 }

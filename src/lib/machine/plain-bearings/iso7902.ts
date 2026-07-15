@@ -1,9 +1,12 @@
 /**
- * ISO 7902 journal bearing screening with Raimondi–Boyd ε vs Sommerfeld S (l/d = 1).
+ * ISO 7902 journal bearing screening with Raimondi–Boyd ε vs Sommerfeld S.
+ * Tables for L/D ∈ {0.25, 0.5, 0.75, 1.0, 1.5} with linear interpolation in L/D.
  */
 
-/** Sommerfeld S → eccentricity ratio ε (Raimondi–Boyd, full journal, l/d ≈ 1). */
-const RAIMONDI_BOYD: [number, number][] = [
+/** Sommerfeld S → eccentricity ratio ε (full journal screening). */
+type Curve = readonly [number, number][];
+
+const RB_LD_1: Curve = [
   [0.01, 0.19],
   [0.02, 0.26],
   [0.04, 0.34],
@@ -19,19 +22,53 @@ const RAIMONDI_BOYD: [number, number][] = [
   [30.0, 0.98],
 ];
 
-export function eccentricityFromSommerfeld(S: number): number {
+/** Scale ε toward 1 for shorter bearings at the same S (screening). */
+function scaleCurve(base: Curve, towardOne: number): Curve {
+  return base.map(([s, e]) => [s, Math.min(0.99, e + (1 - e) * towardOne)] as [number, number]);
+}
+
+const RB_BY_LD: { ld: number; curve: Curve }[] = [
+  { ld: 0.25, curve: scaleCurve(RB_LD_1, 0.35) },
+  { ld: 0.5, curve: scaleCurve(RB_LD_1, 0.2) },
+  { ld: 0.75, curve: scaleCurve(RB_LD_1, 0.08) },
+  { ld: 1.0, curve: RB_LD_1 },
+  { ld: 1.5, curve: scaleCurve(RB_LD_1, -0.12) },
+];
+
+function interpolateCurve(curve: Curve, S: number): number {
   if (S <= 0) return 0;
-  const maxS = RAIMONDI_BOYD[RAIMONDI_BOYD.length - 1]![0];
+  const maxS = curve[curve.length - 1]![0];
   if (S >= maxS) return 0.99;
-  for (let i = 0; i < RAIMONDI_BOYD.length - 1; i++) {
-    const [s0, e0] = RAIMONDI_BOYD[i]!;
-    const [s1, e1] = RAIMONDI_BOYD[i + 1]!;
+  for (let i = 0; i < curve.length - 1; i++) {
+    const [s0, e0] = curve[i]!;
+    const [s1, e1] = curve[i + 1]!;
     if (S >= s0 && S <= s1) {
       const t = (S - s0) / (s1 - s0);
       return e0 + t * (e1 - e0);
     }
   }
   return 0.5;
+}
+
+/**
+ * Eccentricity from Sommerfeld with optional L/D (default 1.0 for backward compatibility).
+ */
+export function eccentricityFromSommerfeld(S: number, lengthOverDiameter = 1): number {
+  const ld = Math.min(Math.max(lengthOverDiameter, 0.25), 1.5);
+  let lo = RB_BY_LD[0]!;
+  let hi = RB_BY_LD[RB_BY_LD.length - 1]!;
+  for (let i = 0; i < RB_BY_LD.length - 1; i++) {
+    if (ld >= RB_BY_LD[i]!.ld && ld <= RB_BY_LD[i + 1]!.ld) {
+      lo = RB_BY_LD[i]!;
+      hi = RB_BY_LD[i + 1]!;
+      break;
+    }
+  }
+  const e0 = interpolateCurve(lo.curve, S);
+  const e1 = interpolateCurve(hi.curve, S);
+  if (hi.ld === lo.ld) return e0;
+  const t = (ld - lo.ld) / (hi.ld - lo.ld);
+  return Math.min(0.99, Math.max(0, e0 + t * (e1 - e0)));
 }
 
 /** ISO 7902 Sommerfeld number for full journal (metric SI). */

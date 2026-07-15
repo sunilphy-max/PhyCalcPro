@@ -34,12 +34,13 @@ describe("buildBearingReportSections", () => {
       narrative: "Deep groove selected for life and cost.",
       reasons: ["Life SF adequate", "Cost Low"],
       costBand: "Low",
+      alternativeNotes: [],
     });
     const ids = sections.map((s) => s.id);
     expect(ids).toContain("design_summary");
     expect(ids).toContain("domain_factors");
     expect(ids).toContain("recommendation");
     const iso = sections.find((s) => s.id === "domain_factors");
-    expect(iso?.rows.some((r) => String(r.parameter).includes("aSKF"))).toBe(true);
+    expect(iso?.rows?.some((r) => String(r.parameter).includes("aSKF"))).toBe(true);
   });
 });

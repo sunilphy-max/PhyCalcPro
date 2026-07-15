@@ -60,6 +60,8 @@ import {
   type BearingUnitSystem,
 } from "@/data/catalogs/bearingCatalog";
 import type { BearingCopilotApplyPayload } from "@/lib/copilot/bearingCopilot";
+import type { BearingSystemWizardValues } from "@/components/machine/bearings/BearingSystemWizard";
+import type { BearingConfig } from "@/lib/machine/bearings/types";
 
 type BearingProjectData = {
   radialLoad: number;
@@ -99,6 +101,13 @@ type BearingProjectData = {
   lifeMethod?: BearingLifeMethod;
   misalignmentAngleMrad?: number | "";
   rollingElementMaterial?: RollingElementMaterial;
+  ratingsOverrideEnabled?: boolean;
+  overrideC?: number;
+  overrideC0?: number;
+  overridePu?: number;
+  overrideNote?: string;
+  innerRingTempC?: number | "";
+  outerRingTempC?: number | "";
   /** @deprecated migrated to loadSpectrumSteps */
   variableLoadPercent?: number;
   /** @deprecated migrated to loadSpectrumSteps */
@@ -117,6 +126,42 @@ const LEGACY_MATERIAL: BearingMaterial = {
   staticRatingFactor: 15000,
   allowableLife: 10000,
 };
+
+function buildLoadSpectrum(
+  useVariableLoad: boolean,
+  loadSpectrumSteps: LoadSpectrumUiStep[],
+  Fr: number,
+  Fa: number
+): LoadSpectrumStep[] | undefined {
+  if (!useVariableLoad) return undefined;
+  const totalDuration = loadSpectrumSteps.reduce(
+    (sum, step) => sum + Math.max(step.durationPercent, 0),
+    0
+  );
+  return loadSpectrumSteps.map((step) => ({
+    durationFraction: Math.max(step.durationPercent, 0) / Math.max(totalDuration, 1),
+    radialLoad: Fr * (step.loadPercent / 100),
+    axialLoad: Fa * (step.loadPercent / 100),
+    ...(step.speedRpm != null && step.speedRpm > 0 ? { speedRpm: step.speedRpm } : {}),
+  }));
+}
+
+function buildRatingsOverride(
+  enabled: boolean,
+  overrideC: number,
+  overrideC0: number,
+  overridePu: number,
+  overrideNote: string
+): BearingConfig["ratingsOverride"] | undefined {
+  if (!enabled) return undefined;
+  return {
+    enabled: true,
+    dynamicLoadRatingN: overrideC,
+    staticLoadRatingN: overrideC0,
+    fatigueLoadLimitN: overridePu,
+    sourceNote: overrideNote || undefined,
+  };
+}
 
 
 export default function Page() {
@@ -164,6 +209,14 @@ export default function Page() {
     useState<RollingElementMaterial>("steel");
   const [stationRadialLoadsN, setStationRadialLoadsN] = useState<number[] | undefined>(undefined);
   const [stationSlopesMrad, setStationSlopesMrad] = useState<number[] | undefined>(undefined);
+  const [ratingsOverrideEnabled, setRatingsOverrideEnabled] = useState(false);
+  const [overrideC, setOverrideC] = useState(14000);
+  const [overrideC0, setOverrideC0] = useState(7800);
+  const [overridePu, setOverridePu] = useState(630);
+  const [overrideNote, setOverrideNote] = useState("");
+  const [innerRingTempC, setInnerRingTempC] = useState<number | "">("");
+  const [outerRingTempC, setOuterRingTempC] = useState<number | "">("");
+  const [handoffAxialWarning, setHandoffAxialWarning] = useState(false);
   const [result, setResult] = useState<BearingResult | null>(null);
   const [diagnosis, setDiagnosis] = useState<BearingDiagnosis | null>(null);
   const { projectName, setProjectName, saving, savedProjects, saveProject } =
@@ -184,15 +237,7 @@ export default function Page() {
 
     let loadSpectrum: LoadSpectrumStep[] | undefined;
     if (useVariableLoad) {
-      const totalDuration = loadSpectrumSteps.reduce(
-        (sum, step) => sum + Math.max(step.durationPercent, 0),
-        0
-      );
-      loadSpectrum = loadSpectrumSteps.map((step) => ({
-        durationFraction: Math.max(step.durationPercent, 0) / Math.max(totalDuration, 1),
-        radialLoad: Fr * (step.loadPercent / 100),
-        axialLoad: Fa * (step.loadPercent / 100),
-      }));
+      loadSpectrum = buildLoadSpectrum(useVariableLoad, loadSpectrumSteps, Fr, Fa);
     }
 
     const config = {
@@ -219,6 +264,15 @@ export default function Page() {
       contamination: lubricantType === "none" ? undefined : contamination,
       clearance: clearanceOverride || catalogEntry?.clearance,
       loadSpectrum,
+      ratingsOverride: buildRatingsOverride(
+        ratingsOverrideEnabled,
+        overrideC,
+        overrideC0,
+        overridePu,
+        overrideNote
+      ),
+      innerRingTempC: innerRingTempC === "" ? undefined : innerRingTempC,
+      outerRingTempC: outerRingTempC === "" ? undefined : outerRingTempC,
       manufacturer,
       applicationProfile,
       arrangement,
@@ -409,6 +463,13 @@ export default function Page() {
     if (p.lifeMethod) setLifeMethod(p.lifeMethod);
     if (p.misalignmentAngleMrad !== undefined) setMisalignmentAngleMrad(p.misalignmentAngleMrad);
     if (p.rollingElementMaterial) setRollingElementMaterial(p.rollingElementMaterial);
+    if (p.ratingsOverrideEnabled != null) setRatingsOverrideEnabled(p.ratingsOverrideEnabled);
+    if (p.overrideC != null) setOverrideC(p.overrideC);
+    if (p.overrideC0 != null) setOverrideC0(p.overrideC0);
+    if (p.overridePu != null) setOverridePu(p.overridePu);
+    if (p.overrideNote != null) setOverrideNote(p.overrideNote);
+    if (p.innerRingTempC !== undefined) setInnerRingTempC(p.innerRingTempC);
+    if (p.outerRingTempC !== undefined) setOuterRingTempC(p.outerRingTempC);
   };
 
   const syncDesignation = (
@@ -582,6 +643,15 @@ export default function Page() {
           operatingTempC,
           contamination: lubricantType === "none" ? undefined : contamination,
           clearance: clearanceOverride || entry.clearance,
+          ratingsOverride: buildRatingsOverride(
+            ratingsOverrideEnabled,
+            overrideC,
+            overrideC0,
+            overridePu,
+            overrideNote
+          ),
+          innerRingTempC: innerRingTempC === "" ? undefined : innerRingTempC,
+          outerRingTempC: outerRingTempC === "" ? undefined : outerRingTempC,
           manufacturer: entry.manufacturer,
           lifeMethod,
           misalignmentAngleMrad:
@@ -621,6 +691,13 @@ export default function Page() {
     misalignmentAngleMrad,
     stationSlopesMrad,
     rollingElementMaterial,
+    ratingsOverrideEnabled,
+    overrideC,
+    overrideC0,
+    overridePu,
+    overrideNote,
+    innerRingTempC,
+    outerRingTempC,
   ]);
 
   const mountedBom = useMemo(() => {
@@ -648,15 +725,7 @@ export default function Page() {
 
     let loadSpectrum: LoadSpectrumStep[] | undefined;
     if (useVariableLoad) {
-      const totalDuration = loadSpectrumSteps.reduce(
-        (sum, step) => sum + Math.max(step.durationPercent, 0),
-        0
-      );
-      loadSpectrum = loadSpectrumSteps.map((step) => ({
-        durationFraction: Math.max(step.durationPercent, 0) / Math.max(totalDuration, 1),
-        radialLoad: Fr * (step.loadPercent / 100),
-        axialLoad: Fa * (step.loadPercent / 100),
-      }));
+      loadSpectrum = buildLoadSpectrum(useVariableLoad, loadSpectrumSteps, Fr, Fa);
     }
 
     try {
@@ -686,6 +755,15 @@ export default function Page() {
           contamination: lubricantType === "none" ? undefined : contamination,
           clearance: clearanceOverride || catalogEntry?.clearance,
           loadSpectrum,
+          ratingsOverride: buildRatingsOverride(
+            ratingsOverrideEnabled,
+            overrideC,
+            overrideC0,
+            overridePu,
+            overrideNote
+          ),
+          innerRingTempC: innerRingTempC === "" ? undefined : innerRingTempC,
+          outerRingTempC: outerRingTempC === "" ? undefined : outerRingTempC,
           manufacturer,
           applicationProfile,
           arrangement,
@@ -760,6 +838,13 @@ export default function Page() {
     misalignmentAngleMrad,
     stationSlopesMrad,
     rollingElementMaterial,
+    ratingsOverrideEnabled,
+    overrideC,
+    overrideC0,
+    overridePu,
+    overrideNote,
+    innerRingTempC,
+    outerRingTempC,
   ]);
 
   const deferredLivePreview = useDeferredValue(livePreviewSource);
@@ -767,6 +852,73 @@ export default function Page() {
   const applyDesignation = useCallback((next: string) => {
     if (findBearing(next)) setDesignation(next);
   }, []);
+
+  const swapStations = useCallback(() => {
+    if (!stationRadialLoadsN || stationRadialLoadsN.length < 2) return;
+    setStationRadialLoadsN([stationRadialLoadsN[1]!, stationRadialLoadsN[0]!]);
+    if (stationSlopesMrad && stationSlopesMrad.length >= 2) {
+      setStationSlopesMrad([stationSlopesMrad[1]!, stationSlopesMrad[0]!]);
+    }
+  }, [stationRadialLoadsN, stationSlopesMrad]);
+
+  const systemWizardSizingConfig = useMemo((): BearingConfig => {
+    const catalogEntry = findBearing(designation);
+    const Fr = toBase(radialLoad, "force", radialUnit) * shockFactor;
+    const Fa = toBase(axialLoad, "force", axialUnit) * shockFactor;
+    const effectiveLifeHours =
+      lifeInputMode === "hours"
+        ? lifeHours
+        : lifeRevolutions / (60 * Math.max(speed, 1));
+    return {
+      radialLoad: Fr,
+      axialLoad: Fa,
+      speed,
+      lifeHours: effectiveLifeHours,
+      safetyFactor,
+      bearingType: catalogEntry?.type ?? bearingType,
+      designation: catalogEntry?.designation ?? designation,
+      boreMm: catalogEntry?.boreMm ?? (maxBoreMm === "" ? undefined : maxBoreMm),
+      manufacturer,
+      applicationProfile,
+      material: LEGACY_MATERIAL,
+    };
+  }, [
+    designation,
+    radialLoad,
+    radialUnit,
+    axialLoad,
+    axialUnit,
+    shockFactor,
+    speed,
+    lifeInputMode,
+    lifeHours,
+    lifeRevolutions,
+    safetyFactor,
+    bearingType,
+    maxBoreMm,
+    manufacturer,
+    applicationProfile,
+  ]);
+
+  const applySystemWizard = useCallback(
+    (values: BearingSystemWizardValues) => {
+      setMountingSystem(values.mountingSystem);
+      if (values.designation && findBearing(values.designation)) {
+        setDesignation(values.designation);
+      }
+      setFloatingDesignation(values.floatingDesignation);
+      setStationRadialLoadsN(values.stationRadialLoadsN);
+      setAxialLoad(fromBase(values.axialLoad, "force", axialUnit));
+      setBearingSpanMm(values.bearingSpanMm);
+      setAvailableFloatMm(values.availableFloatMm);
+      if (values.mountingSystem === "locating_dg_floating_nu") {
+        setBearingType("deep_groove");
+      } else if (values.mountingSystem === "locating_ac_floating_nu") {
+        setBearingType("angular_contact");
+      }
+    },
+    [axialUnit]
+  );
 
   const applyCopilot = useCallback(
     (payload: BearingCopilotApplyPayload) => {
@@ -912,12 +1064,18 @@ export default function Page() {
           <BearingCopilotPanel onApply={applyCopilot} />
           <CrossCalcHandoffBanner
             moduleId="bearings"
+            warningNote={
+              handoffAxialWarning ? "Axial Fa not from planar FEM — verify thrust manually." : undefined
+            }
             onApply={(params) => {
               if (params.radialLoad != null) {
                 setRadialLoad(fromBase(params.radialLoad, "force", radialUnit));
               }
               if (params.axialLoad != null) {
                 setAxialLoad(fromBase(params.axialLoad, "force", axialUnit));
+                setHandoffAxialWarning(false);
+              } else {
+                setHandoffAxialWarning(true);
               }
               if (params.speed != null) setSpeed(params.speed);
               const boreM = params.boreMm ?? params.shaftDiameter;
@@ -1061,6 +1219,25 @@ export default function Page() {
             rollingElementMaterial={rollingElementMaterial}
             setRollingElementMaterial={setRollingElementMaterial}
             stationRadialLoadsN={stationRadialLoadsN}
+            stationSlopesMrad={stationSlopesMrad}
+            onSwapStations={swapStations}
+            handoffAxialWarning={handoffAxialWarning}
+            ratingsOverrideEnabled={ratingsOverrideEnabled}
+            setRatingsOverrideEnabled={setRatingsOverrideEnabled}
+            overrideC={overrideC}
+            setOverrideC={setOverrideC}
+            overrideC0={overrideC0}
+            setOverrideC0={setOverrideC0}
+            overridePu={overridePu}
+            setOverridePu={setOverridePu}
+            overrideNote={overrideNote}
+            setOverrideNote={setOverrideNote}
+            innerRingTempC={innerRingTempC}
+            setInnerRingTempC={setInnerRingTempC}
+            outerRingTempC={outerRingTempC}
+            setOuterRingTempC={setOuterRingTempC}
+            systemWizardSizingConfig={systemWizardSizingConfig}
+            onSystemWizardApply={applySystemWizard}
             workflowMode={workflowMode}
             onCalculate={calculate}
             onSave={() =>
@@ -1101,6 +1278,13 @@ export default function Page() {
                 lifeMethod,
                 misalignmentAngleMrad,
                 rollingElementMaterial,
+                ratingsOverrideEnabled,
+                overrideC,
+                overrideC0,
+                overridePu,
+                overrideNote,
+                innerRingTempC,
+                outerRingTempC,
               })
             }
             saving={saving}

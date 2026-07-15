@@ -535,6 +535,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
     specifiedTempC: config.operatingTempC,
     lubricantType: config.lubricantType,
     isoVgGrade: config.isoVgGrade,
+    dynamicRatingN: dynamicLoadRatingN,
   });
 
   // Optional: re-rate aISO at equilibrium temperature when requested

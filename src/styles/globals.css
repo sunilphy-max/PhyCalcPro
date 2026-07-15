@@ -42,24 +42,17 @@
   }
 
   /*
-   * Products shell: grid columns must not overlap. The module column uses isolation so
-   * Plotly/modebar z-index cannot paint above the sidebar; overflow-x clips wide SVGs.
+   * Products shell: permanent ~4rem icon rail; module catalog is an overlay drawer
+   * that does not resize the calculator workspace. Isolation + overflow-x clip
+   * keep Plotly/modebar from painting over the rail.
    */
   .products-sidebar-wrap {
     width: 100%;
   }
 
   @media (min-width: 1024px) {
-    .products-sidebar-wrap--expanded {
-      width: 18rem;
-    }
-
-    .products-sidebar-wrap--collapsed {
+    .products-sidebar-wrap {
       width: 4rem;
-    }
-
-    .products-shell--hydrated .products-sidebar-wrap {
-      transition: width 0.3s ease-out;
     }
   }
 
@@ -71,11 +64,12 @@
     width: 100%;
   }
 
-  @media (min-width: 1024px) {
-    .products-sidebar--expanded,
-    .products-sidebar--collapsed {
-      width: 100%;
-    }
+  .products-nav-drawer {
+    pointer-events: auto;
+  }
+
+  .products-nav-drawer[hidden] {
+    display: none;
   }
 
   .products-module-main {

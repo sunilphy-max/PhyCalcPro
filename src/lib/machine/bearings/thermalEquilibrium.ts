@@ -23,6 +23,7 @@ export type ThermalEquilibriumInput = {
   thermalResistanceKW?: number;
   lubricantType?: LubricantType;
   isoVgGrade?: number;
+  dynamicRatingN?: number;
 };
 
 export type ThermalEquilibriumResult = {
@@ -62,6 +63,8 @@ export function calculateThermalEquilibrium(
     speedRpm: input.speedRpm,
     bearingType: input.bearingType,
     sealed: input.sealed,
+    lubricantType: input.lubricantType === "none" ? undefined : input.lubricantType,
+    dynamicRatingN: input.dynamicRatingN,
   });
 
   let power = friction1.powerLossW;

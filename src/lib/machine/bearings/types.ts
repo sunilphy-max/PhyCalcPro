@@ -237,6 +237,17 @@ export type BearingConfig = {
   staticLoadRatingN?: number;
   limitingSpeedRpm?: number;
   referenceSpeedRpm?: number;
+  /**
+   * User-supplied catalog ratings (prefer over designated catalog entry).
+   * Stamp in reports as "User-supplied ratings".
+   */
+  ratingsOverride?: {
+    enabled: boolean;
+    dynamicLoadRatingN?: number;
+    staticLoadRatingN?: number;
+    fatigueLoadLimitN?: number;
+    sourceNote?: string;
+  };
   designation?: string;
   /** Second station designation for locating+floating systems. */
   floatingDesignation?: string;
@@ -287,6 +298,10 @@ export type BearingConfig = {
   stationRadialLoadsN?: number[];
   /** Ambient temperature for thermal equilibrium (°C). */
   ambientTempC?: number;
+  /** Inner ring temperature for operating clearance (°C). Defaults to operatingTempC. */
+  innerRingTempC?: number;
+  /** Outer ring / housing temperature for operating clearance (°C). */
+  outerRingTempC?: number;
   /** If true, solve equilibrium temp instead of trusting operatingTempC alone. */
   useThermalEquilibrium?: boolean;
   catalogFactors?: { X: number; Y: number; e: number };

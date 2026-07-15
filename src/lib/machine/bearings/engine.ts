@@ -19,6 +19,7 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
   if (config.designation) {
     const entry = findBearing(config.designation);
     if (entry) {
+      const ov = config.ratingsOverride?.enabled ? config.ratingsOverride : null;
       const fitRecommendation =
         config.fitRecommendation ??
         recommendBearingFits({
@@ -28,13 +29,17 @@ export function solveBearingEngine(config: BearingConfig): BearingResult {
           mountingRole: entry.mountingRole,
           clearance: config.clearance ?? entry.clearance,
           operatingTempDeltaC: (config.operatingTempC ?? 70) - 20,
+          innerRingTempC: config.innerRingTempC,
+          outerRingTempC: config.outerRingTempC,
+          ambientTempC: config.ambientTempC,
         });
 
       const result = solveBearingDesign({
         ...config,
-        dynamicLoadRatingN: entry.dynamicRatingN,
-        staticLoadRatingN: entry.staticRatingN,
-        fatigueLoadLimitN: entry.fatigueLoadLimitN ?? config.fatigueLoadLimitN,
+        dynamicLoadRatingN: ov?.dynamicLoadRatingN ?? entry.dynamicRatingN,
+        staticLoadRatingN: ov?.staticLoadRatingN ?? entry.staticRatingN,
+        fatigueLoadLimitN:
+          ov?.fatigueLoadLimitN ?? entry.fatigueLoadLimitN ?? config.fatigueLoadLimitN,
         limitingSpeedRpm: entry.limitingSpeedRpm,
         referenceSpeedRpm: entry.referenceSpeedRpm,
         designation: entry.designation,

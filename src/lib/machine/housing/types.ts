@@ -26,8 +26,13 @@ export type HousingConfig = {
 export type HousingResult = {
   bodyStress: number;
   bodySafetyFactor: number;
+  /** Body stress / yield (1 = at yield). */
+  bodyUtilization: number;
   boltTensionPerBolt: number;
   boltShearPerBolt: number;
+  /** Bolt von Mises / (0.7·yield) on recommended size. */
+  boltUtilization: number;
+  boltVonMisesPa: number;
   housingDeflection: number;
   stiffnessEstimate: number;
   recommendedBoltSize: string;

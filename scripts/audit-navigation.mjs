@@ -28,9 +28,16 @@ const audit = await page.evaluate(() => {
 
   if (sidebar) {
     const r = sidebar.getBoundingClientRect();
-    results.push(hitTest("sidebar-top", r.left + 80, r.top + 150));
-    results.push(hitTest("sidebar-mid", r.left + 80, r.top + 280));
-    results.push(hitTest("sidebar-link-area", r.left + 80, r.top + 220));
+    // Icon rail is ~4rem; sample near the rail center.
+    results.push(hitTest("sidebar-top", r.left + 20, r.top + 150));
+    results.push(hitTest("sidebar-mid", r.left + 20, r.top + 280));
+    results.push(hitTest("sidebar-link-area", r.left + 20, r.top + 220));
+  }
+
+  const drawer = document.querySelector("#products-nav-drawer:not([hidden])");
+  if (drawer) {
+    const r = drawer.getBoundingClientRect();
+    results.push(hitTest("drawer-mid", r.left + 80, r.top + 220));
   }
 
   if (workflow) {
@@ -60,7 +67,8 @@ const audit = await page.evaluate(() => {
 
   const widePlots = [...document.querySelectorAll(".js-plotly-plot, [data-export-plot]")].map((el) => {
     const r = el.getBoundingClientRect();
-    return { cls: String(el.className).slice(0, 60), x: r.x, w: r.width, leftOfSidebar: r.x < 288 };
+    // Icon rail is 4rem (64px); plots should start to the right of it.
+    return { cls: String(el.className).slice(0, 60), x: r.x, w: r.width, leftOfSidebar: r.x < 64 };
   });
 
   return { results, fixed, widePlots, url: location.href };
@@ -73,7 +81,13 @@ const logs = [];
 page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
 page.on("pageerror", (e) => logs.push(`PAGEERROR: ${e.message}`));
 
-const frameLink = page.locator("aside.products-sidebar nav a", { hasText: "Frame Analysis" });
+// Open overlay catalog, then navigate via a module link.
+const openCatalog = page.locator('[aria-controls="products-nav-drawer"]').first();
+if (await openCatalog.count()) {
+  await openCatalog.click({ timeout: 5000 });
+  await page.waitForTimeout(300);
+}
+const frameLink = page.locator("#products-nav-drawer nav a", { hasText: "Frame Analysis" });
 if (await frameLink.count()) {
   await frameLink.scrollIntoViewIfNeeded();
   const href = await frameLink.getAttribute("href");

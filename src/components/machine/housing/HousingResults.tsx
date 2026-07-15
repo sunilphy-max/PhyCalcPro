@@ -261,6 +261,30 @@ export default function HousingResults({
                 tone="blue"
               />
               <CalculatorMetricCard
+                label="Body utilization"
+                numericValue={result.bodyUtilization}
+                unit="—"
+                tone={
+                  result.bodyUtilization > 1
+                    ? "red"
+                    : result.bodyUtilization > 0.67
+                      ? "orange"
+                      : "green"
+                }
+              />
+              <CalculatorMetricCard
+                label="Bolt utilization"
+                numericValue={result.boltUtilization}
+                unit="—"
+                tone={
+                  result.boltUtilization > 1
+                    ? "red"
+                    : result.boltUtilization > 0.85
+                      ? "orange"
+                      : "green"
+                }
+              />
+              <CalculatorMetricCard
                 label="Shaft fit (ISO 286)"
                 value={result.recommendedShaftFit}
                 tone="purple"
@@ -364,6 +388,14 @@ export default function HousingResults({
           {
             parameter: "Body safety factor",
             value: formatDisplayNumber(result.bodySafetyFactor),
+          },
+          {
+            parameter: "Body utilization",
+            value: formatDisplayNumber(result.bodyUtilization),
+          },
+          {
+            parameter: "Bolt utilization",
+            value: formatDisplayNumber(result.boltUtilization),
           },
           {
             parameter: "Recommended bolt",
