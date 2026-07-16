@@ -17,5 +17,5 @@
     "safetyFactor": 6.0252636982583105
   },
   "tolerancePercent": 2,
-  "source": "PhyCalcPro — von Mises with RSS torsion+transverse shear (screening)"
+  "source": "Mechanics of materials — rectangular von Mises with RSS torsion+transverse shear (τ_eq=√(τ_t²+τ_v²))"
 }

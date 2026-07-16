@@ -113,6 +113,11 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
         US: [{ body: "AISC", document: "360-22", clause: "Ch. E" }],
         EU: [{ body: "EN", document: "1993-1-1", clause: "Buckling" }],
       },
+      indicativeMethod: "Euler / AISC / Eurocode-oriented buckling screening with end-condition factors",
+      limitations: [
+        "Inelastic / residual-stress column curves are partial — not a full AISC Ch. E or EN 1993-1-1 worksheet.",
+        "Professional screening — verify critical columns against code software before release.",
+      ],
     }
   ),
   plates: withCodeChecks("plates", "Plate Bending", [
@@ -577,31 +582,76 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   "roller-chains": withCodeChecks("roller-chains", "Roller Chain Drive", [
     genericIndicativeCheck("power_capacity", "Power capacity utilization", "utilization"),
     genericIndicativeCheck("chain_life", "Estimated chain life", "life"),
-  ]),
+  ], {
+    indicativeMethod: "Sprocket geometry, chain tension, and power/life screening",
+    limitations: [
+      "OEM chain power tables and lubrication derates are indicative — confirm with manufacturer charts.",
+      "Professional screening — verify critical drives against ANSI/ISO chain selection software.",
+    ],
+  }),
   "multi-pulley": withCodeChecks("multi-pulley", "Multi-Pulley Layout", [
     genericIndicativeCheck("belt_length", "Total belt length", "other"),
     genericIndicativeCheck("wrap_angle", "Minimum wrap angle", "other"),
-  ]),
-  "bevel-gears": withCodeChecks("bevel-gears", "Bevel Gear Screening", gearChecks),
+  ], {
+    indicativeMethod: "Open/crossed belt length and wrap-angle geometry screening",
+    limitations: [
+      "Does not size belt section or power capacity — use V-belt / timing-belt modules for duty checks.",
+      "Professional screening — confirm wrap and idler placement for critical layouts.",
+    ],
+  }),
+  "bevel-gears": withCodeChecks("bevel-gears", "Bevel Gear Screening", gearChecks, {
+    indicativeMethod: "Lewis/Hertz-style bevel screening (indicative)",
+    limitations: [
+      "Not a full AGMA/ISO bevel worksheet — professional screening only.",
+    ],
+  }),
   "worm-gears": withCodeChecks("worm-gears", "Worm Gear Drive", [
     genericIndicativeCheck("efficiency", "Drive efficiency", "other"),
     genericIndicativeCheck("contact_stress", "Contact stress utilization", "utilization"),
-  ]),
+  ], {
+    indicativeMethod: "Worm efficiency and contact-stress screening",
+    limitations: [
+      "Thermal rating and full AGMA worm worksheets are out of scope.",
+    ],
+  }),
   "planetary-gears": withCodeChecks("planetary-gears", "Planetary Gear Set", [
     genericIndicativeCheck("ratio", "Actual ratio vs target", "other"),
   ]),
   "gear-ratio-design": withCodeChecks("gear-ratio-design", "Gear Ratio Design", [
     genericIndicativeCheck("ratio_error", "Ratio error", "other"),
   ]),
-  "compression-springs": withCodeChecks("compression-springs", "Compression Springs", compressionSpringChecks),
-  "extension-springs": withCodeChecks("extension-springs", "Extension Springs", extensionSpringChecks),
-  "torsion-springs": withCodeChecks("torsion-springs", "Torsion Springs", torsionSpringChecks),
+  "compression-springs": withCodeChecks("compression-springs", "Compression Springs", compressionSpringChecks, {
+    indicativeMethod: "Wahl-corrected shear stress, rate, surge, and buckling screening (EN/ASME oriented)",
+    limitations: [
+      "EN nomographs and end-coil FEA are screening-depth only.",
+      "Professional screening — verify critical springs against EN 13906 / manufacturer tools.",
+    ],
+  }),
+  "extension-springs": withCodeChecks("extension-springs", "Extension Springs", extensionSpringChecks, {
+    indicativeMethod: "Body shear + hook stress screening with rate and surge checks",
+    limitations: [
+      "Hook stress uses closed-form factors — not FEA of the hook junction.",
+      "Professional screening — verify critical extension springs with manufacturer worksheets.",
+    ],
+  }),
+  "torsion-springs": withCodeChecks("torsion-springs", "Torsion Springs", torsionSpringChecks, {
+    indicativeMethod: "Bending stress and rate screening for round-wire torsion springs",
+    limitations: [
+      "Arbor friction, leg bending detail, and fatigue spectra are simplified.",
+      "Professional screening — verify critical torsion springs against EN/ASME spring standards.",
+    ],
+  }),
   "keys-splines": withCodeChecks("keys-splines", "Keys & Splines", keysSplinesChecks, {
     standardsByCode: {
       ISO: [{ body: "ISO", document: "3912" }],
       US: [{ body: "ANSI", document: "B17.1", note: "Keys and keyseats" }],
       EU: [{ body: "DIN", document: "6885", note: "Parallel keys" }],
     },
+    indicativeMethod: "Parallel-key / spline shear and bearing stress capacity screening",
+    limitations: [
+      "Does not replace full DIN 6885 / ANSI B17.1 fit and tolerance worksheets.",
+      "Professional screening — verify critical shaft-hub connections with code tables.",
+    ],
   }),
   "shaft-hubs": withCodeChecks("shaft-hubs", "Shaft Hub Fits", [
     genericIndicativeCheck("contact_pressure", "Contact pressure", "stress"),
@@ -622,6 +672,11 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       US: [{ body: "ANSI", document: "B18.8.2", note: "Clevis pins" }],
       EU: [{ body: "DIN", document: "7", note: "Parallel pins" }],
     },
+    indicativeMethod: "Double/single shear and clevis bearing stress screening",
+    limitations: [
+      "Does not include fatigue spectra or full pin-hole fretting analysis.",
+      "Professional screening — verify critical pins against ANSI/ISO hardware standards.",
+    ],
   }),
   "brakes-clutches": withCodeChecks("brakes-clutches", "Brakes & Clutches", [
     genericIndicativeCheck("friction_torque", "Friction torque capacity", "utilization"),

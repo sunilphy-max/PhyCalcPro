@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { fromBase } from "@/lib/units/conversions";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { formatEngineeringValue, formatDisplayNumber } from "@/lib/display/formatEngineering";
+import EngineeringPlot from "@/components/EngineeringPlot";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import {
   CalculatorMetricCard,
@@ -12,7 +13,6 @@ import {
 } from "@/components/calculator/results";
 import type { VBeltResult } from "@/lib/powerTransmission/v-belts/types";
 import type { CalculationSpec } from "@/lib/standards/types";
-import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import VBeltLayoutPreview from "./VBeltLayoutPreview";
 import VBeltForceDiagram from "./VBeltForceDiagram";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";

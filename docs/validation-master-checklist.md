@@ -25,10 +25,11 @@ Critical-path polish vs rolling-bearings baseline:
 
 | Area | Change |
 |------|--------|
-| Physics | Combined loading von Mises now includes RSS torsion + transverse shear; verification case updated |
-| Plots | EngineeringPlot added/extended on gears, timing-belts, combined-loading, circular-plates, bolt pattern |
-| Standards | Generic mapper + module catalog limitations stress **screening** (not full code worksheets); bearings vendor ±5% gold still `pending_vendor_gold` |
-| Metrics | Residual `toFixed` polish on v-belts, springs, plain-bearings, housing, bolt pattern |
+| Physics | Combined loading von Mises includes RSS torsion + transverse shear; keys case sourced to Shigley-style formulas |
+| Plots | EngineeringPlot on gears, timing/v-belts, roller-chains, multi-pulley, combined-loading, circular-plates, bolt pattern, keys-splines, pins |
+| Standards | Catalog limitations stress **screening** on critical path (gears, bearings, shafts, bolts, springs, belts, chains, keys, pins, columns) |
+| Metrics | Residual `toFixed` polish on bearings suite, v-belts, springs, plain-bearings, housing, bolt pattern |
+| Vendor gold | Bearings SKF/MITCalc ±5% cases remain `pending_vendor_gold` until pasted |
 
 Engineer sign-off still required for production-critical modules (Physics/Standards columns below).
 

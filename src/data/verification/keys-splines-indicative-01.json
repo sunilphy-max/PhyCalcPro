@@ -16,5 +16,5 @@
     "bearingSafety": 2.109375
   },
   "tolerancePercent": 5,
-  "source": "PhyCalcPro regression — keys & splines v1"
+  "source": "Shigley-style parallel key: τ=T/(0.5·d·w·L), σ_b=2T/(d·(h/2)·L); τ_all=0.6 Sy, σ_all=1.5 Sy"
 }

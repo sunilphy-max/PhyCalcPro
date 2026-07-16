@@ -8,7 +8,7 @@ npm run test:verification
 
 Results are written to `last-run.json` (committed after passing) and `reports/verification-latest.json` (local).
 
-**Master validation checklist (all 66 modules):** [docs/validation-master-checklist.md](../../docs/validation-master-checklist.md)
+**Master validation checklist:** [docs/validation-master-checklist.md](../../docs/validation-master-checklist.md) — **81** CI cases / **67** solvers (see `npm run test:verification`).
 
 ## File naming
 
