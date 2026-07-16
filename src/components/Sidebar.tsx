@@ -3,16 +3,32 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
-import { categories, type EngineeringModule } from "@/data/modules";
+import { ChevronDown } from "lucide-react";
+import { categories, type EngineeringCategory, type EngineeringModule } from "@/data/modules";
 
 type SidebarProps = {
   activeCategoryId?: string;
-  /** Whether the module catalog overlay is open. */
-  drawerOpen?: boolean;
-  onDrawerOpenChange?: (open: boolean) => void;
-  onToggleDrawer?: () => void;
 };
+
+/** Concise labels for the horizontal category bar. */
+const CATEGORY_BAR_LABELS: Record<string, string> = {
+  structural: "Structural",
+  "power-transmission": "Power",
+  machine: "Machine",
+  bearings: "Bearings",
+  springs: "Springs",
+  fasteners: "Fasteners",
+  materials: "Materials",
+  pressure: "Pressure",
+  dynamics: "Dynamics",
+  manufacturing: "Manufacturing",
+  "advanced-systems": "Advanced",
+  tools: "Tools",
+};
+
+function categoryBarLabel(cat: EngineeringCategory) {
+  return CATEGORY_BAR_LABELS[cat.id] ?? cat.title;
+}
 
 function groupModulesBySubGroup(modules: EngineeringModule[]) {
   const groups: { label: string | null; modules: EngineeringModule[] }[] = [];
@@ -31,23 +47,10 @@ function groupModulesBySubGroup(modules: EngineeringModule[]) {
   return groups;
 }
 
-export default function Sidebar({
-  activeCategoryId,
-  drawerOpen = false,
-  onDrawerOpenChange,
-  onToggleDrawer,
-}: SidebarProps) {
+export default function Sidebar({ activeCategoryId }: SidebarProps) {
   const pathname = usePathname();
-  const drawerRef = useRef<HTMLDivElement>(null);
-  const [manualOpenCategory, setManualOpenCategory] = useState<{
-    pathname: string | null;
-    categoryId: string | null;
-  } | null>(null);
-
-  const toggleDrawer = () => {
-    if (onToggleDrawer) onToggleDrawer();
-    else onDrawerOpenChange?.(!drawerOpen);
-  };
+  const barRef = useRef<HTMLElement>(null);
+  const [openCategoryId, setOpenCategoryId] = useState<string | null>(null);
 
   const visibleCategories = useMemo(
     () =>
@@ -65,98 +68,151 @@ export default function Sidebar({
     [pathname, visibleCategories]
   );
 
-  const defaultOpenCategory = useMemo(
-    () => activeCategoryFromPath ?? visibleCategories[0]?.id ?? null,
-    [activeCategoryFromPath, visibleCategories]
-  );
-
-  const openCategory =
-    manualOpenCategory?.pathname === pathname
-      ? manualOpenCategory.categoryId
-      : defaultOpenCategory;
-
-  const activeModuleRoute = useMemo(
+  const activeModule = useMemo(
     () =>
       visibleCategories
         .flatMap((category) => category.modules)
-        .find((module) => pathname?.startsWith(module.route))?.route,
+        .find((module) => pathname?.startsWith(module.route)),
     [pathname, visibleCategories]
   );
 
-  const activeModuleTitle = useMemo(
-    () =>
-      visibleCategories
-        .flatMap((category) => category.modules)
-        .find((module) => pathname?.startsWith(module.route))?.title,
-    [pathname, visibleCategories]
+  const openCategory = useMemo(
+    () => visibleCategories.find((category) => category.id === openCategoryId) ?? null,
+    [openCategoryId, visibleCategories]
   );
 
-  // Close drawer on route change (module navigate).
+  // Close dropdown on route change.
   useEffect(() => {
-    onDrawerOpenChange?.(false);
-  }, [pathname, onDrawerOpenChange]);
+    setOpenCategoryId(null);
+  }, [pathname]);
 
-  // Esc closes drawer.
+  // Esc closes dropdown.
   useEffect(() => {
-    if (!drawerOpen) return;
+    if (!openCategoryId) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onDrawerOpenChange?.(false);
+      if (event.key === "Escape") setOpenCategoryId(null);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [drawerOpen, onDrawerOpenChange]);
+  }, [openCategoryId]);
 
-  // Focus the drawer when opened for a11y.
+  // Click outside closes dropdown.
   useEffect(() => {
-    if (!drawerOpen) return;
-    const panel = drawerRef.current;
-    if (!panel) return;
-    const focusable = panel.querySelector<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    focusable?.focus();
-  }, [drawerOpen]);
+    if (!openCategoryId) return;
+    const onPointerDown = (event: MouseEvent | PointerEvent) => {
+      const target = event.target as Node | null;
+      if (target && barRef.current?.contains(target)) return;
+      setOpenCategoryId(null);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [openCategoryId]);
 
-  const openCategoryInDrawer = (categoryId: string) => {
-    setManualOpenCategory({ pathname, categoryId });
-    onDrawerOpenChange?.(true);
+  const toggleCategory = (categoryId: string) => {
+    setOpenCategoryId((current) => (current === categoryId ? null : categoryId));
   };
 
-  const closeOnNavigate = () => {
-    onDrawerOpenChange?.(false);
-  };
+  const moduleGroups = openCategory ? groupModulesBySubGroup(openCategory.modules) : [];
+  const dropdownColumns =
+    openCategory && openCategory.modules.length > 6
+      ? "sm:grid-cols-2 lg:grid-cols-3"
+      : openCategory && openCategory.modules.length > 3
+        ? "sm:grid-cols-2"
+        : "grid-cols-1";
 
-  const navContent = (
-    <nav className="space-y-3 p-4" aria-label="Engineering modules">
-      {visibleCategories.map((cat) => {
-        const isOpen = openCategory === cat.id;
-        const moduleGroups = groupModulesBySubGroup(cat.modules);
-
-        return (
-          <div
-            key={cat.id}
-            className="overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-50/90 shadow-sm dark:border-slate-700/60 dark:bg-slate-900/50"
+  return (
+    <div className="products-sidebar-wrap shrink-0">
+      <aside
+        ref={barRef}
+        className="products-sidebar products-category-subbar sticky top-14 z-[60] isolate w-full border-b border-slate-200/70 bg-white/95 shadow-sm backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95"
+        aria-label="Module categories"
+      >
+        <div className="flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+          <Link
+            href="/products"
+            title="All products"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
           >
-            <button
-              type="button"
-              onClick={() =>
-                setManualOpenCategory({
-                  pathname,
-                  categoryId: isOpen ? null : cat.id,
-                })
-              }
-              className="w-full px-4 py-3 text-left transition hover:bg-slate-100/80 dark:hover:bg-slate-800/60"
-            >
-              <div className="text-sm font-semibold text-slate-950 dark:text-white">{cat.title}</div>
-              <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">{cat.description}</div>
-            </button>
+            PC
+          </Link>
 
-            {isOpen ? (
-              <div className="space-y-2 border-t border-slate-200/70 bg-white px-4 py-3 dark:border-slate-700/60 dark:bg-slate-950/40">
+          <div
+            className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            role="menubar"
+            aria-label="Product categories"
+          >
+            {visibleCategories.map((cat) => {
+              const Icon = cat.icon;
+              const isPathActive = activeCategoryFromPath === cat.id;
+              const isOpen = openCategoryId === cat.id;
+              const label = categoryBarLabel(cat);
+
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  role="menuitem"
+                  title={cat.title}
+                  aria-label={`${cat.title} modules`}
+                  aria-haspopup="true"
+                  aria-expanded={isOpen}
+                  aria-controls={isOpen ? "products-module-dropdown" : undefined}
+                  onClick={() => toggleCategory(cat.id)}
+                  className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-sm font-medium transition sm:px-3 ${
+                    isOpen || isPathActive
+                      ? "bg-gradient-to-br from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-500/20"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                  <span className="whitespace-nowrap">{label}</span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 shrink-0 opacity-70 transition ${isOpen ? "rotate-180" : ""}`}
+                    aria-hidden
+                  />
+                </button>
+              );
+            })}
+          </div>
+
+          {activeModule ? (
+            <div className="hidden min-w-0 max-w-[10rem] shrink truncate text-xs text-slate-500 sm:block md:max-w-[14rem] dark:text-slate-400">
+              {activeModule.title}
+            </div>
+          ) : null}
+        </div>
+
+        {openCategory ? (
+          <div
+            id="products-module-dropdown"
+            role="menu"
+            aria-label={`${openCategory.title} modules`}
+            className="products-module-dropdown border-t border-slate-200/70 bg-white dark:border-slate-700/60 dark:bg-slate-950"
+          >
+            <div className="mx-auto max-w-7xl px-3 py-3 sm:px-4 sm:py-4">
+              <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                <div className="min-w-0">
+                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">
+                    {openCategory.title}
+                  </h2>
+                  <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    {openCategory.description}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpenCategoryId(null)}
+                  className="rounded-lg px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className={`grid gap-4 ${dropdownColumns}`}>
                 {moduleGroups.map((group, groupIndex) => (
                   <div key={group.label ?? `group-${groupIndex}`} className="space-y-1">
                     {group.label ? (
-                      <div className="px-3 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                         {group.label}
                       </div>
                     ) : null}
@@ -164,8 +220,9 @@ export default function Sidebar({
                       mod.comingSoon ? (
                         <div
                           key={mod.id}
-                          className="flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm text-slate-400"
+                          role="menuitem"
                           aria-disabled="true"
+                          className="flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm text-slate-400"
                         >
                           <span>{mod.title}</span>
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">
@@ -176,122 +233,30 @@ export default function Sidebar({
                         <Link
                           key={mod.id}
                           href={mod.route}
-                          onClick={closeOnNavigate}
+                          role="menuitem"
+                          onClick={() => setOpenCategoryId(null)}
                           className={`block rounded-xl px-3 py-2 text-sm transition ${
-                            activeModuleRoute === mod.route
-                              ? "bg-gradient-to-r from-cyan-600 to-sky-600 font-medium text-white shadow-sm shadow-cyan-500/20 hover:from-cyan-500 hover:to-sky-500"
+                            activeModule?.route === mod.route
+                              ? "bg-gradient-to-r from-cyan-600 to-sky-600 font-medium text-white shadow-sm shadow-cyan-500/20"
                               : "text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                           }`}
                         >
-                          {mod.title}
+                          <span className="font-medium">{mod.title}</span>
+                          {mod.description ? (
+                            <span className="mt-0.5 block text-xs font-normal opacity-70">
+                              {mod.description}
+                            </span>
+                          ) : null}
                         </Link>
                       )
                     )}
                   </div>
                 ))}
               </div>
-            ) : null}
-          </div>
-        );
-      })}
-    </nav>
-  );
-
-  return (
-    <div className="products-sidebar-wrap shrink-0">
-      {/* Sticky category sub-bar under the site Navbar (all breakpoints) */}
-      <aside
-        className="products-sidebar products-category-subbar sticky top-14 z-[60] isolate flex w-full items-center gap-2 border-b border-slate-200/70 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95 sm:gap-3 sm:px-4"
-        aria-label="Module categories"
-      >
-        <Link
-          href="/products"
-          title="PhyCalcPro"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
-        >
-          PC
-        </Link>
-        <button
-          type="button"
-          onClick={toggleDrawer}
-          title={drawerOpen ? "Close module catalog" : "Open module catalog"}
-          aria-label={drawerOpen ? "Close module catalog" : "Open module catalog"}
-          aria-expanded={drawerOpen}
-          aria-controls="products-nav-drawer"
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
-        >
-          {drawerOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
-        </button>
-
-        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {visibleCategories.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = activeCategoryFromPath === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                title={cat.title}
-                aria-label={cat.title}
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => openCategoryInDrawer(cat.id)}
-                className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition ${
-                  isActive
-                    ? "bg-gradient-to-br from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-500/20"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-                }`}
-              >
-                <Icon className="h-[1.125rem] w-[1.125rem]" aria-hidden />
-              </button>
-            );
-          })}
-        </div>
-
-        {activeModuleTitle ? (
-          <div className="hidden min-w-0 max-w-[10rem] shrink truncate text-xs text-slate-500 sm:block md:max-w-[14rem] dark:text-slate-400">
-            {activeModuleTitle}
+            </div>
           </div>
         ) : null}
       </aside>
-
-      {/* Overlay backdrop + drawer */}
-      {drawerOpen ? (
-        <div
-          className="products-nav-backdrop fixed inset-0 z-[59] bg-slate-950/40 backdrop-blur-[2px]"
-          onClick={() => onDrawerOpenChange?.(false)}
-          aria-hidden
-        />
-      ) : null}
-
-      <div
-        ref={drawerRef}
-        id="products-nav-drawer"
-        role="dialog"
-        aria-modal={drawerOpen}
-        aria-label="Engineering modules"
-        aria-hidden={!drawerOpen}
-        className={`products-nav-drawer fixed bottom-0 left-0 top-14 z-[60] flex w-[min(100vw,20rem)] flex-col overflow-hidden border-r border-slate-200/70 bg-white/95 text-slate-950 shadow-xl backdrop-blur-md transition-transform duration-300 ease-out dark:border-slate-700/60 dark:bg-slate-950/95 dark:text-slate-100 ${
-          drawerOpen ? "translate-x-0" : "pointer-events-none -translate-x-full"
-        }`}
-        hidden={!drawerOpen}
-      >
-        <div className="flex items-start justify-between gap-3 border-b border-slate-200/70 bg-slate-50/90 px-4 py-5 dark:border-slate-700/60 dark:bg-slate-900/60">
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold tracking-tight text-slate-950 dark:text-white">PhyCalcPro</h1>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Engineering modules</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onDrawerOpenChange?.(false)}
-            title="Close module catalog"
-            aria-label="Close module catalog"
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
-          >
-            <X className="h-4 w-4" aria-hidden />
-          </button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto">{navContent}</div>
-      </div>
     </div>
   );
 }

@@ -45,7 +45,8 @@ function axisymmetricFdm(c: CircularPlateConfig, segments: number) {
 
   const maxDeflection = Math.max(...w.map((v) => Math.abs(v)));
   const maxStress = (0.75 * c.pressure * a ** 2) / (t ** 2);
-  return { maxDeflection, maxStress, rigidity: D };
+  const radialStations = Array.from({ length: n }, (_, i) => i * dr);
+  return { maxDeflection, maxStress, rigidity: D, radialStations, deflectionProfile: w };
 }
 
 export function solveCircularPlateEngine(c: CircularPlateConfig): CircularPlateResult {
@@ -65,5 +66,7 @@ export function solveCircularPlateEngine(c: CircularPlateConfig): CircularPlateR
     roarkMaxStress: roark.maxStress,
     meshSegments,
     femDeflectionErrorPercent,
+    radialStations: fem.radialStations,
+    deflectionProfile: fem.deflectionProfile,
   };
 }

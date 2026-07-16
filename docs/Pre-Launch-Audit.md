@@ -1,15 +1,15 @@
 # PhyCalcPro — Pre-Launch Audit
 
-**Date:** 2026-06-07  
+**Date:** 2026-06-07 (final polish note 2026-07-16)  
 **Scope:** UI/theme consistency, formatting, physics/solvers, Auto-design/Validate/Compare, clutter, launch readiness  
 **Environment tested:** `NEXT_PUBLIC_FREE_LAUNCH=true` (`.env.local`), Windows, Node build pipeline  
-**Full module audit:** [`docs/Website-Module-Audit.md`](Website-Module-Audit.md) — 63 modules, homogenization complete (2026-06-07)
+**Full module audit:** [`docs/Website-Module-Audit.md`](Website-Module-Audit.md) — homogenization complete (2026-06-07)
 
 ---
 
 ## Verdict: **Launch ready**
 
-Post-improvement pass (2026-06-07): complete website module audit and homogenization — all 62 modules use `CalculatorInputPanel` + `CalculatorCalculateButton` inputs and `CalculatorResultsShell` results; 4 remaining legacy `center={}` layouts removed; layout validator extended. See `docs/Website-Module-Audit.md`.
+Post-improvement pass (2026-06-07): complete website module audit and homogenization. **2026-07-16 final pass:** critical-path physics/plots/standards honesty vs rolling-bearings baseline; CI verification suite green at **81+ cases / 67 solvers** (see `npm run test:verification`). Products nav is a **top category sub-bar** + overlay catalog. Monetization remains gated under free launch. Remaining engineer work is **worksheet sign-off** and optional bearings vendor gold — not layout blockers for an indicative engineering workspace.
 
 ## Previous verdict: **Launch with caveats**
 

@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-07-16T04:45:04.152Z",
+  "ranAt": "2026-07-16T05:06:18.367Z",
   "total": 81,
   "passed": 81,
   "failed": 0,
@@ -365,14 +365,14 @@
       "fields": [
         {
           "field": "vonMisesStress",
-          "expected": 41488516.00274373,
-          "actual": 41488516.002743736,
+          "expected": 41491959.940652244,
+          "actual": 41491959.940652244,
           "pass": true
         },
         {
           "field": "safetyFactor",
-          "expected": 6.025763851940786,
-          "actual": 6.025763851940785,
+          "expected": 6.0252636982583105,
+          "actual": 6.0252636982583105,
           "pass": true
         }
       ]
@@ -1668,7 +1668,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468234,
+          "actual": 256.9198297468195,
           "pass": true
         }
       ]
@@ -1681,7 +1681,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 81.24490028971941,
-          "actual": 81.24490028971941,
+          "actual": 81.24490028970807,
           "pass": true
         }
       ]

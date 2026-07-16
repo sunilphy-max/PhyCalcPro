@@ -5,10 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import PhyCalcMark from "@/components/brand/PhyCalcMark";
-import PlanBadge from "@/components/licensing/PlanBadge";
+import NavUserMenu from "@/components/account/NavUserMenu";
 import { useEntitlement } from "@/contexts/EntitlementContext";
-import { usePersistenceOptional } from "@/contexts/PersistenceContext";
-import { isSupabaseSignInReady, showAccountNav } from "@/lib/supabase/setupStatus";
+import { showAccountNav } from "@/lib/supabase/setupStatus";
 
 const allNavigationItems = [
   { href: "/", label: "Home" },
@@ -16,7 +15,7 @@ const allNavigationItems = [
   { href: "/copilot", label: "Copilot" },
   { href: "/projects", label: "Projects" },
   { href: "/pricing", label: "Pricing", monetizationOnly: true },
-  { href: "/account", label: "Account", monetizationOnly: true, authEnabled: true },
+  { href: "/account", label: "Account", authEnabled: true },
   { href: "/status", label: "Quality" },
   { href: "/support", label: "Support" },
   { href: "/documentation", label: "Docs" },
@@ -24,20 +23,15 @@ const allNavigationItems = [
 
 export default function Navbar() {
   const { isMonetizationEnabled } = useEntitlement();
-  const persistence = usePersistenceOptional();
   const accountNavVisible = showAccountNav();
-  const signInReady = isSupabaseSignInReady();
   const navigationItems = useMemo(
     () =>
       allNavigationItems.filter((item) => {
-        if ("monetizationOnly" in item && item.monetizationOnly && isMonetizationEnabled) {
-          return true;
-        }
-        if ("authEnabled" in item && item.authEnabled && accountNavVisible) {
-          return true;
-        }
         if ("monetizationOnly" in item && item.monetizationOnly) {
-          return false;
+          return isMonetizationEnabled;
+        }
+        if ("authEnabled" in item && item.authEnabled) {
+          return accountNavVisible;
         }
         return true;
       }),
@@ -86,17 +80,7 @@ export default function Navbar() {
             ))}
           </nav>
 
-          <PlanBadge />
-
-          {accountNavVisible ? (
-            <span className="hidden rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 lg:inline dark:border-slate-700 dark:text-slate-300">
-              {persistence?.mode === "authenticated"
-                ? "Signed in"
-                : signInReady
-                  ? "Guest"
-                  : "Guest · cloud pending"}
-            </span>
-          ) : null}
+          <NavUserMenu />
 
           <button
             type="button"
@@ -109,6 +93,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <NavUserMenu />
           <button
             type="button"
             onClick={() => setMobileMenuOpen((value) => !value)}
@@ -136,6 +121,7 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className="block rounded-2xl px-4 py-3 transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-900 dark:hover:text-white"
+                onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
               </Link>

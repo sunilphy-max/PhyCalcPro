@@ -296,7 +296,7 @@ export default function HousingResults({
               />
               <CalculatorMetricCard
                 label="Est. operating clearance"
-                numericValue={Number(result.estimatedOperatingClearanceUm.toFixed(0))}
+                numericValue={result.estimatedOperatingClearanceUm}
                 unit="µm"
               />
               <CalculatorMetricCard

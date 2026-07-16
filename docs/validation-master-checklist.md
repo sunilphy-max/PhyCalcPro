@@ -1,6 +1,6 @@
 # PhyCalcPro — Master validation checklist
 
-Use this document to validate **physics, standards mapping, and design outputs** across all **66 calculator modules**. Automated CI covers modules with verification JSON; everything else needs your engineer sign-off.
+Use this document to validate **physics, standards mapping, and design outputs** across calculator modules. Automated CI covers modules with verification JSON; everything else needs your engineer sign-off.
 
 ## Before you start
 
@@ -8,7 +8,7 @@ Use this document to validate **physics, standards mapping, and design outputs**
    ```bash
    npm run test:verification
    ```
-   **64 modules** currently have committed benchmark cases (**70 cases** total; see [Verification status](#verification-status) below).
+   **67 solvers** are registered; **81+** committed benchmark cases (see [Verification status](#verification-status) below). Live counts may exceed older table rows — trust `npm run test:verification` / `last-run.json`.
 
 2. For each module you rely on in production, complete the **Physics** and **Standards** columns in the tables below.
 
@@ -16,6 +16,21 @@ Use this document to validate **physics, standards mapping, and design outputs**
 
 4. Module theory docs: `docs/modules/{moduleId}.md`  
    Spring-specific checklist: `docs/modules/spring-modules-user-tasks.md`
+
+---
+
+## Final pre-launch pass (2026-07-16)
+
+Critical-path polish vs rolling-bearings baseline:
+
+| Area | Change |
+|------|--------|
+| Physics | Combined loading von Mises now includes RSS torsion + transverse shear; verification case updated |
+| Plots | EngineeringPlot added/extended on gears, timing-belts, combined-loading, circular-plates, bolt pattern |
+| Standards | Generic mapper + module catalog limitations stress **screening** (not full code worksheets); bearings vendor ±5% gold still `pending_vendor_gold` |
+| Metrics | Residual `toFixed` polish on v-belts, springs, plain-bearings, housing, bolt pattern |
+
+Engineer sign-off still required for production-critical modules (Physics/Standards columns below).
 
 ---
 

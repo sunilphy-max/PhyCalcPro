@@ -154,7 +154,11 @@ export default function CompressionSpringResults({
             />
             <CalculatorMetricCard
               label="Surge margin"
-              value={result.surgeMargin != null ? `${result.surgeMargin.toFixed(1)}×` : "Set operating Hz"}
+              value={
+                result.surgeMargin != null
+                  ? `${formatDisplayNumber(result.surgeMargin)}×`
+                  : "Set operating Hz"
+              }
               tone={result.surgeMargin == null || result.surgeMargin >= 10 ? "blue" : "orange"}
             />
             <CalculatorMetricCard label="Spring index C" numericValue={result.springIndex} unit="—" tone="blue" />

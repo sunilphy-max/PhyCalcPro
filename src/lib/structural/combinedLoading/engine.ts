@@ -14,7 +14,11 @@ export function solveCombinedLoadingEngine(
   const torsionalShear = config.torque * c / J;
   const shearStress = config.shearForce / area;
   const combinedStress = axialStress + bendingStress;
-  const vonMisesStress = Math.sqrt(combinedStress * combinedStress + 3 * torsionalShear * torsionalShear);
+  // Orthogonal shear contributions (torsion + transverse) via RSS, then von Mises.
+  const shearEquivalent = Math.hypot(torsionalShear, shearStress);
+  const vonMisesStress = Math.sqrt(
+    combinedStress * combinedStress + 3 * shearEquivalent * shearEquivalent
+  );
   const safetyFactor = vonMisesStress > 0 ? config.yieldStrength / vonMisesStress : Number.POSITIVE_INFINITY;
   const designStatus: CombinedLoadingResult["designStatus"] =
     safetyFactor >= 2 ? "safe" : safetyFactor >= 1.25 ? "warning" : "critical";

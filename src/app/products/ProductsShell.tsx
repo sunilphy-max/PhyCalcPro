@@ -2,19 +2,16 @@
 
 import Sidebar from "@/components/Sidebar";
 import { DesignCodeProvider } from "@/contexts/DesignCodeContext";
-import { useProductsNavDrawer } from "@/hooks/useProductsNavDrawer";
 
 export default function ProductsShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { open, setOpen, toggle } = useProductsNavDrawer();
-
   return (
     <DesignCodeProvider>
       <div className="products-shell flex w-full min-w-0 flex-col items-stretch">
-        <Sidebar drawerOpen={open} onDrawerOpenChange={setOpen} onToggleDrawer={toggle} />
+        <Sidebar />
         <div className="products-module-main min-w-0 flex-1 overflow-x-clip">{children}</div>
       </div>
     </DesignCodeProvider>

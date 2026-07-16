@@ -6,10 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import { usePersistence } from "@/contexts/PersistenceContext";
 import { isSupabaseSignInReady, showGuestHistoryUx } from "@/lib/supabase/setupStatus";
+import MagicLinkSignInForm from "@/components/account/MagicLinkSignInForm";
 import SupabaseSetupPanel from "@/components/account/SupabaseSetupPanel";
 
 export default function AccountClient() {
-  const { configured, user, loading, signInWithEmail, signOut } = useAuth();
+  const { configured, user, loading, signOut } = useAuth();
   const persistence = usePersistence();
   const {
     entitlement,
@@ -23,7 +24,6 @@ export default function AccountClient() {
     featuresUnlocked,
     isMonetizationEnabled,
   } = useEntitlement();
-  const [email, setEmail] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
   const signInReady = isSupabaseSignInReady();
@@ -89,7 +89,7 @@ export default function AccountClient() {
         <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">Account</h1>
         <p className="mt-2 text-slate-600 dark:text-slate-300">
           {signInReady
-            ? "Sign in to keep saved projects and calculation history across sessions and devices."
+            ? "Manage your session, projects, and plan. You can also sign in from the Guest menu in the top bar or from Home."
             : showGuestHistoryUx()
               ? "You are in guest mode. Session history works in this tab; cloud sign-in activates when Supabase is configured."
               : "License, billing, and optional cloud sign-in."}
@@ -161,29 +161,7 @@ export default function AccountClient() {
                 You are browsing as a <span className="font-semibold">guest</span>. History is kept
                 only until you close this browser tab.
               </p>
-              <form
-                className="space-y-3"
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const { error } = await signInWithEmail(email);
-                  setMessage(error ?? "Check your email for the magic link.");
-                }}
-              >
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@company.com"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950"
-                />
-                <button
-                  type="submit"
-                  className="w-full rounded-full bg-slate-950 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
-                >
-                  Send magic link
-                </button>
-              </form>
+              <MagicLinkSignInForm />
             </div>
           )}
         </div>
@@ -310,29 +288,7 @@ export default function AccountClient() {
                   </button>
                 </div>
               ) : (
-                <form
-                  className="mt-4 space-y-3"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const { error } = await signInWithEmail(email);
-                    setMessage(error ?? "Check your email for the magic link.");
-                  }}
-                >
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full rounded-full bg-slate-950 py-2 text-sm font-semibold text-white dark:bg-white dark:text-slate-950"
-                  >
-                    Send magic link
-                  </button>
-                </form>
+                <MagicLinkSignInForm className="mt-4" />
               )}
             </div>
           ) : null}

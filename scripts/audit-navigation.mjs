@@ -28,16 +28,13 @@ const audit = await page.evaluate(() => {
 
   if (sidebar) {
     const r = sidebar.getBoundingClientRect();
-    // Icon rail is ~4rem; sample near the rail center.
-    results.push(hitTest("sidebar-top", r.left + 20, r.top + 150));
-    results.push(hitTest("sidebar-mid", r.left + 20, r.top + 280));
-    results.push(hitTest("sidebar-link-area", r.left + 20, r.top + 220));
+    results.push(hitTest("category-bar", r.left + 120, r.top + r.height / 2));
   }
 
-  const drawer = document.querySelector("#products-nav-drawer:not([hidden])");
-  if (drawer) {
-    const r = drawer.getBoundingClientRect();
-    results.push(hitTest("drawer-mid", r.left + 80, r.top + 220));
+  const dropdown = document.querySelector("#products-module-dropdown");
+  if (dropdown) {
+    const r = dropdown.getBoundingClientRect();
+    results.push(hitTest("dropdown-mid", r.left + 120, r.top + 80));
   }
 
   if (workflow) {
@@ -67,7 +64,6 @@ const audit = await page.evaluate(() => {
 
   const widePlots = [...document.querySelectorAll(".js-plotly-plot, [data-export-plot]")].map((el) => {
     const r = el.getBoundingClientRect();
-    // Icon rail is 4rem (64px); plots should start to the right of it.
     return { cls: String(el.className).slice(0, 60), x: r.x, w: r.width, leftOfSidebar: r.x < 64 };
   });
 
@@ -81,13 +77,13 @@ const logs = [];
 page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
 page.on("pageerror", (e) => logs.push(`PAGEERROR: ${e.message}`));
 
-// Open overlay catalog, then navigate via a module link.
-const openCatalog = page.locator('[aria-controls="products-nav-drawer"]').first();
-if (await openCatalog.count()) {
-  await openCatalog.click({ timeout: 5000 });
+// Open Structural category dropdown, then navigate via a module link.
+const structuralBtn = page.locator('[aria-label="Structural Engineering modules"]').first();
+if (await structuralBtn.count()) {
+  await structuralBtn.click({ timeout: 5000 });
   await page.waitForTimeout(300);
 }
-const frameLink = page.locator("#products-nav-drawer nav a", { hasText: "Frame Analysis" });
+const frameLink = page.locator("#products-module-dropdown a", { hasText: "Frame Analysis" });
 if (await frameLink.count()) {
   await frameLink.scrollIntoViewIfNeeded();
   const href = await frameLink.getAttribute("href");
@@ -97,14 +93,14 @@ if (await frameLink.count()) {
     href: el.getAttribute("href"),
     pointerEvents: getComputedStyle(el).pointerEvents,
   }));
-  console.log("=== SIDEBAR LINK META ===");
+  console.log("=== DROPDOWN LINK META ===");
   console.log(JSON.stringify(tag, null, 2));
   await frameLink.click({ timeout: 5000 });
   try {
     await page.waitForURL(`**${href}`, { timeout: 8000 });
-    console.log("=== SIDEBAR NAV OK ===", page.url());
+    console.log("=== DROPDOWN NAV OK ===", page.url());
   } catch {
-    console.log("=== SIDEBAR NAV FAILED ===");
+    console.log("=== DROPDOWN NAV FAILED ===");
     console.log(JSON.stringify({ before, after: page.url(), expected: href }, null, 2));
   }
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { allModules, categories } from "@/data/modules";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import SiteFooter from "@/components/SiteFooter";
+import HomeSignInPanel from "@/components/home/HomeSignInPanel";
 import WorkflowDataFlow from "@/components/home/WorkflowDataFlow";
 import {
   ArrowRight,
@@ -247,13 +248,15 @@ export default function HomePageClient() {
 
               {isFreeLaunch() ? (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Early access: {moduleCount} modules, all design standards, PDF/CSV export — no signup required.
+                  Early access: {moduleCount} modules, all design standards, PDF/CSV export — browse as Guest, or sign in to sync history.
                 </p>
               ) : (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   {moduleCount} engineering modules across {categories.length} disciplines.
                 </p>
               )}
+
+              <HomeSignInPanel />
             </div>
 
             <ModulePreview />

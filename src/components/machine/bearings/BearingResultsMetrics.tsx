@@ -185,7 +185,7 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
         />
         <CalculatorMetricCard
           label="Speed margin n_lim/n"
-          value={result.speedMargin != null ? result.speedMargin.toFixed(2) : "N/A"}
+          value={result.speedMargin != null ? formatDisplayNumber(result.speedMargin) : "N/A"}
           status={result.speedMargin == null || result.speedMargin >= 1 ? "safe" : "danger"}
         />
         <CalculatorMetricCard
@@ -218,7 +218,7 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           <CalculatorMetricCard label="Housing fit" value={result.fitRecommendation.housingFit} tone="blue" />
           <CalculatorMetricCard
             label="Est. clearance"
-            numericValue={Number(result.fitRecommendation.estimatedOperatingClearanceUm.toFixed(0))}
+            numericValue={result.fitRecommendation.estimatedOperatingClearanceUm}
             unit="µm"
           />
         </CalculatorMetricGrid>
@@ -251,7 +251,7 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
           {catalogEntry?.unitSystem === "inch" && catalogEntry.boreIn != null ? (
             <CalculatorMetricCard
               label="Inch size"
-              value={`${catalogEntry.boreIn.toFixed(3)} × ${catalogEntry.outerDiameterIn?.toFixed(3)} × ${catalogEntry.widthIn?.toFixed(3)} in`}
+              value={`${formatDisplayNumber(catalogEntry.boreIn)} × ${formatDisplayNumber(catalogEntry.outerDiameterIn ?? 0)} × ${formatDisplayNumber(catalogEntry.widthIn ?? 0)} in`}
             />
           ) : null}
           {result.limitingSpeedRpm != null ? (

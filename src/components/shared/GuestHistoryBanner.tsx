@@ -35,10 +35,11 @@ export default function GuestHistoryBanner() {
           this tab session.{" "}
           {signInReady ? (
             <>
-              <Link href="/account" className="font-semibold underline">
-                Sign in
-              </Link>{" "}
-              to save your project and calculation history across devices.
+              Open <span className="font-semibold">Guest</span> in the top bar (or{" "}
+              <Link href="/" className="font-semibold underline">
+                Home
+              </Link>
+              ) to sign in and save history across devices.
             </>
           ) : (
             <>

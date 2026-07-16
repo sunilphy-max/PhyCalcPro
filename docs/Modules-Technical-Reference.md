@@ -24,8 +24,8 @@ Engineering software manual for the **66 active product modules** shipped under 
 
 ### 1.1 Navigation and layout
 
-- **Single products nav:** `src/app/products/layout.tsx` renders the category icon rail + overlay module drawer (`Sidebar`). Category layouts are passthrough wrappers — no nested module nav.
-- **Module chrome:** Each calculator page uses `CalculatorLayout` with a workspace beside the icon rail:
+- **Single products nav:** `src/app/products/layout.tsx` renders the category sub-bar with module dropdowns (`Sidebar`). Category layouts are passthrough wrappers — no nested module nav.
+- **Module chrome:** Each calculator page uses `CalculatorLayout` with a workspace under the products category bar:
   - **Inputs column** — parameters, mesh controls, calculate/save (`CalculatorInputPanel` where adopted).
   - **Results column** — plots, metric cards, engineering checks, export (`CalculatorResultsShell` / `ExportableReport`).
   - **Optional Design Summary rail** (`summary` prop) — persistent sticky checklist that can update live from inputs (bearings selection, plain bearings, housing).

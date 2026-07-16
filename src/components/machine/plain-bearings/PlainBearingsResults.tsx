@@ -284,7 +284,7 @@ export default function PlainBearingsResults({
               {result.outletTempC != null ? (
                 <CalculatorMetricCard
                   label="Outlet temperature"
-                  numericValue={Number(result.outletTempC.toFixed(1))}
+                  numericValue={result.outletTempC}
                   unit="°C"
                 />
               ) : null}
@@ -302,7 +302,7 @@ export default function PlainBearingsResults({
                   label="Min clearance"
                   value={
                     result.minRecommendedClearanceUm != null
-                      ? `${result.minRecommendedClearanceUm.toFixed(0)} µm`
+                      ? `${formatDisplayNumber(result.minRecommendedClearanceUm)} µm`
                       : "—"
                   }
                 />

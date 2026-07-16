@@ -27,9 +27,11 @@ function profile(
     assumptions: extra?.assumptions ?? [
       "Linear elastic material behavior unless noted otherwise.",
       "User is responsible for load combinations and load factors per the selected design code.",
+      "Design standard (US/EU/ISO) sets unit defaults and screening check labels — not a full code worksheet.",
     ],
     limitations: extra?.limitations ?? [
-      "Does not replace a licensed professional engineer or official code compliance review.",
+      "Professional screening / indicative workspace — does not replace a licensed PE or official code compliance review.",
+      "Where specialized evaluators are not implemented, checks map solver outputs to catalog templates for orientation only.",
     ],
     validationStatus: extra?.validationStatus ?? "indicative",
   };
@@ -134,11 +136,49 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
         { INDICATIVE: "implemented", US: "implemented", EU: "implemented", ISO: "implemented" }
       ),
     ],
-    { validationStatus: "beta" }
+    {
+      validationStatus: "beta",
+      indicativeMethod:
+        "Rectangular section von Mises with axial, bending, torsion, and transverse shear (RSS)",
+      limitations: [
+        "Uniform stress assumptions on a rectangular block — not a full member interaction formula worksheet.",
+        "Professional screening — verify critical members against AISC/Eurocode interaction equations.",
+      ],
+    }
   ),
   "load-case-manager": withCodeChecks("load-case-manager", "Load Case Manager", [
     genericIndicativeCheck("envelope_stress", "Envelope stress utilization", "utilization"),
   ]),
+  gears: withCodeChecks("gears", "Gear Design", gearChecks, {
+    validationStatus: "beta",
+    indicativeMethod: "Lewis bending + simplified Hertzian contact; ISO 6336 factors where enabled (screening)",
+    assumptions: [
+      "Uniform load distribution across face width unless noted.",
+      "ISO 6336 / scuffing / micropitting rows are screening factors, not full worksheet sign-off.",
+    ],
+    limitations: [
+      "Full AGMA/ISO 6336 worksheets, micropitting FEA, and dynamic tooth load are out of scope.",
+      "Professional screening — verify critical gears against code software before release.",
+    ],
+  }),
+  bearings: withCodeChecks("bearings", "Bearing Selection", [
+    genericIndicativeCheck("dynamic_capacity", "Dynamic load rating utilization", "utilization"),
+    genericIndicativeCheck("life_l10", "Modified rating life Lnm (L_req/Lnm)", "life"),
+    genericIndicativeCheck("static_capacity", "Static load rating C₀/P₀", "safety_factor"),
+    genericIndicativeCheck("speed_limit", "Limiting speed margin", "safety_factor"),
+  ], {
+    standardsByCode: { ISO: [{ body: "ISO", document: "281", clause: "Rating life" }] },
+    validationStatus: "beta",
+    indicativeMethod: "ISO 281 basic/modified life and ISO 76 static screening with catalog ratings",
+    assumptions: [
+      "Catalog C/C0/Pu and aISO factors follow ISO 281 / ISO 76 screening forms.",
+      "Vendor Product Select / MITCalc ±5% gold cases remain pending until pasted into the gold harness.",
+    ],
+    limitations: [
+      "Not a substitute for SKF GBLM, Bearinx elastic FEA, or full ISO 16281.",
+      "Professional screening — confirm final selection with OEM tools for critical duty.",
+    ],
+  }),
   shafts: withCodeChecks("shafts", "Shaft Design", [
     genericIndicativeCheck("von_mises", "Combined stress utilization", "utilization"),
     genericIndicativeCheck("deflection", "Shaft deflection", "deflection"),
@@ -149,21 +189,11 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       US: [{ body: "AGMA", document: "6001", note: "Interface loads" }],
       EU: [{ body: "DIN", document: "743", note: "Shaft fatigue" }],
     },
-  }),
-  gears: withCodeChecks("gears", "Gear Design", gearChecks, {
-    validationStatus: "beta",
-    indicativeMethod: "Lewis bending and simplified Hertzian contact (indicative)",
+    indicativeMethod: "Combined stress + Goodman fatigue + critical-speed screening (DIN 743 / AGMA oriented)",
     limitations: [
-      "Indicative scuffing and bending fatigue screening added; full AGMA/ISO factors not included.",
+      "DIN 743 / AGMA fatigue factors are partial — notch catalogs and full multi-station worksheets not complete.",
+      "Professional screening — verify critical shafts with specialized shaft software before release.",
     ],
-  }),
-  bearings: withCodeChecks("bearings", "Bearing Selection", [
-    genericIndicativeCheck("dynamic_capacity", "Dynamic load rating utilization", "utilization"),
-    genericIndicativeCheck("life_l10", "Modified rating life Lnm (L_req/Lnm)", "life"),
-    genericIndicativeCheck("static_capacity", "Static load rating C₀/P₀", "safety_factor"),
-    genericIndicativeCheck("speed_limit", "Limiting speed margin", "safety_factor"),
-  ], {
-    standardsByCode: { ISO: [{ body: "ISO", document: "281", clause: "Rating life" }] },
   }),
   housing: withCodeChecks("housing", "Bearing Housing", [
     genericIndicativeCheck("body_stress", "Housing body bending stress", "utilization"),
@@ -177,6 +207,16 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("stress", "Rim stress utilization", "utilization"),
     genericIndicativeCheck("energy_storage", "Energy storage capacity", "other"),
   ]),
+  "circular-plates": withCodeChecks("circular-plates", "Circular Plates", [
+    genericIndicativeCheck("deflection", "Plate deflection", "deflection"),
+    genericIndicativeCheck("stress", "Plate bending stress", "stress"),
+  ], {
+    indicativeMethod: "Axisymmetric Kirchhoff FDM with Roark closed-form reference",
+    limitations: [
+      "Thin-plate linear theory — large deflection, plasticity, and annular FEA are out of scope.",
+      "Professional screening — confirm critical plates with FEA or Roark worksheets.",
+    ],
+  }),
   bolts: withCodeChecks("bolts", "Bolt Calculator", [
     genericIndicativeCheck("tensile", "Tensile utilization", "utilization"),
     genericIndicativeCheck("shear", "Shear utilization", "utilization"),
@@ -199,6 +239,11 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
         { body: "ISO", document: "4014", note: "Hex head bolts" },
       ],
     },
+    indicativeMethod: "Single-bolt / pattern elastic force share + VDI 2230 screening where selected",
+    limitations: [
+      "Multi-bolt FEA, prying, and full VDI 2230 worksheets are screening-depth only.",
+      "Professional screening — verify critical joints with VDI/AISC software before release.",
+    ],
   }),
   welds: withCodeChecks(
     "welds",
@@ -515,8 +560,20 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   "cam-toolpaths": withCodeChecks("cam-toolpaths", "CAM Toolpaths", [
     genericIndicativeCheck("path_length", "Toolpath length", "other"),
   ], { validationStatus: "draft" }),
-  "v-belts": withCodeChecks("v-belts", "V-Belt Drive", vBeltChecks),
-  "timing-belts": withCodeChecks("timing-belts", "Timing Belt Drive", timingBeltChecks),
+  "v-belts": withCodeChecks("v-belts", "V-Belt Drive", vBeltChecks, {
+    indicativeMethod: "Classical V-belt geometry, wrap, tension, and power capacity screening",
+    limitations: [
+      "OEM catalog belt power tables and temperature derates are indicative — confirm with manufacturer charts.",
+      "Professional screening — verify critical drives against vendor software before release.",
+    ],
+  }),
+  "timing-belts": withCodeChecks("timing-belts", "Timing Belt Drive", timingBeltChecks, {
+    indicativeMethod: "Pitch geometry, center distance, and power utilization screening",
+    limitations: [
+      "Tooth shear / cord strength catalogs are not full manufacturer worksheets.",
+      "Professional screening — verify critical synchronous drives with OEM selection tools.",
+    ],
+  }),
   "roller-chains": withCodeChecks("roller-chains", "Roller Chain Drive", [
     genericIndicativeCheck("power_capacity", "Power capacity utilization", "utilization"),
     genericIndicativeCheck("chain_life", "Estimated chain life", "life"),
@@ -574,10 +631,6 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("sommerfeld", "Sommerfeld / film factor screening", "other"),
     genericIndicativeCheck("film_thickness", "Minimum film thickness", "other"),
     genericIndicativeCheck("unit_load", "Thrust unit load", "stress"),
-  ]),
-  "circular-plates": withCodeChecks("circular-plates", "Circular Plates", [
-    genericIndicativeCheck("deflection", "Plate deflection", "deflection"),
-    genericIndicativeCheck("stress", "Plate bending stress", "stress"),
   ]),
   shells: withCodeChecks("shells", "Cylindrical Shells", [
     genericIndicativeCheck("hoop_stress", "Hoop stress", "stress"),

@@ -42,9 +42,8 @@
   }
 
   /*
-   * Products shell: sticky top category sub-bar; module catalog is an overlay drawer
-   * that does not resize the calculator workspace. Isolation + overflow-x clip
-   * keep Plotly/modebar from painting over chrome.
+   * Products shell: sticky category sub-bar with inline module dropdowns.
+   * Isolation + overflow-x clip keep Plotly/modebar from painting over chrome.
    */
   .products-sidebar-wrap {
     width: 100%;
@@ -58,12 +57,8 @@
     width: 100%;
   }
 
-  .products-nav-drawer {
+  .products-module-dropdown {
     pointer-events: auto;
-  }
-
-  .products-nav-drawer[hidden] {
-    display: none;
   }
 
   .products-module-main {

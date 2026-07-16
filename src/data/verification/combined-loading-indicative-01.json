@@ -13,9 +13,9 @@
     "yieldStrength": 250000000
   },
   "expected": {
-    "vonMisesStress": 41488516.00274373,
-    "safetyFactor": 6.025763851940786
+    "vonMisesStress": 41491959.940652244,
+    "safetyFactor": 6.0252636982583105
   },
   "tolerancePercent": 2,
-  "source": "PhyCalcPro regression — combined loading v1"
+  "source": "PhyCalcPro — von Mises with RSS torsion+transverse shear (screening)"
 }

@@ -43,6 +43,11 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
     const center = fromBase(result.centerDistance, "length", lengthUnit);
     const d1 = fromBase(result.diameterDriver, "length", lengthUnit);
     const d2 = fromBase(result.diameterDriven, "length", lengthUnit);
+    const loadMultipliers = Array.from({ length: 11 }, (_, i) => 0.5 + i * 0.1);
+    const util = loadMultipliers.map((m) => result.powerUtilization * m);
+    const lifeHours = insights?.estimatedBeltLifeHours
+      ? loadMultipliers.map((m) => (insights.estimatedBeltLifeHours ?? 0) / Math.max(m, 1e-9) ** 3)
+      : null;
 
     return [
       {
@@ -72,8 +77,46 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
           />
         ),
       },
+      {
+        id: "utilization",
+        label: "Power utilization",
+        content: (
+          <EngineeringPlot
+            title="Power utilization vs load multiplier"
+            x={loadMultipliers}
+            y={util}
+            yLabel="Power utilization"
+            xLabel="Load multiplier"
+            xUnit="—"
+            unitLabel="—"
+            probeX={1}
+            showPeak={false}
+          />
+        ),
+      },
+      ...(lifeHours
+        ? [
+            {
+              id: "life",
+              label: "Belt life",
+              content: (
+                <EngineeringPlot
+                  title="Estimated belt life vs load multiplier"
+                  x={loadMultipliers}
+                  y={lifeHours}
+                  yLabel="Estimated life"
+                  xLabel="Load multiplier"
+                  xUnit="—"
+                  unitLabel="h"
+                  probeX={1}
+                  showPeak={false}
+                />
+              ),
+            } satisfies PlotPickerTab,
+          ]
+        : []),
     ];
-  }, [lengthUnit, result]);
+  }, [insights?.estimatedBeltLifeHours, lengthUnit, result]);
 
   return (
     <CalculatorResultsShell
@@ -112,7 +155,7 @@ export default function VBeltsResults({ result, lengthUnit, serviceFactor }: Pro
           {insights ? (
             <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <p className="font-medium text-slate-900 dark:text-slate-100">
-                {insights.applicationLabel} · SF {serviceFactor.toFixed(2)}
+                {insights.applicationLabel} · SF {formatDisplayNumber(serviceFactor)}
                 {insights.serviceFactorSource === "application" ? " (from application)" : " (manual override)"}
               </p>
               {insights.beltSectionNote ? (

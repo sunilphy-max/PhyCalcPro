@@ -18,4 +18,8 @@ export type CircularPlateResult = {
   roarkMaxStress: number;
   meshSegments: number;
   femDeflectionErrorPercent: number;
+  /** Radial stations from center to edge (m). */
+  radialStations: number[];
+  /** FDM deflection at each radial station (m, signed). */
+  deflectionProfile: number[];
 };

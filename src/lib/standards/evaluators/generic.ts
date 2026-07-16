@@ -140,8 +140,8 @@ export function attachModuleCalculationSpec<T extends ResultRecord>(
 
   const method =
     designCode === "INDICATIVE"
-      ? profile?.indicativeMethod
-      : `${designCode} screening (solver output mapped to catalog checks; verify against code worksheets)`;
+      ? profile?.indicativeMethod ?? "Indicative closed-form or numerical screening"
+      : `${designCode} screening — solver outputs mapped to catalog checks; not a full ${designCode} worksheet. Verify against code software for sign-off.`;
 
   const calculationSpec = buildCalculationSpec({
     moduleId,
@@ -149,6 +149,15 @@ export function attachModuleCalculationSpec<T extends ResultRecord>(
     method,
     implementedChecks,
   });
+
+  // Reinforce honesty for region codes when only the generic mapper is available.
+  if (designCode !== "INDICATIVE") {
+    const extraLimit =
+      "US/EU/ISO selection sets unit defaults and screening labels; specialized code evaluators exist only for selected modules (beams, columns, gears, combined loading, welds).";
+    if (!calculationSpec.limitations.includes(extraLimit)) {
+      calculationSpec.limitations = [...calculationSpec.limitations, extraLimit];
+    }
+  }
 
   return { ...result, calculationSpec };
 }

@@ -1,6 +1,15 @@
+"use client";
+
+import { useMemo } from "react";
 import { fromBase } from "@/lib/units/conversions";
+import EngineeringPlot from "@/components/EngineeringPlot";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
-import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
+} from "@/components/calculator/results";
 import type { MultiPulleyResult } from "@/lib/powerTransmission/multi-pulley/types";
 import type { CalculationSpec } from "@/lib/standards/types";
 
@@ -10,6 +19,70 @@ type Props = {
 };
 
 export default function MultiPulleyResults({ result, lengthUnit }: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    if (!result) return [];
+    const indices = result.wrapAnglesDeg.map((_, i) => i + 1);
+
+    const tabs: PlotPickerTab[] = [
+      {
+        id: "wrap",
+        label: "Wrap angles",
+        content: (
+          <EngineeringPlot
+            title="Wrap angle by pulley"
+            x={indices}
+            y={result.wrapAnglesDeg}
+            yLabel="Wrap angle"
+            xLabel="Pulley index"
+            xUnit="—"
+            unitLabel="°"
+            showPeak
+          />
+        ),
+      },
+    ];
+
+    if (result.radialLoads?.length) {
+      tabs.push({
+        id: "radial",
+        label: "Radial loads",
+        content: (
+          <EngineeringPlot
+            title="Radial shaft load by pulley"
+            x={result.radialLoads.map((_, i) => i + 1)}
+            y={result.radialLoads}
+            yLabel="Radial load"
+            xLabel="Pulley index"
+            xUnit="—"
+            unitLabel="N"
+            showPeak
+          />
+        ),
+      });
+    }
+
+    if (result.segmentLengths?.length) {
+      tabs.push({
+        id: "segments",
+        label: "Segment lengths",
+        content: (
+          <EngineeringPlot
+            title="Belt segment lengths"
+            x={result.segmentLengths.map((_, i) => i + 1)}
+            y={result.segmentLengths.map((v) => fromBase(v, "length", lengthUnit))}
+            yLabel="Segment length"
+            xLabel="Segment index"
+            xUnit="—"
+            unitLabel={lengthUnit}
+            showPeak
+          />
+        ),
+      });
+    }
+
+    return tabs;
+  }, [lengthUnit, result]);
+
   return (
     <CalculatorResultsShell
       moduleId="multi-pulley"
@@ -33,7 +106,8 @@ export default function MultiPulleyResults({ result, lengthUnit }: Props) {
         <>
           <CalculatorMetricCard
             label="Total belt length"
-            numericValue={fromBase(result.totalBeltLength, "length", lengthUnit)} unit={lengthUnit}
+            numericValue={fromBase(result.totalBeltLength, "length", lengthUnit)}
+            unit={lengthUnit}
             tone="blue"
             size="lg"
           />
@@ -54,7 +128,8 @@ export default function MultiPulleyResults({ result, lengthUnit }: Props) {
                 <CalculatorMetricCard
                   key={i}
                   label={`Radial load — pulley ${i + 1}`}
-                  numericValue={load} unit="N"
+                  numericValue={load}
+                  unit="N"
                 />
               ))}
             </CalculatorMetricGrid>
@@ -66,6 +141,7 @@ export default function MultiPulleyResults({ result, lengthUnit }: Props) {
             tone={result.minWrapAngle < 120 ? "red" : "green"}
             size="lg"
           />
+          <EngineeringPlotPicker tabs={plotTabs} defaultTabId="wrap" label="Result view" />
         </>
       ) : null}
     </CalculatorResultsShell>
