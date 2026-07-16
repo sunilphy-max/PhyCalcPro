@@ -13,7 +13,7 @@ export default function ProductsShell({
 
   return (
     <DesignCodeProvider>
-      <div className="products-shell flex w-full min-w-0 flex-col items-stretch lg:flex-row lg:items-start">
+      <div className="products-shell flex w-full min-w-0 flex-col items-stretch">
         <Sidebar drawerOpen={open} onDrawerOpenChange={setOpen} onToggleDrawer={toggle} />
         <div className="products-module-main min-w-0 flex-1 overflow-x-clip">{children}</div>
       </div>

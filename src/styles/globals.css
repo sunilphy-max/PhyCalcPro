@@ -42,18 +42,12 @@
   }
 
   /*
-   * Products shell: permanent ~4rem icon rail; module catalog is an overlay drawer
+   * Products shell: sticky top category sub-bar; module catalog is an overlay drawer
    * that does not resize the calculator workspace. Isolation + overflow-x clip
-   * keep Plotly/modebar from painting over the rail.
+   * keep Plotly/modebar from painting over chrome.
    */
   .products-sidebar-wrap {
     width: 100%;
-  }
-
-  @media (min-width: 1024px) {
-    .products-sidebar-wrap {
-      width: 4rem;
-    }
   }
 
   .products-sidebar {

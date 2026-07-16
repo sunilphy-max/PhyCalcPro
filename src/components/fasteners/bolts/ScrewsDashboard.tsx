@@ -1,8 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
 import type { ScrewResult } from "@/lib/fasteners/bolts/types";
-import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
-import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import EngineeringPlot from "@/components/EngineeringPlot";
+import {
+  CalculatorMetricCard,
+  CalculatorMetricGrid,
+  EngineeringPlotPicker,
+  type PlotPickerTab,
+} from "@/components/calculator/results";
 
 type Props = {
   result: ScrewResult;
@@ -15,6 +21,69 @@ function statusTone(status: string): "green" | "orange" | "red" {
 }
 
 export default function ScrewsDashboard({ result }: Props) {
+  const plotTabs = useMemo((): PlotPickerTab[] => {
+    const loadMultipliers = Array.from({ length: 13 }, (_, i) => 0.4 + i * 0.1);
+    const loads = loadMultipliers.map((m) => result.axialForce * m);
+    // Torque and stresses scale ~linearly with axial force for these screening models.
+    const torques = loadMultipliers.map((m) => result.torque * m);
+    const vonMises = loadMultipliers.map((m) => result.vonMisesStress * m);
+    const sf = loadMultipliers.map((m) => result.safetyFactor / Math.max(m, 1e-9));
+
+    return [
+      {
+        id: "torque-load",
+        label: "Torque vs load",
+        content: (
+          <EngineeringPlot
+            title="Required torque vs axial load"
+            x={loads}
+            y={torques}
+            yLabel="Torque"
+            xLabel="Axial force"
+            xUnit="N"
+            unitLabel="N·m"
+            probeX={result.axialForce}
+            showPeak={false}
+          />
+        ),
+      },
+      {
+        id: "stress-load",
+        label: "Stress vs load",
+        content: (
+          <EngineeringPlot
+            title="Von Mises stress vs axial load"
+            x={loads}
+            y={vonMises}
+            yLabel="Von Mises stress"
+            xLabel="Axial force"
+            xUnit="N"
+            unitLabel="Pa"
+            probeX={result.axialForce}
+            showPeak={false}
+          />
+        ),
+      },
+      {
+        id: "safety-load",
+        label: "Safety factor",
+        content: (
+          <EngineeringPlot
+            title="Safety factor vs axial load"
+            x={loads}
+            y={sf}
+            yLabel="Safety factor"
+            xLabel="Axial force"
+            xUnit="N"
+            unitLabel="—"
+            probeX={result.axialForce}
+            showPeak={false}
+          />
+        ),
+      },
+    ];
+  }, [result]);
+
   return (
     <div className="space-y-4">
       <CalculatorMetricGrid cols={2}>
@@ -170,6 +239,13 @@ export default function ScrewsDashboard({ result }: Props) {
           </ul>
         </div>
       ) : null}
+
+      <EngineeringPlotPicker
+        tabs={plotTabs}
+        defaultTabId="torque-load"
+        label="Sensitivity charts"
+        variant="segmented"
+      />
     </div>
   );
 }

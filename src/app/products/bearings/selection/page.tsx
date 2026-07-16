@@ -4,6 +4,7 @@ import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignC
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRollingBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
+import { applyUnitMap } from "@/lib/units/applyUnitMap";
 import { useState, useMemo, useCallback, useDeferredValue } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
@@ -166,11 +167,18 @@ function buildRatingsOverride(
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
-  const { wrapResult } = useStandardCalculation("bearings");
   const [radialLoad, setRadialLoad] = useState(500);
   const [radialUnit, setRadialUnit] = useState("N");
   const [axialLoad, setAxialLoad] = useState(100);
   const [axialUnit, setAxialUnit] = useState("N");
+  const { wrapResult } = useStandardCalculation("bearings", (units) =>
+    applyUnitMap(units, {
+      load: (unit) => {
+        setRadialUnit(unit);
+        setAxialUnit(unit);
+      },
+    })
+  );
   const [speed, setSpeed] = useState(1800);
   const [lifeHours, setLifeHours] = useState(20000);
   const [safetyFactor, setSafetyFactor] = useState(1.5);

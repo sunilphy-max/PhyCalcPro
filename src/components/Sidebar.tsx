@@ -199,37 +199,15 @@ export default function Sidebar({
 
   return (
     <div className="products-sidebar-wrap shrink-0">
-      {/* Mobile: compact bar */}
-      <div className="products-sidebar-mobile-bar sticky top-0 z-[61] flex items-center justify-between gap-3 border-b border-slate-200/70 bg-white/95 px-4 py-3 backdrop-blur-md lg:hidden dark:border-slate-700/60 dark:bg-slate-950/95">
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-slate-950 dark:text-white">PhyCalcPro</div>
-          {activeModuleTitle ? (
-            <div className="truncate text-xs text-slate-500 dark:text-slate-400">{activeModuleTitle}</div>
-          ) : (
-            <div className="text-xs text-slate-500 dark:text-slate-400">Engineering modules</div>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={toggleDrawer}
-          aria-label={drawerOpen ? "Close module menu" : "Open module menu"}
-          aria-expanded={drawerOpen}
-          aria-controls="products-nav-drawer"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-700 shadow-sm dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-200"
-        >
-          {drawerOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
-        </button>
-      </div>
-
-      {/* Desktop: permanent icon rail (always ~4rem, never pushes layout wider) */}
+      {/* Sticky category sub-bar under the site Navbar (all breakpoints) */}
       <aside
-        className="products-sidebar products-icon-rail hidden lg:flex lg:h-[100dvh] lg:max-h-[100dvh] lg:sticky lg:top-0 lg:z-[60] lg:isolate lg:w-full lg:flex-col lg:items-center lg:gap-1 lg:overflow-y-auto lg:border-r lg:border-slate-200/70 lg:bg-white/95 lg:py-4 lg:shadow-sm lg:backdrop-blur-md dark:lg:border-slate-700/60 dark:lg:bg-slate-950/95"
+        className="products-sidebar products-category-subbar sticky top-14 z-[60] isolate flex w-full items-center gap-2 border-b border-slate-200/70 bg-white/95 px-3 py-2 shadow-sm backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95 sm:gap-3 sm:px-4"
         aria-label="Module categories"
       >
         <Link
           href="/products"
           title="PhyCalcPro"
-          className="mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
         >
           PC
         </Link>
@@ -240,11 +218,12 @@ export default function Sidebar({
           aria-label={drawerOpen ? "Close module catalog" : "Open module catalog"}
           aria-expanded={drawerOpen}
           aria-controls="products-nav-drawer"
-          className="mb-3 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700/60 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800 dark:hover:text-white"
         >
           {drawerOpen ? <X className="h-4 w-4" aria-hidden /> : <Menu className="h-4 w-4" aria-hidden />}
         </button>
-        <div className="flex w-full flex-col items-center gap-1 px-1.5">
+
+        <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {visibleCategories.map((cat) => {
             const Icon = cat.icon;
             const isActive = activeCategoryFromPath === cat.id;
@@ -256,7 +235,7 @@ export default function Sidebar({
                 aria-label={cat.title}
                 aria-current={isActive ? "true" : undefined}
                 onClick={() => openCategoryInDrawer(cat.id)}
-                className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
+                className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition ${
                   isActive
                     ? "bg-gradient-to-br from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-500/20"
                     : "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
@@ -267,9 +246,15 @@ export default function Sidebar({
             );
           })}
         </div>
+
+        {activeModuleTitle ? (
+          <div className="hidden min-w-0 max-w-[10rem] shrink truncate text-xs text-slate-500 sm:block md:max-w-[14rem] dark:text-slate-400">
+            {activeModuleTitle}
+          </div>
+        ) : null}
       </aside>
 
-      {/* Overlay backdrop + drawer (mobile + desktop) */}
+      {/* Overlay backdrop + drawer */}
       {drawerOpen ? (
         <div
           className="products-nav-backdrop fixed inset-0 z-[59] bg-slate-950/40 backdrop-blur-[2px]"
@@ -285,7 +270,7 @@ export default function Sidebar({
         aria-modal={drawerOpen}
         aria-label="Engineering modules"
         aria-hidden={!drawerOpen}
-        className={`products-nav-drawer fixed inset-y-0 left-0 z-[60] flex w-[min(100vw,20rem)] flex-col overflow-hidden border-r border-slate-200/70 bg-white/95 text-slate-950 shadow-xl backdrop-blur-md transition-transform duration-300 ease-out dark:border-slate-700/60 dark:bg-slate-950/95 dark:text-slate-100 lg:left-16 ${
+        className={`products-nav-drawer fixed bottom-0 left-0 top-14 z-[60] flex w-[min(100vw,20rem)] flex-col overflow-hidden border-r border-slate-200/70 bg-white/95 text-slate-950 shadow-xl backdrop-blur-md transition-transform duration-300 ease-out dark:border-slate-700/60 dark:bg-slate-950/95 dark:text-slate-100 ${
           drawerOpen ? "translate-x-0" : "pointer-events-none -translate-x-full"
         }`}
         hidden={!drawerOpen}

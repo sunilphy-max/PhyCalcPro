@@ -4,6 +4,7 @@ import type { WithCalculationSpec } from "@/lib/standards/types";
 import ScrewsDashboard from "./ScrewsDashboard";
 import type { ScrewResult } from "@/lib/fasteners/bolts/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
+import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 
 type Props = {
   result: WithCalculationSpec<ScrewResult> | null;
@@ -23,6 +24,7 @@ export default function ScrewsResults({ result, projectName, moduleId = "power-s
       emptyMessage="Run a calculation to see results."
       heading={`Results: ${projectName}`}
       reportMeta={{ project: projectName }}
+      qualityOverrides={chartModuleQuality()}
       csvRows={
         result
           ? [

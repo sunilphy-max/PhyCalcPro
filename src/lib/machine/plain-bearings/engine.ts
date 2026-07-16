@@ -2,6 +2,7 @@ import type { PlainBearingConfig, PlainBearingResult } from "./types";
 import {
   bearingTemperatureRiseC,
   eccentricityFromSommerfeld,
+  petroffPowerLossW,
   recommendPlainJournalFits,
   sommerfeldNumber,
   specificLoadPa,
@@ -88,7 +89,6 @@ function applyMaterialLimits(
 }
 
 function solveJournalPass(c: PlainBearingConfig, viscosityPas: number): PlainBearingResult {
-  const r = c.diameter / 2;
   const cRad = c.clearance / 2;
   const ld = c.length / Math.max(c.diameter, 1e-12);
   const S = sommerfeldNumber({
@@ -101,8 +101,16 @@ function solveJournalPass(c: PlainBearingConfig, viscosityPas: number): PlainBea
   });
   const eccentricityRatio = eccentricityFromSommerfeld(S, ld);
   const minFilmThickness = cRad * (1 - eccentricityRatio);
-  const omega = (2 * Math.PI * c.speed) / 60;
-  const powerLoss = (viscosityPas * omega ** 2 * r ** 2 * c.length) / Math.max(cRad, 1e-12);
+  // Petroff concentric viscous loss (screening). Eccentric operation increases
+  // friction modestly; apply a light ε uplift so heavily loaded journals run hotter.
+  const concentricLoss = petroffPowerLossW({
+    viscosityPas,
+    speedRpm: c.speed,
+    diameterM: c.diameter,
+    lengthM: c.length,
+    radialClearanceM: cRad,
+  });
+  const powerLoss = concentricLoss * (1 + 0.35 * eccentricityRatio);
   const specLoad = specificLoadPa(c.load, c.diameter, c.length);
   const tempRise = bearingTemperatureRiseC(powerLoss, c.diameter, c.length);
   const ambient = c.ambientTempC ?? 40;
@@ -148,6 +156,15 @@ function solveJournalPass(c: PlainBearingConfig, viscosityPas: number): PlainBea
 
 function solveJournal(c: PlainBearingConfig): PlainBearingResult {
   const ambient = c.ambientTempC ?? 40;
+  const omega = (2 * Math.PI * c.speed) / 60;
+  const surfaceSpeed = omega * (c.diameter / 2);
+
+  // Explicit viscosity is the operating-film value — do not invent a VG proxy derate.
+  // Catalog oils (oilId) get Walther/temp iteration from ambient → mean film temperature.
+  if (!c.oilId) {
+    return applyMaterialLimits(solveJournalPass(c, c.viscosity), c, surfaceSpeed);
+  }
+
   let mu = resolveBaseViscosity(c, ambient);
   let last = solveJournalPass(c, mu);
   for (let i = 0; i < 3; i++) {
@@ -155,8 +172,6 @@ function solveJournal(c: PlainBearingConfig): PlainBearingResult {
     mu = viscosityAtOperatingTemp(resolveBaseViscosity(c, ambient), ambient, meanFilmTemp, c.oilId);
     last = solveJournalPass(c, mu);
   }
-  const omega = (2 * Math.PI * c.speed) / 60;
-  const surfaceSpeed = omega * (c.diameter / 2);
   return applyMaterialLimits(last, c, surfaceSpeed);
 }
 

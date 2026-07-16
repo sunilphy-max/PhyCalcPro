@@ -14,9 +14,9 @@
   },
   "expected": {
     "sommerfeldNumber": 0.00037699111843077514,
-    "eccentricityRatio": 0.95,
-    "minFilmThickness": 0.0000012500000000000012
+    "eccentricityRatio": 0.97192,
+    "minFilmThickness": 7.02e-7
   },
   "tolerancePercent": 3,
-  "source": "Sommerfeld journal bearing screening"
+  "source": "Sommerfeld journal bearing screening (Raimondi–Boyd ε vs S)"
 }

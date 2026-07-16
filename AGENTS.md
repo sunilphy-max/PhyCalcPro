@@ -11,8 +11,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Product routes (`/products/*`)
 
-- **One products nav only:** `src/app/products/layout.tsx` renders `Sidebar` (category icon rail + overlay module drawer). Category layouts (`structural`, `machine`, etc.) must be passthrough wrappers — never import `Sidebar` there.
-- **No `DashboardLayout` on product pages:** module chrome comes from `CalculatorLayout` + the products icon rail / overlay catalog. `npm run validate:layout` enforces this (also runs before `npm run build`).
+- **One products nav only:** `src/app/products/layout.tsx` renders `Sidebar` (top category sub-bar + overlay module drawer). Category layouts (`structural`, `machine`, etc.) must be passthrough wrappers — never import `Sidebar` there.
+- **No `DashboardLayout` on product pages:** module chrome comes from `CalculatorLayout` + the products category sub-bar / overlay catalog. `npm run validate:layout` enforces this (also runs before `npm run build`).
 - **Unified results UI:** use `CalculatorResultsShell`, `CalculatorMetricCard`, `CalculatorMetricGrid`, and `CalculatorResultsPanel` from `src/components/calculator/results.ts` (column buckling style). Avoid one-off slate summary cards in `*Results.tsx`.
 - **Charts:** use `EngineeringPlot` with separate `yLabel`, `unitLabel`, `xLabel`, and `xUnit` (not units baked into labels). Metric summaries must use `formatEngineeringValue` from `src/lib/display/formatEngineering.ts` so peak/max values show units.
 - **Design standard vs units:** changing US/EU/ISO/Indicative only sets **defaults** via `useDesignCodeUnits` (runs on `designCode` change, not every render). `ModuleUnitSelect` shows **all** units for the field dimension unless `restrictToProfile` is set.
