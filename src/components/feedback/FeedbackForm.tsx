@@ -70,10 +70,10 @@ export default function FeedbackForm() {
       onSubmit={submit}
       className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900"
     >
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Send feedback</h2>
+      <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Send a message</h2>
       <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
-        Share one email address and a short message. We read everything — bugs, benchmark data, feature ideas, or
-        questions about a module.
+        Share one email address and a short message. We read everything — bugs, benchmark data,
+        feature ideas, privacy questions, or module clarification requests.
       </p>
 
       <div className="mt-6 space-y-4">
@@ -129,9 +129,15 @@ export default function FeedbackForm() {
       </button>
 
       <p className="mt-4 text-xs leading-6 text-slate-500 dark:text-slate-400">
-        Your email is used only to reply if needed. See our{" "}
+        We use your email to reply if needed. Submissions may also include the current page URL and
+        browser user agent for troubleshooting, and may be rate-limited by IP. Data may be emailed
+        to our support inbox and/or stored when cloud feedback storage is configured. See our{" "}
         <a href="/legal/privacy" className="underline">
-          privacy policy
+          Privacy Policy
+        </a>{" "}
+        and{" "}
+        <a href="/legal/cookies" className="underline">
+          Cookie &amp; Storage Notice
         </a>
         .
       </p>

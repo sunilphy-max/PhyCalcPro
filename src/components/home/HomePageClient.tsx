@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { allModules, categories } from "@/data/modules";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import SiteFooter from "@/components/SiteFooter";
-import HomeSignInPanel from "@/components/home/HomeSignInPanel";
 import WorkflowDataFlow from "@/components/home/WorkflowDataFlow";
+import HomeSignInPanel from "@/components/home/HomeSignInPanel";
 import {
   ArrowRight,
   BookOpen,
@@ -584,8 +583,6 @@ export default function HomePageClient() {
           </div>
         </div>
       </section>
-
-      <SiteFooter />
     </div>
   );
 }

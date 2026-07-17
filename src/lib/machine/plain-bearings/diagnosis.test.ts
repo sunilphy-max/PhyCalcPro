@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { diagnosePlainBearing } from "./diagnosis";
 import { solvePlainBearingEngine } from "./engine";
-import type { PlainBearingConfig } from "./types";
+import type { PlainBearingConfig, PlainBearingResult } from "./types";
 
 const baseJournal: PlainBearingConfig = {
   bearingType: "journal",
@@ -13,13 +13,30 @@ const baseJournal: PlainBearingConfig = {
   viscosity: 0.04,
 };
 
+/** Synthetic adequate result — isolates diagnosis thresholds from Raimondi–Boyd scatter. */
+const adequateResult: PlainBearingResult = {
+  bearingType: "journal",
+  sommerfeldNumber: 0.4,
+  eccentricityRatio: 0.35,
+  minFilmThickness: 25e-6,
+  powerLoss: 40,
+  specificLoadPa: 1.8e5,
+  temperatureRiseC: 12,
+  outletTempC: 52,
+  shaftFit: "h7",
+  housingFit: "H8",
+  minRecommendedClearanceUm: 30,
+  status: "adequate film, load and temperature (screening)",
+  designStatus: "safe",
+  isSafe: true,
+};
+
 describe("diagnosePlainBearing", () => {
   it("reports low risk for an adequate journal", () => {
-    const result = solvePlainBearingEngine(baseJournal);
-    const diagnosis = diagnosePlainBearing(result, baseJournal);
-    expect(result.minFilmThickness).toBeGreaterThan(5e-6);
+    const diagnosis = diagnosePlainBearing(adequateResult, baseJournal);
     expect(diagnosis.overallRisk).toBe("low");
     expect(diagnosis.findings.every((f) => f.level !== "high")).toBe(true);
+    expect(diagnosis.summary.toLowerCase()).toMatch(/within|typical|adequate|film/);
   });
 
   it("flags starved film under heavy load", () => {

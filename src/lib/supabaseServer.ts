@@ -1,4 +1,6 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 
 export function isSupabaseServerConfigured(): boolean {
   if (process.env.NEXT_PUBLIC_SUPABASE_ENABLED !== "true") {
@@ -41,6 +43,34 @@ function getSupabaseAnonClient(): SupabaseClient | null {
   });
 }
 
+/** Cookie-backed server client for SSR session reads (anon key). */
+export async function createSupabaseServerComponentClient(): Promise<SupabaseClient | null> {
+  if (process.env.NEXT_PUBLIC_SUPABASE_ENABLED !== "true") return null;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (!url || !anonKey) return null;
+
+  const cookieStore = await cookies();
+
+  return createServerClient(url, anonKey, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch {
+          // Called from a Server Component — cookie writes may be ignored;
+          // Proxy / Route Handlers refresh the session.
+        }
+      },
+    },
+  });
+}
+
 export async function getUserFromRequest(
   request: Request
 ): Promise<{ id: string; email?: string } | null> {
@@ -59,3 +89,10 @@ export async function getUserFromRequest(
   return { id: data.user.id, email: data.user.email };
 }
 
+export async function getSessionUser(): Promise<User | null> {
+  const client = await createSupabaseServerComponentClient();
+  if (!client) return null;
+  const { data, error } = await client.auth.getUser();
+  if (error || !data.user) return null;
+  return data.user;
+}

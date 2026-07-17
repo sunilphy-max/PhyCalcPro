@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/supabaseServer";
+import { defaultProjectId, isDefaultProjectId } from "@/lib/persistence/defaultProject";
 import { createRecord, deleteRecord, ensureDefaultProject, listRecords } from "@/lib/persistence/repository";
 import type { CollectionName } from "@/lib/persistence/types";
 
@@ -48,14 +49,18 @@ export async function createCollection(collection: CollectionName, request: Requ
 
   try {
     const body = (await request.json()) as Record<string, unknown>;
-    const projectId = String(body.projectId ?? "default");
+    const rawProjectId = String(body.projectId ?? "default");
+    const projectId = isDefaultProjectId(rawProjectId)
+      ? defaultProjectId(auth.userId)
+      : rawProjectId;
 
-    if (projectId === "default") {
+    if (isDefaultProjectId(rawProjectId)) {
       await ensureDefaultProject(auth.userId);
     }
 
     const data = await createRecord(collection, {
       ...body,
+      projectId,
       userId: auth.userId,
     } as never);
     return NextResponse.json({ data }, { status: 201 });

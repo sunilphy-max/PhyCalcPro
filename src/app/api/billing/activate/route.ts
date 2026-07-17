@@ -3,6 +3,8 @@ import type { Entitlement } from "@/lib/licensing/types";
 import { signEntitlement, isSigningConfigured } from "@/lib/licensing/token";
 import { planById } from "@/lib/licensing/plans";
 import { getStripe } from "@/lib/billing/stripe";
+import { getUserFromRequest, getSupabaseServerClient } from "@/lib/supabaseServer";
+import { checkRateLimit, clientIpFromRequest } from "@/lib/security/rateLimit";
 
 export async function GET(request: Request) {
   if (!isSigningConfigured()) {
@@ -15,6 +17,15 @@ export async function GET(request: Request) {
   const stripe = getStripe();
   if (!stripe) {
     return NextResponse.json({ error: "Stripe is not configured." }, { status: 503 });
+  }
+
+  const ip = clientIpFromRequest(request);
+  const limited = checkRateLimit(`billing:activate:${ip}`, { limit: 30, windowMs: 60_000 });
+  if (!limited.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Try again shortly." },
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
+    );
   }
 
   const sessionId = new URL(request.url).searchParams.get("session_id");
@@ -58,11 +69,22 @@ export async function GET(request: Request) {
 
     const token = signEntitlement(entitlement);
 
+    // When the caller is signed in, persist entitlement to that account only.
+    const user = await getUserFromRequest(request);
+    if (user) {
+      const client = getSupabaseServerClient();
+      if (client) {
+        await client.from("user_entitlements").upsert({
+          userId: user.id,
+          token,
+          tier: entitlement.tier,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    }
+
     return NextResponse.json({ token, entitlement });
-  } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Activation failed" },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: "Activation failed" }, { status: 500 });
   }
 }

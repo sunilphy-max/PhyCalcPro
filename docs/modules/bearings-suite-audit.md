@@ -1,6 +1,6 @@
 # Bearings Suite — Industry Audit & Roadmap
 
-**Last updated:** bearing suite UX parity (Design Summary / advisors / sectioned PDF-Excel) + plain ΔT iteration + design-mode lube wiring.
+**Last updated:** life model ceiling screening (ISO 16281 / stress-life / hybrid ceramic + shaft slope handoff) + bearing suite UX parity.
 
 **Scope:** Rolling element selection, plain hydrodynamic bearings, and bearing housing — standalone **Bearings** category in PhyCalcPro.
 
@@ -51,8 +51,14 @@ Legacy routes redirect permanently from `/products/machine/bearings`, `plain-bea
 | Friction / power loss | SKF screening (M = ½μP·dm) | `auxiliaryChecks.ts` |
 | Temperature derating on C | Screening above 120 °C | `iso281Life.ts` |
 | Auto-design ranking | ISO 281 required C, C₀, n_lim | `catalogSelection.ts`, `machineDesign.ts` |
+| Life model ceiling (opt-in) | ISO 281 / ISO 16281 screen / stress-life | `advancedLife.ts`, `iso16281Screen.ts`, `stressLifeScreen.ts` |
+| Misalignment → Y / derate | Screening family capacities | `misalignmentFactors.ts` (manual mrad + shaft slopes) |
+| Hybrid / full ceramic | ISO 20056-inspired | `hybridCeramic.ts` |
+| Shaft slope handoff | FEM → bearings | `station0Slope` / `station1Slope` / `maxBearingSlope` (rad) |
 
 **Pu (fatigue load limit):** estimated as **0.025 × C** (ball) or **0.03 × C** (roller) when not stored per catalog entry — sufficient for screening; vendor tools use datasheet Pu.
+
+**Life ceiling disclaimer:** default path remains ISO 281 + aISO/aSKF. ISO 16281 and stress-life paths are **screening only** — not full ISO 16281:2025 FEA, and **not** SKF GBLM / AFC.
 
 ---
 
@@ -237,7 +243,7 @@ Eight cross-family profiles in `applicationMeta.ts`:
 - [x] Friction energy + CO₂ screening
 - [x] Side-by-side bearing compare under same duty
 - [x] Housing SNL/UCP/FY/SAF-class screening catalog + mounted BOM
-- [x] Expanded rolling verification JSON cases (indicative regression)
+- [x] Expanded rolling verification JSON cases (indicative regression — 12 family/duty cases; not ±5% vendor sign-off)
 - [x] Duplex/paired angular & tapered life (`pairedLoads.ts`)
 - [x] Variable load spectrum ISO 281-1 (`variableLoad.ts`)
 - [x] Fit recommendation + clearance C2/CN/C3/C4 (`fitsClearance.ts`)

@@ -12,7 +12,6 @@ import ModuleReferenceDocumentation from "@/components/design-workflows/ModuleRe
 import ModuleContinueWorkflowBar from "@/components/design-workflows/ModuleContinueWorkflowBar";
 import PowerTrainWorkflowStepper from "@/components/design-workflows/PowerTrainWorkflowStepper";
 import PowerTrainAssemblyBootstrap from "@/components/design-workflows/PowerTrainAssemblyBootstrap";
-import GuestHistoryBanner from "@/components/shared/GuestHistoryBanner";
 import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
 import { PowerTrainAssemblyProvider, usePowerTrainAssemblyOptional } from "@/contexts/PowerTrainAssemblyContext";
 import { CalculatorReportProvider, useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
@@ -147,8 +146,6 @@ function CalculatorLayoutBody({
               assumptions and limitations in the calculation basis before design use.
             </div>
           ) : null}
-
-          <GuestHistoryBanner />
 
           {moduleId ? (
             <Suspense fallback={null}>

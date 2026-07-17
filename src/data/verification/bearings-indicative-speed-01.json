@@ -1,0 +1,29 @@
+{
+  "id": "bearings-indicative-speed-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Deep groove high speed — n_lim/n margin",
+  "inputs": {
+    "radialLoad": 2000,
+    "axialLoad": 0,
+    "speed": 8000,
+    "lifeHours": 10000,
+    "safetyFactor": 1.5,
+    "bearingType": "deep_groove",
+    "limitingSpeedRpm": 20000,
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 14800,
+      "staticRatingFactor": 7800,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 2000,
+    "requiredDynamicRating": 50605.95991810495,
+    "staticSafetyFactor": 3.9,
+    "speedMargin": 2.5
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bearings-indicative-speed-01"
+}

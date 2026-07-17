@@ -4,7 +4,7 @@ import { getSupabaseSetupStatus } from "@/lib/supabase/setupStatus";
 const SETUP_STEPS = [
   "Create a free project at supabase.com",
   "Run scripts/workspace_schema.sql in the SQL Editor",
-  "Enable Email auth (magic link) and add redirect URL: {APP_URL}/account",
+  "Enable Email auth (password + magic link) and add redirect URLs: {APP_URL}/auth/callback, {APP_URL}/account, {APP_URL}/auth/reset-password",
   "Set NEXT_PUBLIC_SUPABASE_ENABLED=true plus URL, anon key, and service role key",
   "Redeploy (Vercel) or restart npm run dev",
 ] as const;

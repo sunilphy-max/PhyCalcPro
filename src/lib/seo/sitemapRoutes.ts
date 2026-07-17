@@ -22,10 +22,12 @@ const CATEGORY_IDS = new Set([
  */
 const STATIC_ROUTES = [
   "/",
+  "/about",
   "/documentation",
   "/documentation/modules",
   "/documentation/reference",
   "/documentation/supabase",
+  "/legal/cookies",
   "/legal/privacy",
   "/legal/terms",
   "/pricing",

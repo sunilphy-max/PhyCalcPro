@@ -1,0 +1,28 @@
+{
+  "id": "bearings-indicative-duplex-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Angular contact back-to-back (O) duplex screening",
+  "inputs": {
+    "radialLoad": 5000,
+    "axialLoad": 3000,
+    "speed": 2500,
+    "lifeHours": 15000,
+    "safetyFactor": 1.5,
+    "bearingType": "angular_contact",
+    "arrangement": "back_to_back",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 16800,
+      "staticRatingFactor": 9800,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 2500,
+    "requiredDynamicRating": 49138.901141416805,
+    "staticSafetyFactor": 3.1012658227848102
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bearings-indicative-duplex-01"
+}

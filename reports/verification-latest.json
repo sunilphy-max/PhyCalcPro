@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-16T05:11:34.836Z",
-  "total": 81,
-  "passed": 81,
+  "ranAt": "2026-07-17T03:41:21.802Z",
+  "total": 86,
+  "passed": 86,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -157,6 +157,118 @@
       ]
     },
     {
+      "caseId": "bearings-indicative-duplex-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 2500,
+          "actual": 2500,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 49138.901141416805,
+          "actual": 49138.901141416805,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 3.1012658227848102,
+          "actual": 3.1012658227848102,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-needle-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 4000,
+          "actual": 4000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 46176.81804435646,
+          "actual": 46176.81804435646,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 8,
+          "actual": 8,
+          "pass": true
+        },
+        {
+          "field": "speedMargin",
+          "expected": 8,
+          "actual": 8,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-self-aligning-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 3500,
+          "actual": 3500,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 70290.4597586278,
+          "actual": 70290.4597586278,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 1.1428571428571428,
+          "actual": 1.1428571428571428,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-speed-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 2000,
+          "actual": 2000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 50605.95991810495,
+          "actual": 50605.95991810495,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 3.9,
+          "actual": 3.9,
+          "pass": true
+        },
+        {
+          "field": "speedMargin",
+          "expected": 2.5,
+          "actual": 2.5,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "bearings-indicative-spherical-01",
       "moduleId": "bearings",
       "pass": true,
@@ -177,6 +289,31 @@
           "field": "staticSafetyFactor",
           "expected": 7.083333333333333,
           "actual": 7.083333333333333,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "bearings-indicative-static-01",
+      "moduleId": "bearings",
+      "pass": true,
+      "fields": [
+        {
+          "field": "equivalentLoad",
+          "expected": 15000,
+          "actual": 15000,
+          "pass": true
+        },
+        {
+          "field": "requiredDynamicRating",
+          "expected": 119549.08903304374,
+          "actual": 119549.08903304374,
+          "pass": true
+        },
+        {
+          "field": "staticSafetyFactor",
+          "expected": 0.52,
+          "actual": 0.52,
           "pass": true
         }
       ]
@@ -1668,7 +1805,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468234,
+          "actual": 256.9198297468195,
           "pass": true
         }
       ]
@@ -1681,7 +1818,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 81.24490028971941,
-          "actual": 81.24490028971941,
+          "actual": 81.24490028971779,
           "pass": true
         }
       ]

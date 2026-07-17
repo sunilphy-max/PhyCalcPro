@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import SearchBar from "@/components/SearchBar";
 import PhyCalcMark from "@/components/brand/PhyCalcMark";
@@ -22,6 +23,9 @@ const allNavigationItems = [
 ] as const;
 
 export default function Navbar() {
+  const pathname = usePathname();
+  // On product pages the search box renders below the category sub-bar instead.
+  const isProductsRoute = pathname?.startsWith("/products") ?? false;
   const { isMonetizationEnabled } = useEntitlement();
   const accountNavVisible = showAccountNav();
   const navigationItems = useMemo(
@@ -105,13 +109,15 @@ export default function Navbar() {
         </div>
       </div>
 
-      <div className="border-t border-slate-200 bg-white/95 px-4 py-2 dark:border-slate-800 dark:bg-slate-950/95 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl justify-end">
-          <div className="w-full max-w-md sm:max-w-lg">
-            <SearchBar />
+      {!isProductsRoute ? (
+        <div className="border-t border-slate-200 bg-white/95 px-4 py-2 dark:border-slate-800 dark:bg-slate-950/95 sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-7xl justify-end">
+            <div className="w-full max-w-md sm:max-w-lg">
+              <SearchBar />
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 px-4 pb-4 dark:border-slate-800 dark:bg-slate-950/95">

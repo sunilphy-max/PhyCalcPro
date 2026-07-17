@@ -1,5 +1,6 @@
 ﻿import "../styles/globals.css";
 import Navbar from "@/components/Navbar";
+import SiteFooter from "@/components/SiteFooter";
 import ValidationModeBanner from "@/components/licensing/ValidationModeBanner";
 import { EntitlementProvider } from "@/contexts/EntitlementContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -22,6 +23,7 @@ export default function RootLayout({
               <ValidationModeBanner />
               <Navbar />
               <main className="min-h-screen">{children}</main>
+              <SiteFooter />
             </PersistenceProvider>
           </AuthProvider>
         </EntitlementProvider>

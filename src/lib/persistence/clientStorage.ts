@@ -1,4 +1,5 @@
 import { getAuthHeaders } from "./authHeaders";
+import { defaultProjectId } from "./defaultProject";
 
 export type PersistenceMode = "guest" | "authenticated";
 
@@ -17,6 +18,7 @@ export type SavedStudy = {
 
 const KEY_PREFIX = "phycalcpro:";
 const SESSION_PREFIX = `${KEY_PREFIX}session:`;
+const USER_PREFIX = `${KEY_PREFIX}user:`;
 const KEY_SUFFIX = ":projects";
 const MAX_PROJECTS = 50;
 
@@ -47,11 +49,14 @@ function createProjectId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function getProjectsKey(namespace: string, mode: PersistenceMode = currentMode) {
+function getProjectsKey(namespace: string, mode: PersistenceMode = currentMode, userId = currentUserId) {
   if (mode === "guest") {
     return `${SESSION_PREFIX}${namespace}${KEY_SUFFIX}`;
   }
-  return `${KEY_PREFIX}${namespace}${KEY_SUFFIX}`;
+  if (!userId) {
+    return `${KEY_PREFIX}${namespace}${KEY_SUFFIX}`;
+  }
+  return `${USER_PREFIX}${userId}:${namespace}${KEY_SUFFIX}`;
 }
 
 function getStorage(mode: PersistenceMode = currentMode): Storage | null {
@@ -116,32 +121,46 @@ export function listAllProjects(): SavedStudy[] {
   const storage = getStorage();
   if (!storage) return [];
 
-  const prefix = currentMode === "guest" ? SESSION_PREFIX : KEY_PREFIX;
   const studies: SavedStudy[] = [];
 
-  for (let i = 0; i < storage.length; i += 1) {
-    const key = storage.key(i);
-    if (!key || !key.startsWith(prefix) || !key.endsWith(KEY_SUFFIX)) continue;
-    const namespace = key.slice(prefix.length, key.length - KEY_SUFFIX.length);
-    try {
-      const parsed = JSON.parse(storage.getItem(key) ?? "[]");
-      if (!Array.isArray(parsed)) continue;
-      for (const item of parsed) {
-        if (item && typeof item === "object" && "id" in item && "name" in item) {
-          studies.push({
-            namespace,
-            id: String(item.id),
-            name: String(item.name),
-            created_at: String((item as { created_at?: string }).created_at ?? ""),
-          });
-        }
-      }
-    } catch {
-      // Skip unparseable namespaces.
+  if (currentMode === "guest") {
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (!key || !key.startsWith(SESSION_PREFIX) || !key.endsWith(KEY_SUFFIX)) continue;
+      const namespace = key.slice(SESSION_PREFIX.length, key.length - KEY_SUFFIX.length);
+      pushStudiesFromRaw(studies, namespace, storage.getItem(key));
+    }
+  } else if (currentUserId) {
+    const userPrefix = `${USER_PREFIX}${currentUserId}:`;
+    for (let i = 0; i < storage.length; i += 1) {
+      const key = storage.key(i);
+      if (!key || !key.startsWith(userPrefix) || !key.endsWith(KEY_SUFFIX)) continue;
+      const namespace = key.slice(userPrefix.length, key.length - KEY_SUFFIX.length);
+      pushStudiesFromRaw(studies, namespace, storage.getItem(key));
     }
   }
 
   return studies.sort((a, b) => (b.created_at > a.created_at ? 1 : -1));
+}
+
+function pushStudiesFromRaw(studies: SavedStudy[], namespace: string, raw: string | null) {
+  if (!raw) return;
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return;
+    for (const item of parsed) {
+      if (item && typeof item === "object" && "id" in item && "name" in item) {
+        studies.push({
+          namespace,
+          id: String(item.id),
+          name: String(item.name),
+          created_at: String((item as { created_at?: string }).created_at ?? ""),
+        });
+      }
+    }
+  } catch {
+    // Skip unparseable namespaces.
+  }
 }
 
 export function listSessionProjectNamespaces(): string[] {
@@ -182,10 +201,35 @@ export function clearSessionData(): void {
   window.sessionStorage.removeItem(`${SESSION_PREFIX}history`);
 }
 
+/** Clear authenticated local cache for a specific user (or legacy unscoped keys). */
+export function clearAuthenticatedLocalData(userId?: string | null): void {
+  if (typeof window === "undefined") return;
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i += 1) {
+    const key = window.localStorage.key(i);
+    if (!key) continue;
+    if (userId && key.startsWith(`${USER_PREFIX}${userId}:`)) {
+      keysToRemove.push(key);
+      continue;
+    }
+    // Legacy unscoped authenticated keys from before user scoping
+    if (
+      !userId &&
+      key.startsWith(KEY_PREFIX) &&
+      !key.startsWith(SESSION_PREFIX) &&
+      !key.startsWith(USER_PREFIX) &&
+      key.endsWith(KEY_SUFFIX)
+    ) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+}
+
 export function hydrateProjectsFromCloud(
   models: Array<{ moduleId: string; payload: Record<string, unknown> }>
 ): void {
-  if (typeof window === "undefined" || currentMode !== "authenticated") return;
+  if (typeof window === "undefined" || currentMode !== "authenticated" || !currentUserId) return;
 
   const byNamespace = new Map<string, LocalProject<object>[]>();
 
@@ -202,30 +246,34 @@ export function hydrateProjectsFromCloud(
 
   for (const [namespace, projects] of byNamespace) {
     const sorted = projects.sort((a, b) => (b.created_at > a.created_at ? 1 : -1)).slice(0, MAX_PROJECTS);
-    window.localStorage.setItem(getProjectsKey(namespace, "authenticated"), JSON.stringify(sorted));
+    window.localStorage.setItem(
+      getProjectsKey(namespace, "authenticated", currentUserId),
+      JSON.stringify(sorted)
+    );
   }
 }
 
 async function syncProjectToCloud(
   namespace: string,
   project: LocalProject<object>
-): Promise<void> {
-  if (typeof window === "undefined") return;
+): Promise<boolean> {
+  if (typeof window === "undefined" || !currentUserId) return false;
   try {
     const headers = await getAuthHeaders({ "Content-Type": "application/json" });
-    await fetch("/api/workspaces/models", {
+    const res = await fetch("/api/workspaces/models", {
       method: "POST",
       headers,
       body: JSON.stringify({
         id: project.id,
-        projectId: "default",
+        projectId: defaultProjectId(currentUserId),
         title: project.name,
         moduleId: namespace,
         payload: project,
       }),
     });
+    return res.ok;
   } catch {
-    // Offline or unconfigured backend — local copy is enough.
+    return false;
   }
 }
 
@@ -242,12 +290,16 @@ async function deleteProjectFromCloud(id: string): Promise<void> {
   }
 }
 
-export async function mergeSessionProjectsToCloud(): Promise<void> {
+export async function mergeSessionProjectsToCloud(): Promise<boolean> {
+  if (!currentUserId) return false;
   const namespaces = listSessionProjectNamespaces();
+  let allOk = true;
   for (const namespace of namespaces) {
     const projects = loadSessionProjects<object>(namespace);
     for (const project of projects) {
-      await syncProjectToCloud(namespace, project);
+      const ok = await syncProjectToCloud(namespace, project);
+      if (!ok) allOk = false;
     }
   }
+  return allOk;
 }

@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, LogOut, UserRound } from "lucide-react";
-import MagicLinkSignInForm from "@/components/account/MagicLinkSignInForm";
+import AuthForm from "@/components/account/AuthForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import { isSupabaseSignInReady, showAccountNav } from "@/lib/supabase/setupStatus";
 
-function displayNameFromEmail(email: string | undefined) {
+function displayNameFromUser(user: { email?: string; user_metadata?: Record<string, unknown> } | null) {
+  if (!user) return "Signed in";
+  const meta = user.user_metadata ?? {};
+  const fromMeta =
+    (typeof meta.display_name === "string" && meta.display_name.trim()) ||
+    (typeof meta.full_name === "string" && meta.full_name.trim()) ||
+    "";
+  if (fromMeta) return fromMeta;
+  const email = user.email;
   if (!email) return "Signed in";
   const local = email.split("@")[0]?.trim();
   return local || email;
@@ -47,7 +55,7 @@ export default function NavUserMenu() {
   const identityLabel = loading
     ? "…"
     : signedIn
-      ? displayNameFromEmail(user?.email)
+      ? displayNameFromUser(user)
       : "Guest";
   const statusHint = !signInReady && !signedIn ? "Cloud pending" : null;
 
@@ -99,7 +107,7 @@ export default function NavUserMenu() {
               <p className="mb-2 text-xs text-slate-600 dark:text-slate-300">
                 Sign in to keep projects and history across devices.
               </p>
-              <MagicLinkSignInForm compact onSuccess={() => setOpen(false)} />
+              <AuthForm compact onSuccess={() => setOpen(false)} />
             </div>
           ) : null}
 

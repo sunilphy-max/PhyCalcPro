@@ -1,4 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 let client: SupabaseClient | null = null;
 
@@ -16,7 +17,7 @@ export function isSupabaseBrowserConfigured(): boolean {
 export function getSupabaseBrowserClient(): SupabaseClient | null {
   if (!isSupabaseBrowserConfigured()) return null;
   if (!client) {
-    client = createClient(
+    client = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );

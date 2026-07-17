@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getSupabaseBrowserClient } from "@/lib/supabaseBrowser";
 import { setAccessTokenGetter } from "@/lib/persistence/authHeaders";
 import {
+  clearAuthenticatedLocalData,
   clearSessionData,
   hydrateProjectsFromCloud,
   mergeSessionProjectsToCloud,
@@ -39,7 +40,7 @@ async function fetchCloudModels(accessToken: string) {
   const res = await fetch("/api/workspaces/models", {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-  if (!res.ok) return [];
+  if (!res.ok) return null;
   const data = (await res.json()) as {
     data?: Array<{ moduleId: string; payload: Record<string, unknown> }>;
   };
@@ -50,6 +51,7 @@ export function PersistenceProvider({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const [merging, setMerging] = useState(false);
   const mergedForUserRef = useRef<string | null>(null);
+  const previousUserIdRef = useRef<string | null>(null);
 
   const mode: PersistenceMode = user ? "authenticated" : "guest";
   const userId = user?.id ?? null;
@@ -72,6 +74,15 @@ export function PersistenceProvider({ children }: { children: ReactNode }) {
   }, [mode, userId]);
 
   useEffect(() => {
+    const previous = previousUserIdRef.current;
+    if (previous && previous !== userId) {
+      // Account switched or signed out — keep other users' caches isolated.
+      clearAuthenticatedLocalData(previous);
+    }
+    previousUserIdRef.current = userId;
+  }, [userId]);
+
+  useEffect(() => {
     if (loading || !user) {
       mergedForUserRef.current = null;
       return;
@@ -86,17 +97,23 @@ export function PersistenceProvider({ children }: { children: ReactNode }) {
         const token = await getAccessToken();
         if (!token || cancelled) return;
 
-        await mergeSessionProjectsToCloud();
-        await mergeSessionHistoryToCloud();
-        clearSessionData();
-        clearSessionCalculationHistory();
+        const projectsOk = await mergeSessionProjectsToCloud();
+        const historyOk = await mergeSessionHistoryToCloud();
+
+        // Only clear guest data after successful cloud writes.
+        if (projectsOk && historyOk) {
+          clearSessionData();
+          clearSessionCalculationHistory();
+        }
 
         const models = await fetchCloudModels(token);
-        if (!cancelled) {
+        if (!cancelled && models) {
           hydrateProjectsFromCloud(models);
         }
 
-        mergedForUserRef.current = user.id;
+        if (projectsOk && historyOk && models) {
+          mergedForUserRef.current = user.id;
+        }
       } finally {
         if (!cancelled) setMerging(false);
       }

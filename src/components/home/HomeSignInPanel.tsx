@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import MagicLinkSignInForm from "@/components/account/MagicLinkSignInForm";
+import AuthForm from "@/components/account/AuthForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import { isSupabaseSignInReady, showAccountNav } from "@/lib/supabase/setupStatus";
@@ -67,7 +67,7 @@ export default function HomeSignInPanel() {
           projects across devices.
         </p>
       </div>
-      <MagicLinkSignInForm compact />
+      <AuthForm compact />
       <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
         Prefer the menu? Use <span className="font-medium">Guest</span> in the top bar on any page.
       </p>

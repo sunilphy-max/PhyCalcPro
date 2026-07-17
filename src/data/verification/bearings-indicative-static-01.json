@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-static-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Deep groove high static load — s0 screening",
+  "inputs": {
+    "radialLoad": 15000,
+    "axialLoad": 2000,
+    "speed": 500,
+    "lifeHours": 5000,
+    "safetyFactor": 1.5,
+    "bearingType": "deep_groove",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 14800,
+      "staticRatingFactor": 7800,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 15000,
+    "requiredDynamicRating": 119549.08903304374,
+    "staticSafetyFactor": 0.52
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bearings-indicative-static-01"
+}

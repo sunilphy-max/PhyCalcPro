@@ -4,9 +4,11 @@ import type { ReportRow } from "@/lib/export/reportPayload";
 import { getAuthHeaders } from "./authHeaders";
 import {
   canPersistAcrossSessions,
+  getAuthenticatedUserId,
   getPersistenceMode,
   type PersistenceMode,
 } from "./clientStorage";
+import { defaultProjectId } from "./defaultProject";
 
 export type CalculationSummary = {
   pass: number;
@@ -157,13 +159,16 @@ export async function recordCalculation(params: {
 
   writeSessionHistory([record, ...readSessionHistory()]);
 
+  const userId = getAuthenticatedUserId();
+  if (!userId) return;
+
   try {
     const headers = await getAuthHeaders({ "Content-Type": "application/json" });
     await fetch("/api/workspaces/runs", {
       method: "POST",
       headers,
       body: JSON.stringify({
-        projectId: "default",
+        projectId: defaultProjectId(userId),
         status: "succeeded",
         input: {
           moduleId,
@@ -219,18 +224,22 @@ export async function listCalculationHistory(): Promise<CalculationHistoryEntry[
   return getSessionCalculationHistory();
 }
 
-export async function mergeSessionHistoryToCloud(): Promise<void> {
+export async function mergeSessionHistoryToCloud(): Promise<boolean> {
   const records = readSessionHistory();
-  if (!records.length) return;
+  if (!records.length) return true;
 
+  const userId = getAuthenticatedUserId();
+  if (!userId) return false;
+
+  let allOk = true;
   for (const record of records) {
     try {
       const headers = await getAuthHeaders({ "Content-Type": "application/json" });
-      await fetch("/api/workspaces/runs", {
+      const res = await fetch("/api/workspaces/runs", {
         method: "POST",
         headers,
         body: JSON.stringify({
-          projectId: "default",
+          projectId: defaultProjectId(userId),
           status: "succeeded",
           input: {
             moduleId: record.moduleId,
@@ -246,10 +255,12 @@ export async function mergeSessionHistoryToCloud(): Promise<void> {
           },
         }),
       });
+      if (!res.ok) allOk = false;
     } catch {
-      // Continue merging remaining records.
+      allOk = false;
     }
   }
+  return allOk;
 }
 
 export function getHistoryStorageLabel(mode: PersistenceMode): string {

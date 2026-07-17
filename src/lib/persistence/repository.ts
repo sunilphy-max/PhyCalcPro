@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
+import { defaultProjectId } from "./defaultProject";
 import { memoryCreate, memoryDelete, memoryList, memoryUpsert } from "./memoryStore";
 import type {
   CollectionName,
@@ -26,6 +27,29 @@ function createId(prefix: string) {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+async function assertIdOwnedByUser(
+  collection: CollectionName,
+  id: string,
+  userId: string
+): Promise<void> {
+  const client = getSupabaseServerClient();
+  if (!client) {
+    const existing = memoryList<EntityByCollection[typeof collection]>(collection).find(
+      (item) => item.id === id
+    );
+    if (existing && existing.userId !== userId) {
+      throw new Error("Record belongs to another user.");
+    }
+    return;
+  }
+
+  const { data, error } = await client.from(collection).select("userId").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  if (data && (data as { userId: string }).userId !== userId) {
+    throw new Error("Record belongs to another user.");
+  }
+}
+
 async function listWithFallback<T extends keyof EntityByCollection>(
   collection: T,
   userId: string
@@ -47,9 +71,13 @@ async function listWithFallback<T extends keyof EntityByCollection>(
 
 async function createWithFallback<T extends keyof EntityByCollection>(
   collection: T,
-  payload: Omit<EntityByCollection[T], "id" | "createdAt" | "updatedAt">
+  payload: Omit<EntityByCollection[T], "id" | "createdAt" | "updatedAt"> & { id?: string }
 ): Promise<EntityByCollection[T]> {
-  const providedId = (payload as { id?: string }).id;
+  const providedId = payload.id;
+  if (providedId) {
+    await assertIdOwnedByUser(collection, providedId, payload.userId);
+  }
+
   const nextItem = {
     ...payload,
     id: providedId ?? createId(collection.slice(0, 3)),
@@ -76,20 +104,21 @@ export async function listRecords<T extends CollectionName>(
 
 export async function createRecord<T extends CollectionName>(
   collection: T,
-  payload: Omit<EntityByCollection[T], "id" | "createdAt" | "updatedAt">
+  payload: Omit<EntityByCollection[T], "id" | "createdAt" | "updatedAt"> & { id?: string }
 ): Promise<EntityByCollection[T]> {
   return createWithFallback(collection, payload);
 }
 
 export async function ensureDefaultProject(userId: string): Promise<void> {
+  const projectId = defaultProjectId(userId);
   const client = getSupabaseServerClient();
   if (!client) {
     const existing = memoryList<EntityByCollection["projects"]>("projects").find(
-      (p) => p.id === "default" && p.userId === userId
+      (p) => p.id === projectId && p.userId === userId
     );
     if (!existing) {
       memoryCreate("projects", {
-        id: "default",
+        id: projectId,
         userId,
         name: "Default",
         tags: [],
@@ -103,14 +132,14 @@ export async function ensureDefaultProject(userId: string): Promise<void> {
   const { data } = await client
     .from("projects")
     .select("id")
-    .eq("id", "default")
+    .eq("id", projectId)
     .eq("userId", userId)
     .maybeSingle();
 
   if (data) return;
 
   await client.from("projects").upsert({
-    id: "default",
+    id: projectId,
     userId,
     name: "Default",
     tags: [],

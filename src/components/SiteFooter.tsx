@@ -1,5 +1,7 @@
 import Link from "next/link";
 import PhyCalcMark from "@/components/brand/PhyCalcMark";
+import { getBuildInfo } from "@/lib/site/buildInfo";
+import { SUPPORT_EMAIL } from "@/lib/site/supportEmail";
 
 const productLinks = [
   { href: "/products", label: "All modules" },
@@ -9,18 +11,23 @@ const productLinks = [
 ];
 
 const resourceLinks = [
+  { href: "/about", label: "About" },
   { href: "/documentation", label: "Documentation" },
   { href: "/trust", label: "Trust & responsibility" },
   { href: "/status", label: "Quality dashboard" },
-  { href: "/support", label: "Support" },
+  { href: "/support", label: "Support / Contact" },
 ];
 
 const legalLinks = [
-  { href: "/legal/terms", label: "Terms" },
-  { href: "/legal/privacy", label: "Privacy" },
+  { href: "/legal/terms", label: "Terms of Service" },
+  { href: "/legal/privacy", label: "Privacy Policy" },
+  { href: "/legal/cookies", label: "Cookie & Storage Notice" },
 ];
 
 export default function SiteFooter() {
+  const year = new Date().getFullYear();
+  const { buildLabel } = getBuildInfo();
+
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
@@ -94,14 +101,23 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-slate-200 pt-8 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} PhyCalcPro. Results require independent engineering review.</p>
-          <p>
+        <div className="mt-12 flex flex-col gap-3 border-t border-slate-200 pt-8 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1">
+            <p>
+              © {year} PhyCalcPro. All rights reserved. Results require independent engineering
+              review.
+            </p>
+            <p className="text-xs">
+              Build {buildLabel}. PhyCalcPro is a product brand providing design-assist software — not
+              a substitute for licensed professional engineering services.
+            </p>
+          </div>
+          <p className="shrink-0">
             <a
-              href="mailto:support@phycalcpro.com"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="transition hover:text-slate-700 dark:hover:text-slate-200"
             >
-              support@phycalcpro.com
+              {SUPPORT_EMAIL}
             </a>
           </p>
         </div>

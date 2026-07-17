@@ -1,0 +1,27 @@
+{
+  "id": "bearings-indicative-self-aligning-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Self-aligning ball — combined Fr/Fa screening",
+  "inputs": {
+    "radialLoad": 3500,
+    "axialLoad": 800,
+    "speed": 2000,
+    "lifeHours": 20000,
+    "safetyFactor": 1.5,
+    "bearingType": "self_aligning_ball",
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 14300,
+      "staticRatingFactor": 4000,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 3500,
+    "requiredDynamicRating": 70290.4597586278,
+    "staticSafetyFactor": 1.1428571428571428
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bearings-indicative-self-aligning-01"
+}

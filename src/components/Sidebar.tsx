@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
+import SearchBar from "@/components/SearchBar";
 import { categories, type EngineeringCategory, type EngineeringModule } from "@/data/modules";
 
 type SidebarProps = {
@@ -180,6 +181,15 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
               {activeModule.title}
             </div>
           ) : null}
+        </div>
+
+        {/* Product search below the category bar */}
+        <div className="border-t border-slate-200/70 px-3 py-2 sm:px-4 dark:border-slate-700/60">
+          <div className="mx-auto flex max-w-7xl justify-end">
+            <div className="w-full max-w-md sm:max-w-lg">
+              <SearchBar />
+            </div>
+          </div>
         </div>
 
         {openCategory ? (

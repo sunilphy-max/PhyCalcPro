@@ -6,11 +6,31 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEntitlement } from "@/contexts/EntitlementContext";
 import { usePersistence } from "@/contexts/PersistenceContext";
 import { isSupabaseSignInReady, showGuestHistoryUx } from "@/lib/supabase/setupStatus";
-import MagicLinkSignInForm from "@/components/account/MagicLinkSignInForm";
+import AuthForm from "@/components/account/AuthForm";
 import SupabaseSetupPanel from "@/components/account/SupabaseSetupPanel";
 
+function displayNameFromUser(user: {
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+}) {
+  const meta = user.user_metadata ?? {};
+  const fromMeta =
+    (typeof meta.display_name === "string" && meta.display_name) ||
+    (typeof meta.full_name === "string" && meta.full_name) ||
+    "";
+  return fromMeta.trim();
+}
+
 export default function AccountClient() {
-  const { configured, user, loading, signOut } = useAuth();
+  const {
+    configured,
+    user,
+    loading,
+    signOut,
+    updateProfile,
+    updatePassword,
+    resendVerificationEmail,
+  } = useAuth();
   const persistence = usePersistence();
   const {
     entitlement,
@@ -26,15 +46,27 @@ export default function AccountClient() {
   } = useEntitlement();
   const [message, setMessage] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [profileSaving, setProfileSaving] = useState(false);
   const signInReady = isSupabaseSignInReady();
+
+  useEffect(() => {
+    if (!user) {
+      setDisplayName("");
+      return;
+    }
+    setDisplayName(displayNameFromUser(user));
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const token = await persistence.getAccessToken();
-      const headers: Record<string, string> = { "x-phycalc-user-id": user.id };
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch("/api/account/entitlement", { headers });
+      if (!token) return;
+      const res = await fetch("/api/account/entitlement", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) return;
       const data = (await res.json()) as { token?: string | null };
       if (data.token) setEntitlementToken(data.token);
@@ -49,14 +81,16 @@ export default function AccountClient() {
       return;
     }
     const accessToken = await persistence.getAccessToken();
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "x-phycalc-user-id": user.id,
-    };
-    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+    if (!accessToken) {
+      setMessage("Sign in required to sync.");
+      return;
+    }
     const res = await fetch("/api/account/entitlement", {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({ token }),
     });
     const data = await res.json();
@@ -64,16 +98,19 @@ export default function AccountClient() {
   };
 
   const openPortal = async () => {
-    if (!entitlement.stripeCustomerId) {
-      setMessage("Complete Pro checkout first to get a billing profile.");
-      return;
-    }
     setPortalLoading(true);
     try {
+      const accessToken = await persistence.getAccessToken();
+      if (!accessToken) {
+        setMessage("Sign in required to manage billing.");
+        return;
+      }
       const res = await fetch("/api/billing/portal", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId: entitlement.stripeCustomerId }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (data.url) window.location.href = data.url;
@@ -83,13 +120,15 @@ export default function AccountClient() {
     }
   };
 
+  const emailConfirmed = Boolean(user?.email_confirmed_at);
+
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div>
         <h1 className="text-3xl font-semibold text-slate-950 dark:text-white">Account</h1>
         <p className="mt-2 text-slate-600 dark:text-slate-300">
           {signInReady
-            ? "Manage your session, projects, and plan. You can also sign in from the Guest menu in the top bar or from Home."
+            ? "Manage your profile, password, projects, and plan."
             : showGuestHistoryUx()
               ? "You are in guest mode. Session history works in this tab; cloud sign-in activates when Supabase is configured."
               : "License, billing, and optional cloud sign-in."}
@@ -117,16 +156,105 @@ export default function AccountClient() {
 
       {signInReady ? (
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h2 className="text-lg font-semibold">Sign in</h2>
+          <h2 className="text-lg font-semibold">{user ? "Profile" : "Sign in"}</h2>
           {loading || persistence.merging ? (
             <p className="mt-2 text-sm text-slate-500">
               {persistence.merging ? "Syncing your session data…" : "Loading…"}
             </p>
           ) : user ? (
-            <div className="mt-3 space-y-3">
-              <p className="text-sm text-slate-600 dark:text-slate-300">
-                Signed in as <span className="font-medium">{user.email}</span>
-              </p>
+            <div className="mt-3 space-y-5">
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  Signed in as <span className="font-medium">{user.email}</span>
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Email status:{" "}
+                  {emailConfirmed ? (
+                    <span className="text-emerald-700 dark:text-emerald-300">Verified</span>
+                  ) : (
+                    <span className="text-amber-700 dark:text-amber-300">Unverified</span>
+                  )}
+                </p>
+                {!emailConfirmed && user.email ? (
+                  <button
+                    type="button"
+                    className="mt-2 text-xs font-semibold underline"
+                    onClick={async () => {
+                      const { error } = await resendVerificationEmail(user.email!);
+                      setMessage(error ?? "Verification email sent.");
+                    }}
+                  >
+                    Resend verification email
+                  </button>
+                ) : null}
+              </div>
+
+              <form
+                className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  setProfileSaving(true);
+                  setMessage(null);
+                  const { error } = await updateProfile({ displayName });
+                  setProfileSaving(false);
+                  setMessage(error ?? "Profile updated.");
+                }}
+              >
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium">Display name</span>
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={profileSaving}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                >
+                  {profileSaving ? "Saving…" : "Save profile"}
+                </button>
+              </form>
+
+              <form
+                className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800"
+                onSubmit={async (event) => {
+                  event.preventDefault();
+                  if (newPassword.length < 8) {
+                    setMessage("Password must be at least 8 characters.");
+                    return;
+                  }
+                  setProfileSaving(true);
+                  setMessage(null);
+                  const { error } = await updatePassword(newPassword);
+                  setProfileSaving(false);
+                  if (!error) setNewPassword("");
+                  setMessage(error ?? "Password updated.");
+                }}
+              >
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium">Set or change password</span>
+                  <input
+                    type="password"
+                    minLength={8}
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 8 characters"
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-950"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={profileSaving || newPassword.length < 8}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold disabled:opacity-60"
+                >
+                  Update password
+                </button>
+              </form>
+
               <p className="text-sm text-emerald-700 dark:text-emerald-300">
                 Your calculation history and saved projects are stored to your account.
               </p>
@@ -161,7 +289,13 @@ export default function AccountClient() {
                 You are browsing as a <span className="font-semibold">guest</span>. History is kept
                 only until you close this browser tab.
               </p>
-              <MagicLinkSignInForm />
+              <AuthForm />
+              <p className="text-xs text-slate-500">
+                Need to confirm an email?{" "}
+                <Link href="/auth/verify" className="underline">
+                  Resend verification
+                </Link>
+              </p>
             </div>
           )}
         </div>
@@ -198,7 +332,7 @@ export default function AccountClient() {
               >
                 Change plan
               </Link>
-              {entitlement.tier === "pro" ? (
+              {entitlement.tier === "pro" && user ? (
                 <button
                   type="button"
                   onClick={openPortal}
@@ -252,15 +386,6 @@ export default function AccountClient() {
                   Pro
                 </button>
               </div>
-              <p className="mt-2 text-xs">
-                Or add{" "}
-                <code className="rounded bg-white px-1 dark:bg-slate-800">
-                  NEXT_PUBLIC_DEV_ENTITLEMENT=pro
-                </code>{" "}
-                to{" "}
-                <code className="rounded bg-white px-1 dark:bg-slate-800">.env.local</code> and
-                restart dev.
-              </p>
             </div>
           ) : null}
 
@@ -279,16 +404,9 @@ export default function AccountClient() {
                   >
                     Sign out
                   </button>
-                  <button
-                    type="button"
-                    onClick={syncToCloud}
-                    className="block rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold"
-                  >
-                    Sync license to cloud
-                  </button>
                 </div>
               ) : (
-                <MagicLinkSignInForm className="mt-4" />
+                <AuthForm className="mt-4" />
               )}
             </div>
           ) : null}

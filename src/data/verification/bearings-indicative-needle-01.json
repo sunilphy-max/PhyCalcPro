@@ -1,0 +1,29 @@
+{
+  "id": "bearings-indicative-needle-01",
+  "moduleId": "bearings",
+  "designCode": "INDICATIVE",
+  "description": "Needle roller — compact radial, speed margin screening",
+  "inputs": {
+    "radialLoad": 4000,
+    "axialLoad": 0,
+    "speed": 1000,
+    "lifeHours": 15000,
+    "safetyFactor": 1.5,
+    "bearingType": "needle_roller",
+    "limitingSpeedRpm": 8000,
+    "material": {
+      "name": "Steel",
+      "dynamicRatingFactor": 22500,
+      "staticRatingFactor": 32000,
+      "allowableLife": 1000000
+    }
+  },
+  "expected": {
+    "equivalentLoad": 4000,
+    "requiredDynamicRating": 46176.81804435646,
+    "staticSafetyFactor": 8,
+    "speedMargin": 8
+  },
+  "tolerancePercent": 2,
+  "source": "PhyCalcPro regression — bearings-indicative-needle-01"
+}

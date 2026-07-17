@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isFeedbackEmailConfigured, notifyFeedbackByEmail } from "@/lib/feedback/notify";
-import { isRateLimited } from "@/lib/feedback/rateLimit";
+import { checkRateLimit, clientIpFromRequest } from "@/lib/feedback/rateLimit";
 import { storeFeedback } from "@/lib/feedback/store";
 import { validateFeedbackPayload } from "@/lib/feedback/validate";
 import { getSupabaseServerClient } from "@/lib/supabaseServer";
@@ -22,10 +22,7 @@ function userFacingError(emailConfigured: boolean, emailError?: string): string 
 }
 
 export async function POST(request: Request) {
-  const ip =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    request.headers.get("x-real-ip") ??
-    "unknown";
+  const ip = clientIpFromRequest(request);
 
   let body: unknown;
   try {
@@ -43,10 +40,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  if (isRateLimited(ip)) {
+  const limited = checkRateLimit(`feedback:${ip}`, { limit: 1, windowMs: 60_000 });
+  if (!limited.ok) {
     return NextResponse.json(
       { error: "Please wait a minute before sending another message." },
-      { status: 429 }
+      { status: 429, headers: { "Retry-After": String(limited.retryAfterSec) } }
     );
   }
 

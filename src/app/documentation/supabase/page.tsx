@@ -22,8 +22,9 @@ export default function SupabaseSetupPage() {
         Supabase setup
       </h1>
       <p className="mt-3 text-slate-600 dark:text-slate-300">
-        PhyCalcPro uses Supabase for email magic-link sign-in and cloud storage of saved projects
-        and calculation history. The site runs in guest mode until you complete this checklist.
+        PhyCalcPro uses Supabase for email/password and magic-link sign-in, plus cloud storage of
+        saved projects and calculation history. The site runs in guest mode until you complete this
+        checklist.
       </p>
 
       <section className="mt-10 space-y-4 text-slate-700 dark:text-slate-300">
@@ -43,22 +44,38 @@ export default function SupabaseSetupPage() {
 
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white">2. Apply the schema</h2>
         <p>
-          Open <strong>SQL Editor</strong> and run the file{" "}
+          Prefer the versioned migrations under{" "}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
+            supabase/migrations
+          </code>
+          , or open <strong>SQL Editor</strong> and run{" "}
           <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
             scripts/workspace_schema.sql
           </code>{" "}
-          from this repository. It creates <code>projects</code>, <code>models</code>,{" "}
-          <code>equations</code>, and <code>runs</code> tables.
+          (includes RLS). Optional entitlement/feedback tables:{" "}
+          <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
+            docs/supabase-schema.sql
+          </code>
+          .
         </p>
 
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white">3. Configure auth</h2>
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong>Authentication → Providers → Email</strong> — enable Email (magic link / OTP).
+            <strong>Authentication → Providers → Email</strong> — enable Email (password + magic
+            link). Require email confirmation for new sign-ups.
           </li>
           <li>
-            <strong>Authentication → URL configuration</strong> — set Site URL to your app URL and add
-            redirect URLs: <code>/account</code> on localhost and production.
+            <strong>Authentication → URL configuration</strong> — set Site URL to your app URL and
+            allow redirects to <code>/auth/callback</code>, <code>/account</code>, and{" "}
+            <code>/auth/reset-password</code> on localhost and production.
+          </li>
+          <li>
+            Full production steps (SMTP, backups, CAPTCHA, Sentry): see{" "}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
+              docs/Auth-Security-Operator-Checklist.md
+            </code>
+            .
           </li>
         </ul>
 
