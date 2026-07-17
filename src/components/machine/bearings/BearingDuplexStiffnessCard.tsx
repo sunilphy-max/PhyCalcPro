@@ -87,7 +87,7 @@ export default function BearingDuplexStiffnessCard({ result }: Props) {
               {formatDisplayNumber(thermalGrowthUm)} µm
               {thermalPreloadChangeN != null ? (
                 <span className="ml-1 font-normal text-slate-400">
-                  → {(thermalPreloadChangeN / 1000).toFixed(2)} kN
+                  → {formatDisplayNumber(thermalPreloadChangeN / 1000)} kN
                 </span>
               ) : null}
             </dd>
@@ -138,7 +138,7 @@ export default function BearingDuplexStiffnessCard({ result }: Props) {
                     {formatDisplayNumber(row.axialDisplacementUm)}
                   </td>
                   <td className="py-1 tabular-nums">
-                    {(100 * row.momentStiffnessRatioVsO).toFixed(0)}%
+                    {formatDisplayNumber(100 * row.momentStiffnessRatioVsO)}%
                   </td>
                 </tr>
               ))}

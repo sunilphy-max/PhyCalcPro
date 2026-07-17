@@ -19,5 +19,5 @@
     "maxBoltForce": 10077.822185373187
   },
   "tolerancePercent": 2,
-  "source": "PhyCalcPro regression — bolt pattern elastic v1"
+  "source": "Elastic bolt-pattern load share — circular 4-bolt group, shear+axial (screening)"
 }

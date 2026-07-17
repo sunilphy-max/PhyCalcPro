@@ -3,6 +3,7 @@
 import type { BearingCatalogEntry } from "@/data/catalogs/bearingCatalog";
 import { BEARING_MANUFACTURER_LABELS, BEARING_TYPE_LABELS } from "@/data/catalogs/bearingCatalog";
 import { sealLabelForOem, AVAILABILITY_LABEL } from "@/data/catalogs/bearing/manufacturerDesignations";
+import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 
 type Props = {
   entry: BearingCatalogEntry;
@@ -24,11 +25,15 @@ export default function BearingCatalogDetail({ entry }: Props) {
         </div>
         <div>
           <dt className="text-slate-400">Dynamic C</dt>
-          <dd className="font-medium tabular-nums">{(entry.dynamicRatingN / 1000).toFixed(2)} kN</dd>
+          <dd className="font-medium tabular-nums">
+            {formatDisplayNumber(entry.dynamicRatingN / 1000)} kN
+          </dd>
         </div>
         <div>
           <dt className="text-slate-400">Static C₀</dt>
-          <dd className="font-medium tabular-nums">{(entry.staticRatingN / 1000).toFixed(2)} kN</dd>
+          <dd className="font-medium tabular-nums">
+            {formatDisplayNumber(entry.staticRatingN / 1000)} kN
+          </dd>
         </div>
         {entry.fatigueLoadLimitN != null ? (
           <div>
@@ -37,7 +42,7 @@ export default function BearingCatalogDetail({ entry }: Props) {
               {entry.fatigueLoadLimitFromDatasheet ? " (datasheet)" : " (est.)"}
             </dt>
             <dd className="font-medium tabular-nums">
-              {(entry.fatigueLoadLimitN / 1000).toFixed(2)} kN
+              {formatDisplayNumber(entry.fatigueLoadLimitN / 1000)} kN
             </dd>
           </div>
         ) : null}
@@ -49,8 +54,8 @@ export default function BearingCatalogDetail({ entry }: Props) {
           <div>
             <dt className="text-slate-400">Inch size</dt>
             <dd className="font-medium tabular-nums">
-              {entry.boreIn?.toFixed(3)} × {entry.outerDiameterIn?.toFixed(3)} ×{" "}
-              {entry.widthIn?.toFixed(3)} in
+              {formatDisplayNumber(entry.boreIn ?? 0)} × {formatDisplayNumber(entry.outerDiameterIn ?? 0)} ×{" "}
+              {formatDisplayNumber(entry.widthIn ?? 0)} in
             </dd>
           </div>
         ) : null}

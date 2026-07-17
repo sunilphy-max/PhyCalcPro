@@ -159,12 +159,8 @@ function solveJournal(c: PlainBearingConfig): PlainBearingResult {
   const omega = (2 * Math.PI * c.speed) / 60;
   const surfaceSpeed = omega * (c.diameter / 2);
 
-  // Explicit viscosity is the operating-film value — do not invent a VG proxy derate.
-  // Catalog oils (oilId) get Walther/temp iteration from ambient → mean film temperature.
-  if (!c.oilId) {
-    return applyMaterialLimits(solveJournalPass(c, c.viscosity), c, surfaceSpeed);
-  }
-
+  // Light iterative ΔT ↔ viscosity (2–3 passes). Catalog oils use oil ν(T);
+  // explicit μ is treated as the ambient reference and scaled with a Walther VG proxy.
   let mu = resolveBaseViscosity(c, ambient);
   let last = solveJournalPass(c, mu);
   for (let i = 0; i < 3; i++) {

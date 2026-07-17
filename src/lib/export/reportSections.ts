@@ -54,3 +54,22 @@ export function sectionRowsAsReportRows(sections: ReportSection[]): ReportRow[] 
   }
   return rows;
 }
+
+/** Curated export bundle: inputs + named result sections (+ optional CSV flatten). */
+export function buildModuleReportBundles(params: {
+  inputRows: ReportRow[];
+  sections: ReportSection[];
+}): {
+  inputRows: ReportRow[];
+  sections: ReportSection[];
+  resultRows: ReportRow[];
+  csvRows: CsvRow[];
+} {
+  const { inputRows, sections } = params;
+  return {
+    inputRows,
+    sections,
+    resultRows: sectionRowsAsReportRows(sections),
+    csvRows: [...reportRowsToCsv(inputRows, "input"), ...flattenReportSectionsToCsv(sections)],
+  };
+}

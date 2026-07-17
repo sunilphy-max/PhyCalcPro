@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-07-17T03:41:21.802Z",
+  "ranAt": "2026-07-17T03:59:04.338Z",
   "total": 86,
   "passed": 86,
   "failed": 0,
@@ -1125,8 +1125,8 @@
       "fields": [
         {
           "field": "sommerfeldNumber",
-          "expected": 0.00037699111843077514,
-          "actual": 0.0003769911184307752,
+          "expected": 0.00021383316216699188,
+          "actual": 0.00021383316216699188,
           "pass": true
         },
         {
@@ -1150,8 +1150,8 @@
       "fields": [
         {
           "field": "sommerfeldNumber",
-          "expected": 0.00037699111843077514,
-          "actual": 0.0003769911184307752,
+          "expected": 0.00021383316216699188,
+          "actual": 0.00021383316216699188,
           "pass": true
         },
         {
@@ -1805,7 +1805,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468195,
+          "actual": 256.9198297468234,
           "pass": true
         }
       ]
@@ -1818,7 +1818,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 81.24490028971941,
-          "actual": 81.24490028971779,
+          "actual": 81.24490028971829,
           "pass": true
         }
       ]

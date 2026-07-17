@@ -22,5 +22,5 @@
     "safetyFactor": 1.6045684478209867
   },
   "tolerancePercent": 2,
-  "source": "PhyCalcPro regression — gears solver v1"
+  "source": "Lewis bending SF screening — spur pinion, steel Sy=250 MPa (not full ISO 6336 worksheet)"
 }

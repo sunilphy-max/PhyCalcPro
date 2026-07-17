@@ -8,7 +8,7 @@ Use this document to validate **physics, standards mapping, and design outputs**
    ```bash
    npm run test:verification
    ```
-   **67 solvers** are registered; **81+** committed benchmark cases (see [Verification status](#verification-status) below). Live counts may exceed older table rows — trust `npm run test:verification` / `last-run.json`.
+   **67 solvers** are registered; **86** committed benchmark cases (see [Verification status](#verification-status) below). Trust `npm run test:verification` / `last-run.json` if counts drift.
 
 2. For each module you rely on in production, complete the **Physics** and **Standards** columns in the tables below.
 
@@ -28,7 +28,8 @@ Critical-path polish vs rolling-bearings baseline:
 | Physics | Combined loading von Mises includes RSS torsion + transverse shear; keys case sourced to Shigley-style formulas |
 | Plots | EngineeringPlot on gears, timing/v-belts, roller-chains, multi-pulley, combined-loading, circular-plates, bolt pattern, keys-splines, pins |
 | Standards | Catalog limitations stress **screening** on critical path (gears, bearings, shafts, bolts, springs, belts, chains, keys, pins, columns) |
-| Metrics | Residual `toFixed` polish on bearings suite, v-belts, springs, plain-bearings, housing, bolt pattern |
+| Metrics | Residual `toFixed` polish on bearings suite (catalog/duplex/recommendations), shafts dashboard, v-belts, springs, housing |
+| Housing / plain bearings | Screening limitations added to Calculation Spec catalog |
 | Vendor gold | Bearings SKF/MITCalc ±5% cases remain `pending_vendor_gold` until pasted |
 
 Engineer sign-off still required for production-critical modules (Physics/Standards columns below).

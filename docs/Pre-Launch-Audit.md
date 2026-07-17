@@ -9,7 +9,7 @@
 
 ## Verdict: **Launch ready**
 
-Post-improvement pass (2026-06-07): complete website module audit and homogenization. **2026-07-16 final pass:** critical-path physics/plots/standards honesty vs rolling-bearings baseline; CI verification suite green at **81+ cases / 67 solvers** (see `npm run test:verification`). Products nav is a **top category sub-bar** + overlay catalog. Monetization remains gated under free launch. Remaining engineer work is **worksheet sign-off** and optional bearings vendor gold — not layout blockers for an indicative engineering workspace.
+Post-improvement pass (2026-06-07): complete website module audit and homogenization. **2026-07-16 final pass:** critical-path physics/plots/standards honesty vs rolling-bearings baseline; CI verification suite green at **86 cases / 67 solvers** (see `npm run test:verification`). Products nav is a **top category sub-bar** + module dropdowns. Monetization remains gated under free launch. Remaining engineer work is **worksheet sign-off** and optional bearings vendor gold — not layout blockers for an indicative engineering workspace.
 
 ## Previous verdict: **Launch with caveats**
 
@@ -25,7 +25,7 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 | `npm run build` | Pass — 153 static routes, TypeScript clean |
 | `npm run test:verification` | **13/13 pass** — gears, columns, combined-loading, compression-springs, timing-belts, bevel-gears, keys-splines, circular-plates, fatigue, shafts, v-belts, bearings, pipes |
 | Module count | **62 active modules** — matches `docs/Modules-Technical-Reference.md` |
-| Single products nav (icon rail + overlay) | `src/app/products/layout.tsx` only |
+| Single products nav (top category sub-bar + dropdowns) | `src/app/products/layout.tsx` only |
 | Free launch gating | Navbar hides Pricing/Account; `PlanBadge` hidden; `/pricing` redirects; `allFeaturesUnlocked()` true |
 | Design workflow | **Complete** — all 62 modules registered; `useSyncDesignInputs` + `useRegisterApplyDesignCandidate` on every calculator page (including advanced-systems via `AdvancedSystemCalculator`, compression-springs via `runModuleDesignMode`) |
 | Solver-backed design (spot-check) | **Gears** — pinion tooth-count sweep then module sweep; **Shafts** — live `shaftLoads` diameter sweep; **Bearings** — 6205–6210 / 6307–6312 catalog; **V-belts** — section sweep; **material-db** — catalog ranking |
@@ -172,7 +172,7 @@ See `docs/Launch-Plan.md` for env contract.
 Before announcing launch, spot-check in browser with `NEXT_PUBLIC_FREE_LAUNCH=true`:
 
 - [ ] Home loads; hero shows module count; no Pricing in nav
-- [ ] `/products` icon rail + overlay catalog — open beams, gears, v-belts, columns
+- [ ] `/products` top category sub-bar + module dropdowns — open beams, gears, v-belts, columns
 - [ ] Toggle Auto-design — design target fields appear (except inline modules: beams, columns, v-belts, compression-springs)
 - [ ] Auto-design → Calculate on gears — module/face width updates; results show metric cards with units
 - [ ] Compare mode on beams — Apply candidate loads section designation

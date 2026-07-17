@@ -213,21 +213,22 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
           label="Fatigue safety factor"
           value={
             result.fatigueSafetyFactor != null
-              ? result.fatigueSafetyFactor.toFixed(2)
+              ? formatDisplayNumber(result.fatigueSafetyFactor)
               : "N/A (set RPM)"
           }
           tone={result.fatigueStatus === "safe" ? "blue" : "amber"}
         />
         <CalculatorMetricCard
           label="1st critical speed"
-          numericValue={Number(result.criticalSpeed.toFixed(0))} unit="RPM"
+          numericValue={result.criticalSpeed}
+          unit="RPM"
           tone="blue"
         />
         <CalculatorMetricCard
           label="Critical speed margin"
           value={
             result.criticalSpeedMargin != null
-              ? `${result.criticalSpeedMargin.toFixed(2)}×`
+              ? `${formatDisplayNumber(result.criticalSpeedMargin)}×`
               : "N/A (set RPM)"
           }
           tone={
@@ -280,7 +281,11 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
 
       {result.criticalSpeedModes.length > 1 && (
         <p className="text-xs text-slate-500">
-          Higher modes: {result.criticalSpeedModes.slice(1).map((s) => `${s.toFixed(0)} RPM`).join(", ")}
+          Higher modes:{" "}
+          {result.criticalSpeedModes
+            .slice(1)
+            .map((s) => `${formatDisplayNumber(s)} RPM`)
+            .join(", ")}
         </p>
       )}
     </div>

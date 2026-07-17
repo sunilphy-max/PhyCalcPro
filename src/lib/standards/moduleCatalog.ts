@@ -203,7 +203,13 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   housing: withCodeChecks("housing", "Bearing Housing", [
     genericIndicativeCheck("body_stress", "Housing body bending stress", "utilization"),
     genericIndicativeCheck("bolt_tension", "Mounting bolt tension", "utilization"),
-  ]),
+  ], {
+    indicativeMethod: "Pillow-block / flange housing body stress and mounting-bolt tension screening",
+    limitations: [
+      "Casting FEA, seal/relube layout, and OEM housing catalogs are out of scope.",
+      "Professional screening — verify critical housings against manufacturer data sheets.",
+    ],
+  }),
   cams: withCodeChecks("cams", "Cam Design", [
     genericIndicativeCheck("pressure_angle", "Pressure angle limit", "other"),
     genericIndicativeCheck("contact_stress", "Cam contact stress", "stress"),
@@ -686,7 +692,13 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("sommerfeld", "Sommerfeld / film factor screening", "other"),
     genericIndicativeCheck("film_thickness", "Minimum film thickness", "other"),
     genericIndicativeCheck("unit_load", "Thrust unit load", "stress"),
-  ]),
+  ], {
+    indicativeMethod: "Journal/thrust plain-bearing Sommerfeld, film thickness, and unit-load screening",
+    limitations: [
+      "Not a full Raimondi–Boyd / OEM hydrodynamic worksheet or thermo-elastohydrodynamic analysis.",
+      "Professional screening — verify critical plain bearings with detailed lubrication analysis.",
+    ],
+  }),
   shells: withCodeChecks("shells", "Cylindrical Shells", [
     genericIndicativeCheck("hoop_stress", "Hoop stress", "stress"),
     genericIndicativeCheck("von_mises", "von Mises stress", "stress"),

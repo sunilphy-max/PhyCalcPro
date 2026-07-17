@@ -13,10 +13,10 @@
     "viscosity": 0.03
   },
   "expected": {
-    "sommerfeldNumber": 0.00037699111843077514,
+    "sommerfeldNumber": 0.00021383316216699188,
     "eccentricityRatio": 0.97192,
     "minFilmThickness": 7.02e-7
   },
   "tolerancePercent": 3,
-  "source": "Sommerfeld journal bearing screening (Raimondi–Boyd ε vs S)"
+  "source": "ISO 7902 journal screening — diametral clearance→radial c, μ iterated with Petroff ΔT (Raimondi–Boyd ε vs S)"
 }

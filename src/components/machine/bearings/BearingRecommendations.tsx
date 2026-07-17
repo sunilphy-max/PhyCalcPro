@@ -70,7 +70,7 @@ function MetricsStrip({
             {costBand}
             {costIndex != null ? (
               <span className="ml-1 text-xs font-normal text-slate-400">
-                (idx {costIndex.toFixed(2)})
+                (idx {formatDisplayNumber(costIndex)})
               </span>
             ) : null}
           </dd>
@@ -138,8 +138,8 @@ function CatalogRow({
         <div>
           <dt className="text-slate-400">C / C₀</dt>
           <dd className="font-medium tabular-nums">
-            {(entry.dynamicRatingN / 1000).toFixed(1)} / {(entry.staticRatingN / 1000).toFixed(1)}{" "}
-            kN
+            {formatDisplayNumber(entry.dynamicRatingN / 1000)} /{" "}
+            {formatDisplayNumber(entry.staticRatingN / 1000)} kN
           </dd>
         </div>
         <div>
