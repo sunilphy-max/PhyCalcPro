@@ -93,12 +93,12 @@ export default function DesignTargetFields({ moduleId }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-cyan-300 bg-cyan-50/80 p-4 shadow-sm dark:border-cyan-800 dark:bg-cyan-950/30">
-      <p className="text-xs font-semibold uppercase tracking-wide text-cyan-900 dark:text-cyan-200">
-        {mode === "select" ? "Compare — design targets" : "Auto-design — design targets"}
+    <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3 dark:border-slate-700 dark:bg-slate-800/40">
+      <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">
+        {mode === "select" ? "Compare targets" : "Auto-design targets"}
       </p>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Enter the loads, limits, and safety factors you want the sizing run to meet.
+      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+        Loads, limits, and safety factors for the sizing run.
       </p>
       <div className={`mt-4 ${calculatorInputGridClass}`}>
         {fields.map((field) => (

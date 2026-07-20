@@ -64,12 +64,19 @@ export function designPlateThickness(userInputs: ModuleUserInputs): ModuleDesign
   return resultFromSweep(sweepCatalogForUtilization(items), "Minimum plate thickness for deflection and bending stress.");
 }
 
+/**
+ * Circular plate thickness sweep (deflection + bending stress).
+ * Apply field `thickness` is in **mm** (circular-plates form default).
+ */
 export function designCircularPlateThickness(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const radius = userInputs.length ?? 0.25;
   const modulus = userInputs.E ?? STEEL_E;
+  // E may arrive already in Pa or as GPa*1e9 from pages; clamp to steel-like Pa range
+  const E = modulus > 1e8 ? modulus : modulus * 1e9;
   const pressure = userInputs.pressure ?? userInputs.maxForce ?? 8000;
   const deflectionLimit = userInputs.deflectionLimit ?? radius / 100;
-  const thicknessesMm = [3, 4, 5, 6, 8, 10, 12, 16, 20];
+  const allowable = userInputs.allowableStressPa ?? 170e6;
+  const thicknessesMm = [3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 25, 30];
 
   const items = thicknessesMm.map((tMm) => {
     const thickness = tMm / 1000;
@@ -77,25 +84,29 @@ export function designCircularPlateThickness(userInputs: ModuleUserInputs): Modu
       const res = solveCircularPlateEngine({
         radius,
         thickness,
-        modulus,
+        modulus: E,
         poisson: 0.3,
         pressure,
         boundary: "simply_supported",
         meshSegments: 24,
       });
-      const util = deflectionLimit > 0 ? res.maxDeflection / deflectionLimit : 0;
+      const deflUtil = deflectionLimit > 0 ? res.maxDeflection / deflectionLimit : 0;
+      const stressUtil = allowable > 0 ? res.maxStress / allowable : 0;
       return {
         label: `${tMm} mm`,
-        utilization: util,
+        utilization: Math.max(deflUtil, stressUtil),
         fields: { thickness: tMm },
-        detail: `w_max ${(res.maxDeflection * 1000).toFixed(2)} mm`,
+        detail: `w ${(res.maxDeflection * 1000).toFixed(2)} mm · σ ${(res.maxStress / 1e6).toFixed(0)} MPa`,
       };
     } catch {
       return { label: `${tMm} mm`, utilization: 99, fields: { thickness: tMm }, detail: "invalid" };
     }
   });
 
-  return resultFromSweep(sweepCatalogForUtilization(items), "Circular plate thickness sweep for deflection limit.");
+  return resultFromSweep(
+    sweepCatalogForUtilization(items),
+    "Circular plate thickness sweep for deflection and bending stress."
+  );
 }
 
 export function designFrameSection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
@@ -171,18 +182,22 @@ export function designTrussSection(userInputs: ModuleUserInputs): ModuleDesignMo
   return resultFromSweep(sweepCatalogForUtilization(items), "Truss member area sweep for axial stress.");
 }
 
+/**
+ * Solid round bar diameter sweep (MITCalc-style).
+ * Engine models a square of side d as a conservative screening proxy for Ød.
+ * Apply fields `width` / `height` / `diameter` are in **meters** (combined-loading page).
+ */
 export function designCombinedLoadingSection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const yieldStrength = userInputs.allowableStressPa ?? STEEL_YIELD;
   const targetSf = userInputs.targetSafetyFactor ?? 1.5;
-  const sizesMm = [40, 50, 60, 75, 90, 100, 120, 150];
+  const diametersMm = [30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200];
 
-  const items = sizesMm.map((hMm) => {
-    const h = hMm / 1000;
-    const w = h * 0.6;
+  const items = diametersMm.map((dMm) => {
+    const d = dMm / 1000;
     try {
       const res = solveCombinedLoadingEngine({
-        width: w,
-        height: h,
+        width: d,
+        height: d,
         axialForce: userInputs.axialLoad ?? 25000,
         bendingMoment: userInputs.bendingMoment ?? 800,
         torque: userInputs.torque ?? 400,
@@ -191,17 +206,25 @@ export function designCombinedLoadingSection(userInputs: ModuleUserInputs): Modu
       });
       const util = targetSf / Math.max(res.safetyFactor, 1e-9);
       return {
-        label: `${(w * 1000).toFixed(0)}×${hMm} mm`,
+        label: `Ø${dMm} mm`,
         utilization: util,
-        fields: { width: w * 1000, height: hMm, widthUnit: "mm", heightUnit: "mm" },
-        detail: `SF ${res.safetyFactor.toFixed(2)}`,
+        fields: { diameter: d, width: d, height: d, widthUnit: "m", heightUnit: "m" },
+        detail: `SF ${res.safetyFactor.toFixed(2)} · σ_vm ${(res.vonMisesStress / 1e6).toFixed(0)} MPa`,
       };
     } catch {
-      return { label: `${hMm} mm`, utilization: 99, fields: { height: hMm }, detail: "invalid" };
+      return {
+        label: `Ø${dMm}`,
+        utilization: 99,
+        fields: { diameter: d, width: d, height: d },
+        detail: "invalid",
+      };
     }
   });
 
-  return resultFromSweep(sweepCatalogForUtilization(items), "Solid round section for combined von Mises safety factor.");
+  return resultFromSweep(
+    sweepCatalogForUtilization(items),
+    "Solid round diameter sweep for combined von Mises safety factor."
+  );
 }
 
 export function designLoadCaseEnvelope(userInputs: ModuleUserInputs): ModuleDesignModeResult {

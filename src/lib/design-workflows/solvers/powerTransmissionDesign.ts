@@ -13,74 +13,115 @@ function fromSweep(
   return { method, best: sweep.best, ranked: sweep.ranked };
 }
 
+/** Standard metric timing pitches (mm) and tooth / width grids. */
+const TIMING_PITCHES_MM = [5, 8, 10, 14, 20];
+const TIMING_TEETH = [18, 20, 22, 24, 28, 32, 36, 40];
+const TIMING_WIDTHS_MM = [15, 20, 25, 30, 40, 50];
+
+/**
+ * Timing belt pitch × teeth × width sweep.
+ * Apply fields pitch / beltWidth are in **mm** (timing-belts page).
+ */
 export function designTimingBelt(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const power = userInputs.power ?? 5000;
   const speed = userInputs.speedDriver ?? 1450;
   const ratio = userInputs.ratio ?? 2;
-  const pitches = [0.005, 0.008, 0.01, 0.014];
+  const serviceFactor = userInputs.serviceFactor ?? 1.2;
+  const items: Array<{
+    label: string;
+    utilization: number;
+    fields: Record<string, unknown>;
+    detail: string;
+  }> = [];
 
-  const items = pitches.map((pitch) => {
-    for (const teeth of [20, 24, 28, 32]) {
-      try {
-        const res = solveTimingBeltDrive({
-          power,
-          speedDriver: speed,
-          teethDriver: teeth,
-          teethDriven: Math.round(teeth * ratio),
-          pitch,
-          beltWidth: 0.025,
-          serviceFactor: userInputs.serviceFactor ?? 1.2,
-        });
-        return {
-          label: `${(pitch * 1000).toFixed(0)} mm / ${teeth}T`,
-          utilization: res.powerUtilization,
-          fields: { pitch: pitch * 1000, teethDriver: teeth, teethDriven: Math.round(teeth * ratio) },
-          detail: `ratio ${res.ratio.toFixed(2)}`,
-        };
-      } catch {
-        continue;
+  for (const pitchMm of TIMING_PITCHES_MM) {
+    for (const teeth of TIMING_TEETH) {
+      for (const widthMm of TIMING_WIDTHS_MM) {
+        const teethDriven = Math.max(teeth + 1, Math.round(teeth * ratio));
+        try {
+          const res = solveTimingBeltDrive({
+            power,
+            speedDriver: speed,
+            teethDriver: teeth,
+            teethDriven,
+            pitch: pitchMm / 1000,
+            beltWidth: widthMm / 1000,
+            serviceFactor,
+          });
+          items.push({
+            label: `${pitchMm} mm / ${teeth}T / ${widthMm} mm`,
+            utilization: res.powerUtilization,
+            fields: {
+              pitch: pitchMm,
+              teethDriver: teeth,
+              teethDriven,
+              beltWidth: widthMm,
+            },
+            detail: `util ${(res.powerUtilization * 100).toFixed(0)}% · ratio ${res.ratio.toFixed(2)}`,
+          });
+        } catch {
+          /* skip invalid */
+        }
       }
     }
-    return { label: `${pitch}`, utilization: 99, fields: { pitch: pitch * 1000 }, detail: "invalid" };
-  });
+  }
 
-  return fromSweep(sweepCatalogForUtilization(items), "Timing belt pitch and tooth-count sweep for power capacity.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Timing belt pitch × tooth-count × width sweep for power capacity."
+  );
 }
 
 export function designRollerChain(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const power = userInputs.power ?? 8000;
   const speed = userInputs.speedDriver ?? 720;
   const ratio = userInputs.ratio ?? 2.5;
-  const pitches = ["08B", "10B", "12B", "16B"];
-  const pitchMm: Record<string, number> = { "08B": 12.7, "10B": 15.875, "12B": 19.05, "16B": 25.4 };
+  const pitches = ["08B", "10B", "12B", "16B", "20B"];
+  const pitchMm: Record<string, number> = {
+    "08B": 12.7,
+    "10B": 15.875,
+    "12B": 19.05,
+    "16B": 25.4,
+    "20B": 31.75,
+  };
+  const strandsOptions = [1, 2];
 
-  const items = pitches.map((chain) => {
-    try {
-      const res = solveRollerChainDrive({
-        power,
-        speedDriver: speed,
-        teethDriver: 19,
-        teethDriven: Math.round(19 * ratio),
-        pitch: pitchMm[chain]! / 1000,
-        serviceFactor: userInputs.serviceFactor ?? 1.3,
-        strands: 1,
-      });
-      return {
-        label: chain,
-        utilization: res.powerUtilization,
-        fields: { chainSize: chain, chainPitch: pitchMm[chain] },
-        detail: `life ${res.estimatedLifeHours.toFixed(0)} h`,
-      };
-    } catch {
-      return { label: chain, utilization: 99, fields: { chainSize: chain }, detail: "invalid" };
+  const items: Array<{
+    label: string;
+    utilization: number;
+    fields: Record<string, unknown>;
+    detail: string;
+  }> = [];
+
+  for (const chain of pitches) {
+    for (const strands of strandsOptions) {
+      try {
+        const res = solveRollerChainDrive({
+          power,
+          speedDriver: speed,
+          teethDriver: 19,
+          teethDriven: Math.round(19 * ratio),
+          pitch: pitchMm[chain]! / 1000,
+          serviceFactor: userInputs.serviceFactor ?? 1.3,
+          strands,
+        });
+        items.push({
+          label: `${chain}${strands > 1 ? ` ×${strands}` : ""}`,
+          utilization: res.powerUtilization,
+          fields: { chainSize: chain, chainPitch: pitchMm[chain], strands },
+          detail: `life ${res.estimatedLifeHours.toFixed(0)} h · util ${(res.powerUtilization * 100).toFixed(0)}%`,
+        });
+      } catch {
+        /* skip */
+      }
     }
-  });
+  }
 
-  return fromSweep(sweepCatalogForUtilization(items), "Roller chain size sweep for power and life.");
+  return fromSweep(sweepCatalogForUtilization(items), "Roller chain size/strand sweep for power and life.");
 }
 
 export function designMultiPulley(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const diameters = [100, 120, 150, 180, 200];
+  const diameters = [80, 100, 120, 150, 180, 200, 250];
   const items = diameters.map((dMm) => {
     try {
       const d1 = dMm / 1000;
@@ -90,12 +131,13 @@ export function designMultiPulley(userInputs: ModuleUserInputs): ModuleDesignMod
         centerDistances: [0.5],
         driveType: "open",
       });
-      const util = res.minWrapAngle < 120 ? 1.3 : 0.85;
+      const wrap = res.minWrapAngle ?? 0;
+      const util = wrap < 120 ? 120 / Math.max(wrap, 1) : 0.85;
       return {
         label: `D1=${dMm} mm`,
         utilization: util,
         fields: { diameter1: dMm, diameter2: dMm * 1.5 },
-        detail: `wrap ${res.minWrapAngle?.toFixed(0) ?? "—"}°`,
+        detail: `wrap ${wrap.toFixed(0)}°`,
       };
     } catch {
       return { label: `D=${dMm}`, utilization: 99, fields: { diameter1: dMm }, detail: "invalid" };

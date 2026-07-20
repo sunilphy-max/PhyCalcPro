@@ -1,5 +1,5 @@
 {
-  "ranAt": "2026-07-17T03:59:04.338Z",
+  "ranAt": "2026-07-20T01:49:54.372Z",
   "total": 86,
   "passed": 86,
   "failed": 0,
@@ -1818,7 +1818,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 81.24490028971941,
-          "actual": 81.24490028971829,
+          "actual": 81.24490028971941,
           "pass": true
         }
       ]

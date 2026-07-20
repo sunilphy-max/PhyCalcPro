@@ -88,6 +88,12 @@ export default function Page() {
   useSyncDesignInputs("combined-loading", designUserInputs);
 
   const applyDesignFields = useCallback((fields: Record<string, unknown>) => {
+    const d = fields.diameter != null ? Number(fields.diameter) : null;
+    if (d != null && Number.isFinite(d)) {
+      setWidth(d);
+      setHeight(d);
+      return;
+    }
     if (fields.width != null) setWidth(fields.width as number);
     if (fields.height != null) setHeight(fields.height as number);
   }, []);

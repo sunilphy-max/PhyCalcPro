@@ -20,6 +20,13 @@ const RIVET_DEFAULT = toRivetMaterial(
   resolveMaterial(getDefaultMaterialNameForProfile("rivet"), "rivet")
 );
 
+/** Fillet / groove leg sizes (mm) — MITCalc-style discrete series. */
+const WELD_LEG_MM = [3, 4, 5, 6, 8, 10, 12, 14, 16, 18, 20];
+const RIVET_DIAMETERS_MM = [3, 4, 5, 6, 8, 10, 12, 14, 16];
+const PIN_DIAMETERS_MM = [4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 30];
+/** Interference fit series in mm (matches shaft-hubs form display unit). */
+const INTERFERENCE_MM = [0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.12, 0.15];
+
 function fromSweep(
   sweep: ReturnType<typeof sweepCatalogForUtilization>,
   method: string
@@ -42,82 +49,108 @@ export function designBoltSize(userInputs: ModuleUserInputs): ModuleDesignModeRe
   return fromSweep(sweepCatalogForUtilization(items), "ISO coarse-thread size selection from shear stress.");
 }
 
+/**
+ * Fillet weld leg-size sweep.
+ * Apply field `weldSize` is in **meters** (matches welds page SI form state).
+ */
 export function designWeldThroat(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const sizesMm = [4, 5, 6, 8, 10, 12];
-  const items = sizesMm.map((sMm) => {
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const weldLength = userInputs.length ?? 0.15;
+  const weldCount = userInputs.weldCount ?? 2;
+  const shearForce = userInputs.shearForce ?? userInputs.maxForce ?? 20000;
+  const axialForce = userInputs.axialLoad ?? 0;
+  const eccentricity = userInputs.eccentricity ?? 0;
+
+  const items = WELD_LEG_MM.map((sMm) => {
+    const weldSizeM = sMm / 1000;
     try {
       const res = solveWeldEngine({
         weldType: "fillet",
-        weldSize: sMm / 1000,
-        weldLength: userInputs.length ?? 0.15,
-        weldCount: userInputs.weldCount ?? 2,
-        shearForce: userInputs.shearForce ?? userInputs.maxForce ?? 20000,
-        axialForce: userInputs.axialLoad ?? 0,
-        eccentricity: userInputs.eccentricity ?? 0,
+        weldSize: weldSizeM,
+        weldLength,
+        weldCount,
+        shearForce,
+        axialForce,
+        eccentricity,
         material: WELD_DEFAULT,
       });
-      const util = 1.5 / Math.max(res.safetyFactorOverall, 1e-9);
+      const util = targetSf / Math.max(res.safetyFactorOverall, 1e-9);
       return {
         label: `${sMm} mm leg`,
         utilization: util,
-        fields: { weldSize: sMm },
-        detail: `SF ${res.safetyFactorOverall.toFixed(2)}`,
+        fields: { weldSize: weldSizeM },
+        detail: `SF ${res.safetyFactorOverall.toFixed(2)} · throat ${(res.throatSize * 1000).toFixed(2)} mm`,
       };
     } catch {
-      return { label: `${sMm} mm`, utilization: 99, fields: { weldSize: sMm }, detail: "invalid" };
+      return { label: `${sMm} mm`, utilization: 99, fields: { weldSize: weldSizeM }, detail: "invalid" };
     }
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Fillet weld leg-size sweep for throat stress.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Fillet weld leg-size catalog sweep for throat / eccentric stress (target SF)."
+  );
 }
 
+/** Rivet diameter in **meters** (matches rivets page form). */
 export function designRivetDiameter(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const diametersMm = [3, 4, 5, 6, 8, 10];
-  const items = diametersMm.map((dMm) => {
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const shearForce = userInputs.shearForce ?? userInputs.maxForce ?? 8000;
+  const axialForce = userInputs.axialLoad ?? 0;
+  const quantity = userInputs.count ?? 2;
+  const plateThickness = userInputs.thickness != null ? userInputs.thickness / 1000 : 0.005;
+
+  const items = RIVET_DIAMETERS_MM.map((dMm) => {
+    const d = dMm / 1000;
     try {
       const res = solveRivetEngine({
-        rivetDiameter: dMm / 1000,
-        plateThickness: 0.005,
-        quantity: userInputs.count ?? 2,
-        shearForce: userInputs.maxForce ?? 8000,
-        axialForce: userInputs.axialLoad ?? 0,
+        rivetDiameter: d,
+        plateThickness: Math.max(plateThickness, d * 0.5),
+        quantity,
+        shearForce,
+        axialForce,
         material: RIVET_DEFAULT,
         rivetType: "solid",
       });
-      const util = 1.5 / Math.max(res.safetyFactorOverall, 1e-9);
+      const util = targetSf / Math.max(res.safetyFactorOverall, 1e-9);
       return {
         label: `Ø${dMm} mm`,
         utilization: util,
-        fields: { rivetDiameter: dMm },
+        fields: { rivetDiameter: d },
         detail: `SF ${res.safetyFactorOverall.toFixed(2)}`,
       };
     } catch {
-      return { label: `Ø${dMm}`, utilization: 99, fields: { rivetDiameter: dMm }, detail: "invalid" };
+      return { label: `Ø${dMm}`, utilization: 99, fields: { rivetDiameter: d }, detail: "invalid" };
     }
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Rivet diameter sweep for shear capacity.");
+  return fromSweep(sweepCatalogForUtilization(items), "Rivet diameter catalog sweep for shear/bearing capacity.");
 }
 
 export function designKeySelection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const keys = [
+    { w: 6, h: 6, label: "6×6" },
     { w: 8, h: 7, label: "8×7" },
     { w: 10, h: 8, label: "10×8" },
     { w: 12, h: 8, label: "12×8" },
     { w: 14, h: 9, label: "14×9" },
     { w: 16, h: 10, label: "16×10" },
+    { w: 18, h: 11, label: "18×11" },
+    { w: 20, h: 12, label: "20×12" },
   ];
   const shaftD = userInputs.shaftDiameter ?? 0.04;
+  const torque = userInputs.torque ?? 800;
+  const keyLength = userInputs.length ?? Math.max(0.04, shaftD);
   const items = keys.map((k) => {
     try {
       const res = solveKeysSplinesEngine({
-        torque: userInputs.torque ?? 800,
+        torque,
         shaftDiameter: shaftD,
         keyWidth: k.w / 1000,
         keyHeight: k.h / 1000,
-        keyLength: userInputs.length ?? 0.04,
-        yieldStress: STEEL_YIELD,
+        keyLength,
+        yieldStress: userInputs.yieldStress ?? STEEL_YIELD,
         keyType: "parallel",
       });
-      const util = (userInputs.torque ?? 800) / Math.max(res.capacityTorque, 1e-9);
+      const util = torque / Math.max(res.capacityTorque, 1e-9);
       return {
         label: k.label,
         utilization: util,
@@ -131,61 +164,67 @@ export function designKeySelection(userInputs: ModuleUserInputs): ModuleDesignMo
   return fromSweep(sweepCatalogForUtilization(items), "Parallel key size selection from torque capacity.");
 }
 
+/** Interference in **mm** (matches shaft-hubs form). */
 export function designShaftHubInterference(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const interferencesUm = [20, 30, 40, 50, 60, 80, 100];
   const shaftD = userInputs.shaftDiameter ?? 0.05;
-  const items = interferencesUm.map((um) => {
+  const torque = userInputs.torque ?? 500;
+  const hubLength = userInputs.length ?? 0.04;
+  const items = INTERFERENCE_MM.map((mm) => {
     try {
       const res = solveShaftHubEngine({
         shaftDiameter: shaftD,
         hubOuterDiameter: shaftD * 2,
-        hubLength: userInputs.length ?? 0.04,
-        interference: um / 1e6,
+        hubLength,
+        interference: mm / 1000,
         frictionCoeff: 0.12,
-        modulus: STEEL_E,
+        modulus: userInputs.E ?? STEEL_E,
       });
-      const util = (userInputs.torque ?? 500) / Math.max(res.frictionTorque, 1e-9);
+      const util = torque / Math.max(res.frictionTorque, 1e-9);
       return {
-        label: `${um} µm`,
+        label: `${mm} mm`,
         utilization: util,
-        fields: { interference: um },
+        fields: { interference: mm },
         detail: `T ${res.frictionTorque.toFixed(0)} N·m`,
       };
     } catch {
-      return { label: `${um} µm`, utilization: 99, fields: { interference: um }, detail: "invalid" };
+      return { label: `${mm} mm`, utilization: 99, fields: { interference: mm }, detail: "invalid" };
     }
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Interference fit sweep for torque transmission.");
+  return fromSweep(sweepCatalogForUtilization(items), "Interference-fit sweep for friction torque capacity.");
 }
 
+/** Pin diameter in **mm** (matches pins form). */
 export function designPinDiameter(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const diametersMm = [6, 8, 10, 12, 16, 20];
-  const items = diametersMm.map((dMm) => {
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const force = userInputs.maxForce ?? 12000;
+  const pinCount = userInputs.count ?? 1;
+  const plateThickness = userInputs.thickness != null ? userInputs.thickness / 1000 : 0.01;
+  const items = PIN_DIAMETERS_MM.map((dMm) => {
     try {
       const res = solvePinEngine({
         pinDiameter: dMm / 1000,
-        plateThickness: 0.01,
-        pinCount: userInputs.count ?? 1,
-        force: userInputs.maxForce ?? 12000,
-        pinMaterialYield: STEEL_YIELD,
+        plateThickness: Math.max(plateThickness, (dMm / 1000) * 0.6),
+        pinCount,
+        force,
+        pinMaterialYield: userInputs.yieldStress ?? STEEL_YIELD,
       });
-      const util = 1.5 / Math.max(Math.min(res.shearSafety, res.bearingSafety), 1e-9);
+      const util = targetSf / Math.max(Math.min(res.shearSafety, res.bearingSafety), 1e-9);
       return {
         label: `Ø${dMm} mm`,
         utilization: util,
         fields: { pinDiameter: dMm },
-        detail: `shear SF ${res.shearSafety.toFixed(2)}`,
+        detail: `shear SF ${res.shearSafety.toFixed(2)} · bearing SF ${res.bearingSafety.toFixed(2)}`,
       };
     } catch {
       return { label: `Ø${dMm}`, utilization: 99, fields: { pinDiameter: dMm }, detail: "invalid" };
     }
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Pin diameter sweep for shear capacity.");
+  return fromSweep(sweepCatalogForUtilization(items), "Pin diameter catalog sweep for shear and bearing SF.");
 }
 
 export function designSafetyFactorTarget(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const target = userInputs.targetSafetyFactor ?? 2;
-  const diametersMm = [20, 25, 30, 35, 40, 50];
+  const diametersMm = [16, 20, 25, 30, 35, 40, 50, 60, 80];
   const items = diametersMm.map((dMm) => {
     const d = dMm / 1000;
     try {

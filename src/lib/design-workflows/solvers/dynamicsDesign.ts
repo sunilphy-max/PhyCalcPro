@@ -17,7 +17,9 @@ function fromSweep(
 
 export function designVibrationMargin(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const excitation = userInputs.excitationHz ?? 50;
-  const inertias = [1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5];
+  /** Target minimum relative separation from excitation (|f−f_exc|/f_exc). */
+  const minSeparation = 0.2;
+  const inertias = [5e-7, 1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4];
 
   const items = inertias.map((I) => {
     try {
@@ -33,19 +35,19 @@ export function designVibrationMargin(userInputs: ModuleUserInputs): ModuleDesig
       });
       const fn = res.frequencies[0] ?? 0;
       const margin = Math.abs(fn - excitation) / Math.max(excitation, 1e-9);
-      const util = 0.15 / Math.max(margin, 1e-9);
+      const util = minSeparation / Math.max(margin, 1e-9);
       return {
         label: `I ${I.toExponential(1)} m⁴`,
         utilization: util,
         fields: { inertia: I },
-        detail: `f1 ${fn.toFixed(1)} Hz · ${res.resonanceNote.slice(0, 40)}`,
+        detail: `f1 ${fn.toFixed(1)} Hz · sep ${(margin * 100).toFixed(0)}% · ζ ${res.dampingRatio.toFixed(3)}`,
       };
     } catch {
       return { label: `I=${I}`, utilization: 99, fields: { inertia: I }, detail: "invalid" };
     }
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Section inertia sweep for modal separation margin.");
+  return fromSweep(sweepCatalogForUtilization(items), "Section inertia sweep for ≥20% modal separation margin.");
 }
 
 export function designRotationSystem(userInputs: ModuleUserInputs): ModuleDesignModeResult {

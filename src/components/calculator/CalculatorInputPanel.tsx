@@ -14,11 +14,10 @@ type Props = {
 export default function CalculatorInputPanel({ title, description, children, footer }: Props) {
   return (
     <div className={calculatorPanelClass}>
-      <div className="calculator-panel-accent absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 via-sky-500 to-cyan-400" />
       <div className="relative">
-        <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
+        <h2 className="text-base font-semibold tracking-tight text-slate-900 dark:text-white">{title}</h2>
         {description ? (
-          <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="mt-1 max-w-prose text-sm leading-relaxed text-slate-500 dark:text-slate-400">
             {description}
           </p>
         ) : null}

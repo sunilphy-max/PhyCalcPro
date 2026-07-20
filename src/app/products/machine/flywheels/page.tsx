@@ -67,6 +67,8 @@ export default function Page() {
 
   const applyDesignFields = useApplyDesignFields({
     outerDiameter: (v) => setOuterDiameter(typeof v === "number" ? v : Number(v)),
+    thickness: (v) => setThickness(typeof v === "number" ? v : Number(v)),
+    faceWidth: (v) => setFaceWidth(typeof v === "number" ? v : Number(v)),
   });
 
   useRegisterApplyDesignCandidate(applyDesignFields);

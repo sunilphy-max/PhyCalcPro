@@ -100,11 +100,13 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 
 | Level | Auto-design behavior | Compare behavior |
 |-------|----------------------|------------------|
-| `solver-backed` | Real reverse/catalog solver; best candidate applied before validation (beams, columns, gears, shafts, v-belts, vessels, advanced systems, …). | Same ranked table; Apply loads a row; no auto-apply on Calculate. |
-| `catalog-backed` | Ranks catalog entries (sections, bearings, materials) against targets. | Apply sets catalog selection into the form. |
-| `workflow` | Advisor and targets wired; button labels change; indicative/reference strategy only until a solver is registered. | Reference candidate table; Apply when fields are available. |
+| `solver-backed` | Real reverse/catalog solver; best candidate applied before validation (beams, columns, gears, shafts, v-belts, welds, timing-belts, fatigue, combined-loading, bearings, …). | Same ranked table; Apply loads a row; no auto-apply on Calculate. |
+| `catalog-backed` | Ranks catalog entries (sections, materials) against targets. | Apply sets catalog selection into the form. |
+| `workflow` | Advisor and targets wired; indicative/reference strategy until a dedicated reverse solver lands (e.g. some advanced-systems, cost-estimator). | Reference candidate table; Apply when fields are available. |
 
 **Validate-only tools:** `unit-converter` and `formula-reference` register the workflow UI for consistency; Auto-design does not resize (by design).
+
+**Fleet audit (physics + design depth):** [Module-Physics-Design-Audit.md](./Module-Physics-Design-Audit.md) — maturity, design quality, verification coverage, and apply-field unit contracts.
 
 ---
 
@@ -116,9 +118,10 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 |--------|----------|------------------------|
 | beams | FEM beam solver + code checks | Rolled-section search for stress and deflection targets |
 | columns | Buckling check | Catalog column ranking for target safety factor |
-| plates, circular-plates | Plate bending | Geometry / thickness sweeps |
+| plates, circular-plates | Plate bending | Thickness sweeps (circular: deflection + stress) |
 | trusses, frames | Equilibrium | Member size screening |
-| combined-loading, load-case-manager | Superposition checks | Load-factor sweeps |
+| combined-loading | Von Mises combination | Solid round diameter sweep |
+| load-case-manager | Envelope checks | Combined-loading proxy |
 
 ### Machine
 
@@ -135,7 +138,8 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 | Module | Validate | Auto-design / Compare |
 |--------|----------|------------------------|
 | v-belts | Power capacity, tensions, shaft loads | Belt section and pulley sweep from application + SF |
-| timing-belts, roller-chains | Tension and rating | Pitch / width / strand sweeps |
+| timing-belts | Tension and rating | Pitch × teeth × width power sweep |
+| roller-chains | Tension and rating | Pitch / strand sweeps |
 | multi-pulley | Layout equilibrium | Pulley diameter screening |
 
 ### Springs
@@ -215,7 +219,8 @@ Other machine chains:
 
 - **Tools**: No sizing candidates by design (Validate + advisor context only).
 - **Cross-module handoff**: Full power-train chain wired; assembly stepper tracks progress across modules.
-- **Workflow maturity**: Some modules remain `workflow` until dedicated design solvers land.
+- **Workflow maturity**: Residual `workflow` modules are mostly advanced-systems screening and manufacturing cost/toolpath helpers — see [Module-Physics-Design-Audit.md](./Module-Physics-Design-Audit.md).
+- **Registry**: Catalog category `bearings` must route to `designMachineModule` (fixed 2026-07-19).
 
 ---
 

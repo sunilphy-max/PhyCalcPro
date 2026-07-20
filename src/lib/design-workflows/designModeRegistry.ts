@@ -115,6 +115,8 @@ export function runModuleDesignMode(
   const category = catalogModule.category;
   if (category === "structural") return designStructuralModule(moduleId, userInputs);
   if (category === "machine") return designMachineModule(moduleId, userInputs);
+  // Bearings catalog category (bearings, plain-bearings, housing) — not "machine"
+  if (category === "bearings") return designMachineModule(moduleId, userInputs);
   if (category === "power-transmission") return designPowerTransmissionModule(moduleId, userInputs);
   if (category === "springs") return designSpringModule(moduleId, userInputs);
   if (category === "fasteners") return designFastenerModule(moduleId, userInputs);

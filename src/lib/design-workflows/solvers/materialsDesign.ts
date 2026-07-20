@@ -100,29 +100,59 @@ export function designRolledSection(userInputs: ModuleUserInputs): ModuleDesignM
   };
 }
 
+/**
+ * Reverse fatigue sizing: sweep characteristic diameter for bending (Sa ∝ 1/d³)
+ * against target life. Apply field `alternatingStress` is in **MPa** (fatigue page).
+ */
 export function designFatigueLife(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const cycles = [1e4, 5e4, 1e5, 5e5, 1e6, 5e6];
-  const items = cycles.map((n) => {
+  const sa0 = userInputs.stressAmplitude ?? 180e6;
+  const sm = userInputs.meanStress ?? 50e6;
+  const su = userInputs.ultimateStrength ?? 600e6;
+  const se = userInputs.enduranceLimit ?? 200e6;
+  const target = userInputs.targetCycles ?? 1e6;
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const d0Mm = 25;
+  const diametersMm = [12, 16, 20, 25, 30, 35, 40, 50, 60, 80];
+
+  const items = diametersMm.map((dMm) => {
+    // Same bending moment → alternating stress scales with section modulus ~ d³
+    const sa = sa0 * Math.pow(d0Mm / dMm, 3);
     try {
       const res = solveFatigueEngine({
-        alternatingStress: userInputs.stressAmplitude ?? 180e6,
-        meanStress: userInputs.meanStress ?? 50e6,
-        ultimateStrength: userInputs.ultimateStrength ?? 600e6,
-        enduranceLimit: userInputs.enduranceLimit ?? 200e6,
+        alternatingStress: sa,
+        meanStress: sm,
+        ultimateStrength: su,
+        enduranceLimit: se,
+        loadType: "bending",
+        surfaceFinish: "machined",
+        characteristicDiameter: dMm / 1000,
       });
-      const target = userInputs.targetCycles ?? 1e6;
-      const util = target / Math.max(res.predictedCycles, 1);
+      const lifeUtil = target / Math.max(res.predictedCycles, 1);
+      const sfUtil = targetSf / Math.max(res.safetyFactor, 1e-9);
       return {
-        label: `${n.toExponential(0)} cycles`,
-        utilization: util,
-        fields: { targetCycles: n },
-        detail: `SF ${res.safetyFactor?.toFixed(2) ?? "—"}`,
+        label: `Ø${dMm} mm`,
+        utilization: Math.max(lifeUtil, sfUtil),
+        fields: {
+          alternatingStress: sa / 1e6,
+          characteristicDiameterMm: dMm,
+          diameterMm: dMm,
+        },
+        detail: `Sa ${(sa / 1e6).toFixed(0)} MPa · N ${res.predictedCycles.toExponential(2)} · SF ${res.safetyFactor.toFixed(2)}`,
       };
     } catch {
-      return { label: `${n}`, utilization: 99, fields: {}, detail: "invalid" };
+      return {
+        label: `Ø${dMm}`,
+        utilization: 99,
+        fields: { alternatingStress: sa / 1e6, characteristicDiameterMm: dMm },
+        detail: "invalid",
+      };
     }
   });
-  return fromSweep(sweepCatalogForUtilization(items), "Fatigue life target screening with S-N curve.");
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Characteristic diameter sweep for target fatigue life (Basquin + Marin size factor)."
+  );
 }
 
 export function designCorrosionAllowance(userInputs: ModuleUserInputs): ModuleDesignModeResult {

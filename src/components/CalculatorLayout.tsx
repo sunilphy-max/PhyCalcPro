@@ -96,41 +96,33 @@ function CalculatorLayoutBody({
     <div className="calculator-module-shell min-h-full p-4 md:p-6 lg:p-8">
       <div className="mx-auto max-w-[1600px] min-w-0 space-y-5">
           {/* Header */}
-          <div className="calculator-module-header overflow-hidden rounded-2xl border border-slate-200/70 bg-white/85 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_12px_32px_rgba(15,23,42,0.06)] backdrop-blur-md md:p-6 dark:border-slate-700/60 dark:bg-slate-900/80 dark:shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center rounded-full bg-cyan-50 px-2.5 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-300">
-                    Engineering module
-                  </span>
-                  {profile ? (
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[0.6875rem] font-semibold capitalize tracking-wide ${
-                        profile.validationStatus === "draft"
-                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-                          : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
-                      }`}
-                    >
-                      {profile.validationStatus}
-                    </span>
-                  ) : null}
-                </div>
-                <h1 className="mt-3 text-2xl font-semibold tracking-tight text-slate-900 md:text-[1.75rem] dark:text-white">
+          <div className="calculator-module-header rounded-xl border border-slate-200/70 bg-white px-4 py-4 md:px-5 dark:border-slate-700/60 dark:bg-slate-900/80">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div className="min-w-0 flex flex-wrap items-center gap-2.5">
+                <h1 className="text-xl font-semibold tracking-tight text-slate-900 md:text-2xl dark:text-white">
                   {title}
                 </h1>
+                {profile ? (
+                  <span
+                    className={`inline-flex items-center rounded-md px-2 py-0.5 text-[0.6875rem] font-medium capitalize ${
+                      profile.validationStatus === "draft"
+                        ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                        : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                    }`}
+                  >
+                    {profile.validationStatus}
+                  </span>
+                ) : null}
               </div>
-              {moduleId ? (
-                <div className="w-full shrink-0 xl:max-w-[220px]">
-                  <DesignCodeSelector moduleId={moduleId} compact />
-                </div>
-              ) : null}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center lg:shrink-0">
+                {moduleId ? (
+                  <div className="w-full sm:w-auto sm:min-w-[11rem]">
+                    <DesignCodeSelector moduleId={moduleId} compact />
+                  </div>
+                ) : null}
+                {designWorkflow ? <DesignModeToggle workflow={designWorkflow} /> : null}
+              </div>
             </div>
-
-            {designWorkflow ? (
-              <div className="mt-5 border-t border-slate-200/70 pt-5 dark:border-slate-700/60">
-                <DesignModeToggle workflow={designWorkflow} />
-              </div>
-            ) : null}
           </div>
 
           {isScreeningModule ? (
@@ -163,7 +155,7 @@ function CalculatorLayoutBody({
               <aside
                 className={`${calculatorWorkspaceClass} max-w-full min-w-0 transition-all duration-300 ease-out ${
                   showSplitLayout
-                    ? `${calculatorSidebarClass} calculator-sidebar-scroll xl:sticky xl:top-5 xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:overscroll-contain`
+                    ? `${calculatorSidebarClass} calculator-sidebar-scroll xl:sticky xl:top-[7.5rem] xl:max-h-[calc(100vh-8.5rem)] xl:overflow-y-auto xl:overscroll-contain`
                     : "calculator-workspace--expanded"
                 }`}
               >
@@ -188,7 +180,7 @@ function CalculatorLayoutBody({
             ) : null}
             {summary ? (
               <aside
-                className="calculator-design-summary order-first min-w-0 xl:sticky xl:top-5 xl:order-none xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto xl:overscroll-contain"
+                className="calculator-design-summary order-first min-w-0 xl:sticky xl:top-[7.5rem] xl:order-none xl:max-h-[calc(100vh-8.5rem)] xl:overflow-y-auto xl:overscroll-contain"
               >
                 {summary}
               </aside>
@@ -199,11 +191,23 @@ function CalculatorLayoutBody({
 
           {footer ? <div>{footer}</div> : null}
 
-          {designWorkflow ? <ModuleReferenceDocumentation workflow={designWorkflow} /> : null}
-
-          {designWorkflow ? <ModuleCandidateStrategy workflow={designWorkflow} /> : null}
-
           {designWorkflow ? <ModuleContinueWorkflowBar workflow={designWorkflow} /> : null}
+
+          {designWorkflow ? (
+            <details className="group rounded-xl border border-slate-200/70 bg-white open:shadow-sm dark:border-slate-700/60 dark:bg-slate-900/60">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-slate-700 marker:content-none dark:text-slate-200 [&::-webkit-details-marker]:hidden">
+                <span className="inline-flex items-center gap-2">
+                  Design help & reference
+                  <span className="text-xs font-normal text-slate-400 group-open:hidden">Show</span>
+                  <span className="hidden text-xs font-normal text-slate-400 group-open:inline">Hide</span>
+                </span>
+              </summary>
+              <div className="space-y-3 border-t border-slate-200/70 px-4 py-4 dark:border-slate-700/60">
+                <ModuleReferenceDocumentation workflow={designWorkflow} />
+                <ModuleCandidateStrategy workflow={designWorkflow} />
+              </div>
+            </details>
+          ) : null}
         </div>
       </div>
   );

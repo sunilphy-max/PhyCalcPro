@@ -20,7 +20,7 @@ export default function ModuleReferenceDocumentation({ workflow }: Props) {
   if (!entries.length) return null;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <section className="rounded-lg border border-slate-200/80 p-3 dark:border-slate-700/60">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-950 dark:text-white">

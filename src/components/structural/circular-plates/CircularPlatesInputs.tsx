@@ -28,6 +28,8 @@ type Props = {
   setMeshSegments: Dispatch<SetStateAction<number>>;
   lengthUnit: string;
   setLengthUnit: Dispatch<SetStateAction<string>>;
+  thicknessUnit: string;
+  setThicknessUnit: Dispatch<SetStateAction<string>>;
   pressureUnit: string;
   setPressureUnit: Dispatch<SetStateAction<string>>;
   modulusUnit: string;
@@ -54,6 +56,8 @@ export default function CircularPlatesInputs({
   setMeshSegments,
   lengthUnit,
   setLengthUnit,
+  thicknessUnit,
+  setThicknessUnit,
   pressureUnit,
   setPressureUnit,
   modulusUnit,
@@ -94,7 +98,12 @@ export default function CircularPlatesInputs({
           value={thickness}
           onChange={setThickness}
           unit={
-            <ModuleUnitSelect moduleId="circular-plates" fieldKey="thickness" value={lengthUnit} onChange={setLengthUnit} />
+            <ModuleUnitSelect
+              moduleId="circular-plates"
+              fieldKey="thickness"
+              value={thicknessUnit}
+              onChange={setThicknessUnit}
+            />
           }
         />
         <CalculatorUnitField

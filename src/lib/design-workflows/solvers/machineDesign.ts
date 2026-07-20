@@ -249,102 +249,150 @@ export function designBearingSelection(userInputs: ModuleUserInputs): ModuleDesi
   }
 }
 
+/**
+ * Flywheel OD × thickness grid for stored-energy target.
+ * Apply fields `outerDiameter` and `thickness` are in **meters** (flywheels page).
+ */
 export function designFlywheelInertia(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const rpm = userInputs.speedDriver ?? userInputs.rpm ?? 1500;
   const targetEnergy = userInputs.energy ?? 5000;
-  const diametersMm = [200, 250, 300, 350, 400, 450, 500];
-  const thicknessMm = 30;
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const diametersMm = [200, 250, 300, 350, 400, 450, 500, 600, 700, 800];
+  const thicknessesMm = [20, 30, 40, 50, 60, 80];
+  const items: Array<{
+    label: string;
+    utilization: number;
+    fields: Record<string, unknown>;
+    detail: string;
+  }> = [];
 
-  const items = diametersMm.map((dMm) => {
-    const d = dMm / 1000;
-    const t = thicknessMm / 1000;
-    try {
-      const res = solveFlywheelEngine({
-        outerDiameter: d,
-        thickness: t,
-        faceWidth: t,
-        density: STEEL_DENSITY,
-        rpm,
-        yieldStress: STEEL_YIELD,
-      });
-      const util = targetEnergy / Math.max(res.storedEnergy, 1e-9);
-      return {
-        label: `Ø${dMm}×${thicknessMm}`,
-        utilization: util,
-        fields: { outerDiameter: dMm, thickness: thicknessMm },
-        detail: `E ${res.storedEnergy.toFixed(0)} J`,
-      };
-    } catch {
-      return { label: `Ø${dMm}`, utilization: 99, fields: { outerDiameter: dMm }, detail: "invalid" };
+  for (const dMm of diametersMm) {
+    for (const tMm of thicknessesMm) {
+      const d = dMm / 1000;
+      const t = tMm / 1000;
+      try {
+        const res = solveFlywheelEngine({
+          outerDiameter: d,
+          thickness: t,
+          faceWidth: t,
+          density: STEEL_DENSITY,
+          rpm,
+          yieldStress: userInputs.yieldStress ?? STEEL_YIELD,
+        });
+        const energyUtil = targetEnergy / Math.max(res.storedEnergy, 1e-9);
+        const stressUtil = targetSf / Math.max(res.safetyFactor, 1e-9);
+        const util = Math.max(energyUtil, stressUtil);
+        items.push({
+          label: `Ø${dMm}×${tMm} mm`,
+          utilization: util,
+          fields: { outerDiameter: d, thickness: t, faceWidth: t },
+          detail: `E ${res.storedEnergy.toFixed(0)} J · hoop ${(res.hoopStress / 1e6).toFixed(0)} MPa · SF ${res.safetyFactor.toFixed(2)}`,
+        });
+      } catch {
+        /* skip invalid geometry */
+      }
     }
-  });
+  }
 
-  return fromSweep(sweepCatalogForUtilization(items), "Flywheel OD sweep for stored energy target.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Flywheel OD×thickness catalog sweep for energy target and rim stress."
+  );
 }
 
+/** Bevel module/face-width in **mm** (matches bevel-gears page). */
 export function designBevelGear(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const power = userInputs.power ?? 12000;
   const speed = userInputs.speedDriver ?? 1200;
-  const modules = [2, 2.5, 3, 4, 5];
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const pinionTeeth = userInputs.pinionTeeth ?? 18;
+  const gearRatio = userInputs.ratio ?? 2.5;
+  const modules = GEAR_MODULE_SERIES_1_MM.filter((m) => m >= 1.5 && m <= 10);
 
-  const items = modules.map((m) => {
-    try {
-      const res = solveBevelGearEngine({
-        power,
-        speed,
-        module: m / 1000,
-        pinionTeeth: userInputs.pinionTeeth ?? 18,
-        gearRatio: userInputs.ratio ?? 2.5,
-        faceWidth: (8 * m) / 1000,
-        yieldStress: STEEL_MATERIAL.yieldStress,
-        pressureAngleDeg: 20,
-      });
-      const util = 1.5 / Math.max(res.bendingSafety, 1e-9);
-      return {
-        label: `Module ${m}`,
-        utilization: util,
-        fields: { module: m, faceWidth: 8 * m },
-        detail: `SF ${res.bendingSafety.toFixed(2)}`,
-      };
-    } catch {
-      return { label: `m=${m}`, utilization: 99, fields: { module: m }, detail: "invalid" };
-    }
+  const items = modules.flatMap((m) => {
+    const faceFactors = [8, 9, 10];
+    return faceFactors.map((fwFactor) => {
+      const faceWidthMm = fwFactor * m;
+      try {
+        const res = solveBevelGearEngine({
+          power,
+          speed,
+          module: m / 1000,
+          pinionTeeth,
+          gearRatio,
+          faceWidth: faceWidthMm / 1000,
+          yieldStress: userInputs.yieldStress ?? STEEL_MATERIAL.yieldStress,
+          pressureAngleDeg: 20,
+        });
+        const bendUtil = targetSf / Math.max(res.bendingSafety, 1e-9);
+        const contactUtil = targetSf / Math.max(res.contactSafety ?? res.bendingSafety, 1e-9);
+        return {
+          label: `m=${m} · b=${faceWidthMm.toFixed(0)} mm`,
+          utilization: Math.max(bendUtil, contactUtil),
+          fields: { module: m, faceWidth: faceWidthMm },
+          detail: `bend SF ${res.bendingSafety.toFixed(2)} · contact SF ${(res.contactSafety ?? res.bendingSafety).toFixed(2)}`,
+        };
+      } catch {
+        return {
+          label: `m=${m}`,
+          utilization: 99,
+          fields: { module: m, faceWidth: faceWidthMm },
+          detail: "invalid",
+        };
+      }
+    });
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Bevel gear module sweep for bending/contact screening.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "ISO 54 bevel module × face-width sweep for bending/contact SF."
+  );
 }
 
 export function designWormGear(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const power = userInputs.power ?? 5000;
   const speed = userInputs.speedDriver ?? 1450;
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const modulesMm = [2, 2.5, 3, 4, 5, 6, 8];
   const teethOptions = [30, 40, 50, 60, 80];
+  const items: Array<{
+    label: string;
+    utilization: number;
+    fields: Record<string, unknown>;
+    detail: string;
+  }> = [];
 
-  const items = teethOptions.map((gearTeeth) => {
-    try {
-      const res = solveWormGearEngine({
-        power,
-        speed,
-        wormStarts: 1,
-        gearTeeth,
-        module: 0.003,
-        faceWidth: 0.025,
-        frictionCoeff: 0.05,
-        leadAngleDeg: 5,
-        yieldStress: STEEL_MATERIAL.yieldStress,
-      });
-      const util = 1.5 / Math.max(res.contactSafety, 1e-9);
-      return {
-        label: `${gearTeeth} teeth wheel`,
-        utilization: util,
-        fields: { gearTeeth, module: 3 },
-        detail: `eff ${(res.efficiency * 100).toFixed(0)}%`,
-      };
-    } catch {
-      return { label: `z=${gearTeeth}`, utilization: 99, fields: { gearTeeth }, detail: "invalid" };
+  for (const moduleMm of modulesMm) {
+    for (const gearTeeth of teethOptions) {
+      try {
+        const res = solveWormGearEngine({
+          power,
+          speed,
+          wormStarts: 1,
+          gearTeeth,
+          module: moduleMm / 1000,
+          faceWidth: (8 * moduleMm) / 1000,
+          frictionCoeff: 0.05,
+          leadAngleDeg: 5,
+          yieldStress: userInputs.yieldStress ?? STEEL_MATERIAL.yieldStress,
+        });
+        const util = targetSf / Math.max(res.contactSafety, 1e-9);
+        items.push({
+          label: `m=${moduleMm} · z₂=${gearTeeth}`,
+          utilization: util,
+          fields: { gearTeeth, module: moduleMm, faceWidth: 8 * moduleMm },
+          detail: `contact SF ${res.contactSafety.toFixed(2)} · eff ${(res.efficiency * 100).toFixed(0)}%`,
+        });
+      } catch {
+        /* skip */
+      }
     }
-  });
+  }
 
-  return fromSweep(sweepCatalogForUtilization(items), "Worm wheel tooth-count sweep for contact safety.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Worm module × wheel tooth-count sweep for contact safety."
+  );
 }
 
 export function designPlanetaryGear(userInputs: ModuleUserInputs): ModuleDesignModeResult {
@@ -411,33 +459,49 @@ export function designGearRatio(userInputs: ModuleUserInputs): ModuleDesignModeR
 export function designPlainBearing(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const load = userInputs.maxForce ?? 8000;
   const speed = userInputs.speedDriver ?? 900;
-  const diametersMm = [30, 40, 50, 60, 70, 80];
+  const diametersMm = [25, 30, 40, 50, 60, 70, 80, 100, 120];
+  const lOverD = [0.8, 1.0, 1.2, 1.5];
+  const minFilmTargetM = 8e-6;
+  const items: Array<{
+    label: string;
+    utilization: number;
+    fields: Record<string, unknown>;
+    detail: string;
+  }> = [];
 
-  const items = diametersMm.map((dMm) => {
-    const d = dMm / 1000;
-    try {
-      const res = solvePlainBearingEngine({
-        bearingType: "journal",
-        diameter: d,
-        length: d * 1.2,
-        load,
-        speed,
-        viscosity: 0.03,
-        clearance: d * 0.001,
-      });
-      const util = res.minFilmThickness < 1e-5 ? 1.5 : 0.7;
-      return {
-        label: `Ø${dMm} journal`,
-        utilization: util,
-        fields: { diameter: dMm, length: dMm * 1.2 },
-        detail: `h_min ${(res.minFilmThickness * 1e6).toFixed(1)} µm`,
-      };
-    } catch {
-      return { label: `Ø${dMm}`, utilization: 99, fields: { diameter: dMm }, detail: "invalid" };
+  for (const dMm of diametersMm) {
+    for (const ld of lOverD) {
+      const d = dMm / 1000;
+      const lengthMm = dMm * ld;
+      try {
+        const res = solvePlainBearingEngine({
+          bearingType: "journal",
+          diameter: d,
+          length: d * ld,
+          load,
+          speed,
+          viscosity: 0.03,
+          clearance: d * 0.001,
+        });
+        const filmUtil = minFilmTargetM / Math.max(res.minFilmThickness, 1e-12);
+        const p = res.specificLoadPa ?? res.unitLoad ?? load / (d * d * ld);
+        const pressureUtil = p / 8e6;
+        items.push({
+          label: `Ø${dMm}×${lengthMm.toFixed(0)}`,
+          utilization: Math.max(filmUtil, pressureUtil),
+          fields: { diameter: dMm, length: lengthMm },
+          detail: `h_min ${(res.minFilmThickness * 1e6).toFixed(1)} µm · p ${(p / 1e6).toFixed(1)} MPa`,
+        });
+      } catch {
+        /* skip */
+      }
     }
-  });
+  }
 
-  return fromSweep(sweepCatalogForUtilization(items), "Journal bearing diameter sweep for film thickness.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Journal diameter×L/D sweep for film thickness and specific pressure."
+  );
 }
 
 export function designBrakesClutches(userInputs: ModuleUserInputs): ModuleDesignModeResult {
@@ -473,36 +537,44 @@ export function designBrakesClutches(userInputs: ModuleUserInputs): ModuleDesign
   return fromSweep(sweepCatalogForUtilization(items), "Friction disc diameter sweep for torque capacity.");
 }
 
+/**
+ * Cam base-circle sweep for pressure-angle limit.
+ * Apply fields `baseCircle` / `baseRadius` are in **meters** (cams page).
+ */
 export function designCamProfile(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const lift = userInputs.lift ?? 0.01;
   const speed = userInputs.speedDriver ?? 300;
-  const radiiMm = [30, 35, 40, 45, 50, 60];
+  const maxPressureAngleDeg = 30;
+  const radiiMm = [25, 30, 35, 40, 45, 50, 55, 60, 70, 80];
 
   const items = radiiMm.map((rMm) => {
     const r = rMm / 1000;
     try {
       const res = solveCamEngine({
         baseCircle: r,
-        radius: r * 0.2,
+        radius: Math.min(r * 0.25, lift),
         lift,
         speed,
         dwellAngle: 90,
         motionLaw: "simple_harmonic",
         profileType: "roller_follower",
       });
-      const util = res.peakPressureAngle / 30;
+      const util = res.peakPressureAngle / maxPressureAngleDeg;
       return {
         label: `R${rMm} mm base`,
         utilization: util,
-        fields: { baseCircle: rMm, baseRadius: rMm },
-        detail: `pressure angle ${res.peakPressureAngle.toFixed(1)}°`,
+        fields: { baseCircle: r, baseRadius: r },
+        detail: `α ${res.peakPressureAngle.toFixed(1)}° · a_max ${res.peakAcceleration.toFixed(0)}`,
       };
     } catch {
-      return { label: `R${rMm}`, utilization: 99, fields: { baseCircle: rMm }, detail: "invalid" };
+      return { label: `R${rMm}`, utilization: 99, fields: { baseCircle: r, baseRadius: r }, detail: "invalid" };
     }
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Cam base-radius sweep for pressure angle limit.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Cam base-radius sweep for ≤30° pressure-angle limit."
+  );
 }
 
 export function designHousingMount(userInputs: ModuleUserInputs): ModuleDesignModeResult {

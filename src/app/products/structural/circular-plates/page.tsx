@@ -49,6 +49,7 @@ export default function Page() {
   const [boundary, setBoundary] = useState<CircularPlateConfig["boundary"]>("simply_supported");
   const [meshSegments, setMeshSegments] = useState(12);
   const [lengthUnit, setLengthUnit] = useState("m");
+  const [thicknessUnit, setThicknessUnit] = useState("mm");
   const [pressureUnit, setPressureUnit] = useState("kPa");
   const [modulusUnit, setModulusUnit] = useState("GPa");
   const [result, setResult] = useState<(CircularPlateResult & { calculationSpec?: CalculationSpec }) | null>(null);
@@ -58,7 +59,7 @@ export default function Page() {
       wrapResult(
         solveCircularPlateEngine({
           radius: toBase(radius, "length", lengthUnit),
-          thickness: toBase(thickness, "length", lengthUnit),
+          thickness: toBase(thickness, "length", thicknessUnit),
           pressure: toBase(pressure, "pressure", pressureUnit),
           modulus: toBase(modulus, "stress", modulusUnit),
           poisson,
@@ -73,9 +74,10 @@ export default function Page() {
   const designUserInputs = useMemo((): ModuleUserInputs => ({
       length: toBase(radius, "length", lengthUnit),
       pressure: toBase(pressure, "pressure", pressureUnit),
-      E: toBase(modulus, "stress", modulusUnit) * 1e9,
-      thickness: toBase(thickness, "length", lengthUnit),
-    }), [radius, lengthUnit, pressure, pressureUnit, modulus, modulusUnit, thickness]);
+      E: toBase(modulus, "stress", modulusUnit),
+      thickness: toBase(thickness, "length", thicknessUnit),
+      allowableStressPa: 170e6,
+    }), [radius, lengthUnit, pressure, pressureUnit, modulus, modulusUnit, thickness, thicknessUnit]);
 
   useSyncDesignInputs("circular-plates", designUserInputs);
 
@@ -115,6 +117,8 @@ export default function Page() {
           setMeshSegments={setMeshSegments}
           lengthUnit={lengthUnit}
           setLengthUnit={setLengthUnit}
+          thicknessUnit={thicknessUnit}
+          setThicknessUnit={setThicknessUnit}
           pressureUnit={pressureUnit}
           setPressureUnit={setPressureUnit}
           modulusUnit={modulusUnit}

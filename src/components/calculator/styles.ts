@@ -1,7 +1,7 @@
 /** Shared calculator UI tokens — use across all product modules. */
 
 export const calculatorPanelClass =
-  "calculator-panel relative min-w-0 space-y-5 overflow-hidden rounded-2xl border border-slate-200/70 bg-white/90 p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-sm dark:border-slate-700/60 dark:bg-slate-900/80 dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)]";
+  "calculator-panel relative min-w-0 space-y-4 overflow-hidden rounded-xl border border-slate-200/70 bg-white p-5 dark:border-slate-700/60 dark:bg-slate-900/80";
 
 export const calculatorWorkspaceClass = "calculator-workspace min-w-0 space-y-4";
 
@@ -43,7 +43,7 @@ export const calculatorFieldLabelClass =
   "block text-[0.8125rem] font-medium tracking-wide text-slate-600 dark:text-slate-300";
 
 export const calculatorSectionClass =
-  "space-y-3.5 rounded-xl border border-slate-200/60 bg-slate-50/70 p-4 dark:border-slate-700/50 dark:bg-slate-800/30";
+  "space-y-3 border-t border-slate-200/60 pt-4 first:border-t-0 first:pt-0 dark:border-slate-700/50";
 
 export const calculatorSectionTitleClass =
   "text-sm font-semibold tracking-tight text-slate-900 dark:text-white";
@@ -59,4 +59,4 @@ export const calculatorUnitSelectClass =
 
 /** Compact sidebar panel when results are visible. */
 export const calculatorSidebarClass =
-  "calculator-sidebar rounded-2xl border border-slate-200/60 bg-white/60 p-4 backdrop-blur-sm dark:border-slate-700/50 dark:bg-slate-900/40";
+  "calculator-sidebar rounded-xl border border-slate-200/50 bg-white/80 p-3 dark:border-slate-700/40 dark:bg-slate-900/50";

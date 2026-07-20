@@ -1,7 +1,5 @@
 import { solvePressurePipeEngine } from "@/lib/pressure/pipes/engine";
 import { solvePressureVesselEngine } from "@/lib/pressure/vessels/engine";
-import { solveHydraulicsEngine } from "@/lib/pressure/hydraulics/engine";
-import { solveHeatExchangerEngine } from "@/lib/pressure/heat-exchangers/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
@@ -14,18 +12,32 @@ function fromSweep(
   return { method, best: sweep.best, ranked: sweep.ranked };
 }
 
+/** Schedule-like wall thicknesses (mm) for pipe Auto-design. */
+const PIPE_WALL_MM = [2.11, 2.77, 3.4, 3.91, 4.78, 5.54, 6.35, 7.11, 8.74, 9.53, 11.13, 12.7, 15.09, 17.48, 21.44];
+const VESSEL_WALL_MM = [4, 5, 6, 8, 10, 12, 14, 16, 20, 25, 30, 40];
+const HYDRAULIC_BORES_MM = [25, 32, 40, 50, 63, 80, 100, 125, 160];
+
+/**
+ * Pipe wall thickness sweep for hoop stress vs allowable.
+ * Apply field `thickness` is in **meters** (pipes page).
+ * `userInputs.length` is interpreted as inner/mean radius (m).
+ */
 export function designPipeWall(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const pressure = userInputs.pressure ?? userInputs.maxForce ?? 2.5e6;
-  const radius = userInputs.length ?? 0.05;
+  const r =
+    typeof userInputs.length === "number"
+      ? userInputs.length
+      : typeof userInputs.diameter === "number"
+        ? userInputs.diameter / 2
+        : 0.05;
   const E = userInputs.E ?? STEEL_E;
   const allowable = userInputs.allowableStressPa ?? PRESSURE_ALLOWABLE;
-  const thicknessesMm = [3, 4, 5, 6, 8, 10, 12, 16];
 
-  const items = thicknessesMm.map((tMm) => {
+  const items = PIPE_WALL_MM.map((tMm) => {
     const t = tMm / 1000;
     try {
       const res = solvePressurePipeEngine({
-        radius,
+        radius: r,
         thickness: t,
         length: 1,
         pressure,
@@ -34,27 +46,30 @@ export function designPipeWall(userInputs: ModuleUserInputs): ModuleDesignModeRe
       });
       const util = allowable > 0 ? res.maxHoopStress / allowable : 0;
       return {
-        label: `${tMm} mm wall`,
+        label: `${tMm.toFixed(2)} mm wall`,
         utilization: util,
-        fields: { thickness: tMm },
-        detail: `sigma ${(res.maxHoopStress / 1e6).toFixed(0)} MPa`,
+        fields: { thickness: t },
+        detail: `σ_h ${(res.maxHoopStress / 1e6).toFixed(0)} MPa · util ${(util * 100).toFixed(0)}%`,
       };
     } catch {
-      return { label: `${tMm} mm`, utilization: 99, fields: { thickness: tMm }, detail: "invalid" };
+      return { label: `${tMm} mm`, utilization: 99, fields: { thickness: t }, detail: "invalid" };
     }
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Pipe wall thickness sweep for hoop stress.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Pipe schedule-like wall thickness sweep for hoop stress vs allowable."
+  );
 }
 
+/** Vessel wall in **meters** when applied to vessels page (check page units). */
 export function designVesselWall(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const pressure = userInputs.pressure ?? 1.6e6;
   const radius = userInputs.length ?? 0.5;
   const E = userInputs.E ?? STEEL_E;
   const allowable = userInputs.allowableStressPa ?? PRESSURE_ALLOWABLE;
-  const thicknessesMm = [6, 8, 10, 12, 16, 20, 25];
 
-  const items = thicknessesMm.map((tMm) => {
+  const items = VESSEL_WALL_MM.map((tMm) => {
     const t = tMm / 1000;
     try {
       const res = solvePressureVesselEngine({
@@ -70,11 +85,11 @@ export function designVesselWall(userInputs: ModuleUserInputs): ModuleDesignMode
       return {
         label: `${tMm} mm`,
         utilization: util,
-        fields: { thickness: tMm },
+        fields: { thickness: t },
         detail: `hoop ${(res.maxHoopStress / 1e6).toFixed(0)} MPa`,
       };
     } catch {
-      return { label: `${tMm} mm`, utilization: 99, fields: { thickness: tMm }, detail: "invalid" };
+      return { label: `${tMm} mm`, utilization: 99, fields: { thickness: t }, detail: "invalid" };
     }
   });
 
@@ -84,9 +99,8 @@ export function designVesselWall(userInputs: ModuleUserInputs): ModuleDesignMode
 export function designHydraulicBore(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const force = userInputs.maxForce ?? 50000;
   const pressure = userInputs.pressure ?? 16e6;
-  const boresMm = [25, 32, 40, 50, 63, 80, 100];
 
-  const items = boresMm.map((dMm) => {
+  const items = HYDRAULIC_BORES_MM.map((dMm) => {
     const area = Math.PI * ((dMm / 2000) ** 2);
     const capacity = area * pressure;
     const util = force / Math.max(capacity, 1);
@@ -106,15 +120,16 @@ export function designHeatExchangerUA(userInputs: ModuleUserInputs): ModuleDesig
   const deltaT = userInputs.deltaT ?? 25;
   const requiredUa = duty / Math.max(deltaT, 1);
   const configs = [
-    { name: "Plate HX compact", ua: requiredUa * 0.7 },
-    { name: "Shell-and-tube standard", ua: requiredUa * 1.0 },
-    { name: "Extended surface", ua: requiredUa * 1.3 },
+    { name: "Plate HX compact", ua: requiredUa * 0.7, areaFactor: 0.7 },
+    { name: "Shell-and-tube standard", ua: requiredUa * 1.0, areaFactor: 1.0 },
+    { name: "Shell-and-tube oversized", ua: requiredUa * 1.2, areaFactor: 1.2 },
+    { name: "Extended surface", ua: requiredUa * 1.4, areaFactor: 1.4 },
   ];
 
   const items = configs.map((c) => ({
     label: c.name,
     utilization: requiredUa / c.ua,
-    fields: { hxType: c.name },
+    fields: { hxType: c.name, ua: c.ua },
     detail: `UA ${c.ua.toFixed(0)} W/K`,
   }));
 

@@ -66,13 +66,14 @@ export default function Page() {
     pitch: (v) => setPitch(typeof v === "number" ? v : Number(v)),
     teethDriver: (v) => setTeethDriver(typeof v === "number" ? v : Number(v)),
     teethDriven: (v) => setTeethDriven(typeof v === "number" ? v : Number(v)),
+    beltWidth: (v) => setBeltWidth(typeof v === "number" ? v : Number(v)),
   });
 
   useRegisterApplyDesignCandidate(applyDesignFields);
 
   const calculate = () => {
     if (workflowMode === "design") {
-      const design = runModuleDesignMode("timing-belts", workflowUserInputs);
+      const design = runModuleDesignMode("timing-belts", designUserInputs);
       if (design?.best?.fields) applyDesignFields(design.best.fields);
     }
     runCheck();

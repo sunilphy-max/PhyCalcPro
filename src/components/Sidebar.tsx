@@ -125,20 +125,20 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
     <div className="products-sidebar-wrap shrink-0">
       <aside
         ref={barRef}
-        className="products-sidebar products-category-subbar sticky top-14 z-[60] isolate w-full border-b border-slate-200/70 bg-white/95 shadow-sm backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95"
+        className="products-sidebar products-category-subbar sticky top-14 z-[60] isolate w-full border-b border-slate-200/70 bg-white/95 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95"
         aria-label="Module categories"
       >
-        <div className="flex items-center gap-2 px-3 py-2 sm:gap-3 sm:px-4">
+        <div className="flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4">
           <Link
             href="/products"
             title="All products"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-sky-600 text-xs font-bold text-white shadow-md shadow-cyan-500/20"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-[0.65rem] font-semibold tracking-wide text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
-            PC
+            All
           </Link>
 
           <div
-            className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             role="menubar"
             aria-label="Product categories"
           >
@@ -159,16 +159,16 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
                   aria-expanded={isOpen}
                   aria-controls={isOpen ? "products-module-dropdown" : undefined}
                   onClick={() => toggleCategory(cat.id)}
-                  className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-xl px-2.5 text-sm font-medium transition sm:px-3 ${
+                  className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2 text-sm font-medium transition sm:px-2.5 ${
                     isOpen || isPathActive
-                      ? "bg-gradient-to-br from-cyan-600 to-sky-600 text-white shadow-md shadow-cyan-500/20"
+                      ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                   }`}
                 >
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                  <Icon className="h-3.5 w-3.5 shrink-0 opacity-80" aria-hidden />
                   <span className="whitespace-nowrap">{label}</span>
                   <ChevronDown
-                    className={`h-3.5 w-3.5 shrink-0 opacity-70 transition ${isOpen ? "rotate-180" : ""}`}
+                    className={`h-3 w-3 shrink-0 opacity-60 transition ${isOpen ? "rotate-180" : ""}`}
                     aria-hidden
                   />
                 </button>
@@ -176,20 +176,13 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
             })}
           </div>
 
-          {activeModule ? (
-            <div className="hidden min-w-0 max-w-[10rem] shrink truncate text-xs text-slate-500 sm:block md:max-w-[14rem] dark:text-slate-400">
-              {activeModule.title}
-            </div>
-          ) : null}
+          <div className="hidden w-full max-w-[12rem] shrink-0 md:block lg:max-w-[16rem]">
+            <SearchBar />
+          </div>
         </div>
 
-        {/* Product search below the category bar */}
-        <div className="border-t border-slate-200/70 px-3 py-2 sm:px-4 dark:border-slate-700/60">
-          <div className="mx-auto flex max-w-7xl justify-end">
-            <div className="w-full max-w-md sm:max-w-lg">
-              <SearchBar />
-            </div>
-          </div>
+        <div className="border-t border-slate-200/60 px-3 py-1.5 md:hidden dark:border-slate-700/50">
+          <SearchBar />
         </div>
 
         {openCategory ? (
@@ -245,9 +238,9 @@ export default function Sidebar({ activeCategoryId }: SidebarProps) {
                           href={mod.route}
                           role="menuitem"
                           onClick={() => setOpenCategoryId(null)}
-                          className={`block rounded-xl px-3 py-2 text-sm transition ${
+                          className={`block rounded-lg px-3 py-2 text-sm transition ${
                             activeModule?.route === mod.route
-                              ? "bg-gradient-to-r from-cyan-600 to-sky-600 font-medium text-white shadow-sm shadow-cyan-500/20"
+                              ? "bg-slate-900 font-medium text-white dark:bg-slate-100 dark:text-slate-900"
                               : "text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                           }`}
                         >

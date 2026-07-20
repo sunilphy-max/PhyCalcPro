@@ -70,13 +70,12 @@ export default function Navbar() {
             <PhyCalcMark size={44} className="h-11 w-11 shrink-0 rounded-2xl shadow-sm" />
             <div className="hidden sm:block">
               <div className="text-slate-900 font-semibold dark:text-slate-100">PhyCalcPro</div>
-              <div className="text-xs uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Engineering Platform</div>
             </div>
           </Link>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
-          <nav className="flex items-center gap-5 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <div className="hidden md:flex min-w-0 flex-1 items-center justify-end gap-3">
+          <nav className="flex items-center gap-4 text-sm font-medium text-slate-600 dark:text-slate-300 lg:gap-5">
             {navigationItems.map((item) => (
               <Link key={item.href} href={item.href} className="transition hover:text-slate-900 dark:hover:text-white">
                 {item.label}
@@ -84,15 +83,21 @@ export default function Navbar() {
             ))}
           </nav>
 
+          {!isProductsRoute ? (
+            <div className="hidden w-full max-w-[14rem] lg:block xl:max-w-[18rem]">
+              <SearchBar />
+            </div>
+          ) : null}
+
           <NavUserMenu />
 
           <button
             type="button"
             onClick={() => setIsDarkMode((value) => !value)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
             aria-label="Toggle theme"
           >
-            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
         </div>
 
@@ -109,24 +114,19 @@ export default function Navbar() {
         </div>
       </div>
 
-      {!isProductsRoute ? (
-        <div className="border-t border-slate-200 bg-white/95 px-4 py-2 dark:border-slate-800 dark:bg-slate-950/95 sm:px-6 lg:px-8">
-          <div className="mx-auto flex max-w-7xl justify-end">
-            <div className="w-full max-w-md sm:max-w-lg">
-              <SearchBar />
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 px-4 pb-4 dark:border-slate-800 dark:bg-slate-950/95">
-          <nav className="space-y-2 py-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+          {!isProductsRoute ? (
+            <div className="py-3">
+              <SearchBar />
+            </div>
+          ) : null}
+          <nav className="space-y-1 py-2 text-sm font-medium text-slate-700 dark:text-slate-200">
             {navigationItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="block rounded-2xl px-4 py-3 transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-900 dark:hover:text-white"
+                className="block rounded-lg px-3 py-2.5 transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-900 dark:hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {item.label}
@@ -135,7 +135,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsDarkMode((value) => !value)}
-              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 transition hover:border-slate-300 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
             >
               {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               {isDarkMode ? "Light mode" : "Dark mode"}

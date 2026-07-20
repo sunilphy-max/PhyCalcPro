@@ -31,6 +31,7 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Design workflow | Shared hooks: `useSyncDesignInputs`, `useRegisterApplyDesignCandidate`, `useModuleDesignCalculate` |
 | Design workflow | `DesignTargetFields` component for design/select mode target checklist on high-traffic modules |
 | Local projects | saveLocalProject extended to gears, v-belts, compression-springs |
+| Design workflow | **Next-tier deepen (2026-07-19)** — bearings category routing fix; MITCalc-style sweeps for welds/rivets/pins/shaft-hubs, bevel/worm/flywheels/cams/plain-bearings, timing-belts, pipes, fatigue Ø-life, combined-loading round Ø, circular-plates defl+stress; maturity overrides + [Module-Physics-Design-Audit.md](./Module-Physics-Design-Audit.md) |
 
 ## True remaining (optional / out of scope)
 
@@ -42,11 +43,11 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Circular plate annular / variable thickness | Solid disk only; use dedicated FEA externally |
 | Homogenization (columns/gears/bearings → `inputs`/`results`) | Already on CalculatorLayout; low benefit |
 | Rolled sections | Expand beyond starter tables; add EN/UK designation aliases |
-| Design workflow | Extend solver-backed design mode depth on advanced-systems modules (currently check-only) |
-| Design workflow | Mode-aware input panels on remaining scaffold pages (pilots + high-traffic modules done) |
+| Design workflow | Extend solver-backed design depth on remaining advanced-systems (`superconducting-systems`, `thermal-management`, `hydrogen-systems`, `precision-motion`) |
+| Design workflow | True circular section properties in combined-loading (square proxy today) |
 | Multi-pulley | Closed-loop path layout (current: open chain) |
 | Micropitting | US AGMA implementation marked planned |
-| Benchmark coverage | Remaining modules without JSON fixtures |
+| Benchmark coverage | Remaining modules without JSON fixtures; bearings vendor gold |
 
 ## CAD
 
