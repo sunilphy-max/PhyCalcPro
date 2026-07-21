@@ -168,9 +168,6 @@
 
 | Module | Validate engine | Maturity | Design quality | Verification | Physics / MITCalc notes | Remaining gaps |
 |--------|-----------------|----------|----------------|--------------|-------------------------|----------------|
-| load-case-manager | structural envelope | catalog-backed | shallow | yes | Envelope proxy | Full LC matrix |
-| safety-factor | fasteners/safetyFactor | catalog-backed* | solid | yes | Diameter vs SF | — |
-| formula-reference | tools | catalog-backed | none | yes | Validate-only by design | — |
 | unit-converter | tools | catalog-backed | none | yes | Validate-only by design | — |
 
 \*Routed via `designFastenerModule` with diameter sweep; maturity remains catalog/tools family unless overridden.

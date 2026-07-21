@@ -1,0 +1,17 @@
+{
+  "id": "unit-converter-indicative-03",
+  "moduleId": "unit-converter",
+  "designCode": "INDICATIVE",
+  "description": "C to F temperature conversion",
+  "inputs": {
+    "value": 20,
+    "fromUnit": "C",
+    "toUnit": "F",
+    "dimension": "temperature"
+  },
+  "expected": {
+    "convertedValue": 68
+  },
+  "tolerancePercent": 0.1,
+  "source": "Unit conversion"
+}

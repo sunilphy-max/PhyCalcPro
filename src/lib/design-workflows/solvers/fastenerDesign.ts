@@ -3,7 +3,6 @@ import { solveRivetEngine } from "@/lib/fasteners/rivets/engine";
 import { solveKeysSplinesEngine } from "@/lib/fasteners/keys-splines/engine";
 import { solveShaftHubEngine } from "@/lib/fasteners/shaft-hubs/engine";
 import { solvePinEngine } from "@/lib/fasteners/pins/engine";
-import { solveSafetyFactorEngine } from "@/lib/fasteners/safetyFactor/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
@@ -11,7 +10,7 @@ import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRe
 import { COARSE_THREADS } from "@/data/catalogs/boltTable";
 import { getDefaultMaterialNameForProfile } from "@/lib/materials/materialProfiles";
 import { resolveMaterial, toWeldMaterial, toRivetMaterial } from "@/lib/materials/materialCatalogService";
-import { DEFAULT_STRUCTURAL, STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
+import { STEEL_E, STEEL_YIELD } from "@/lib/materials/materialDefaults";
 
 const WELD_DEFAULT = toWeldMaterial(
   resolveMaterial(getDefaultMaterialNameForProfile("weld-base"), "weld-base")
@@ -222,35 +221,6 @@ export function designPinDiameter(userInputs: ModuleUserInputs): ModuleDesignMod
   return fromSweep(sweepCatalogForUtilization(items), "Pin diameter catalog sweep for shear and bearing SF.");
 }
 
-export function designSafetyFactorTarget(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const target = userInputs.targetSafetyFactor ?? 2;
-  const diametersMm = [16, 20, 25, 30, 35, 40, 50, 60, 80];
-  const items = diametersMm.map((dMm) => {
-    const d = dMm / 1000;
-    try {
-      const res = solveSafetyFactorEngine({
-        diameter: d,
-        axialForce: userInputs.axialLoad ?? 10000,
-        shearForce: userInputs.shearForce ?? 5000,
-        bendingMoment: userInputs.bendingMoment ?? 200,
-        torque: userInputs.torque ?? 150,
-        yieldStrength: userInputs.yieldStress ?? STEEL_YIELD,
-        ultimateStrength: userInputs.ultimateStrength ?? DEFAULT_STRUCTURAL.ultimateStrength,
-      });
-      const util = target / Math.max(res.governingFactor, 1e-9);
-      return {
-        label: `Ø${dMm} mm`,
-        utilization: util,
-        fields: { diameter: dMm },
-        detail: `SF ${res.governingFactor.toFixed(2)}`,
-      };
-    } catch {
-      return { label: `Ø${dMm}`, utilization: 99, fields: { diameter: dMm }, detail: "invalid" };
-    }
-  });
-  return fromSweep(sweepCatalogForUtilization(items), "Diameter sweep for target combined safety factor.");
-}
-
 export function designFastenerModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {
   if (moduleId === "bolts") return designBoltSize(userInputs);
   if (moduleId === "welds") return designWeldThroat(userInputs);
@@ -258,6 +228,5 @@ export function designFastenerModule(moduleId: string, userInputs: ModuleUserInp
   if (moduleId === "keys-splines") return designKeySelection(userInputs);
   if (moduleId === "shaft-hubs") return designShaftHubInterference(userInputs);
   if (moduleId === "pins") return designPinDiameter(userInputs);
-  if (moduleId === "safety-factor") return designSafetyFactorTarget(userInputs);
   return designBoltSize(userInputs);
 }

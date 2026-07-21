@@ -200,9 +200,6 @@ Treat as **screening** until you have vendor/test data. Keep `workflow` modules 
 
 | Module | Pri | CI | Design | Catalog | Your validations | Improvements / pending actions | Done |
 |--------|-----|----|--------|---------|------------------|--------------------------------|------|
-| **load-case-manager** | P1 | yes | catalog | indicative | Envelope max/min vs manual combos | Full LC matrix gap | [ ] P [ ] S [ ] D |
-| **safety-factor** | P1 | yes | catalog* | indicative | SF definitions match company standard | Diameter sweep exists via design path | [ ] P [ ] S [ ] D |
-| **formula-reference** | P2 | yes | none | indicative | Spot-check 5 formulas vs Roark/Shigley | Validate-only by design | [ ] P [ ] S [ ] D |
 | **unit-converter** | P2 | yes | none | indicative | NIST factors for critical pairs | Validate-only by design | [ ] P [ ] S [ ] D |
 
 \*Diameter sweep via fastener design routing.

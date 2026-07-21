@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import SearchBar from "@/components/SearchBar";
 import { categories, type EngineeringCategory } from "@/data/modules";
 
 /** Concise labels for the horizontal category bar. */
@@ -22,6 +21,8 @@ const CATEGORY_BAR_LABELS: Record<string, string> = {
   "advanced-systems": "Advanced",
   tools: "Tools",
 };
+
+const railClass = "mx-auto flex max-w-7xl items-center gap-2 px-4 py-1 sm:gap-3 sm:px-6 lg:px-8";
 
 function categoryBarLabel(cat: EngineeringCategory) {
   return CATEGORY_BAR_LABELS[cat.id] ?? cat.title;
@@ -58,7 +59,7 @@ export default function ProductsCategoryBar() {
           className="products-nav products-context-bar sticky top-14 z-[60] isolate w-full border-b border-slate-200/70 bg-white/95 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95"
           aria-label="Module location"
         >
-          <div className="flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4">
+          <div className={railClass}>
             <nav
               className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto text-sm [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
               aria-label="Breadcrumb"
@@ -81,14 +82,6 @@ export default function ProductsCategoryBar() {
                 {activeModule.title}
               </span>
             </nav>
-
-            <div className="hidden w-full max-w-[12rem] shrink-0 md:block lg:max-w-[16rem]">
-              <SearchBar />
-            </div>
-          </div>
-
-          <div className="border-t border-slate-200/60 px-3 py-1.5 md:hidden dark:border-slate-700/50">
-            <SearchBar />
           </div>
         </aside>
       </div>
@@ -101,7 +94,7 @@ export default function ProductsCategoryBar() {
         className="products-nav products-category-subbar sticky top-14 z-[60] isolate w-full border-b border-slate-200/70 bg-white/95 backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-950/95"
         aria-label="Module categories"
       >
-        <div className="flex items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4">
+        <div className={railClass}>
           <Link
             href="/products"
             title="All products"
@@ -143,14 +136,6 @@ export default function ProductsCategoryBar() {
               );
             })}
           </div>
-
-          <div className="hidden w-full max-w-[12rem] shrink-0 md:block lg:max-w-[16rem]">
-            <SearchBar />
-          </div>
-        </div>
-
-        <div className="border-t border-slate-200/60 px-3 py-1.5 md:hidden dark:border-slate-700/50">
-          <SearchBar />
         </div>
       </aside>
     </div>

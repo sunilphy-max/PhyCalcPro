@@ -20,6 +20,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Verification & QA
 
-- **CI benchmarks:** `npm run test:verification` — 86 JSON cases in `src/data/verification/` against `src/lib/qa/moduleSolverRegistry.ts` (67 solvers).
+- **CI benchmarks:** `npm run test:verification` — 85 JSON cases in `src/data/verification/` against `src/lib/qa/moduleSolverRegistry.ts` (64 solvers).
 - **Engineer sign-off:** [docs/validation-master-checklist.md](./docs/validation-master-checklist.md) · [docs/VerificationGuide.md](./docs/VerificationGuide.md)
 - **Bootstrap new cases:** `npx tsx scripts/bootstrap-verification.ts`

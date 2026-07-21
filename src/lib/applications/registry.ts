@@ -32,7 +32,6 @@ export const MODULES_WITH_INLINE_APPLICATION = new Set<string>(["v-belts"]);
 /** Reference / converter modules without application context. */
 export const MODULES_WITHOUT_APPLICATION_PRESET = new Set<string>([
   "unit-converter",
-  "formula-reference",
   "material-db",
   "sections",
   "rolled-sections",

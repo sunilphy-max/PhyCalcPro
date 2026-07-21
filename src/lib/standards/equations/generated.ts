@@ -78,11 +78,6 @@ export const generatedModuleEquations: Record<string, EquationReference[]> = {
     { id: "eq-2", label: "Equation 2", expression: "C_s = \\frac{\\omega_{\\max} - \\omega_{\\min}}{\\omega_{\\mathrm{mean}}}" },
     { id: "eq-3", label: "Equation 3", expression: "\\sigma_{\\mathrm{rim}} = \\rho r^2 \\omega^2" },
   ],
-  "formula-reference": [
-    { id: "eq-1", label: "Equation 1", expression: "E_k = \\frac{1}{2} m v^2" },
-    { id: "eq-2", label: "Equation 2", expression: "F = k x, \\quad \\sigma = \\frac{F}{A}" },
-    { id: "eq-3", label: "Equation 3", expression: "P V = n R T" },
-  ],
   "frames": [
     { id: "eq-1", label: "Equation 1", expression: "\\begin{bmatrix} \\mathbf{K} \\end{bmatrix} \\{\\mathbf{u}\\} = \\{\\mathbf{F}\\}" },
     { id: "eq-2", label: "Equation 2", expression: "\\sigma_{\\mathrm{member}} = \\frac{N}{A} \\pm \\frac{M c}{I}" },
@@ -115,11 +110,6 @@ export const generatedModuleEquations: Record<string, EquationReference[]> = {
     { id: "eq-1", label: "Equation 1", expression: "F_t = \\frac{2T}{d}" },
     { id: "eq-2", label: "Equation 2", expression: "\\tau_{\\mathrm{key}} = \\frac{F_t}{b L} \\leq \\tau_{\\mathrm{allow}}" },
     { id: "eq-3", label: "Equation 3", expression: "\\sigma_{\\mathrm{bearing}} = \\frac{F_t}{h L} \\leq \\sigma_{\\mathrm{b,allow}}" },
-  ],
-  "load-case-manager": [
-    { id: "eq-1", label: "Equation 1", expression: "R_{\\mathrm{env}} = \\max_{i=1}^{n} \\left| R_i \\right|" },
-    { id: "eq-2", label: "Equation 2", expression: "U_{\\mathrm{env}} = \\max_i \\frac{\\sigma_i}{\\sigma_{\\mathrm{allow},i}}" },
-    { id: "eq-3", label: "Equation 3", expression: "R_{\\mathrm{combined}} = \\sum_j \\gamma_j R_j \\quad \\text{(linear combination)}" },
   ],
   "magnetic-fields": [
     { id: "eq-1", label: "Equation 1", expression: "B = \\frac{\\mu_0 N I}{L}" },
@@ -185,10 +175,6 @@ export const generatedModuleEquations: Record<string, EquationReference[]> = {
   "rotation": [
     { id: "eq-1", label: "Equation 1", expression: "T = I \\alpha, \\quad P = T \\omega = \\frac{T n}{9.55} \\quad \\text{(kW, rpm, N·m)}" },
     { id: "eq-2", label: "Equation 2", expression: "E_k = \\frac{1}{2} I \\omega^2, \\quad t_{\\mathrm{accel}} = \\frac{I \\Delta \\omega}{T_{\\mathrm{net}}}" },
-  ],
-  "safety-factor": [
-    { id: "eq-1", label: "Equation 1", expression: "\\sigma_{\\mathrm{vm}} = \\sqrt{\\frac{(\\sigma_x - \\sigma_y)^2 + (\\sigma_y - \\sigma_z)^2 + (\\sigma_z - \\sigma_x)^2 + 6(\\tau_{xy}^2 + \\tau_{yz}^2 + \\tau_{zx}^2)}{2}}" },
-    { id: "eq-2", label: "Equation 2", expression: "SF_y = \\frac{\\sigma_y}{\\sigma_{\\mathrm{vm}}}, \\quad SF_u = \\frac{\\sigma_u}{\\sigma_{\\mathrm{vm}}}" },
   ],
   "sections": [
     { id: "eq-1", label: "Equation 1", expression: "A = \\int dA, \\quad I_x = \\int y^2 dA, \\quad S_x = \\frac{I_x}{c_x}" },

@@ -26,6 +26,21 @@ const nextConfig: NextConfig = {
         destination: "/products/bearings/housing",
         permanent: true,
       },
+      {
+        source: "/products/tools/formula-reference",
+        destination: "/products/tools/unit-converter",
+        permanent: true,
+      },
+      {
+        source: "/products/structural/load-case-manager",
+        destination: "/products/tools/unit-converter",
+        permanent: true,
+      },
+      {
+        source: "/products/fasteners/safety-factor",
+        destination: "/products/tools/unit-converter",
+        permanent: true,
+      },
     ];
   },
   async headers() {

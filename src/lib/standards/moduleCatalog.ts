@@ -151,9 +151,6 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       ],
     }
   ),
-  "load-case-manager": withCodeChecks("load-case-manager", "Load Case Manager", [
-    genericIndicativeCheck("envelope_stress", "Envelope stress utilization", "utilization"),
-  ]),
   gears: withCodeChecks("gears", "Gear Design", gearChecks, {
     validationStatus: "beta",
     indicativeMethod: "Lewis bending + simplified Hertzian contact; ISO 6336 factors where enabled (screening)",
@@ -316,10 +313,6 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       ISO: [{ body: "ISO", document: "15983", note: "Blind rivets context" }],
     },
   }),
-  "safety-factor": withCodeChecks("safety-factor", "Safety Factor", [
-    genericIndicativeCheck("von_mises_yield", "Yield safety factor", "safety_factor"),
-    genericIndicativeCheck("von_mises_ultimate", "Ultimate safety factor", "safety_factor"),
-  ]),
   "material-db": withCodeChecks("material-db", "Material Database", [
     genericIndicativeCheck("property_lookup", "Property reference lookup", "other"),
   ]),
@@ -713,9 +706,6 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
   "rolled-sections": withCodeChecks("rolled-sections", "Rolled Sections", [
     genericIndicativeCheck("area", "Section area lookup", "other"),
     genericIndicativeCheck("inertia", "Section inertia lookup", "other"),
-  ]),
-  "formula-reference": withCodeChecks("formula-reference", "Engineering Formulas", [
-    genericIndicativeCheck("formula_eval", "Formula evaluation", "other"),
   ]),
   "unit-converter": withCodeChecks("unit-converter", "Unit Converter", [
     genericIndicativeCheck("conversion", "Unit conversion", "other"),

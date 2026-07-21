@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-20T01:49:54.372Z",
-  "total": 86,
-  "passed": 86,
+  "ranAt": "2026-07-21T22:00:06.657Z",
+  "total": 85,
+  "passed": 85,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -729,19 +729,6 @@
       ]
     },
     {
-      "caseId": "formula-reference-indicative-01",
-      "moduleId": "formula-reference",
-      "pass": true,
-      "fields": [
-        {
-          "field": "result",
-          "expected": 125,
-          "actual": 125,
-          "pass": true
-        }
-      ]
-    },
-    {
       "caseId": "frames-indicative-01",
       "moduleId": "frames",
       "pass": true,
@@ -976,25 +963,6 @@
           "field": "bearingSafety",
           "expected": 2.109375,
           "actual": 2.109375,
-          "pass": true
-        }
-      ]
-    },
-    {
-      "caseId": "load-case-manager-indicative-01",
-      "moduleId": "load-case-manager",
-      "pass": true,
-      "fields": [
-        {
-          "field": "combinedStress",
-          "expected": 8001874.780324919,
-          "actual": 8001874.780324919,
-          "pass": true
-        },
-        {
-          "field": "safetyFactor",
-          "expected": 31.242678355165246,
-          "actual": 31.242678355165246,
           "pass": true
         }
       ]
@@ -1426,25 +1394,6 @@
       ]
     },
     {
-      "caseId": "safety-factor-indicative-01",
-      "moduleId": "safety-factor",
-      "pass": true,
-      "fields": [
-        {
-          "field": "vonMisesStress",
-          "expected": 24270497.411723506,
-          "actual": 24270497.411723506,
-          "pass": true
-        },
-        {
-          "field": "safetyFactorYield",
-          "expected": 10.300571750096939,
-          "actual": 10.300571750096939,
-          "pass": true
-        }
-      ]
-    },
-    {
       "caseId": "sections-indicative-01",
       "moduleId": "sections",
       "pass": true,
@@ -1741,6 +1690,32 @@
       ]
     },
     {
+      "caseId": "unit-converter-indicative-02",
+      "moduleId": "unit-converter",
+      "pass": true,
+      "fields": [
+        {
+          "field": "convertedValue",
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "unit-converter-indicative-03",
+      "moduleId": "unit-converter",
+      "pass": true,
+      "fields": [
+        {
+          "field": "convertedValue",
+          "expected": 68,
+          "actual": 68,
+          "pass": true
+        }
+      ]
+    },
+    {
       "caseId": "v-belts-indicative-01",
       "moduleId": "v-belts",
       "pass": true,
@@ -1805,7 +1780,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468234,
+          "actual": 256.9198297468195,
           "pass": true
         }
       ]

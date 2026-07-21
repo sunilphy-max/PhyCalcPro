@@ -56,7 +56,6 @@
 | keys-splines | `/products/fasteners/keys-splines` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Pass | Homogenized |
 | pins | `/products/fasteners/pins` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
 | rivets | `/products/fasteners/rivets` | CalculatorInputPanel + CalculatorCalculateButton | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
-| safety-factor | `/products/fasteners/safety-factor` | CalculatorInputPanel + CalculatorCalculateButton | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
 | shaft-hubs | `/products/fasteners/shaft-hubs` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
 | welds | `/products/fasteners/welds` | CalculatorInputPanel + CalculatorCalculateButton | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
 | bearings | `/products/machine/bearings` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Pass | Homogenized |
@@ -97,11 +96,9 @@
 | columns | `/products/structural/columns` | CalculatorInputPanel + CalculatorCalculateButton | CalculatorResultsShell + MetricCard | Yes | Pass | Homogenized |
 | combined-loading | `/products/structural/combined-loading` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Pass | Homogenized |
 | frames | `/products/structural/frames` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
-| load-case-manager | `/products/structural/load-case-manager` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
 | plates | `/products/structural/plates` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
 | trusses | `/products/structural/trusses` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
-| formula-reference | `/products/tools/formula-reference` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
-| unit-converter | `/products/tools/unit-converter` | CalculatorInputPanel + CalculatorCalculateButton + unit fields | CalculatorResultsShell + MetricCard | Yes | Not in suite | Homogenized |
+| unit-converter | `/products/tools/unit-converter` | Dimension radios + live convert + full unit dropdowns | CalculatorResultsShell + MetricCard + all-units table | Yes | Not in suite | Homogenized |
 
 ---
 

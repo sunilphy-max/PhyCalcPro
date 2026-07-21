@@ -35,7 +35,6 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
       "columns",
       "plates",
       "combined-loading",
-      "load-case-manager",
       "circular-plates",
     ],
   },
@@ -69,7 +68,6 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
       "bolts",
       "welds",
       "rivets",
-      "safety-factor",
       "keys-splines",
       "shaft-hubs",
       "pins",
@@ -115,7 +113,7 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
   },
   {
     heading: "Tools",
-    moduleIds: ["formula-reference", "unit-converter"],
+    moduleIds: ["unit-converter"],
   },
 ];
 

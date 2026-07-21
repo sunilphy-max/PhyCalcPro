@@ -41,7 +41,6 @@ const exportMigratedRoutes = new Set([
   "/products/fasteners/bolts",
   "/products/fasteners/welds",
   "/products/fasteners/rivets",
-  "/products/fasteners/safety-factor",
   "/products/materials/sections",
   "/products/materials/composites",
   "/products/materials/corrosion",
@@ -52,7 +51,6 @@ const exportMigratedRoutes = new Set([
   "/products/manufacturing/cost-estimator",
   "/products/manufacturing/cam-toolpaths",
   "/products/structural/combined-loading",
-  "/products/structural/load-case-manager",
   "/products/materials/profiles",
 ]);
 

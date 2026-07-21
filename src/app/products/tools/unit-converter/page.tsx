@@ -4,64 +4,95 @@ import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignC
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useState, useMemo, useCallback } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
-
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
-import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
-import UnitConverterInputs, {
-  type UnitConverterDimensionKey,
-} from "@/components/tools/unit-converter/UnitConverterInputs";
+import UnitConverterInputs from "@/components/tools/unit-converter/UnitConverterInputs";
 import UnitConverterResults from "@/components/tools/unit-converter/UnitConverterResults";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
-import { getModuleFieldProfile } from "@/lib/units/moduleProfiles";
-import { solveUnitConverterEngine } from "@/lib/tools/unit-converter/engine";
-import type { UnitConverterResult } from "@/lib/tools/unit-converter/types";
-import type { CalculationSpec } from "@/lib/standards/types";
+import {
+  convertToAllUnits,
+  solveUnitConverterEngine,
+} from "@/lib/tools/unit-converter/engine";
+import {
+  DIMENSION_DEFAULT_UNITS,
+  type UnitConverterDimensionKey,
+} from "@/lib/tools/unit-converter/dimensions";
+import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 
 export default function Page() {
   const { mode: workflowMode } = useDesignWorkflow();
-  const [value, setValue] = useState(1000);
+  const defaults = DIMENSION_DEFAULT_UNITS.length;
+  const [value, setValue] = useState(defaults.value);
   const [dimensionKey, setDimensionKey] = useState<UnitConverterDimensionKey>("length");
-  const [fromUnit, setFromUnit] = useState("mm");
-  const [toUnit, setToUnit] = useState("in");
-  const [result, setResult] = useState<(UnitConverterResult & { calculationSpec?: CalculationSpec }) | null>(null);
+  const [fromUnit, setFromUnit] = useState(defaults.from);
+  const [toUnit, setToUnit] = useState(defaults.to);
 
   const { wrapResult } = useStandardCalculation("unit-converter");
 
   const onDimensionChange = (key: UnitConverterDimensionKey) => {
-    const profile = getModuleFieldProfile("unit-converter", key);
+    const next = DIMENSION_DEFAULT_UNITS[key];
     setDimensionKey(key);
-    if (profile) {
-      const [first, second] = profile.units;
-      setFromUnit(profile.defaultUnit);
-      setToUnit(second ?? first ?? profile.defaultUnit);
-    }
-    setResult(null);
+    setFromUnit(next.from);
+    setToUnit(next.to);
+    setValue(next.value);
   };
 
-  const runCheck = () => {
-    const profile = getModuleFieldProfile("unit-converter", dimensionKey);
-    setResult(
-      wrapResult(
-        solveUnitConverterEngine({
+  const onSwap = () => {
+    setFromUnit(toUnit);
+    setToUnit(fromUnit);
+    if (Number.isFinite(value)) {
+      try {
+        const swapped = solveUnitConverterEngine({
           value,
-          dimension: profile?.dimension ?? dimensionKey,
+          dimension: dimensionKey,
           fromUnit,
           toUnit,
-        })
-      )
-    );
+        });
+        setValue(swapped.convertedValue);
+      } catch {
+        /* keep current value if conversion fails */
+      }
+    }
   };
 
+  const rawResult = useMemo(() => {
+    if (!Number.isFinite(value)) return null;
+    try {
+      return solveUnitConverterEngine({
+        value,
+        dimension: dimensionKey,
+        fromUnit,
+        toUnit,
+      });
+    } catch {
+      return null;
+    }
+  }, [value, dimensionKey, fromUnit, toUnit]);
 
-  const designUserInputs = useMemo((): ModuleUserInputs => ({
+  const result = useMemo(
+    () => (rawResult ? wrapResult(rawResult) : null),
+    [rawResult, wrapResult]
+  );
+
+  const equivalents = useMemo(() => {
+    if (!Number.isFinite(value)) return [];
+    try {
+      return convertToAllUnits(value, dimensionKey, fromUnit);
+    } catch {
+      return [];
+    }
+  }, [value, dimensionKey, fromUnit]);
+
+  const designUserInputs = useMemo(
+    (): ModuleUserInputs => ({
       power: value,
-    }), [value]);
+    }),
+    [value]
+  );
 
   useSyncDesignInputs("unit-converter", designUserInputs);
 
   const applyDesignFields = useCallback((_fields: Record<string, unknown>) => {}, []);
-
   useRegisterApplyDesignCandidate(applyDesignFields);
 
   const calculate = () => {
@@ -69,7 +100,6 @@ export default function Page() {
       const design = runModuleDesignMode("unit-converter", designUserInputs);
       if (design?.best?.fields) applyDesignFields(design.best.fields);
     }
-    runCheck();
   };
 
   return (
@@ -86,10 +116,19 @@ export default function Page() {
           setFromUnit={setFromUnit}
           toUnit={toUnit}
           setToUnit={setToUnit}
+          onSwap={onSwap}
           onCalculate={calculate}
         />
       }
-      results={<UnitConverterResults result={result} inputValue={value} fromUnit={fromUnit} />}
+      results={
+        <UnitConverterResults
+          result={result}
+          inputValue={value}
+          fromUnit={fromUnit}
+          equivalents={equivalents}
+          dimensionKey={dimensionKey}
+        />
+      }
     />
   );
 }

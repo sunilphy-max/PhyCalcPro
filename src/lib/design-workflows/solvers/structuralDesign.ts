@@ -227,10 +227,6 @@ export function designCombinedLoadingSection(userInputs: ModuleUserInputs): Modu
   );
 }
 
-export function designLoadCaseEnvelope(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  return designCombinedLoadingSection(userInputs);
-}
-
 function designShellThickness(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const radius = userInputs.length ?? 0.5;
   const pressure = userInputs.pressure ?? 500e3;
@@ -274,6 +270,5 @@ export function designStructuralModule(moduleId: string, userInputs: ModuleUserI
   if (moduleId === "frames") return designFrameSection(userInputs);
   if (moduleId === "trusses") return designTrussSection(userInputs);
   if (moduleId === "combined-loading") return designCombinedLoadingSection(userInputs);
-  if (moduleId === "load-case-manager") return designLoadCaseEnvelope(userInputs);
   return designFrameSection(userInputs);
 }

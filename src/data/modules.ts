@@ -30,12 +30,10 @@ import {
   Orbit,
   Ruler,
   Combine,
-  ShieldCheck,
   Link,
   Link2,
   Anchor,
   CircleEllipsis,
-  BookOpen,
   ArrowLeftRight,
   Cylinder,
 } from "lucide-react";
@@ -795,39 +793,12 @@ export const categories: EngineeringCategory[] = [
   {
     id: "tools",
     title: "Technical Tools",
-    description: "Load cases, safety factors, formulas and unit conversion",
+    description: "Engineering unit conversion across SI and US customary systems",
 
-    icon: BookOpen,
+    icon: ArrowLeftRight,
     color: "from-indigo-500 to-indigo-600",
 
     modules: [
-      {
-        id: "load-case-manager",
-        title: "Load Case Manager",
-        description: "Manage multiple structural load cases and envelopes",
-        route: "/products/structural/load-case-manager",
-        category: "tools",
-        icon: Workflow,
-        subGroup: "Analysis Utilities",
-      },
-      {
-        id: "safety-factor",
-        title: "Safety Factor",
-        description: "Compute reserve factors for bolts, shafts and joints",
-        route: "/products/fasteners/safety-factor",
-        category: "tools",
-        icon: ShieldCheck,
-        subGroup: "Analysis Utilities",
-      },
-      {
-        id: "formula-reference",
-        title: "Engineering Formulas",
-        description: "Searchable hub of common physics formulas",
-        route: "/products/tools/formula-reference",
-        category: "tools",
-        icon: BookOpen,
-        subGroup: "Reference",
-      },
       {
         id: "unit-converter",
         title: "Unit Converter",
@@ -835,7 +806,6 @@ export const categories: EngineeringCategory[] = [
         route: "/products/tools/unit-converter",
         category: "tools",
         icon: ArrowLeftRight,
-        subGroup: "Reference",
       },
     ],
   },

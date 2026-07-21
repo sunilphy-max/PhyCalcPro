@@ -43,45 +43,41 @@ export default function CategoryLanding({ categoryId }: CategoryLandingProps) {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950 dark:bg-transparent dark:text-slate-100">
       <section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950/40">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-slate-900 text-white shadow-lg shadow-cyan-200/40 dark:shadow-cyan-950/40">
-              <CategoryIcon className="h-6 w-6" aria-hidden />
-            </div>
-            <div className="min-w-0 flex-1 space-y-3">
-              <p className="text-sm uppercase tracking-[0.25em] text-cyan-600 dark:text-cyan-400">
-                Category
-              </p>
-              <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl dark:text-white">
-                {category.title}
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                {category.description}
-              </p>
-              <div className="flex flex-wrap gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 dark:border-slate-700 dark:bg-slate-900">
-                  {category.modules.length} tools
-                </span>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 dark:border-slate-700 dark:bg-slate-900">
-                  {availableCount} available
-                </span>
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 to-slate-900 text-white">
+                <CategoryIcon className="h-4 w-4" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                  <h1 className="text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl dark:text-white">
+                    {category.title}
+                  </h1>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {category.modules.length} tools · {availableCount} available
+                  </span>
+                </div>
+                <p className="mt-0.5 line-clamp-1 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
+                  {category.description}
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="relative mt-8 max-w-xl">
-            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder={`Filter ${category.title.toLowerCase()} modules`}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-950 shadow-sm transition focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-cyan-500 dark:focus:ring-cyan-900/40"
-            />
+            <div className="relative w-full shrink-0 sm:w-64 lg:w-72">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={`Filter ${category.title.toLowerCase()} modules`}
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-950 transition focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:focus:border-cyan-500 dark:focus:ring-cyan-900/40"
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-10 sm:py-12">
+      <section className="py-6 sm:py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {filteredModules.length === 0 ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-800 dark:bg-slate-950/50">

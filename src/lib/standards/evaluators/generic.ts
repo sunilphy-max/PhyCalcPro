@@ -33,11 +33,6 @@ const RESULT_TO_CHECK: Record<string, { checkId: string; kind: "safety_factor" |
 };
 
 const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
-  "safety-factor": {
-    safetyFactorYield: "von_mises_yield",
-    safetyFactorUltimate: "von_mises_ultimate",
-    governingFactor: "von_mises_yield",
-  },
   rivets: {
     safetyFactorOverall: "shear",
     safetyFactorShear: "shear",
@@ -85,9 +80,6 @@ const MODULE_FIELD_OVERRIDES: Record<string, Record<string, string>> = {
   },
   "combined-loading": {
     safetyFactor: "von_mises",
-  },
-  "load-case-manager": {
-    safetyFactor: "envelope_stress",
   },
 };
 

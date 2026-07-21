@@ -17,7 +17,6 @@ import { solveBoltPattern } from "@/lib/fasteners/bolts/boltPattern";
 import { solveKeysSplinesEngine } from "@/lib/fasteners/keys-splines/engine";
 import { solvePinEngine } from "@/lib/fasteners/pins/engine";
 import { solveRivetEngine } from "@/lib/fasteners/rivets/engine";
-import { solveSafetyFactorEngine } from "@/lib/fasteners/safetyFactor/engine";
 import { solveShaftHubEngine } from "@/lib/fasteners/shaft-hubs/engine";
 import { solveWeldEngine } from "@/lib/fasteners/welds/engine";
 import { solveGearEngine } from "@/lib/machine/gears/engine";
@@ -57,10 +56,8 @@ import { solveCombinedLoadingEngine } from "@/lib/structural/combinedLoading/eng
 import { solveCircularPlateEngine } from "@/lib/structural/circular-plates/engine";
 import { solveShellEngine } from "@/lib/structural/shells/engine";
 import { solveFrameEngine } from "@/lib/structural/frames/engine";
-import { solveLoadCaseManagerEngine } from "@/lib/structural/loadCaseManager/engine";
 import { solvePlateEngine } from "@/lib/structural/plates/engine";
 import { solveTrussEngine } from "@/lib/structural/trusses/engine";
-import { solveFormulaReferenceEngine } from "@/lib/tools/formula-reference/engine";
 import { solveUnitConverterEngine } from "@/lib/tools/unit-converter/engine";
 
 export type ModuleSolverFn = (inputs: Record<string, unknown>) => Record<string, unknown>;
@@ -90,7 +87,6 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   columns: (i) => solveBucklingEngine(i as never) as Record<string, unknown>,
   plates: (i) => solvePlateEngine(i as never) as Record<string, unknown>,
   "combined-loading": (i) => solveCombinedLoadingEngine(i as never) as Record<string, unknown>,
-  "load-case-manager": (i) => solveLoadCaseManagerEngine(i as never) as Record<string, unknown>,
   "circular-plates": (i) => solveCircularPlateEngine(i as never) as Record<string, unknown>,
   shells: (i) => solveShellEngine(i as never) as Record<string, unknown>,
   "v-belts": (i) => solveVBeltDrive(i as never) as Record<string, unknown>,
@@ -120,7 +116,6 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
       : (solveScrewEngine(i as never) as Record<string, unknown>),
   welds: (i) => solveWeldEngine(i as never) as Record<string, unknown>,
   rivets: (i) => solveRivetEngine(i as never) as Record<string, unknown>,
-  "safety-factor": (i) => solveSafetyFactorEngine(i as never) as Record<string, unknown>,
   "keys-splines": (i) => solveKeysSplinesEngine(i as never) as Record<string, unknown>,
   "shaft-hubs": (i) => solveShaftHubEngine(i as never) as Record<string, unknown>,
   pins: (i) => solvePinEngine(i as never) as Record<string, unknown>,
@@ -152,7 +147,6 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   "battery-ev-systems": wrapAdvanced("battery-ev-systems"),
   "hydrogen-systems": wrapAdvanced("hydrogen-systems"),
   "precision-motion": wrapAdvanced("precision-motion"),
-  "formula-reference": (i) => solveFormulaReferenceEngine(i as never) as Record<string, unknown>,
   "unit-converter": (i) => solveUnitConverterEngine(i as never) as Record<string, unknown>,
 };
 

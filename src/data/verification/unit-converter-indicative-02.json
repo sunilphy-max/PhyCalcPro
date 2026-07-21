@@ -1,0 +1,17 @@
+{
+  "id": "unit-converter-indicative-02",
+  "moduleId": "unit-converter",
+  "designCode": "INDICATIVE",
+  "description": "mm to in conversion",
+  "inputs": {
+    "value": 25.4,
+    "fromUnit": "mm",
+    "toUnit": "in",
+    "dimension": "length"
+  },
+  "expected": {
+    "convertedValue": 1
+  },
+  "tolerancePercent": 0.1,
+  "source": "Unit conversion"
+}

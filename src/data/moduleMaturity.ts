@@ -55,13 +55,6 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
     maturityBand: "formula",
     notes: "Closed-form calculations with low solver coupling.",
   },
-  "load-case-manager": {
-    numericalDepth: 3,
-    validationQuality: 2,
-    refactorRisk: "low",
-    maturityBand: "formula",
-    notes: "Envelope logic focused on orchestration over deep numerics.",
-  },
   shafts: {
     numericalDepth: 4,
     validationQuality: 3,
@@ -124,13 +117,6 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
     refactorRisk: "low",
     maturityBand: "formula",
     notes: "Limited parameter surface and easy migration path.",
-  },
-  "safety-factor": {
-    numericalDepth: 2,
-    validationQuality: 2,
-    refactorRisk: "low",
-    maturityBand: "formula",
-    notes: "Simple reserve factor calculations across modules.",
   },
   "material-db": {
     numericalDepth: 2,
@@ -286,7 +272,6 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
   "internal-gears-rack": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Internal spur and rack Lewis/Hertz screening." },
   "power-screws": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Power and ball screw efficiency and buckling." },
   "rolled-sections": { numericalDepth: 2, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Catalog section lookup." },
-  "formula-reference": { numericalDepth: 1, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Formula hub and mini calculators." },
   "unit-converter": { numericalDepth: 1, validationQuality: 3, refactorRisk: "low", maturityBand: "formula", notes: "Shared unit conversion layer." },
   "vacuum-engineering": { numericalDepth: 3, validationQuality: 2, refactorRisk: "low", maturityBand: "formula", notes: "Ideal gas pump-down and molecular conductance screening." },
   "cryogenic-engineering": { numericalDepth: 3, validationQuality: 2, refactorRisk: "medium", maturityBand: "formula", notes: "Lumped heat leak, boil-off and cooldown estimates." },

@@ -124,7 +124,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 |---------------|----------------------|
 | **Solver-backed** | Real reverse/catalog solver; best candidate applied before validation (beams, columns, gears, shafts, pipes, …). |
 | **Catalog-backed** | Ranks catalog entries (material-db, rolled-sections, bearings). |
-| **Validate-only** | formula-reference, unit-converter — advisor registered; Auto-design does not resize (by design). |
+| **Validate-only** | unit-converter — advisor registered; Auto-design does not resize (by design). |
 
 **Count:** 61 modules with real design paths · 2 validate-only tools · 1 profiles page (section-from-required-I).
 
@@ -150,7 +150,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 | Dynamics | 4 | vibrations, rotation, impact, suspension |
 | Manufacturing | 4 | tolerance, fits, cost-estimator, cam-toolpaths |
 | Advanced systems | 8 | vacuum-engineering, cryogenic-engineering, magnetic-fields, superconducting-systems, thermal-management, battery-ev-systems, hydrogen-systems, precision-motion |
-| Tools | 4 | load-case-manager, safety-factor, formula-reference, unit-converter |
+| Tools | 1 | unit-converter |
 | **Total** | **66** | |
 
 ### Homogenization snapshot
@@ -163,7 +163,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 | Modern `inputs`/`results` or full `*Inputs`/`*Results` | **All 63 modules** (Tier 2 homogenization complete, 2026-06) |
 | `CalculatorResultsShell` / metric cards | Universal on expansion modules; widespread elsewhere |
 | Specialized code evaluators | 5 modules (beams, columns, gears, combined-loading, welds); **generic.ts** field mapping for shafts, bearings, all spring types, rivets, welds |
-| Extracted from monolith (complete) | impact, corrosion, fatigue, combined-loading, suspension, load-case-manager, temperature-properties |
+| Extracted from monolith (complete) | impact, corrosion, fatigue, combined-loading, suspension, temperature-properties |
 
 ### Validation catalog status
 
@@ -215,7 +215,7 @@ From `src/data/moduleMaturity.ts`:
 1. **Layout migration** — **Done.** All 62 product pages use `inputs` + `results` with `CalculatorInputPanel` and `CalculatorCalculateButton`; `validate:layout` blocks regressions.
 2. **Results shell** — **Done** on expansion modules and majority of legacy modules (`CalculatorResultsShell`, `CalculatorMetricGrid`, `CalculatorMetricCard`, `formatEngineeringValue`).
 3. **Solver-backed design mode** — Registry covers all modules; continue deepening reverse-sizing quality per module family.
-4. **Unit profiles** — Add profiles for trusses, material-db, safety-factor, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
+4. **Unit profiles** — Add profiles for trusses, material-db, cost-estimator, cam-toolpaths; migrate remaining pages to `CalculatorUnitField`.
 5. **Hook consolidation** — Prefer `useStandardCalculation` over ad hoc `useDesignCodeUnits` + manual `attach*CalculationSpec` (beams is the outlier).
 6. **Export** — Structured PDF reports (`structuredReport.ts`) with chart capture; ensure plots use `EngineeringPlot` with `data-export-plot`.
 

@@ -53,7 +53,7 @@ PhyCalcPro is **deployable today** for a free early-access launch: production bu
 
 ### Improvements pass 2 (2026-06-06)
 
-13. **Results homogenization** — Migrated legacy `<dl>` / `toFixed` panels to `CalculatorMetricGrid` + `CalculatorMetricCard` + `formatEngineeringValue`: welds, rivets, safety-factor, load-case-manager, corrosion, rotation, heat-exchangers, cost-estimator, suspension.
+13. **Results homogenization** — Migrated legacy `<dl>` / `toFixed` panels to `CalculatorMetricGrid` + `CalculatorMetricCard` + `formatEngineeringValue`: welds, rivets, corrosion, rotation, heat-exchangers, cost-estimator, suspension.
 14. **Bearing inputs** — `BearingInputs.tsx` now uses `CalculatorInputPanel`, `CalculatorUnitField`, and `CalculatorCalculateButton`.
 15. **Rolled section catalog** — `RolledSectionPicker` wired to **frames** and **trusses** (area / inertia auto-fill from catalog).
 

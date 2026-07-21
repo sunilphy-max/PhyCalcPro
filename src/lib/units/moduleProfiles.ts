@@ -1,4 +1,5 @@
 import type { PhysicsDimension } from "@/lib/physics/units";
+import { buildUnitConverterProfiles } from "@/lib/tools/unit-converter/dimensions";
 
 export type UnitFieldProfile = {
   dimension: PhysicsDimension;
@@ -166,14 +167,6 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
   tolerance: {
     nominalSize: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Nominal size" },
     tolerance: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in", "µm"], label: "Tolerance" },
-  },
-  "load-case-manager": {
-    axialForce: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Axial force" },
-    bendingMoment: { dimension: "moment", defaultUnit: "N\u00b7m", units: ["N\u00b7m", "kN\u00b7m", "lbf\u00b7ft"], label: "Bending moment" },
-    shearForce: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Shear force" },
-    sectionWidth: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in", "ft"], label: "Section width" },
-    sectionHeight: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in", "ft"], label: "Section height" },
-    yieldStrength: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi", "ksi"], label: "Yield strength" },
   },
   "temperature-properties": {
     baseYield: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi", "ksi"], label: "Yield strength" },
@@ -379,19 +372,7 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     area: { dimension: "area", defaultUnit: "m2", units: ["m2", "mm2", "in2"], label: "Area" },
     inertia: { dimension: "inertia", defaultUnit: "m4", units: ["m4", "mm4", "in4"], label: "Moment of inertia" },
   },
-  "formula-reference": {
-    mass: { dimension: "mass", defaultUnit: "kg", units: ["kg", "lb"], label: "Mass" },
-    velocity: { dimension: "velocity", defaultUnit: "m/s", units: ["m/s", "ft/s", "km/h"], label: "Velocity" },
-    flow: { dimension: "volumeFlow", defaultUnit: "m3/s", units: ["m3/s", "L/min", "gpm"], label: "Flow rate" },
-    pressure: { dimension: "pressure", defaultUnit: "Pa", units: ["Pa", "MPa", "bar", "psi"], label: "Pressure drop" },
-    length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in", "ft"], label: "Length" },
-    force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Force" },
-  },
-  "unit-converter": {
-    length: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in", "ft"], label: "Length" },
-    force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Force" },
-    stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi"], label: "Stress" },
-  },
+  "unit-converter": buildUnitConverterProfiles(),
 };
 
 export function getModuleFieldProfile(

@@ -69,7 +69,6 @@ Engineer sign-off still required for production-critical modules (Physics/Standa
 | **columns** | CI | Euler + code curve SF vs AISC/EC3 worksheet. Inelastic buckling partial. |
 | **plates** | CI | Rectangular plate deflection vs Roark for simply supported case. |
 | **combined-loading** | CI | Von Mises / Tresca vs textbook combined stress example. |
-| **load-case-manager** | CI | Envelope max/min matches manual load combination. |
 | **circular-plates** | CI | Uniform pressure — deflection/moment vs Roark Table. |
 
 ---
@@ -121,7 +120,6 @@ Engineer sign-off still required for production-critical modules (Physics/Standa
 | **bolts** | CI | VDI 2230 / AISC joint example — preload, slip, fatigue. |
 | **welds** | CI | AISC/AWS fillet throat stress vs manual calc. |
 | **rivets** | CI | Single-shear / bearing vs MIL-HDBK or Shigley. |
-| **safety-factor** | CI | Combined SF definitions match your company standard. |
 | **keys-splines** | CI | Key shear/bearing vs ISO 3912 / Shigley. |
 | **shaft-hubs** | CI | Interference / clearance fit pressure vs DIN 7190. |
 | **pins** | CI | Double shear pin vs Shigley Table. |
@@ -210,7 +208,6 @@ Verification JSON cases with named grades: `beams-a36-01`, `shafts-4140-01`, `vi
 
 | Module | Auto | Your validation tasks |
 |--------|------|------------------------|
-| **formula-reference** | CI | Spot-check 5 formulas against Roark / Shigley. |
 | **unit-converter** | CI | NIST conversion factors for critical unit pairs. |
 
 ---

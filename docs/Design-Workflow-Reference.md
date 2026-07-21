@@ -104,7 +104,7 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 | `catalog-backed` | Ranks catalog entries (sections, materials) against targets. | Apply sets catalog selection into the form. |
 | `workflow` | Advisor and targets wired; indicative/reference strategy until a dedicated reverse solver lands (e.g. some advanced-systems, cost-estimator). | Reference candidate table; Apply when fields are available. |
 
-**Validate-only tools:** `unit-converter` and `formula-reference` register the workflow UI for consistency; Auto-design does not resize (by design).
+**Validate-only tools:** `unit-converter` registers the workflow UI for consistency; Auto-design does not resize (by design).
 
 **Fleet audit (physics + design depth):** [Module-Physics-Design-Audit.md](./Module-Physics-Design-Audit.md) — maturity, design quality, verification coverage, and apply-field unit contracts.
 
@@ -121,7 +121,6 @@ Each module declares a maturity in `moduleDesignWorkflows.ts`. This controls adv
 | plates, circular-plates | Plate bending | Thickness sweeps (circular: deflection + stress) |
 | trusses, frames | Equilibrium | Member size screening |
 | combined-loading | Von Mises combination | Solid round diameter sweep |
-| load-case-manager | Envelope checks | Combined-loading proxy |
 
 ### Machine
 

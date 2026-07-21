@@ -100,7 +100,6 @@ const EXACT_REFERENCE_LINKS: Record<string, ReferenceDocLink> = {
   "Cooling assumptions": { href: "/documentation/modules/thermal-management" },
 
   // Tools
-  "Formula catalog": { href: "/documentation/modules/formula-reference" },
   "Unit conversion table": { href: "/documentation/modules/unit-converter" },
   "NIST/ISO unit references": {
     href: "https://www.nist.gov/pml/owm/metric-si/si-units",
@@ -143,7 +142,6 @@ const KEYWORD_REFERENCE_LINKS: Array<{ pattern: RegExp; link: ReferenceDocLink }
   { pattern: /battery|hydrogen|EV/i, link: { href: "/documentation/modules/battery-ev-systems" } },
   { pattern: /superconduct/i, link: { href: "/documentation/modules/superconducting-systems" } },
   { pattern: /precision motion|ISO 230/i, link: { href: "/documentation/modules/precision-motion" } },
-  { pattern: /formula/i, link: { href: "/documentation/modules/formula-reference" } },
   { pattern: /unit|NIST|SI/i, link: { href: "/documentation/modules/unit-converter" } },
   { pattern: /design workflow|workflow layer/i, link: { href: "/documentation/reference#1-8-design-workflow-layer" } },
   { pattern: /design code|standard profile/i, link: { href: "/documentation/reference#1-3-design-codes" } },
