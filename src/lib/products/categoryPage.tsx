@@ -8,9 +8,10 @@ export function categoryPageExports(categoryId: string) {
   return {
     metadata: categoryMetadata(categoryId),
     Page() {
-      const category = getCategoryById(categoryId);
-      if (!category) notFound();
-      return <CategoryLanding category={category} />;
+      if (!getCategoryById(categoryId)) notFound();
+      // Pass only a string — Lucide icons on the category object are not serializable
+      // from Server Components into Client Components.
+      return <CategoryLanding categoryId={categoryId} />;
     },
   };
 }

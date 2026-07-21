@@ -3,31 +3,40 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowRight, Search, Sparkles } from "lucide-react";
-import {
-  groupModulesBySubGroup,
-  type EngineeringCategory,
-} from "@/data/modules";
+import { getCategoryById, groupModulesBySubGroup } from "@/data/modules";
 
 type CategoryLandingProps = {
-  category: EngineeringCategory;
+  /** Serializable category id — icons are resolved client-side from modules.ts. */
+  categoryId: string;
 };
 
-export default function CategoryLanding({ category }: CategoryLandingProps) {
+export default function CategoryLanding({ categoryId }: CategoryLandingProps) {
+  const category = getCategoryById(categoryId);
   const [searchQuery, setSearchQuery] = useState("");
   const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredModules = useMemo(() => {
+    if (!category) return [];
+    return category.modules.filter((module) => {
+      if (!normalizedQuery) return true;
+      return [module.title, module.description, module.subGroup]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(normalizedQuery));
+    });
+  }, [category, normalizedQuery]);
+
+  if (!category) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-16 text-center">
+        <p className="text-lg font-semibold text-slate-950 dark:text-white">Category not found</p>
+        <Link href="/products" className="mt-4 inline-block text-sm font-semibold text-cyan-600">
+          Back to products
+        </Link>
+      </div>
+    );
+  }
+
   const CategoryIcon = category.icon;
-
-  const filteredModules = useMemo(
-    () =>
-      category.modules.filter((module) => {
-        if (!normalizedQuery) return true;
-        return [module.title, module.description, module.subGroup]
-          .filter(Boolean)
-          .some((value) => value!.toLowerCase().includes(normalizedQuery));
-      }),
-    [category.modules, normalizedQuery]
-  );
-
   const moduleGroups = groupModulesBySubGroup(filteredModules);
   const availableCount = category.modules.filter((m) => !m.comingSoon).length;
 

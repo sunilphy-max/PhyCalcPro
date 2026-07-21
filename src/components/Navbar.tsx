@@ -8,7 +8,6 @@ import SearchBar from "@/components/SearchBar";
 import PhyCalcMark from "@/components/brand/PhyCalcMark";
 import NavUserMenu from "@/components/account/NavUserMenu";
 import { useEntitlement } from "@/contexts/EntitlementContext";
-import { showAccountNav } from "@/lib/supabase/setupStatus";
 
 const allNavigationItems = [
   { href: "/", label: "Home" },
@@ -16,7 +15,6 @@ const allNavigationItems = [
   { href: "/copilot", label: "Copilot" },
   { href: "/projects", label: "Projects" },
   { href: "/pricing", label: "Pricing", monetizationOnly: true },
-  { href: "/account", label: "Account", authEnabled: true },
   { href: "/status", label: "Quality" },
   { href: "/support", label: "Support" },
   { href: "/documentation", label: "Docs" },
@@ -27,19 +25,15 @@ export default function Navbar() {
   // On product pages the search box renders below the category sub-bar instead.
   const isProductsRoute = pathname?.startsWith("/products") ?? false;
   const { isMonetizationEnabled } = useEntitlement();
-  const accountNavVisible = showAccountNav();
   const navigationItems = useMemo(
     () =>
       allNavigationItems.filter((item) => {
         if ("monetizationOnly" in item && item.monetizationOnly) {
           return isMonetizationEnabled;
         }
-        if ("authEnabled" in item && item.authEnabled) {
-          return accountNavVisible;
-        }
         return true;
       }),
-    [isMonetizationEnabled, accountNavVisible]
+    [isMonetizationEnabled]
   );
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
