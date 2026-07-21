@@ -1,5 +1,6 @@
 /**
  * Ensures every route in src/data/modules.ts has a matching page.tsx and vice versa.
+ * Category landing pages (`/products/{categoryId}`) are allowed when the category exists.
  * Run: node scripts/validate-module-registry.mjs
  */
 import fs from "node:fs";
@@ -17,6 +18,16 @@ const registryRoutes = new Set();
 for (const match of modulesFile.matchAll(routeRegex)) {
   registryRoutes.add(match[1]);
 }
+
+const categoryIds = new Set();
+for (const route of registryRoutes) {
+  const parts = route.split("/").filter(Boolean); // products, category, module
+  if (parts.length >= 2) categoryIds.add(parts[1]);
+}
+
+const categoryLandingRoutes = new Set(
+  [...categoryIds].map((id) => `/products/${id}`)
+);
 
 function walkPages(dir, pages = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -45,8 +56,13 @@ for (const route of registryRoutes) {
 }
 
 for (const route of pageRoutes) {
-  if (!registryRoutes.has(route)) {
-    errors.push(`Orphan page.tsx not in modules.ts: ${route}`);
+  if (registryRoutes.has(route) || categoryLandingRoutes.has(route)) continue;
+  errors.push(`Orphan page.tsx not in modules.ts: ${route}`);
+}
+
+for (const route of categoryLandingRoutes) {
+  if (!pageRoutes.has(route)) {
+    errors.push(`Missing category landing page.tsx: ${route}`);
   }
 }
 
@@ -56,4 +72,6 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`Module registry validation passed (${registryRoutes.size} routes).`);
+console.log(
+  `Module registry validation passed (${registryRoutes.size} modules, ${categoryLandingRoutes.size} category landings).`
+);

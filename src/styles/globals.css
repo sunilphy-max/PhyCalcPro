@@ -42,23 +42,19 @@
   }
 
   /*
-   * Products shell: sticky category sub-bar with inline module dropdowns.
+   * Products shell: sticky category bar (hub/landings) or breadcrumb (modules).
    * Isolation + overflow-x clip keep Plotly/modebar from painting over chrome.
    */
-  .products-sidebar-wrap {
+  .products-nav-wrap {
     width: 100%;
   }
 
-  .products-sidebar {
+  .products-nav {
     position: sticky;
     z-index: 60;
     isolation: isolate;
     pointer-events: auto;
     width: 100%;
-  }
-
-  .products-module-dropdown {
-    pointer-events: auto;
   }
 
   .products-module-main {

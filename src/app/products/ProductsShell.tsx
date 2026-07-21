@@ -1,6 +1,6 @@
 "use client";
 
-import Sidebar from "@/components/Sidebar";
+import ProductsCategoryBar from "@/components/ProductsCategoryBar";
 import { DesignCodeProvider } from "@/contexts/DesignCodeContext";
 
 export default function ProductsShell({
@@ -11,7 +11,7 @@ export default function ProductsShell({
   return (
     <DesignCodeProvider>
       <div className="products-shell flex w-full min-w-0 flex-col items-stretch">
-        <Sidebar />
+        <ProductsCategoryBar />
         <div className="products-module-main min-w-0 flex-1 overflow-x-clip">{children}</div>
       </div>
     </DesignCodeProvider>

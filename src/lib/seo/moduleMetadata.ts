@@ -1,4 +1,4 @@
-import { getModuleByRoute } from "@/data/modules";
+import { getCategoryById, getModuleByRoute } from "@/data/modules";
 import { buildPageMetadata, defaultDescription, SITE_NAME } from "./site";
 
 /**
@@ -21,6 +21,20 @@ export function moduleMetadata(route: string) {
     description,
     path: route,
     robots: mod?.comingSoon ? { index: false, follow: true } : { index: true, follow: true },
+  });
+}
+
+export function categoryMetadata(categoryId: string) {
+  const category = getCategoryById(categoryId);
+  const name = category ? category.title : "Engineering Category";
+  const description = category
+    ? `${category.description} Browse ${category.modules.length} engineering calculators in ${category.title}.`
+    : defaultDescription;
+
+  return buildPageMetadata({
+    title: { absolute: absoluteTitle(name) },
+    description,
+    path: `/products/${categoryId}`,
   });
 }
 

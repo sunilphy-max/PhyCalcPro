@@ -1,5 +1,5 @@
 /**
- * Ensures /products routes use a single sidebar (products/layout.tsx only).
+ * Ensures /products routes use a single products nav (products/layout.tsx only).
  * Run: npm run validate:layout
  */
 import fs from "node:fs";
@@ -23,8 +23,8 @@ for (const file of walk(productsRoot)) {
 
   if (file.endsWith("layout.tsx") && file !== rootLayout) {
     const content = fs.readFileSync(file, "utf8");
-    if (/\bSidebar\b/.test(content)) {
-      errors.push(`${rel}: category layouts must not render Sidebar (use src/app/products/layout.tsx only).`);
+    if (/\b(Sidebar|ProductsCategoryBar)\b/.test(content)) {
+      errors.push(`${rel}: category layouts must not render products nav (use src/app/products/layout.tsx only).`);
     }
   }
 

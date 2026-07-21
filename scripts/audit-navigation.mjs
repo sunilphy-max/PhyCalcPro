@@ -8,7 +8,7 @@ await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
 await page.waitForTimeout(4000);
 
 const audit = await page.evaluate(() => {
-  const sidebar = document.querySelector("aside.products-sidebar");
+  const sidebar = document.querySelector("aside.products-nav");
   const workflow = document.querySelector('[aria-label="Continue workflow"]');
   const results = [];
 
@@ -29,12 +29,6 @@ const audit = await page.evaluate(() => {
   if (sidebar) {
     const r = sidebar.getBoundingClientRect();
     results.push(hitTest("category-bar", r.left + 120, r.top + r.height / 2));
-  }
-
-  const dropdown = document.querySelector("#products-module-dropdown");
-  if (dropdown) {
-    const r = dropdown.getBoundingClientRect();
-    results.push(hitTest("dropdown-mid", r.left + 120, r.top + 80));
   }
 
   if (workflow) {
@@ -77,13 +71,13 @@ const logs = [];
 page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
 page.on("pageerror", (e) => logs.push(`PAGEERROR: ${e.message}`));
 
-// Open Structural category dropdown, then navigate via a module link.
-const structuralBtn = page.locator('[aria-label="Structural Engineering modules"]').first();
-if (await structuralBtn.count()) {
-  await structuralBtn.click({ timeout: 5000 });
-  await page.waitForTimeout(300);
-}
-const frameLink = page.locator("#products-module-dropdown a", { hasText: "Frame Analysis" });
+// Browse Structural category landing, then open a module.
+await page.goto("http://localhost:3000/products/structural", {
+  waitUntil: "networkidle",
+  timeout: 60000,
+});
+await page.waitForTimeout(1000);
+const frameLink = page.locator('a', { hasText: "Frame Analysis" }).first();
 if (await frameLink.count()) {
   await frameLink.scrollIntoViewIfNeeded();
   const href = await frameLink.getAttribute("href");
@@ -93,14 +87,14 @@ if (await frameLink.count()) {
     href: el.getAttribute("href"),
     pointerEvents: getComputedStyle(el).pointerEvents,
   }));
-  console.log("=== DROPDOWN LINK META ===");
+  console.log("=== CATEGORY LANDING LINK META ===");
   console.log(JSON.stringify(tag, null, 2));
   await frameLink.click({ timeout: 5000 });
   try {
     await page.waitForURL(`**${href}`, { timeout: 8000 });
-    console.log("=== DROPDOWN NAV OK ===", page.url());
+    console.log("=== CATEGORY LANDING NAV OK ===", page.url());
   } catch {
-    console.log("=== DROPDOWN NAV FAILED ===");
+    console.log("=== CATEGORY LANDING NAV FAILED ===");
     console.log(JSON.stringify({ before, after: page.url(), expected: href }, null, 2));
   }
 }

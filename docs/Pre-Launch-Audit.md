@@ -9,7 +9,7 @@
 
 ## Verdict: **Launch ready**
 
-Post-improvement pass (2026-06-07): complete website module audit and homogenization. **2026-07-16 final pass:** critical-path physics/plots/standards honesty vs rolling-bearings baseline; CI verification suite green at **86 cases / 67 solvers** (see `npm run test:verification`). Products nav is a **top category sub-bar** + module dropdowns. Monetization remains gated under free launch. Remaining engineer work is **worksheet sign-off** and optional bearings vendor gold — not layout blockers for an indicative engineering workspace.
+Post-improvement pass (2026-06-07): complete website module audit and homogenization. **2026-07-16 final pass:** critical-path physics/plots/standards honesty vs rolling-bearings baseline; CI verification suite green at **86 cases / 67 solvers** (see `npm run test:verification`). Products nav is a **top category bar** (hub/landings) with **category landings** and a **breadcrumb strip** on module pages. Monetization remains gated under free launch. Remaining engineer work is **worksheet sign-off** and optional bearings vendor gold — not layout blockers for an indicative engineering workspace.
 
 ## Previous verdict: **Launch with caveats**
 
@@ -172,7 +172,7 @@ See `docs/Launch-Plan.md` for env contract.
 Before announcing launch, spot-check in browser with `NEXT_PUBLIC_FREE_LAUNCH=true`:
 
 - [ ] Home loads; hero shows module count; no Pricing in nav
-- [ ] `/products` top category sub-bar + module dropdowns — open beams, gears, v-belts, columns
+- [ ] `/products` category bar + landings + module breadcrumb — open beams, gears, v-belts, columns
 - [ ] Toggle Auto-design — design target fields appear (except inline modules: beams, columns, v-belts, compression-springs)
 - [ ] Auto-design → Calculate on gears — module/face width updates; results show metric cards with units
 - [ ] Compare mode on beams — Apply candidate loads section designation

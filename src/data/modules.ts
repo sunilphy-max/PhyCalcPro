@@ -56,7 +56,7 @@ export type EngineeringModule = {
   tags?: string[];
   featured?: boolean;
   comingSoon?: boolean;
-  /** Sidebar sub-heading within a category (e.g. Machine → Gearing). */
+  /** Category landing / nav sub-heading (e.g. Machine → Gearing). */
   subGroup?: string;
 };
 
@@ -860,4 +860,26 @@ export const featuredModules = allModules.filter(
  */
 export function getModuleByRoute(route: string) {
   return allModules.find((module) => module.route === route);
+}
+
+export function getCategoryById(categoryId: string) {
+  return categories.find((category) => category.id === categoryId);
+}
+
+/** Group modules by consecutive `subGroup` labels (category landings / nav). */
+export function groupModulesBySubGroup(modules: EngineeringModule[]) {
+  const groups: { label: string | null; modules: EngineeringModule[] }[] = [];
+  let currentLabel: string | null | undefined = undefined;
+
+  for (const mod of modules) {
+    const label = mod.subGroup ?? null;
+    if (label !== currentLabel) {
+      groups.push({ label, modules: [mod] });
+      currentLabel = label;
+    } else {
+      groups[groups.length - 1].modules.push(mod);
+    }
+  }
+
+  return groups;
 }

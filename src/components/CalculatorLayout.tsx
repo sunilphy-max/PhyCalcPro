@@ -155,7 +155,7 @@ function CalculatorLayoutBody({
               <aside
                 className={`${calculatorWorkspaceClass} max-w-full min-w-0 transition-all duration-300 ease-out ${
                   showSplitLayout
-                    ? `${calculatorSidebarClass} calculator-sidebar-scroll xl:sticky xl:top-[7.5rem] xl:max-h-[calc(100vh-8.5rem)] xl:overflow-y-auto xl:overscroll-contain`
+                    ? `${calculatorSidebarClass} calculator-sidebar-scroll xl:sticky xl:top-[7rem] xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:overscroll-contain`
                     : "calculator-workspace--expanded"
                 }`}
               >
@@ -180,7 +180,7 @@ function CalculatorLayoutBody({
             ) : null}
             {summary ? (
               <aside
-                className="calculator-design-summary order-first min-w-0 xl:sticky xl:top-[7.5rem] xl:order-none xl:max-h-[calc(100vh-8.5rem)] xl:overflow-y-auto xl:overscroll-contain"
+                className="calculator-design-summary order-first min-w-0 xl:sticky xl:top-[7rem] xl:order-none xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:overscroll-contain"
               >
                 {summary}
               </aside>

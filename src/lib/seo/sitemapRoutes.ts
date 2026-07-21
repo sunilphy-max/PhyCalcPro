@@ -27,6 +27,7 @@ const STATIC_ROUTES = [
   "/documentation/modules",
   "/documentation/reference",
   "/documentation/supabase",
+  "/documentation/workflow-modes",
   "/legal/cookies",
   "/legal/privacy",
   "/legal/terms",

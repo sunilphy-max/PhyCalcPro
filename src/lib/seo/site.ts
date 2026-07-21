@@ -76,6 +76,15 @@ export function buildPageMetadata({
 
 const googleSiteVerification =
   process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined;
+const bingSiteVerification =
+  process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION?.trim() || undefined;
+
+const siteVerification: NonNullable<Metadata["verification"]> = {
+  ...(googleSiteVerification ? { google: googleSiteVerification } : {}),
+  ...(bingSiteVerification
+    ? { other: { "msvalidate.01": bingSiteVerification } }
+    : {}),
+};
 
 export const rootMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -107,7 +116,7 @@ export const rootMetadata: Metadata = {
     index: true,
     follow: true,
   },
-  ...(googleSiteVerification
-    ? { verification: { google: googleSiteVerification } }
+  ...(Object.keys(siteVerification).length > 0
+    ? { verification: siteVerification }
     : {}),
 };
