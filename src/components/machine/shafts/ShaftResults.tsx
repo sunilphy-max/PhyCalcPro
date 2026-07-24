@@ -5,6 +5,7 @@ import ShaftDashboard from "./ShaftDashboard";
 import type { LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 
 type LayoutPreview = {
   length: number;
@@ -19,9 +20,10 @@ type Props = {
   projectName: string;
   layout?: LayoutPreview;
   lengthUnit?: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function ShaftResults({ result, projectName, layout, lengthUnit = "m" }: Props) {
+export default function ShaftResults({ result, projectName, layout, lengthUnit = "m", workflowMode }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="shafts"
@@ -47,7 +49,7 @@ export default function ShaftResults({ result, projectName, layout, lengthUnit =
           : undefined
       }
     >
-      {result ? <ShaftDashboard result={result} layout={layout} lengthUnit={lengthUnit} /> : null}
+      {result ? <ShaftDashboard result={result} layout={layout} lengthUnit={lengthUnit} workflowMode={workflowMode} /> : null}
     </CalculatorResultsShell>
   );
 }

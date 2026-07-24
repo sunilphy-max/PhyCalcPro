@@ -102,7 +102,7 @@ export default function BucklingInputs({
         <div className="space-y-2">
           <CalculatorCalculateButton
             onClick={onCalculate}
-            label={isDesignMode ? "Size section" : "Calculate buckling"}
+            label="Calculate buckling"
             designAware
           />
           <button
@@ -134,22 +134,6 @@ export default function BucklingInputs({
           onDesignationChange={setSectionDesignation}
           onSectionApplied={onSectionApplied}
         />
-      ) : null}
-
-      {isDesignMode ? (
-        <CalculatorFormSection title="Design target">
-          <CalculatorUnitField
-            label="Target buckling safety factor"
-            value={targetSafetyFactor}
-            onChange={setTargetSafetyFactor}
-            min={1}
-            step={0.1}
-            unit={<span className="inline-flex min-w-[5.5rem] items-center px-2 text-sm text-slate-500">—</span>}
-          />
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Auto-design selects the lightest catalog section with Pcr/P at or above this target.
-          </p>
-        </CalculatorFormSection>
       ) : null}
 
       <CalculatorFormSection title="Geometry">

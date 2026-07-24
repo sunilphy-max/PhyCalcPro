@@ -6,6 +6,8 @@ export type CombinedLoadingConfig = {
   width: number;
   height: number;
   yieldStrength: number;
+  /** When `circular`, width/height are treated as diameter (true round-bar section properties). */
+  sectionShape?: "rectangular" | "circular";
 };
 
 export type CombinedLoadingResult = {
@@ -19,4 +21,5 @@ export type CombinedLoadingResult = {
   vonMisesStress: number;
   safetyFactor: number;
   designStatus: "safe" | "warning" | "critical";
+  sectionShape: "rectangular" | "circular";
 };

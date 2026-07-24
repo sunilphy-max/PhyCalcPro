@@ -53,7 +53,7 @@ describe("next-tier design field units", () => {
     expect(size).toBeLessThan(0.05); // meters, not mm digits
   });
 
-  it("combined-loading returns round diameter in meters", () => {
+  it("combined-loading returns round diameter in meters with circular sectionShape", () => {
     const result = runModuleDesignMode("combined-loading", {
       axialLoad: 25000,
       bendingMoment: 800,
@@ -63,7 +63,8 @@ describe("next-tier design field units", () => {
       allowableStressPa: 250e6,
     });
     expect(result?.best).not.toBeNull();
-    expect(result!.method).toMatch(/round|diameter/i);
+    expect(result!.method).toMatch(/circular|round|diameter/i);
+    expect(result!.best!.fields.sectionShape).toBe("circular");
     const d = result!.best!.fields.diameter as number | undefined;
     const w = result!.best!.fields.width as number;
     const h = result!.best!.fields.height as number;
@@ -75,6 +76,38 @@ describe("next-tier design field units", () => {
       expect(w).toBeGreaterThan(0.01);
       expect(w).toBeLessThan(0.5);
     }
+  });
+
+  it("power-screws ranks diameter×pitch with live screw engine", () => {
+    const result = runModuleDesignMode("power-screws", {
+      axialLoad: 10000,
+      targetSafetyFactor: 1.5,
+    });
+    expect(result?.best).not.toBeNull();
+    expect(result!.method).toMatch(/lead-screw|power-screw|pitch/i);
+    expect(result!.best!.fields.majorDiameter).toBeTypeOf("number");
+    expect(result!.best!.fields.pitch).toBeTypeOf("number");
+  });
+
+  it("cost-estimator ranks processes with live totalCost", () => {
+    const result = runModuleDesignMode("cost-estimator", {
+      costTarget: 150,
+      formValues: {
+        materialVolume: 0.001,
+        materialDensity: 7850,
+        materialCostPerKg: 2.5,
+        machiningTime: 1,
+        machineRate: 80,
+        laborTime: 0.5,
+        laborRate: 50,
+        finishPercent: 10,
+        overheadPercent: 15,
+        scrapPercent: 5,
+      },
+    });
+    expect(result?.best).not.toBeNull();
+    expect(result!.method).toMatch(/cost/i);
+    expect(result!.ranked.length).toBeGreaterThan(1);
   });
 
   it("fatigue ranks diameter candidates for target life", () => {
@@ -118,5 +151,22 @@ describe("next-tier design field units", () => {
     expect(od).toBeLessThan(2);
     expect(th).toBeGreaterThan(0.01);
     expect(th).toBeLessThan(0.2);
+  });
+});
+
+describe("workflow mode defaults", () => {
+  it("every catalog module exposes Auto-design, Validate, Compare, Diagnose", async () => {
+    const { getModuleDesignWorkflow } = await import("@/lib/design-workflows/moduleDesignWorkflows");
+    const { allModules } = await import("@/data/modules");
+    const { WORKFLOW_MODE_ORDER } = await import("@/lib/design-workflows/workflowModeLabels");
+
+    for (const mod of allModules.filter((m) => !m.comingSoon)) {
+      const workflow = getModuleDesignWorkflow(mod.id);
+      expect(workflow, mod.id).toBeDefined();
+      const ids = workflow!.modes.map((m) => m.id);
+      for (const modeId of WORKFLOW_MODE_ORDER) {
+        expect(ids, `${mod.id} missing ${modeId}`).toContain(modeId);
+      }
+    }
   });
 });

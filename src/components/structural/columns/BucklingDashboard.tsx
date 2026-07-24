@@ -12,16 +12,25 @@ import {
 } from "@/components/calculator/results";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import type { BucklingResult } from "@/lib/structural/columns/types";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseColumn } from "@/lib/structural/columns/diagnosis";
 
 type Props = {
   result: BucklingResult;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function BucklingDashboard({ result }: Props) {
+export default function BucklingDashboard({ result, workflowMode }: Props) {
   const status = useMemo<"safe" | "danger">(
     () => (result.isSafe ? "safe" : "danger"),
     [result.isSafe]
   );
+
+  const diagnosis = useMemo(() => {
+    if (workflowMode !== "diagnose") return null;
+    return diagnoseColumn(result);
+  }, [workflowMode, result]);
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     return [
@@ -63,6 +72,15 @@ export default function BucklingDashboard({ result }: Props) {
 
   return (
     <div className="grid grid-cols-1 gap-5">
+      {diagnosis ? (
+        <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+            Diagnose Mode
+          </h3>
+          <GenericDiagnosisPanel diagnosis={diagnosis} />
+        </div>
+      ) : null}
+
       <CalculatorMetricGrid section="Summary">
         <CalculatorMetricCard
           label="Status"

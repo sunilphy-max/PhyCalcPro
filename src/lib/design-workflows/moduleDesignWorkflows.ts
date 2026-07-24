@@ -1,7 +1,6 @@
 import { allModules } from "@/data/modules";
 import {
   DEFAULT_WORKFLOW_MODES,
-  WORKFLOW_MODE_META,
   type DesignWorkflowMode,
 } from "@/lib/design-workflows/workflowModeLabels";
 
@@ -316,7 +315,11 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   "multi-pulley": {
     maturity: "solver-backed",
     linkedWorkflowModuleIds: ["v-belts", "shafts", "bearings"],
-    expertNotes: ["Optional pulley layout step; publishes diameters to V-Belt Drive."],
+    expertNotes: [
+      "Optional pulley layout step; publishes diameters to V-Belt Drive.",
+      "Auto-design sweeps a closed three-pulley layout for wrap angle and belt length.",
+    ],
+    gaps: ["Full serpentine routing with idler tensioner catalogs remains indicative."],
   },
   shafts: {
     maturity: "solver-backed",
@@ -337,14 +340,6 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   bearings: {
     maturity: "solver-backed",
-    modes: [
-      ...DEFAULT_WORKFLOW_MODES,
-      {
-        id: "diagnose" as DesignWorkflowMode,
-        label: WORKFLOW_MODE_META.diagnose.label,
-        description: WORKFLOW_MODE_META.diagnose.description,
-      },
-    ],
     designInputs: ["Radial/axial load", "Speed", "Required life", "Reliability", "Manufacturer", "Bore/space limits", "Lubrication class"],
     autoSizingTargets: ["Required dynamic rating", "Catalog designation", "L10/Lnm life", "Static C₀/P₀", "Speed margin"],
     catalogTables: ["ISO 281 life factors", "ISO 76 static ratings", "SKF/FAG/NSK/Timken/NTN metric catalog", "Lubrication a_ISO screening"],
@@ -354,14 +349,6 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   housing: {
     maturity: "solver-backed",
-    modes: [
-      ...DEFAULT_WORKFLOW_MODES,
-      {
-        id: "diagnose" as DesignWorkflowMode,
-        label: WORKFLOW_MODE_META.diagnose.label,
-        description: WORKFLOW_MODE_META.diagnose.description,
-      },
-    ],
     designInputs: ["Bearing bore", "Radial/axial load", "Mount style", "Bolt pattern"],
     autoSizingTargets: ["Body safety factor", "Bolt size", "Bolt tension and shear"],
     linkedWorkflowModuleIds: ["bolts", "bearings", "shafts", "frames"],
@@ -419,14 +406,6 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   },
   "plain-bearings": {
     maturity: "solver-backed",
-    modes: [
-      ...DEFAULT_WORKFLOW_MODES,
-      {
-        id: "diagnose" as DesignWorkflowMode,
-        label: WORKFLOW_MODE_META.diagnose.label,
-        description: WORKFLOW_MODE_META.diagnose.description,
-      },
-    ],
     designInputs: ["Radial load", "Speed", "Diameter", "Clearance", "Viscosity"],
     autoSizingTargets: ["Sommerfeld number", "Eccentricity", "Min film thickness"],
     linkedWorkflowModuleIds: ["shafts", "bearings", "hydraulics"],
@@ -625,16 +604,60 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
   "power-screws": {
     maturity: "solver-backed",
     designInputs: ["Load", "Lead", "Friction", "Target SF"],
-    autoSizingTargets: ["Screw diameter", "Efficiency / torque"],
+    autoSizingTargets: ["Screw diameter", "Pitch", "Efficiency / torque"],
     linkedWorkflowModuleIds: ["shafts", "bearings", "keys-splines"],
-    gaps: ["Uses shaft-diameter screening proxy until dedicated lead-screw catalog lands."],
+    expertNotes: ["Auto-design ranks Tr diameter×pitch candidates with the live power-screw engine."],
+    gaps: ["Full vendor lead-screw catalogs and ball-screw dynamic ratings remain partial."],
   },
   "internal-gears-rack": {
     maturity: "solver-backed",
     designInputs: ["Power", "Ratio", "Speed", "Target SF"],
-    autoSizingTargets: ["Module", "Tooth counts", "Bending/contact SF"],
+    autoSizingTargets: ["Module", "Face width", "Bending/contact SF"],
     linkedWorkflowModuleIds: ["gears", "shafts", "bearings"],
-    gaps: ["Shares spur gear design sweep; rack-specific contact geometry is indicative."],
+    expertNotes: ["Uses dedicated internal/rack Lewis + contact screening (not the spur-only path)."],
+    gaps: ["Full ISO 6336 / AGMA rack worksheets and tooth profile FEA are not embedded."],
+  },
+  "cost-estimator": {
+    maturity: "catalog-backed",
+    designInputs: ["Material volume", "Process rates", "Cost target"],
+    autoSizingTargets: ["Process class", "Machine/labor rate", "Total cost vs budget"],
+    expertNotes: ["Auto-design ranks process/rate catalogs with the live cost-estimator engine."],
+    gaps: ["Full shop-rate databases and volume learning curves are not connected."],
+  },
+  "cam-toolpaths": {
+    maturity: "solver-backed",
+    designInputs: ["Stock size", "Tool", "Cycle-time target"],
+    autoSizingTargets: ["Feed per tooth", "Stepover", "Total cut time"],
+    expertNotes: ["Auto-design sweeps feed×stepover against live CAM totalCutTime."],
+    gaps: ["Full CAM kernel / tool library / spindle-power limits remain out of scope."],
+  },
+  "thermal-management": {
+    maturity: "solver-backed",
+    designInputs: ["Heat load", "Convection", "Area"],
+    autoSizingTargets: ["h coefficient", "Heat rejection capacity"],
+    expertNotes: ["Convection coefficient sweep uses the live thermal-path solver."],
+    gaps: ["Multi-node thermal networks and CFD couple are not implemented."],
+  },
+  "hydrogen-systems": {
+    maturity: "solver-backed",
+    designInputs: ["Pressure", "Leak / vent target"],
+    autoSizingTargets: ["Orifice area", "Vent capacity"],
+    expertNotes: ["Orifice sweep ranks relief capacity with the live hydrogen screening engine."],
+    gaps: ["ASME B31.12 / ISO 19880 / NFPA 2 worksheets and real-gas Z remain gaps."],
+  },
+  "precision-motion": {
+    maturity: "solver-backed",
+    designInputs: ["Deflection limit", "Moving mass", "Flexure"],
+    autoSizingTargets: ["Flexure length", "Stiffness"],
+    expertNotes: ["Flexure length sweep uses live stiffness/deflection screening."],
+    gaps: ["ISO 230 geometric test suites and multi-DOF stage catalogs remain gaps."],
+  },
+  "superconducting-systems": {
+    maturity: "solver-backed",
+    designInputs: ["Energy target", "Operating current"],
+    autoSizingTargets: ["Operating current", "Current/temperature margin"],
+    expertNotes: ["Current sweep ranks stored energy and critical-current margin with the live coil screen."],
+    gaps: ["Quench propagation and critical-surface Ic(B,T) models remain gaps."],
   },
   tolerance: {
     maturity: "solver-backed",

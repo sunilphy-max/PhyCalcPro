@@ -132,7 +132,8 @@ export default function ExtensionSpringInputs({
         <div className="space-y-2">
           <CalculatorCalculateButton
             onClick={onCalculate}
-            label={isDesignMode ? "Size spring" : "Calculate spring"}
+            label="Calculate spring"
+            designAware
           />
           {onSave ? (
             <button
@@ -156,21 +157,13 @@ export default function ExtensionSpringInputs({
         />
       ) : null}
 
-      {isDesignMode ? (
-        <div className={`mb-4 ${calculatorInputGridClass} rounded-xl border border-cyan-200 bg-cyan-50/70 p-4`}>
-          <CalculatorUnitField
-            label="Target spring rate"
-            value={targetRate}
-            onChange={(value) => setTargetRate?.(value)}
-            unit={<span className="text-sm text-slate-500">N/m</span>}
-          />
-          <CalculatorUnitField
-            label="Maximum force at extension"
-            value={maxForce}
-            onChange={(value) => setMaxForce?.(value)}
-            unit={<span className="text-sm text-slate-500">N</span>}
-          />
-        </div>
+      {setProjectName ? (
+        <input
+          className={`mb-4 ${calculatorTextInputClass}`}
+          value={projectName}
+          onChange={(e) => setProjectName(e.target.value)}
+          placeholder="Project name"
+        />
       ) : null}
 
       <div className={calculatorInputGridClass}>

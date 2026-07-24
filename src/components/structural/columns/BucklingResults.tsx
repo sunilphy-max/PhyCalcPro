@@ -5,13 +5,15 @@ import BucklingDashboard from "./BucklingDashboard";
 import type { BucklingResult } from "@/lib/structural/columns/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 
 type Props = {
   result: WithCalculationSpec<BucklingResult> | null;
   projectName: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function BucklingResults({ result, projectName }: Props) {
+export default function BucklingResults({ result, projectName, workflowMode }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="columns"
@@ -34,7 +36,7 @@ export default function BucklingResults({ result, projectName }: Props) {
           : undefined
       }
     >
-      {result ? <BucklingDashboard result={result} /> : null}
+      {result ? <BucklingDashboard result={result} workflowMode={workflowMode} /> : null}
     </CalculatorResultsShell>
   );
 }

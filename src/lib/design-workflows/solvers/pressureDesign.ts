@@ -1,5 +1,6 @@
 import { solvePressurePipeEngine } from "@/lib/pressure/pipes/engine";
 import { solvePressureVesselEngine } from "@/lib/pressure/vessels/engine";
+import { solveHeatExchangerEngine } from "@/lib/pressure/heat-exchangers/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
@@ -118,22 +119,41 @@ export function designHydraulicBore(userInputs: ModuleUserInputs): ModuleDesignM
 export function designHeatExchangerUA(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const duty = userInputs.power ?? userInputs.heatDuty ?? 50000;
   const deltaT = userInputs.deltaT ?? 25;
-  const requiredUa = duty / Math.max(deltaT, 1);
-  const configs = [
-    { name: "Plate HX compact", ua: requiredUa * 0.7, areaFactor: 0.7 },
-    { name: "Shell-and-tube standard", ua: requiredUa * 1.0, areaFactor: 1.0 },
-    { name: "Shell-and-tube oversized", ua: requiredUa * 1.2, areaFactor: 1.2 },
-    { name: "Extended surface", ua: requiredUa * 1.4, areaFactor: 1.4 },
-  ];
+  const U = 500; // W/m²·K screening U
+  const areas = [2, 4, 6, 8, 10, 14, 20];
+  const margin = userInputs.targetSafetyFactor ?? 1.1;
 
-  const items = configs.map((c) => ({
-    label: c.name,
-    utilization: requiredUa / c.ua,
-    fields: { hxType: c.name, ua: c.ua },
-    detail: `UA ${c.ua.toFixed(0)} W/K`,
-  }));
+  const items = areas.map((area) => {
+    try {
+      const res = solveHeatExchangerEngine({
+        hotFlowRate: 1.2,
+        coldFlowRate: 1.5,
+        hotCp: 4180,
+        coldCp: 4180,
+        hotInletTemp: 80,
+        coldInletTemp: 20,
+        hotOutletTemp: 80 - duty / (1.2 * 4180),
+        U,
+        area,
+        flowType: "counterflow",
+      });
+      const capacity = res.U * res.area * Math.max(res.LMTD || deltaT, 1);
+      const util = (duty * margin) / Math.max(capacity, 1);
+      return {
+        label: `A = ${area} m²`,
+        utilization: util,
+        fields: { area, ua: res.U * res.area, hxType: "Shell-and-tube" },
+        detail: `UA ${(res.U * res.area).toFixed(0)} · ε ${(res.effectiveness * 100).toFixed(0)}%`,
+      };
+    } catch {
+      return { label: `${area} m²`, utilization: 99, fields: { area }, detail: "invalid" };
+    }
+  });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Heat exchanger UA sizing from duty and log-mean delta-T.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Heat exchanger area sweep ranked by live LMTD/NTU capacity vs heat duty."
+  );
 }
 
 export function designPressureModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {

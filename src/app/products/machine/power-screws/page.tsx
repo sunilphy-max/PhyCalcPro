@@ -99,7 +99,12 @@ export default function Page() {
         />
       }
       results={
-        <PowerScrewResults key={result ? JSON.stringify(result) : "empty"} result={result} projectName={projectName} />
+        <PowerScrewResults
+          key={result ? JSON.stringify(result) : "empty"}
+          result={result}
+          projectName={projectName}
+          workflowMode={workflowMode}
+        />
       }
     />
   );

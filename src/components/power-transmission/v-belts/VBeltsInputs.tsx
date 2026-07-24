@@ -118,7 +118,8 @@ export default function VBeltsInputs({
         <div className="space-y-2">
           <CalculatorCalculateButton
             onClick={onCalculate}
-            label={isDesignMode || !useManualGeometry ? "Auto-design drive" : "Validate drive"}
+            label="Validate drive"
+            designAware
           />
           {onSave ? (
             <button

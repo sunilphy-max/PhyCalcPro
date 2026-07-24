@@ -183,8 +183,7 @@ export function designTrussSection(userInputs: ModuleUserInputs): ModuleDesignMo
 }
 
 /**
- * Solid round bar diameter sweep (MITCalc-style).
- * Engine models a square of side d as a conservative screening proxy for Ød.
+ * Solid round bar diameter sweep with true circular section properties.
  * Apply fields `width` / `height` / `diameter` are in **meters** (combined-loading page).
  */
 export function designCombinedLoadingSection(userInputs: ModuleUserInputs): ModuleDesignModeResult {
@@ -198,6 +197,7 @@ export function designCombinedLoadingSection(userInputs: ModuleUserInputs): Modu
       const res = solveCombinedLoadingEngine({
         width: d,
         height: d,
+        sectionShape: "circular",
         axialForce: userInputs.axialLoad ?? 25000,
         bendingMoment: userInputs.bendingMoment ?? 800,
         torque: userInputs.torque ?? 400,
@@ -208,14 +208,21 @@ export function designCombinedLoadingSection(userInputs: ModuleUserInputs): Modu
       return {
         label: `Ø${dMm} mm`,
         utilization: util,
-        fields: { diameter: d, width: d, height: d, widthUnit: "m", heightUnit: "m" },
+        fields: {
+          diameter: d,
+          width: d,
+          height: d,
+          widthUnit: "m",
+          heightUnit: "m",
+          sectionShape: "circular",
+        },
         detail: `SF ${res.safetyFactor.toFixed(2)} · σ_vm ${(res.vonMisesStress / 1e6).toFixed(0)} MPa`,
       };
     } catch {
       return {
         label: `Ø${dMm}`,
         utilization: 99,
-        fields: { diameter: d, width: d, height: d },
+        fields: { diameter: d, width: d, height: d, sectionShape: "circular" },
         detail: "invalid",
       };
     }
@@ -223,7 +230,7 @@ export function designCombinedLoadingSection(userInputs: ModuleUserInputs): Modu
 
   return resultFromSweep(
     sweepCatalogForUtilization(items),
-    "Solid round diameter sweep for combined von Mises safety factor."
+    "Solid round diameter sweep (true circular A/I/J) for combined von Mises safety factor."
   );
 }
 

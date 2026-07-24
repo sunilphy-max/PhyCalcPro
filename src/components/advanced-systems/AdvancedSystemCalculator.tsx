@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import DiagnosisModeBanner from "@/components/design-workflows/DiagnosisModeBanner";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import {
@@ -185,6 +186,7 @@ export default function AdvancedSystemCalculator({ calculatorId }: Props) {
         >
           {result ? (
             <div className="space-y-4">
+              <DiagnosisModeBanner result={result} />
               <CalculatorMetricGrid cols={3}>
                 {result.metrics.map((item) => (
                   <MetricCard key={item.key} metric={item} />

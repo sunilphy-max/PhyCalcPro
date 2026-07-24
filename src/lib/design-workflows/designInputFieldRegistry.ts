@@ -11,13 +11,12 @@ export type DesignInputFieldDef = {
   step?: number | string;
 };
 
-/** Modules with editable design targets embedded in their *Inputs component. */
-const INLINE_DESIGN_TARGET_MODULES = new Set([
-  "beams",
-  "columns",
-  "compression-springs",
-  "v-belts",
-]);
+/**
+ * Modules that still embed design targets in *Inputs (legacy).
+ * Prefer the shared DesignTargetFields strip — keep this empty unless a module
+ * cannot yet consume shared targets.
+ */
+const INLINE_DESIGN_TARGET_MODULES = new Set<string>([]);
 
 const CATEGORY_FIELDS: Record<string, DesignInputFieldDef[]> = {
   structural: [

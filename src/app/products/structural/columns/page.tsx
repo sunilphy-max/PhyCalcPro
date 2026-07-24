@@ -73,7 +73,7 @@ function ColumnsPageContent() {
   const [targetSafetyFactor, setTargetSafetyFactor] = useState(
     () => preset?.knobs.targetSafetyFactor ?? 2
   );
-  const { mode } = useDesignWorkflow();
+  const { mode, designTargets } = useDesignWorkflow();
 
   useEffect(() => {
     if (preset?.knobs.targetSafetyFactor != null) {
@@ -180,6 +180,10 @@ function ColumnsPageContent() {
 
   const calculate = () => {
     if (mode === "design") {
+      const effectiveTargetSf =
+        designTargets.targetSafetyFactor != null
+          ? Number(designTargets.targetSafetyFactor)
+          : targetSafetyFactor;
       const search = searchColumnSections(
         {
           length: toBase(length, "length", lengthUnit),
@@ -187,7 +191,7 @@ function ColumnsPageContent() {
           E: toBase(elasticModulus, "stress", elasticModulusUnit),
           endCondition,
         },
-        targetSafetyFactor
+        effectiveTargetSf
       );
       if (search.best) {
         setSectionDesignation(search.best.designation);
@@ -307,7 +311,7 @@ function ColumnsPageContent() {
         />
         </>
       }
-      results={<BucklingResults result={result} projectName={projectName} />}
+      results={<BucklingResults result={result} projectName={projectName} workflowMode={mode} />}
     />
   );
 }

@@ -11,6 +11,7 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
+import DiagnosisModeBanner from "@/components/design-workflows/DiagnosisModeBanner";
 
 type Props = {
   result: BoltPatternResult | null;
@@ -66,6 +67,7 @@ export default function BoltPatternResults({ result, forceUnit }: Props) {
     >
       {result ? (
         <>
+          <DiagnosisModeBanner result={result} />
           <CalculatorMetricGrid>
             <CalculatorMetricCard label="Max bolt force" numericValue={result.maxBoltForce} unit={forceUnit} />
             <CalculatorMetricCard label="Min bolt force" numericValue={result.minBoltForce} unit={forceUnit} />

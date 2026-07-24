@@ -14,14 +14,23 @@ import {
 import type { CalculationSpec } from "@/lib/standards/types";
 import GearMeshPreview from "@/components/shared/geometry/GearMeshPreview";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseGear } from "@/lib/machine/gears/diagnosis";
 
 type Props = {
   result: (GearResult & { calculationSpec?: CalculationSpec }) | null;
   lengthUnit: string;
   stressUnit: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
+export default function GearResults({ result, lengthUnit, stressUnit, workflowMode }: Props) {
+  const diagnosis = useMemo(() => {
+    if (!result || workflowMode !== "diagnose") return null;
+    return diagnoseGear(result);
+  }, [workflowMode, result]);
+
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result) return [];
     const loadMultipliers = Array.from({ length: 11 }, (_, i) => 0.5 + i * 0.1);
@@ -120,6 +129,15 @@ export default function GearResults({ result, lengthUnit, stressUnit }: Props) {
     >
       {result ? (
         <>
+          {diagnosis ? (
+            <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+                Diagnose Mode
+              </h3>
+              <GenericDiagnosisPanel diagnosis={diagnosis} />
+            </div>
+          ) : null}
+
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Pinion pitch diameter"

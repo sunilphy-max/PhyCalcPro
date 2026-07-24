@@ -83,8 +83,9 @@ function BeamsPageContent() {
     }
   }, [searchParams]);
   const { applicationId } = useBeamApplicationPreset();
-  const { patchDesignTarget, mode } = useDesignWorkflow();
+  const { patchDesignTarget, mode, designTargets } = useDesignWorkflow();
   const [sectionDesignation, setSectionDesignation] = useState("");
+  // Local fallbacks until shared DesignTargetFields are edited (values in form display units).
   const [designMaxDeflection, setDesignMaxDeflection] = useState<number | undefined>(undefined);
   const [designMaxStress, setDesignMaxStress] = useState<number | undefined>(undefined);
   // =========================
@@ -206,13 +207,20 @@ const handleLoadDrag = (
 
   const designUserInputs = useMemo((): ModuleUserInputs => {
     const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
-    const allowableStressPa = designMaxStress
-      ? toBase(designMaxStress, "stress", stressUnit)
-      : yieldStressPa * applicationPreset.allowableStressRatio;
+    // Shared DesignTargetFields store SI; prefer those over local display-unit fallbacks.
+    const allowableStressPa =
+      designTargets.designMaxStressPa != null
+        ? Number(designTargets.designMaxStressPa)
+        : designMaxStress
+          ? toBase(designMaxStress, "stress", stressUnit)
+          : yieldStressPa * applicationPreset.allowableStressRatio;
     const spanBase = normalizeInput({ value: length, unit: lengthUnit, dimension: "length" });
-    const deflectionLimit = designMaxDeflection
-      ? toBase(designMaxDeflection, "length", lengthUnit)
-      : spanBase / applicationPreset.deflectionLimitRatio;
+    const deflectionLimit =
+      designTargets.designMaxDeflection != null
+        ? Number(designTargets.designMaxDeflection)
+        : designMaxDeflection
+          ? toBase(designMaxDeflection, "length", lengthUnit)
+          : spanBase / applicationPreset.deflectionLimitRatio;
 
     return {
       length,
@@ -241,6 +249,8 @@ const handleLoadDrag = (
     applicationId,
     designMaxDeflection,
     designMaxStress,
+    designTargets.designMaxDeflection,
+    designTargets.designMaxStressPa,
     stressUnit,
     sectionDesignation,
     selectedMaterial,
@@ -360,13 +370,18 @@ const handleLoadDrag = (
     });
 
     const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
-    const allowableStressPa = designMaxStress
-      ? toBase(designMaxStress, "stress", stressUnit)
-      : yieldStressPa * applicationPreset.allowableStressRatio;
+    const allowableStressPa =
+      designTargets.designMaxStressPa != null
+        ? Number(designTargets.designMaxStressPa)
+        : designMaxStress
+          ? toBase(designMaxStress, "stress", stressUnit)
+          : yieldStressPa * applicationPreset.allowableStressRatio;
     const deflectionLimitBase =
-      designMaxDeflection != null
-        ? toBase(designMaxDeflection, "length", lengthUnit)
-        : normalized.length / applicationPreset.deflectionLimitRatio;
+      designTargets.designMaxDeflection != null
+        ? Number(designTargets.designMaxDeflection)
+        : designMaxDeflection != null
+          ? toBase(designMaxDeflection, "length", lengthUnit)
+          : normalized.length / applicationPreset.deflectionLimitRatio;
     const stressUtilization =
       allowableStressPa > 0 ? raw.maxStress / allowableStressPa : 0;
     const deflectionUtilization =
@@ -425,13 +440,18 @@ const handleLoadDrag = (
         loads,
       });
       const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
-      const allowableStressPa = designMaxStress
-        ? toBase(designMaxStress, "stress", stressUnit)
-        : yieldStressPa * applicationPreset.allowableStressRatio;
+      const allowableStressPa =
+        designTargets.designMaxStressPa != null
+          ? Number(designTargets.designMaxStressPa)
+          : designMaxStress
+            ? toBase(designMaxStress, "stress", stressUnit)
+            : yieldStressPa * applicationPreset.allowableStressRatio;
       const deflectionLimitBase =
-        designMaxDeflection != null
-          ? toBase(designMaxDeflection, "length", lengthUnit)
-          : normalized.length / applicationPreset.deflectionLimitRatio;
+        designTargets.designMaxDeflection != null
+          ? Number(designTargets.designMaxDeflection)
+          : designMaxDeflection != null
+            ? toBase(designMaxDeflection, "length", lengthUnit)
+            : normalized.length / applicationPreset.deflectionLimitRatio;
       const search = searchBeamSections(normalized, allowableStressPa, deflectionLimitBase);
       if (search.best) {
         setSectionDesignation(search.best.designation);
@@ -568,6 +588,7 @@ const handleLoadDrag = (
           loads={loads}
           onLoadDrag={handleLoadDrag}
           applicationContext={result?.applicationContext}
+          workflowMode={mode}
           units={{
             length: lengthUnit,
             force: forceUnit,

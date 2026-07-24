@@ -9,14 +9,14 @@ export type WorkflowModeMeta = {
   steps: string[];
 };
 
-/** Tab order on every calculator: Auto-design → Validate → Compare. */
-export const WORKFLOW_MODE_ORDER: DesignWorkflowMode[] = ["design", "check", "select"];
+/** Tab order on every calculator: Auto-design → Validate → Compare → Diagnose. */
+export const WORKFLOW_MODE_ORDER: DesignWorkflowMode[] = ["design", "check", "select", "diagnose"];
 
 export const WORKFLOW_MODE_META: Record<DesignWorkflowMode, WorkflowModeMeta> = {
   design: {
     label: "Auto-design",
     description:
-      "Set targets, search catalog or reverse-solve, apply the best candidate, then run the full check.",
+      "Size from your targets instead of starting from a fixed geometry.",
     calculateLabel: "Auto-design",
     headline: "Auto-design — size from your targets",
     steps: [
@@ -28,19 +28,19 @@ export const WORKFLOW_MODE_META: Record<DesignWorkflowMode, WorkflowModeMeta> = 
   check: {
     label: "Validate",
     description:
-      "Run the forward solver on the geometry and loads already in the form; no automatic sizing.",
+      "Run the forward solver on the geometry and loads already in the form.",
     calculateLabel: "Validate",
     headline: "Validate — verify what you entered",
     steps: [
       "Enter geometry, loads, material, and supports in the inputs panel.",
-      "Click Validate (or Calculate) to run the forward solver.",
+      "Click Validate to run the forward solver.",
       "Review numeric results, plots, and engineering checks for your design standard.",
     ],
   },
   select: {
     label: "Compare",
     description:
-      "Browse ranked sizing options in the advisor; Apply loads one into the form, then validate in detail.",
+      "Browse ranked sizing options before committing to one size.",
     calculateLabel: "Compare options",
     headline: "Compare — review alternatives before committing",
     steps: [
@@ -52,13 +52,13 @@ export const WORKFLOW_MODE_META: Record<DesignWorkflowMode, WorkflowModeMeta> = 
   diagnose: {
     label: "Diagnose",
     description:
-      "Analyze installed operating conditions — flag overload, lubrication, film, misalignment, bolt, and speed risks.",
+      "Diagnose failure risk and reliability / safety — screen safety factors, utilizations, and governing checks.",
     calculateLabel: "Diagnose failure risk",
-    headline: "Diagnose — why is this failing?",
+    headline: "Diagnose — failure risk and reliability",
     steps: [
-      "Enter the installed geometry or designation and actual operating loads, speed, and lubrication.",
-      "Click Diagnose to run rating and risk screening checks.",
-      "Review failure modes, root-cause hints, and recommended adjustments.",
+      "Enter the installed geometry and actual operating loads in the inputs panel.",
+      "Click Diagnose to run the forward solver and risk screening.",
+      "Review failure modes, safety margins, and recommended adjustments.",
     ],
   },
 };

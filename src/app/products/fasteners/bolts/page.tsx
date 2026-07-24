@@ -168,7 +168,7 @@ export default function Page() {
             }}
           />
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <span className="text-sm font-medium text-slate-700">Analysis mode</span>
+            <span className="text-sm font-medium text-slate-700">Joint method</span>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -239,7 +239,11 @@ export default function Page() {
       }
       results={
         mode === "vdi2230" ? (
-          <Vdi2230Results result={vdiResult} clampLengthM={toBase(clampLength, "length", lengthUnit)} />
+          <Vdi2230Results
+            result={vdiResult}
+            clampLengthM={toBase(clampLength, "length", lengthUnit)}
+            workflowMode={workflowMode}
+          />
         ) : (
           <BoltPatternResults result={patternResult} forceUnit={forceUnit} />
         )

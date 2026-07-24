@@ -16,8 +16,10 @@ type Options = {
 };
 
 /**
- * Syncs live inputs to the design advisor and branches Calculate on Validate vs Auto-design mode.
- * Registers applyDesign for Select-mode candidate loading in the advisor panel.
+ * Syncs live inputs to the design advisor and branches Calculate by workflow mode:
+ * - Auto-design (`design`): size → apply best → validate
+ * - Validate / Compare / Diagnose (`check` | `select` | `diagnose`): forward validate only
+ * Compare Apply lives in ModuleDesignAdvisor; Diagnose attaches risk findings in the results layer.
  */
 export function useModuleDesignCalculate({
   moduleId,
@@ -32,6 +34,7 @@ export function useModuleDesignCalculate({
   useRegisterApplyDesignCandidate(applyDesign);
 
   const calculate = useCallback(() => {
+    // Only Auto-design sizes. Validate, Compare, and Diagnose run the forward solver only.
     if (workflowMode === "design" && applyDesign) {
       const design = runModuleDesignMode(moduleId, mergedInputs);
       if (design?.best?.fields) {

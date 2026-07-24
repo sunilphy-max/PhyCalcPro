@@ -17,6 +17,9 @@ import type {
   Load,
   SupportType,
 } from "@/lib/structural/beams/types";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseBeam } from "@/lib/structural/beams/diagnosis";
 
 type DisplayUnits = {
   length: string;
@@ -34,6 +37,7 @@ type Props = {
   caseLabel?: string;
   combinationMode?: "active" | "envelope";
   applicationContext?: BeamApplicationContext;
+  workflowMode?: DesignWorkflowMode;
   onLoadDrag?: (
     id: string,
     updates: Partial<Extract<Load, { type: "point" }>>
@@ -48,6 +52,7 @@ export default function BeamDashboard({
   caseLabel,
   combinationMode = "active",
   applicationContext,
+  workflowMode,
   onLoadDrag,
   units = { length: "m", force: "N", moment: "N·m", stress: "Pa" },
 }: Props) {
@@ -189,8 +194,22 @@ export default function BeamDashboard({
     return tabs;
   }, [loads, length, support, onLoadDrag, probeX, result, units]);
 
+  const diagnosis = useMemo(() => {
+    if (workflowMode !== "diagnose") return null;
+    return diagnoseBeam(result);
+  }, [workflowMode, result]);
+
   return (
     <div className="grid grid-cols-1 gap-4">
+      {diagnosis ? (
+        <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+            Diagnose Mode
+          </h3>
+          <GenericDiagnosisPanel diagnosis={diagnosis} />
+        </div>
+      ) : null}
+
       {/* Key results first */}
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard

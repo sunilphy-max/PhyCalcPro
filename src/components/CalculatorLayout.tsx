@@ -6,6 +6,7 @@ import ApplicationPresetSelector from "@/components/shared/ApplicationPresetSele
 import { moduleSupportsApplicationPreset } from "@/lib/applications";
 import DesignModeToggle from "@/components/design-workflows/DesignModeToggle";
 import DesignTargetFields from "@/components/design-workflows/DesignTargetFields";
+import WorkflowModeHelp from "@/components/design-workflows/WorkflowModeHelp";
 import ModuleDesignAdvisor from "@/components/design-workflows/ModuleDesignAdvisor";
 import ModuleCandidateStrategy from "@/components/design-workflows/ModuleCandidateStrategy";
 import ModuleReferenceDocumentation from "@/components/design-workflows/ModuleReferenceDocumentation";
@@ -160,6 +161,7 @@ function CalculatorLayoutBody({
                 {showApplicationPreset && moduleId ? (
                   <ApplicationPresetSelector moduleId={moduleId} />
                 ) : null}
+                {designWorkflow ? <WorkflowModeHelp workflow={designWorkflow} /> : null}
                 {moduleId ? <DesignTargetFields moduleId={moduleId} /> : null}
                 {inputColumn}
               </aside>

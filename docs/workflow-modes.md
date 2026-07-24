@@ -1,6 +1,6 @@
 # Calculator workflow modes
 
-Every engineering module exposes three **workflow modes** in the header. They change how the primary action button behaves and which panels appear — they do not change the underlying physics.
+Every engineering module exposes four **workflow modes** in the header. They change how the primary action button behaves and which panels appear — they do not change the underlying physics.
 
 ## Auto-design
 
@@ -17,7 +17,7 @@ Every engineering module exposes three **workflow modes** in the header. They ch
 **Purpose:** Run the forward solver on the geometry and loads already in the form.
 
 1. Enter geometry, loads, material, and supports in the inputs panel.
-2. Click **Validate** (or **Calculate**) to run the forward solver.
+2. Click **Validate** to run the forward solver.
 3. Review numeric results, plots, and engineering checks for your design standard.
 
 This is the default mode when you open a module.
@@ -29,6 +29,16 @@ This is the default mode when you open a module.
 1. Open **Sizing candidates & reference** to see ranked catalog or solver options.
 2. Click **Apply** on a row to load that size into the form (switches to Validate).
 3. Run **Validate** again to confirm the chosen option with full physics and code checks.
+
+## Diagnose
+
+**Purpose:** Diagnose failure risk and reliability / safety calculations.
+
+1. Enter the installed geometry and actual operating loads in the inputs panel.
+2. Click **Diagnose** to run the forward solver and risk screening.
+3. Review failure modes, safety margins, and recommended adjustments.
+
+Diagnose is a post-solve risk layer over existing safety factors and utilizations — it does not invent new physics.
 
 ---
 

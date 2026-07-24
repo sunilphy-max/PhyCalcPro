@@ -1,14 +1,15 @@
-# Auto-design / Validate / Compare Workflow Reference
+# Auto-design / Validate / Compare / Diagnose Workflow Reference
 
-Every PhyCalcPro calculator exposes three workflow modes in the header toolbar (via `CalculatorLayout`). They share one physics engine and one set of code checks; the mode controls **what happens when you click the primary action button**.
+Every PhyCalcPro calculator exposes four workflow modes in the header toolbar (via `CalculatorLayout`). They share one physics engine and one set of code checks; the mode controls **what happens when you click the primary action button**.
 
 | Order | User-facing name | Internal ID | Primary button | Purpose |
 |------:|------------------|-------------|----------------|---------|
-| 1 | **Auto-design** | `design` | Auto-design | Size from targets: search catalog or reverse-solve, apply the best candidate, then run the full validation pass. |
-| 2 | **Validate** | `check` | Calculate (or Validate) | Forward solve only — verify the geometry, loads, and material already in the form. No automatic sizing. |
-| 3 | **Compare** | `select` | Compare options | Browse ranked sizing candidates in the Design Advisor; **Apply** loads one row into the form (switches to Validate). |
+| 1 | **Auto-design** | `design` | Auto-design | Size from your targets instead of starting from a fixed geometry. |
+| 2 | **Validate** | `check` | Validate | Run the forward solver on the geometry and loads already in the form. |
+| 3 | **Compare** | `select` | Compare options | Browse ranked sizing options before committing to one size. |
+| 4 | **Diagnose** | `diagnose` | Diagnose failure risk | Screen failure risk and reliability / safety from existing SF and utilization results. |
 
-Internal IDs (`design`, `check`, `select`) are stable in code and persisted project state. User-facing copy always uses **Auto-design**, **Validate**, and **Compare**.
+Internal IDs (`design`, `check`, `select`, `diagnose`) are stable in code and persisted project state. User-facing copy always uses **Auto-design**, **Validate**, **Compare**, and **Diagnose**.
 
 ---
 
@@ -50,7 +51,7 @@ Use when you want to **see alternatives side by side** before committing to one 
 
 **On Calculate (Compare options):**
 
-- Runs the same candidate ranking as Auto-design but **does not** auto-apply the best row.
+- Runs the forward solver only (same as Validate) — ranking stays live in the Design Advisor.
 - Open **Sizing candidates & reference** in the advisor panel.
 - Click **Apply** on a row → fields load into the form and mode switches to **Validate**.
 - Run **Validate** again for a full detailed check of the chosen option.
@@ -61,6 +62,18 @@ Use when you want to **see alternatives side by side** before committing to one 
 - Material database: rank grades by allowable stress; Apply sets material and E in the browse view.
 - Gears: review tooth-count / module combinations before locking geometry.
 
+### Diagnose (fourth tab)
+
+Use when you want to **screen failure risk and reliability** on the installed geometry and operating loads.
+
+**On Calculate (Diagnose):**
+
+1. The forward solver runs on current form values (no Auto-design apply).
+2. A post-solve diagnosis layer maps safety factors, utilizations, and governing checks into risk findings.
+3. Results open on the Diagnose tab with findings and optional Apply adjustments.
+
+Diagnose does not invent new physics — it reorganizes existing solver outputs into a failure-risk view.
+
 ---
 
 ## UI components
@@ -69,9 +82,11 @@ Use when you want to **see alternatives side by side** before committing to one 
 |-------|----------|------|
 | Mode labels & order | `src/lib/design-workflows/workflowModeLabels.ts` | Single source of truth for tab order, descriptions, button labels |
 | Mode state | `src/contexts/DesignWorkflowContext.tsx` | `mode`, `userInputs`, `designTargets`, `applyDesignCandidate` |
-| Mode toggle | `src/components/design-workflows/DesignModeToggle.tsx` | Three-tab selector (Auto-design → Validate → Compare) |
+| Mode toggle | `src/components/design-workflows/DesignModeToggle.tsx` | Four-tab selector (Auto-design → Validate → Compare → Diagnose) |
 | Mode help | `src/components/design-workflows/WorkflowModeHelp.tsx` | Step-by-step instructions per mode |
 | Design targets | `src/components/design-workflows/DesignTargetFields.tsx` | Editable targets in Auto-design and Compare |
+| Diagnosis types | `src/lib/design-workflows/diagnosisTypes.ts` | Shared `ModuleDiagnosis` contract |
+| Diagnosis panel | `src/components/design-workflows/GenericDiagnosisPanel.tsx` | Findings + Apply recommendations |
 | Advisor panel | `src/components/design-workflows/ModuleDesignAdvisor.tsx` | Live candidates, Apply (Compare), linked modules |
 | Per-module metadata | `src/lib/design-workflows/moduleDesignWorkflows.ts` | Design inputs, expert notes, maturity, linked workflows |
 | Design router | `src/lib/design-workflows/designModeRegistry.ts` → `runModuleDesignMode()` | Maps module ID → category solver |

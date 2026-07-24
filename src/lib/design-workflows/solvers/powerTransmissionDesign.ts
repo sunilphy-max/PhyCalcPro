@@ -121,30 +121,50 @@ export function designRollerChain(userInputs: ModuleUserInputs): ModuleDesignMod
 }
 
 export function designMultiPulley(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const diameters = [80, 100, 120, 150, 180, 200, 250];
-  const items = diameters.map((dMm) => {
+  const power = userInputs.power ?? 8;
+  const serviceFactor = userInputs.serviceFactor ?? 1.2;
+  const driverOptionsMm = [80, 100, 120, 150, 180, 200];
+  const ratio = userInputs.ratio ?? 1.5;
+  // Closed three-pulley path: driver → driven → idler → driver centers.
+  const items = driverOptionsMm.map((d1Mm) => {
     try {
-      const d1 = dMm / 1000;
-      const d2 = (dMm * 1.5) / 1000;
+      const d1 = d1Mm / 1000;
+      const d2 = (d1Mm * ratio) / 1000;
+      const d3 = Math.max(d1 * 0.75, 0.06);
+      const c12 = Math.max((d1 + d2) / 2 + 0.15, 0.35);
+      const c23 = Math.max((d2 + d3) / 2 + 0.12, 0.3);
       const res = solveMultiPulley({
-        diameters: [d1, d2],
-        centerDistances: [0.5],
+        diameters: [d1, d2, d3],
+        centerDistances: [c12, c23],
         driveType: "open",
       });
       const wrap = res.minWrapAngle ?? 0;
-      const util = wrap < 120 ? 120 / Math.max(wrap, 1) : 0.85;
+      // Prefer wrap ≥ 120° on the smallest pulley; scale lightly by service demand.
+      const wrapUtil = wrap < 120 ? 120 / Math.max(wrap, 1) : 0.7 + (serviceFactor - 1) * 0.1;
+      const lengthPenalty = res.totalBeltLength > 2.5 ? res.totalBeltLength / 2.5 : 0.85;
+      const util = Math.max(wrapUtil, lengthPenalty * 0.5);
       return {
-        label: `D1=${dMm} mm`,
+        label: `D1=${d1Mm} · 3-pulley`,
         utilization: util,
-        fields: { diameter1: dMm, diameter2: dMm * 1.5 },
-        detail: `wrap ${wrap.toFixed(0)}°`,
+        fields: {
+          diameter1: d1Mm,
+          diameter2: d1Mm * ratio,
+          diameter3: d3 * 1000,
+          centerDistance12: c12 * 1000,
+          centerDistance23: c23 * 1000,
+          pulleyCount: 3,
+        },
+        detail: `wrap ${wrap.toFixed(0)}° · L ${res.totalBeltLength.toFixed(2)} m · P~${power} kW`,
       };
     } catch {
-      return { label: `D=${dMm}`, utilization: 99, fields: { diameter1: dMm }, detail: "invalid" };
+      return { label: `D=${d1Mm}`, utilization: 99, fields: { diameter1: d1Mm }, detail: "invalid" };
     }
   });
 
-  return fromSweep(sweepCatalogForUtilization(items), "Driver pulley diameter sweep for wrap angle margin.");
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Closed three-pulley layout sweep ranked by live wrap angle and belt length."
+  );
 }
 
 export function designVBeltFromInputs(userInputs: ModuleUserInputs): ModuleDesignModeResult {

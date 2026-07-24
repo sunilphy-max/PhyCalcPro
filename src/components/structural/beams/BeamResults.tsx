@@ -10,6 +10,7 @@ import BeamDashboard from "./BeamDashboard";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import type { CalculationSpec } from "@/lib/standards/types";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 
 type DisplayUnits = {
   length: string;
@@ -25,6 +26,7 @@ type Props = {
   loads: Load[];
   units?: DisplayUnits;
   applicationContext?: BeamApplicationContext;
+  workflowMode?: DesignWorkflowMode;
   onLoadDrag?: (
     id: string,
     updates: Partial<Extract<Load, { type: "point" }>>
@@ -38,6 +40,7 @@ export default function BeamResults({
   loads,
   units,
   applicationContext,
+  workflowMode,
   onLoadDrag,
 }: Props) {
   return (
@@ -73,6 +76,7 @@ export default function BeamResults({
           support={support}
           units={units}
           applicationContext={applicationContext ?? result.applicationContext}
+          workflowMode={workflowMode}
           onLoadDrag={onLoadDrag}
         />
       ) : null}

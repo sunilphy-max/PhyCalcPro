@@ -251,7 +251,7 @@ export default function Page() {
               cantilever estimate — verify junction details for critical applications.
             </p>
           </CalculatorGuidancePanel>
-          <TorsionSpringResults result={result} stressUnit={stressUnit} projectName={projectName} />
+          <TorsionSpringResults result={result} stressUnit={stressUnit} projectName={projectName} workflowMode={workflowMode} />
         </>
       }
     />

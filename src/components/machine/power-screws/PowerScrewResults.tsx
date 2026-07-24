@@ -5,13 +5,15 @@ import type { ScrewResult } from "@/lib/fasteners/bolts/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import ScrewsDashboard from "@/components/fasteners/bolts/ScrewsDashboard";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 
 type Props = {
   result: WithCalculationSpec<ScrewResult> | null;
   projectName: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function PowerScrewResults({ result, projectName }: Props) {
+export default function PowerScrewResults({ result, projectName, workflowMode }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="power-screws"
@@ -35,6 +37,7 @@ export default function PowerScrewResults({ result, projectName }: Props) {
     >
       {result ? (
         <>
+          <ScrewsDashboard result={result} workflowMode={workflowMode} />
           <CalculatorMetricGrid cols={3}>
             <CalculatorMetricCard label="Drive torque" numericValue={result.torque} unit="N·m" tone="blue" />
             <CalculatorMetricCard label="Efficiency" numericValue={result.efficiency * 100} unit="%" tone="purple" />
@@ -45,7 +48,6 @@ export default function PowerScrewResults({ result, projectName }: Props) {
               tone={result.safetyFactor >= 1.5 ? "green" : "amber"}
             />
           </CalculatorMetricGrid>
-          <ScrewsDashboard result={result} />
         </>
       ) : null}
     </CalculatorResultsShell>

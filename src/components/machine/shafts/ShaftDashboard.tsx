@@ -11,6 +11,9 @@ import {
 } from "@/components/calculator/results";
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
 import type { BearingSupport, LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseShaft } from "@/lib/machine/shafts/diagnosis";
 
 type LayoutPreview = {
   length: number;
@@ -24,13 +27,19 @@ type Props = {
   result: ShaftResult;
   layout?: LayoutPreview;
   lengthUnit?: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Props) {
+export default function ShaftDashboard({ result, layout, lengthUnit = "m", workflowMode }: Props) {
   const status = useMemo<"safe" | "danger">(
     () => (result.isSafe ? "safe" : "danger"),
     [result.isSafe]
   );
+
+  const diagnosis = useMemo(() => {
+    if (workflowMode !== "diagnose") return null;
+    return diagnoseShaft(result);
+  }, [workflowMode, result]);
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     const tabs: PlotPickerTab[] = [];
@@ -183,6 +192,15 @@ export default function ShaftDashboard({ result, layout, lengthUnit = "m" }: Pro
 
   return (
     <div className="grid grid-cols-1 gap-4">
+      {diagnosis ? (
+        <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+            Diagnose Mode
+          </h3>
+          <GenericDiagnosisPanel diagnosis={diagnosis} />
+        </div>
+      ) : null}
+
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Status"

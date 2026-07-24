@@ -6,13 +6,13 @@
 
 ## Summary
 
-| Metric | Status (2026-07-19) |
+| Metric | Status (2026-07-21) |
 |--------|---------------------|
-| Critical fix | `bearings` catalog category now routes to `designMachineModule` (was falling through to frame sizing) |
-| Next-tier deepen | Welds, rivets, pins, shaft-hubs, bevel/worm gears, flywheels, cams, plain bearings, timing belts, pipes, fatigue, combined-loading, circular-plates, dynamics |
-| Unit contracts | Design `fields` documented to match form display units (welds/rivets/flywheels/cams/pipes in m; pins/timing/circular-plates thickness in mm; fatigue Sa in MPa) |
-| Maturity honesty | Long-tail mechanical modules promoted to `solver-backed` with explicit `gaps` |
-| Residual `workflow` | Mainly advanced-systems check-only siblings + `cost-estimator` / `cam-toolpaths` screening |
+| Workflow modes | Fleet-wide **Auto-design / Validate / Compare / Diagnose** |
+| Diagnose engines | Dedicated: bearings suite + shafts, gears, bolts, welds, springs, beams, columns; generic `diagnoseFromChecks` elsewhere |
+| Critical fix | `bearings` catalog category routes to `designMachineModule` |
+| Residual `workflow` maturity | Promoted residual advanced/manufacturing screens to solver/catalog-backed with honest gaps |
+| Next-tier deepen | Vendor gold, full ISO/ASME worksheets, quench/CAM/CFD (documented gaps) |
 
 **Quality legend**
 
@@ -36,7 +36,7 @@
 | plates | `structural/plates` | solver-backed | solid | yes | Thickness vs defl/stress | Orthotropic / stiffeners |
 | circular-plates | `structural/circular-plates` | solver-backed | deep | yes | Thickness vs defl **and** stress; Roark check | Annular / variable t |
 | shells | `structural/shells` | solver-backed | solid | yes | Wall thickness SF | Buckling modes |
-| combined-loading | `structural/combinedLoading` | solver-backed | deep | yes | Round Ø sweep (square proxy) | True circular section properties |
+| combined-loading | `structural/combinedLoading` | solver-backed | deep | yes | Round Ø sweep (**true circular A/I/J**) | Connection detail |
 
 ---
 
@@ -47,7 +47,7 @@
 | v-belts | `powerTransmission/v-belts` | solver-backed | deep | yes | Section + pulley sizing | Vendor rating tables |
 | timing-belts | `powerTransmission/timing-belts` | solver-backed | deep | yes | Pitch × teeth × width | Manufacturer power tables |
 | roller-chains | `powerTransmission/roller-chains` | solver-backed | solid | yes | Pitch × strands | ISO life curves full set |
-| multi-pulley | `powerTransmission/multi-pulley` | solver-backed | shallow | yes | Wrap-angle diameter screen | Closed-loop layout |
+| multi-pulley | `powerTransmission/multi-pulley` | solver-backed | solid | yes | Closed 3-pulley wrap/length screen | Serpentine tensioner catalogs |
 
 ---
 
@@ -61,8 +61,8 @@
 | worm-gears | `machine/worm-gears` | solver-backed | solid | yes | Module × z₂ | Efficiency maps |
 | planetary-gears | `machine/planetary-gears` | solver-backed | solid | yes | Sun/planet ratio match | Load sharing |
 | gear-ratio-design | `machine/gear-ratio-design` | solver-backed | solid | yes | Tooth-count optimizer | Multi-stage |
-| internal-gears-rack | `machine/internal-gears-rack` | solver-backed | shallow | yes | Shares spur design path | Rack contact geometry |
-| power-screws | `machine/power-screws` | solver-backed | shallow | yes | Diameter screening proxy | Lead-screw catalog |
+| internal-gears-rack | `machine/internal-gears-rack` | solver-backed | solid | yes | Dedicated Lewis + contact sweep | Full ISO rack worksheets |
+| power-screws | `machine/power-screws` | solver-backed | solid | yes | Diameter×pitch live screw engine | Vendor lead-screw catalogs |
 | flywheels | `machine/flywheels` | solver-backed | deep | yes | OD×thickness energy + hoop | Spoke / rim FEA |
 | cams | `machine/cams` | solver-backed | solid | yes | Base radius vs α≤30° | Cam toolpath CAM link |
 | brakes-clutches | `machine/brakes-clutches` | solver-backed | solid | yes | Disc Ø for torque | Thermal fade models |
@@ -144,8 +144,8 @@
 |--------|-----------------|----------|----------------|--------------|-------------------------|----------------|
 | tolerance | manufacturing/tolerance | solver-backed | shallow | yes | Bilateral allocation | GD&T datum chain |
 | fits | manufacturing/fits | solver-backed | solid | yes | ISO 286 class pick | Full fit tables |
-| cost-estimator | manufacturing/cost | workflow | shallow | yes | Process factor screen | Cost DB |
-| cam-toolpaths | manufacturing/cam-toolpaths | workflow | shallow | yes | Feed vs cycle time | CAM kernel |
+| cost-estimator | manufacturing/cost | catalog-backed | solid | yes | Process/rate catalog vs live totalCost | Shop-rate DB |
+| cam-toolpaths | manufacturing/cam-toolpaths | solver-backed | solid | yes | Feed×stepover vs live cut time | Full CAM kernel |
 
 ---
 
@@ -157,10 +157,10 @@
 | cryogenic-engineering | advanced | solver-backed | shallow | yes | Heat leak / boil-off | MLI vendor data |
 | magnetic-fields | advanced | solver-backed | shallow | yes | B / force / heat | FEA magnetics |
 | battery-ev-systems | advanced | solver-backed | shallow | yes | Pack / cooling / busbar | Cell aging |
-| superconducting-systems | advanced | workflow | shallow | yes | Screening only | Quench models |
-| thermal-management | advanced | workflow | shallow | yes | Screening only | CFD couple |
-| hydrogen-systems | advanced | workflow | shallow | yes | Screening only | Code compliance |
-| precision-motion | advanced | workflow | shallow | yes | Screening only | ISO 230 full |
+| superconducting-systems | advanced | solver-backed | solid | yes | Live current/energy sweep | Quench models |
+| thermal-management | advanced | solver-backed | solid | yes | Live h sweep | CFD couple |
+| hydrogen-systems | advanced | solver-backed | solid | yes | Live orifice sweep | Code compliance |
+| precision-motion | advanced | solver-backed | solid | yes | Live flexure sweep | ISO 230 full |
 
 ---
 

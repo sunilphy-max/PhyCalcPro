@@ -5,14 +5,21 @@ import ScrewsDashboard from "./ScrewsDashboard";
 import type { ScrewResult } from "@/lib/fasteners/bolts/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 
 type Props = {
   result: WithCalculationSpec<ScrewResult> | null;
   projectName: string;
   moduleId?: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function ScrewsResults({ result, projectName, moduleId = "power-screws" }: Props) {
+export default function ScrewsResults({
+  result,
+  projectName,
+  moduleId = "power-screws",
+  workflowMode,
+}: Props) {
   return (
     <CalculatorResultsShell
       moduleId={moduleId}
@@ -35,7 +42,7 @@ export default function ScrewsResults({ result, projectName, moduleId = "power-s
           : undefined
       }
     >
-      {result ? <ScrewsDashboard result={result} /> : null}
+      {result ? <ScrewsDashboard result={result} workflowMode={workflowMode} /> : null}
     </CalculatorResultsShell>
   );
 }

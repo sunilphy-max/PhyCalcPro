@@ -492,6 +492,7 @@ function ShaftsPageContent() {
           projectName={projectName}
           layout={{ length, diameter, loads, supports, lengthUnit }}
           lengthUnit={lengthUnit}
+          workflowMode={workflowMode}
         />
       }
     />

@@ -97,7 +97,7 @@ export default function BeamInputs(props: Props) {
         <div className="space-y-2">
           <CalculatorCalculateButton
             onClick={props.onCalculate}
-            label={isDesignMode ? "Size section" : "Solve beam"}
+            label="Solve beam"
             designAware
           />
           <button
@@ -144,36 +144,7 @@ export default function BeamInputs(props: Props) {
         />
       </CalculatorFormSection>
 
-      {isDesignMode ? (
-        <CalculatorFormSection title="Design targets" description="Limits used when sizing from the rolled-section catalog.">
-          <CalculatorUnitField
-            label="Max deflection"
-            value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
-            onChange={(v) => props.setDesignMaxDeflection?.(v)}
-            unit={
-              <ModuleUnitSelect
-                moduleId="beams"
-                fieldKey="length"
-                value={props.lengthUnit}
-                onChange={props.setLengthUnit}
-              />
-            }
-          />
-          <CalculatorUnitField
-            label="Max bending stress"
-            value={props.designMaxStress ?? defaultDesignStress}
-            onChange={(v) => props.setDesignMaxStress?.(v)}
-            unit={
-              <ModuleUnitSelect
-                moduleId="beams"
-                fieldKey="stress"
-                value={props.stressUnit}
-                onChange={props.setStressUnit}
-              />
-            }
-          />
-        </CalculatorFormSection>
-      ) : (
+      {isDesignMode ? null : (
         <RolledSectionPicker
           designation={props.sectionDesignation}
           onDesignationChange={props.setSectionDesignation}

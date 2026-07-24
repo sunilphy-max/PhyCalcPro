@@ -234,7 +234,8 @@ export default function Page() {
     const powerKw = normalizePowerKw(power, powerUnit);
     const centerM = toBase(centerDistance, "length", lengthUnit);
     const sf = resolveApplicationServiceFactor(applicationOptions, serviceFactor, useManualServiceFactor);
-    const shouldSize = mode === "design" || !useManualGeometry;
+    // Only Auto-design sizes; Validate / Compare / Diagnose use geometry already in the form.
+    const shouldSize = mode === "design";
 
     if (shouldSize) {
       const design = designVBeltDrive({

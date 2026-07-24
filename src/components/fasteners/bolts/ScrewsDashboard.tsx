@@ -9,9 +9,13 @@ import {
   EngineeringPlotPicker,
   type PlotPickerTab,
 } from "@/components/calculator/results";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseBolt } from "@/lib/fasteners/bolts/diagnosis";
 
 type Props = {
   result: ScrewResult;
+  workflowMode?: DesignWorkflowMode;
 };
 
 function statusTone(status: string): "green" | "orange" | "red" {
@@ -20,7 +24,12 @@ function statusTone(status: string): "green" | "orange" | "red" {
   return "red";
 }
 
-export default function ScrewsDashboard({ result }: Props) {
+export default function ScrewsDashboard({ result, workflowMode }: Props) {
+  const diagnosis = useMemo(() => {
+    if (workflowMode !== "diagnose") return null;
+    return diagnoseBolt(result);
+  }, [workflowMode, result]);
+
   const plotTabs = useMemo((): PlotPickerTab[] => {
     const loadMultipliers = Array.from({ length: 13 }, (_, i) => 0.4 + i * 0.1);
     const loads = loadMultipliers.map((m) => result.axialForce * m);
@@ -86,6 +95,14 @@ export default function ScrewsDashboard({ result }: Props) {
 
   return (
     <div className="space-y-4">
+      {diagnosis ? (
+        <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+          <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+            Diagnose
+          </h3>
+          <GenericDiagnosisPanel diagnosis={diagnosis} />
+        </div>
+      ) : null}
       <CalculatorMetricGrid cols={2}>
         <CalculatorMetricCard
           label="Design status"

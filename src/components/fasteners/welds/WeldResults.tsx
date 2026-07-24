@@ -1,15 +1,20 @@
+import { useMemo } from "react";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import { fromBase } from "@/lib/units/conversions";
 import type { WeldResult } from "@/lib/fasteners/welds/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseWeld } from "@/lib/fasteners/welds/diagnosis";
 
 type Props = {
   result: WithCalculationSpec<WeldResult> | null;
   lengthUnit: string;
   forceUnit: string;
   stressUnit: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
 function safetyTone(sf: number): "green" | "orange" | "red" {
@@ -24,7 +29,12 @@ function statusTone(status: string): "green" | "orange" | "red" {
   return "red";
 }
 
-export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit }: Props) {
+export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit, workflowMode }: Props) {
+  const diagnosis = useMemo(() => {
+    if (!result || workflowMode !== "diagnose") return null;
+    return diagnoseWeld(result);
+  }, [workflowMode, result]);
+
   return (
     <CalculatorResultsShell
       moduleId="welds"
@@ -47,6 +57,15 @@ export default function WeldResults({ result, lengthUnit, forceUnit, stressUnit 
     >
       {result ? (
         <>
+          {diagnosis ? (
+            <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+                Diagnose Mode
+              </h3>
+              <GenericDiagnosisPanel diagnosis={diagnosis} />
+            </div>
+          ) : null}
+
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Weld type"

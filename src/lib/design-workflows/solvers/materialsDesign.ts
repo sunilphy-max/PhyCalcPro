@@ -3,6 +3,7 @@ import { searchBeamSections } from "@/lib/design-workflows/solvers/beamDesign";
 import { solveAreaPropertiesEngine } from "@/lib/profiles/engine";
 import { solveFatigueEngine } from "@/lib/materials/fatigue/engine";
 import { solveCorrosionEngine } from "@/lib/materials/corrosion/engine";
+import { solveCompositeEngine } from "@/lib/materials/composites/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
@@ -183,14 +184,51 @@ export function designCorrosionAllowance(userInputs: ModuleUserInputs): ModuleDe
 }
 
 export function designCompositeScreen(userInputs: ModuleUserInputs): ModuleDesignModeResult {
-  const plies = [4, 6, 8, 10, 12];
-  const items = plies.map((n) => ({
-    label: `${n} plies 0/90`,
-    utilization: (userInputs.requiredStrength ?? 400e6) / (n * 90e6),
-    fields: { plyCount: n, orientation: "0/90" },
-    detail: `approx ${(n * 90).toFixed(0)} MPa`,
-  }));
-  return fromSweep(sweepCatalogForUtilization(items), "Laminate ply-count screening for strength target.");
+  const required = userInputs.requiredStrength ?? 400e6;
+  const appliedMPa = required / 1e6;
+  const plyStacks = [
+    { plies: 4, vf: 0.45, angle: 0 },
+    { plies: 6, vf: 0.5, angle: 0 },
+    { plies: 8, vf: 0.55, angle: 0 },
+    { plies: 10, vf: 0.58, angle: 0 },
+    { plies: 12, vf: 0.6, angle: 45 },
+  ];
+
+  const items = plyStacks.map((stack) => {
+    try {
+      const res = solveCompositeEngine({
+        fiberVolumeFraction: stack.vf,
+        fiberModulus: 230e9,
+        matrixModulus: 3.5e9,
+        fiberStrength: 3500e6,
+        matrixStrength: 70e6,
+        fiberDensity: 1800,
+        matrixDensity: 1200,
+        fiberPoisson: 0.2,
+        matrixPoisson: 0.35,
+        plyAngleDeg: stack.angle,
+        appliedStress: appliedMPa,
+      });
+      return {
+        label: `${stack.plies} plies · Vf ${(stack.vf * 100).toFixed(0)}%`,
+        utilization: Math.max(res.tsaiHillUtilization, required / Math.max(res.strength_longitudinal, 1)),
+        fields: { plyCount: stack.plies, fiberVolumeFraction: stack.vf, orientation: stack.angle === 0 ? "0" : "±45" },
+        detail: `E1 ${(res.E_longitudinal / 1e9).toFixed(0)} GPa · Tsai-Hill ${res.tsaiHillUtilization.toFixed(2)}`,
+      };
+    } catch {
+      return {
+        label: `${stack.plies} plies`,
+        utilization: 99,
+        fields: { plyCount: stack.plies },
+        detail: "invalid",
+      };
+    }
+  });
+
+  return fromSweep(
+    sweepCatalogForUtilization(items),
+    "Laminate ply/Vf sweep ranked by live Tsai-Hill utilization and longitudinal strength."
+  );
 }
 
 export function designTemperatureDerating(userInputs: ModuleUserInputs): ModuleDesignModeResult {

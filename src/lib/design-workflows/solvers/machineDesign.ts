@@ -13,6 +13,8 @@ import { solvePlainBearingEngine } from "@/lib/machine/plain-bearings/engine";
 import { designHousingBolts } from "@/lib/machine/housing/engine";
 import { solveBrakesClutchesEngine } from "@/lib/machine/brakes-clutches/engine";
 import { solveCamEngine } from "@/lib/machine/cams/engine";
+import { solveInternalGearsRackEngine } from "@/lib/machine/internal-gears-rack/engine";
+import { solveScrewEngine } from "@/lib/fasteners/bolts/engine";
 import { sweepCatalogForUtilization } from "@/lib/design-workflows/sweepCatalogForUtilization";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import type { ModuleDesignModeResult } from "@/lib/design-workflows/designModeRegistry";
@@ -609,6 +611,115 @@ export function designHousingMount(userInputs: ModuleUserInputs): ModuleDesignMo
   };
 }
 
+export function designPowerScrew(userInputs: ModuleUserInputs): ModuleDesignModeResult {
+  const axialForce = userInputs.axialLoad ?? userInputs.maxForce ?? 10000;
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const diametersMm = [16, 20, 24, 30, 36, 40, 48, 50, 60];
+  const pitchesMm = [4, 5, 6, 8, 10];
+
+  const items = diametersMm.flatMap((dMm) =>
+    pitchesMm
+      .filter((pMm) => pMm <= dMm * 0.35)
+      .map((pMm) => {
+        const majorDiameter = dMm / 1000;
+        const pitch = pMm / 1000;
+        try {
+          const res = solveScrewEngine({
+            screwType: "power_screw",
+            threadType: "square",
+            majorDiameter,
+            pitch,
+            lead: pitch,
+            length: userInputs.length ?? 0.5,
+            axialForce,
+            frictionCoefficient: 0.15,
+            starts: 1,
+          });
+          const util = targetSf / Math.max(res.safetyFactor, 1e-9);
+          return {
+            label: `Tr ${dMm}×${pMm}`,
+            utilization: util,
+            fields: { majorDiameter, pitch, lead: pitch },
+            detail: `SF ${res.safetyFactor.toFixed(2)} · η ${((res.efficiency ?? 0) * 100).toFixed(0)}%`,
+          };
+        } catch {
+          return {
+            label: `Tr ${dMm}×${pMm}`,
+            utilization: 99,
+            fields: { majorDiameter, pitch, lead: pitch },
+            detail: "invalid",
+          };
+        }
+      })
+  );
+
+  return {
+    method: "Lead-screw diameter×pitch catalog ranked by live power-screw safety factor.",
+    ...fromSweepLocal(items),
+  };
+}
+
+function fromSweepLocal(
+  items: Array<{ label: string; utilization: number; fields: Record<string, unknown>; detail: string }>
+) {
+  const sweep = sweepCatalogForUtilization(items);
+  return { best: sweep.best, ranked: sweep.ranked };
+}
+
+export function designInternalGearsRack(userInputs: ModuleUserInputs): ModuleDesignModeResult {
+  const power = userInputs.power ?? 5e3;
+  const speed = userInputs.rpm ?? userInputs.speedDriver ?? 600;
+  const targetSf = userInputs.targetSafetyFactor ?? 1.5;
+  const gearType = (userInputs.formValues?.gearType === 1 ? "rack" : "internal") as "internal" | "rack";
+  const modules = [1.5, 2, 2.5, 3, 4, 5, 6, 8];
+  const faceWidths = [20, 25, 30, 40, 50];
+
+  const items = modules.flatMap((moduleMm) =>
+    faceWidths.map((faceMm) => {
+      try {
+        const res = solveInternalGearsRackEngine({
+          gearType,
+          power,
+          speed,
+          module: moduleMm / 1000,
+          pinionTeeth: 18,
+          gearTeeth: 54,
+          faceWidth: faceMm / 1000,
+          material: {
+            name: STEEL_MATERIAL.name,
+            E: STEEL_MATERIAL.E,
+            yieldStress: STEEL_MATERIAL.yieldStress,
+            poisson: STEEL_MATERIAL.poisson ?? 0.3,
+          },
+        });
+        const governing = Math.min(res.safetyFactor, res.contactSafetyFactor);
+        return {
+          label: `m ${moduleMm} · b ${faceMm} mm`,
+          utilization: targetSf / Math.max(governing, 1e-9),
+          fields: {
+            module: moduleMm / 1000,
+            faceWidth: faceMm / 1000,
+            gearType,
+          },
+          detail: `bend SF ${res.safetyFactor.toFixed(2)} · contact SF ${res.contactSafetyFactor.toFixed(2)}`,
+        };
+      } catch {
+        return {
+          label: `m ${moduleMm}`,
+          utilization: 99,
+          fields: { module: moduleMm / 1000, faceWidth: faceMm / 1000 },
+          detail: "invalid",
+        };
+      }
+    })
+  );
+
+  return {
+    method: "Internal/rack module×face-width sweep using Lewis bending and contact screening.",
+    ...fromSweepLocal(items),
+  };
+}
+
 export function designMachineModule(moduleId: string, userInputs: ModuleUserInputs): ModuleDesignModeResult {
   if (moduleId === "gears") return designGearModule(userInputs);
   if (moduleId === "shafts") return designShaftDiameter(userInputs);
@@ -619,8 +730,8 @@ export function designMachineModule(moduleId: string, userInputs: ModuleUserInpu
   if (moduleId === "worm-gears") return designWormGear(userInputs);
   if (moduleId === "planetary-gears") return designPlanetaryGear(userInputs);
   if (moduleId === "gear-ratio-design") return designGearRatio(userInputs);
-  if (moduleId === "internal-gears-rack") return designGearModule(userInputs);
-  if (moduleId === "power-screws") return designShaftDiameter(userInputs);
+  if (moduleId === "internal-gears-rack") return designInternalGearsRack(userInputs);
+  if (moduleId === "power-screws") return designPowerScrew(userInputs);
   if (moduleId === "plain-bearings") return designPlainBearing(userInputs);
   if (moduleId === "brakes-clutches") return designBrakesClutches(userInputs);
   if (moduleId === "cams") return designCamProfile(userInputs);

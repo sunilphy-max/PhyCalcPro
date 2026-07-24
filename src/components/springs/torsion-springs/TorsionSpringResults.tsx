@@ -14,14 +14,22 @@ import type { CalculationSpec } from "@/lib/standards/types";
 import { formatEngineeringValue } from "@/lib/display/formatEngineering";
 import { fromBase } from "@/lib/units/conversions";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
+import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
+import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
+import { diagnoseHelicalSpring } from "@/lib/springs/diagnosis";
 
 type Props = {
   result: (TorsionSpringResult & { calculationSpec?: CalculationSpec }) | null;
   stressUnit: string;
   projectName?: string;
+  workflowMode?: DesignWorkflowMode;
 };
 
-export default function TorsionSpringResults({ result, stressUnit, projectName }: Props) {
+export default function TorsionSpringResults({ result, stressUnit, projectName, workflowMode }: Props) {
+  const diagnosis = useMemo(() => {
+    if (!result || workflowMode !== "diagnose") return null;
+    return diagnoseHelicalSpring(result);
+  }, [workflowMode, result]);
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result) return [];
 
@@ -93,6 +101,15 @@ export default function TorsionSpringResults({ result, stressUnit, projectName }
     >
       {result ? (
         <>
+          {diagnosis ? (
+            <div className="rounded-xl border-2 border-violet-200 bg-violet-50/30 p-4 dark:border-violet-800 dark:bg-violet-950/30">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-violet-900 dark:text-violet-100">
+                Diagnose Mode
+              </h3>
+              <GenericDiagnosisPanel diagnosis={diagnosis} />
+            </div>
+          ) : null}
+
           <CalculatorMetricGrid cols={4}>
             <CalculatorMetricCard label="Status" value={result.isSafe ? "Pass" : "Check"} status={status} />
             <CalculatorMetricCard label="Governing check" value={result.governingFailureMode} tone="orange" />
