@@ -12,6 +12,16 @@ NEXT_PUBLIC_BING_SITE_VERIFICATION=     # content value from Bing Webmaster HTML
 
 `NEXT_PUBLIC_APP_URL` drives absolute URLs in `/sitemap.xml`, `/robots.txt`, canonicals, and Open Graph. Leave verification vars blank until you have tokens; meta tags are omitted when unset.
 
+**Preferred host is non-www** (`https://phycalcpro.com`). Do not set `NEXT_PUBLIC_APP_URL` to a www origin or a Vercel preview URL in Production. `www.phycalcpro.com` permanently redirects to the apex host via [`next.config.ts`](../next.config.ts).
+
+## Canonicals
+
+Every indexable page emits an absolute `<link rel="canonical">` from [`buildPageMetadata`](../src/lib/seo/site.ts) (and a root fallback on `rootMetadata`). Example:
+
+`https://phycalcpro.com/products/structural/beams`
+
+After deploy, use Search Console **URL Inspection** and confirm “user-declared canonical” matches the non-www absolute URL. “Duplicate without user-selected canonical” typically clears after Google recrawls (days–weeks).
+
 ## Register and submit sitemap
 
 1. Deploy with the production URL and any verification tokens set.

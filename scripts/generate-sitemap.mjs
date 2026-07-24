@@ -16,6 +16,7 @@ const CATEGORY_IDS = new Set([
   "structural",
   "power-transmission",
   "machine",
+  "bearings",
   "springs",
   "fasteners",
   "materials",

@@ -90,7 +90,10 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
   },
   vessels: {
     radius: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Radius" },
+    thickness: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Thickness" },
+    length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "ft", "in"], label: "Length" },
     pressure: { dimension: "pressure", defaultUnit: "Pa", units: ["Pa", "MPa", "bar", "psi"], label: "Pressure" },
+    E: { dimension: "stress", defaultUnit: "Pa", units: ["Pa", "MPa", "GPa", "psi"], label: "Young's modulus" },
   },
   columns: {
     length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "ft", "in"], label: "Length" },
@@ -138,6 +141,7 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
   },
   bolts: {
     diameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Diameter" },
+    length: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Length / spacing" },
     force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Force" },
     stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "psi"], label: "Stress" },
   },
@@ -363,9 +367,13 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     length: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Pitch diameter" },
   },
   "power-screws": {
+    diameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Major diameter" },
     length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Screw length" },
     force: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Axial load" },
     stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "Pa", "GPa", "psi"], label: "Allowable stress" },
+  },
+  "material-db": {
+    stress: { dimension: "stress", defaultUnit: "MPa", units: ["MPa", "GPa", "Pa", "psi", "ksi"], label: "Allowable stress" },
   },
   "rolled-sections": {
     length: { dimension: "length", defaultUnit: "m", units: ["m", "mm", "in"], label: "Section depth" },

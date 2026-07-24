@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import MaterialDatabase from "@/components/materials/MaterialDatabase";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import CalculatorExportButton from "@/components/calculator/CalculatorExportButton";
+import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import { calculatorPanelClass, calculatorPrimaryButtonClass } from "@/components/calculator/styles";
 import { useModuleDesignCalculate } from "@/hooks/useModuleDesignCalculate";
 import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
@@ -14,10 +16,17 @@ import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 
 export default function Page() {
   const { wrapResult } = useStandardCalculation("material-db");
+  const searchParams = useSearchParams();
+  const urlMaterial = searchParams.get("material");
+  const decodedUrlMaterial = urlMaterial ? decodeURIComponent(urlMaterial) : null;
+
   const [requiredStress, setRequiredStress] = useState(200);
   const [stressUnit, setStressUnit] = useState("MPa");
   const [selectedMaterial, setSelectedMaterial] = useState<string | null>(null);
   const [selectedE, setSelectedE] = useState<number | null>(null);
+
+  const highlightMaterial = selectedMaterial ?? decodedUrlMaterial;
+  const querySeed = selectedMaterial ?? decodedUrlMaterial ?? "";
 
   const designUserInputs = useMemo(
     (): ModuleUserInputs => ({
@@ -50,14 +59,14 @@ export default function Page() {
     <CalculatorLayout
       moduleId="material-db"
       title="Material Database"
-      hasResults={Boolean(selectedMaterial)}
+      hasResults={true}
       inputs={
         <div className={calculatorPanelClass}>
           <div>
             <h3 className="text-lg font-semibold text-slate-950">Materials Reference</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Lookup elastic modulus and screen materials against a required allowable stress in Design or Select
-              mode.
+              Browse the full catalog on the right. Optionally screen by required allowable stress in Design or Select
+              mode, then Apply a candidate.
             </p>
           </div>
 
@@ -68,16 +77,12 @@ export default function Page() {
             min={0}
             step="any"
             unit={
-              <select
+              <ModuleUnitSelect
+                moduleId="material-db"
+                fieldKey="stress"
                 value={stressUnit}
-                onChange={(e) => setStressUnit(e.target.value)}
-                className="rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700"
-              >
-                <option value="MPa">MPa</option>
-                <option value="GPa">GPa</option>
-                <option value="psi">psi</option>
-                <option value="ksi">ksi</option>
-              </select>
+                onChange={setStressUnit}
+              />
             }
           />
 
@@ -97,9 +102,11 @@ export default function Page() {
         </div>
       }
       results={
-        selectedMaterial ? (
-          <MaterialDatabase highlightMaterial={selectedMaterial} querySeed={selectedMaterial} />
-        ) : null
+        <MaterialDatabase
+          key={querySeed || "catalog"}
+          highlightMaterial={highlightMaterial}
+          querySeed={querySeed}
+        />
       }
     />
   );

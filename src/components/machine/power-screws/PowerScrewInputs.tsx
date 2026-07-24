@@ -7,6 +7,7 @@ import CalculatorCalculateButton from "@/components/calculator/CalculatorCalcula
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
+import { fromBase, toBase } from "@/lib/units/conversions";
 import {
   calculatorFieldLabelClass,
   calculatorInputGridClass,
@@ -35,6 +36,8 @@ export default function PowerScrewInputs({
   saving,
 }: Props) {
   const [screwType, setScrewType] = useState<ScrewType>(config.screwType);
+  const [diameterUnit, setDiameterUnit] = useState("mm");
+  const [forceUnit, setForceUnit] = useState("N");
 
   const updateConfig = (updates: Partial<ScrewConfig>) => {
     setConfig({ ...config, ...updates } as ScrewConfig);
@@ -68,6 +71,23 @@ export default function PowerScrewInputs({
       });
     }
   };
+
+  const renderDiameterSelect = () => (
+    <ModuleUnitSelect
+      moduleId="power-screws"
+      fieldKey="diameter"
+      value={diameterUnit}
+      onChange={setDiameterUnit}
+    />
+  );
+  const renderForceSelect = () => (
+    <ModuleUnitSelect
+      moduleId="power-screws"
+      fieldKey="force"
+      value={forceUnit}
+      onChange={setForceUnit}
+    />
+  );
 
   return (
     <CalculatorInputPanel
@@ -134,21 +154,21 @@ export default function PowerScrewInputs({
           <div className={calculatorInputGridClass}>
             <CalculatorUnitField
               label="Major diameter"
-              value={config.majorDiameter * 1000}
-              onChange={(v) => updateConfig({ majorDiameter: v / 1000 })}
-              unit={<ModuleUnitSelect moduleId="power-screws" fieldKey="diameter" value="mm" onChange={() => {}} restrictToProfile />}
+              value={fromBase(config.majorDiameter, "length", diameterUnit)}
+              onChange={(v) => updateConfig({ majorDiameter: toBase(v, "length", diameterUnit) })}
+              unit={renderDiameterSelect()}
             />
             <CalculatorUnitField
               label="Pitch"
-              value={config.pitch * 1000}
-              onChange={(v) => updateConfig({ pitch: v / 1000 })}
-              unit={<span className="text-sm text-slate-500">mm</span>}
+              value={fromBase(config.pitch, "length", diameterUnit)}
+              onChange={(v) => updateConfig({ pitch: toBase(v, "length", diameterUnit) })}
+              unit={renderDiameterSelect()}
             />
             <CalculatorUnitField
               label="Lead"
-              value={(config.lead ?? config.pitch) * 1000}
-              onChange={(v) => updateConfig({ lead: v / 1000 })}
-              unit={<span className="text-sm text-slate-500">mm</span>}
+              value={fromBase(config.lead ?? config.pitch, "length", diameterUnit)}
+              onChange={(v) => updateConfig({ lead: toBase(v, "length", diameterUnit) })}
+              unit={renderDiameterSelect()}
             />
             <label className="space-y-2 text-sm text-slate-700">
               <span>Starts</span>
@@ -162,9 +182,9 @@ export default function PowerScrewInputs({
             </label>
             <CalculatorUnitField
               label="Axial force"
-              value={config.axialForce}
-              onChange={(v) => updateConfig({ axialForce: v })}
-              unit={<ModuleUnitSelect moduleId="power-screws" fieldKey="force" value="N" onChange={() => {}} restrictToProfile />}
+              value={fromBase(config.axialForce, "force", forceUnit)}
+              onChange={(v) => updateConfig({ axialForce: toBase(v, "force", forceUnit) })}
+              unit={renderForceSelect()}
             />
             <label className="space-y-2 text-sm text-slate-700">
               <span>Friction coefficient μ</span>
@@ -187,21 +207,21 @@ export default function PowerScrewInputs({
           <div className={calculatorInputGridClass}>
             <CalculatorUnitField
               label="Major diameter"
-              value={config.majorDiameter * 1000}
-              onChange={(v) => updateConfig({ majorDiameter: v / 1000 })}
-              unit={<span className="text-sm text-slate-500">mm</span>}
+              value={fromBase(config.majorDiameter, "length", diameterUnit)}
+              onChange={(v) => updateConfig({ majorDiameter: toBase(v, "length", diameterUnit) })}
+              unit={renderDiameterSelect()}
             />
             <CalculatorUnitField
               label="Pitch"
-              value={config.pitch * 1000}
-              onChange={(v) => updateConfig({ pitch: v / 1000 })}
-              unit={<span className="text-sm text-slate-500">mm</span>}
+              value={fromBase(config.pitch, "length", diameterUnit)}
+              onChange={(v) => updateConfig({ pitch: toBase(v, "length", diameterUnit) })}
+              unit={renderDiameterSelect()}
             />
             <CalculatorUnitField
               label="Ball diameter"
-              value={config.ballDiameter * 1000}
-              onChange={(v) => updateConfig({ ballDiameter: v / 1000 })}
-              unit={<span className="text-sm text-slate-500">mm</span>}
+              value={fromBase(config.ballDiameter, "length", diameterUnit)}
+              onChange={(v) => updateConfig({ ballDiameter: toBase(v, "length", diameterUnit) })}
+              unit={renderDiameterSelect()}
             />
             <label className="space-y-2 text-sm text-slate-700">
               <span>Contact angle (°)</span>
@@ -214,9 +234,9 @@ export default function PowerScrewInputs({
             </label>
             <CalculatorUnitField
               label="Axial force"
-              value={config.axialForce}
-              onChange={(v) => updateConfig({ axialForce: v })}
-              unit={<span className="text-sm text-slate-500">N</span>}
+              value={fromBase(config.axialForce, "force", forceUnit)}
+              onChange={(v) => updateConfig({ axialForce: toBase(v, "force", forceUnit) })}
+              unit={renderForceSelect()}
             />
             <label className="space-y-2 text-sm text-slate-700">
               <span>Speed (rpm)</span>

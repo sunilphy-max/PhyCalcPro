@@ -5,6 +5,15 @@ import { categories, allModules } from "@/data/modules";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleMaturity } from "@/data/moduleMaturity";
 import { normalizeDocumentationMath } from "@/lib/documentation/normalizeMath";
+import {
+  extractFaqItems,
+  extractTocHeadings,
+  parseFrontmatter,
+  stripLeadingModuleHeading,
+  type FaqItem,
+  type ModuleDocFrontmatter,
+  type TocHeading,
+} from "@/lib/documentation/parseFrontmatter";
 
 const REFERENCE_PATH = path.join(process.cwd(), "docs", "Modules-Technical-Reference.md");
 const MODULES_DIR = path.join(process.cwd(), "docs", "modules");
@@ -13,6 +22,9 @@ export type ModuleDocSection = {
   moduleId: string;
   title: string;
   markdown: string;
+  frontmatter: ModuleDocFrontmatter;
+  toc: TocHeading[];
+  faq: FaqItem[];
 };
 
 export type DocSection = {
@@ -22,7 +34,7 @@ export type DocSection = {
   level: 2;
 };
 
-const MODULE_HEADING_RE = /^### .+? \(`([^`]+)`\)/;
+const MODULE_HEADING_RE = /^### .+? \(`([^`]+)`\)/m;
 
 /** Category groupings for the compiled full reference (matches product sidebar). */
 const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
@@ -36,6 +48,7 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
       "plates",
       "combined-loading",
       "circular-plates",
+      "shells",
     ],
   },
   {
@@ -47,16 +60,20 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
     moduleIds: [
       "shafts",
       "gears",
-      "bearings",
-      "cams",
-      "flywheels",
+      "internal-gears-rack",
       "bevel-gears",
       "worm-gears",
       "planetary-gears",
       "gear-ratio-design",
-      "plain-bearings",
+      "power-screws",
+      "cams",
+      "flywheels",
       "brakes-clutches",
     ],
+  },
+  {
+    heading: "Bearings",
+    moduleIds: ["bearings", "plain-bearings", "housing"],
   },
   {
     heading: "Springs",
@@ -64,14 +81,7 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
   },
   {
     heading: "Fasteners & connections",
-    moduleIds: [
-      "bolts",
-      "welds",
-      "rivets",
-      "keys-splines",
-      "shaft-hubs",
-      "pins",
-    ],
+    moduleIds: ["bolts", "welds", "rivets", "keys-splines", "shaft-hubs", "pins"],
   },
   {
     heading: "Materials & sections",
@@ -92,7 +102,7 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
   },
   {
     heading: "Dynamics & vibrations",
-    moduleIds: ["vibrations", "rotation", "impact", "suspension"],
+    moduleIds: ["vibrations", "rotation", "motor", "impact", "suspension"],
   },
   {
     heading: "Manufacturing",
@@ -117,16 +127,35 @@ const MODULE_REFERENCE_SECTIONS: { heading: string; moduleIds: string[] }[] = [
   },
 ];
 
-function readModuleFile(filePath: string): ModuleDocSection | null {
-  const content = readFileSync(filePath, "utf8").trim();
-  const idMatch = content.match(MODULE_HEADING_RE);
+function buildSectionFromBody(body: string): ModuleDocSection | null {
+  const idMatch = body.match(MODULE_HEADING_RE);
   if (!idMatch) return null;
   const moduleId = idMatch[1];
-  const titleLine = content.split("\n")[0]?.replace(/^### /, "") ?? moduleId;
+  const titleLine =
+    body
+      .split("\n")
+      .find((line) => line.startsWith("### "))
+      ?.replace(/^### /, "") ?? moduleId;
   return {
     moduleId,
     title: titleLine.replace(/\s*—\s*\*\*[^*]+\*\*\s*$/, "").trim(),
-    markdown: content,
+    markdown: body.trim(),
+    frontmatter: {},
+    toc: extractTocHeadings(body),
+    faq: extractFaqItems(body),
+  };
+}
+
+function readModuleFile(filePath: string): ModuleDocSection | null {
+  const raw = readFileSync(filePath, "utf8").trim();
+  const { data, body } = parseFrontmatter(raw);
+  const section = buildSectionFromBody(body);
+  if (!section) return null;
+  return {
+    ...section,
+    frontmatter: data,
+    toc: extractTocHeadings(body),
+    faq: extractFaqItems(body),
   };
 }
 
@@ -155,18 +184,11 @@ export function parseModuleSections(markdown: string): Map<string, ModuleDocSect
   const map = new Map<string, ModuleDocSection>();
 
   for (const chunk of chunks) {
-    const idMatch = chunk.match(MODULE_HEADING_RE);
-    if (!idMatch) continue;
-    const moduleId = idMatch[1];
-    const titleLine = chunk.split("\n")[0]?.replace(/^### /, "") ?? moduleId;
-    const section: ModuleDocSection = {
-      moduleId,
-      title: titleLine.replace(/\s*—\s*\*\*[^*]+\*\*\s*$/, "").trim(),
-      markdown: chunk.trim(),
-    };
-    const existing = map.get(moduleId);
+    const section = buildSectionFromBody(chunk.trim());
+    if (!section) continue;
+    const existing = map.get(section.moduleId);
     if (!existing || section.markdown.length > existing.markdown.length) {
-      map.set(moduleId, section);
+      map.set(section.moduleId, section);
     }
   }
 
@@ -177,7 +199,9 @@ function loadModuleFilesFromDisk(): Map<string, ModuleDocSection> {
   const map = new Map<string, ModuleDocSection>();
   if (!existsSync(MODULES_DIR)) return map;
 
+  const skip = new Set(["bearings-suite-audit.md", "spring-modules-user-tasks.md"]);
   for (const file of readdirSync(MODULES_DIR).filter((f) => f.endsWith(".md"))) {
+    if (skip.has(file)) continue;
     const section = readModuleFile(path.join(MODULES_DIR, file));
     if (section) map.set(section.moduleId, section);
   }
@@ -203,14 +227,18 @@ export function getModuleDoc(moduleId: string): ModuleDocSection | undefined {
 export function getModuleDocForDisplay(moduleId: string): ModuleDocSection | undefined {
   const doc = getModuleDoc(moduleId);
   if (!doc) return undefined;
-  return { ...doc, markdown: normalizeDocumentationMath(doc.markdown) };
+  const withoutHeading = stripLeadingModuleHeading(doc.markdown);
+  return {
+    ...doc,
+    markdown: normalizeDocumentationMath(withoutHeading),
+  };
 }
 
 function compileModuleReference(markdownById: Map<string, ModuleDocSection>): string {
   const parts: string[] = [
     "## 3. Module reference",
     "",
-    "Per-module write-ups live in `docs/modules/{moduleId}.md`. Each entry covers **purpose**, **physics & theory**, **governing equations**, **numerical method**, **inputs**, **outputs**, **design codes & checks**, **assumptions & limitations**, and **references**. Browse individually at `/documentation/modules/{moduleId}`.",
+    "Per-module engineering knowledge guides live in `docs/modules/{moduleId}.md`. Each page covers selection/analysis workflow, worked examples, FAQ, plus **purpose**, **physics & theory**, **governing equations**, **numerical method**, **inputs**, **outputs**, **design codes & checks**, **assumptions & limitations**, and **references**. Browse individually at `/documentation/modules/{moduleId}`.",
     "",
   ];
 
@@ -267,6 +295,14 @@ export function getAllModuleIdsForDocs(): string[] {
 export function getModuleRoute(moduleId: string): string | undefined {
   if (moduleId === "profiles") return "/products/materials/profiles";
   return allModules.find((m) => m.id === moduleId)?.route;
+}
+
+export function getRelatedModules(moduleId: string) {
+  const mod = allModules.find((m) => m.id === moduleId);
+  if (!mod) return [];
+  const category = categories.find((c) => c.id === mod.category);
+  if (!category) return [];
+  return category.modules.filter((m) => m.id !== moduleId && !m.comingSoon).slice(0, 6);
 }
 
 export function getModuleCatalogExtras(moduleId: string) {

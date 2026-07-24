@@ -16,7 +16,7 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
-import { calculatorDangerLinkClass, calculatorFieldLabelClass, calculatorInputGridCompactClass, calculatorInputGridTightClass, calculatorLoadCardClass, calculatorNumberInputClass, calculatorSecondaryButtonClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
+import { calculatorDangerLinkClass, calculatorFieldLabelClass, calculatorInputGridCompactClass, calculatorInputGridTightClass, calculatorLoadCardClass, calculatorSecondaryButtonClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
@@ -214,70 +214,100 @@ export default function BeamInputs(props: Props) {
               </button>
             </div>
 
-            <label className={calculatorFieldLabelClass}>
-              Magnitude
-              <input
-                type="number"
-                step="any"
-                className={`${calculatorNumberInputClass} mt-1 w-full`}
-                value={load.value}
-                onChange={(e) =>
-                  props.updateLoad(i, {
-                    ...load,
-                    value: +e.target.value,
-                  })
-                }
-              />
-            </label>
-
-            {load.type === "point" || load.type === "moment" ? (
-              <label className={calculatorFieldLabelClass}>
-                Position along span
-                <input
-                  type="number"
-                  step="any"
-                  className={`${calculatorNumberInputClass} mt-1 w-full`}
-                  value={load.position}
-                  onChange={(e) =>
-                    props.updateLoad(i, {
-                      ...load,
-                      position: +e.target.value,
-                    })
+            <CalculatorUnitField
+              label="Magnitude"
+              value={load.value}
+              onChange={(v) =>
+                props.updateLoad(i, {
+                  ...load,
+                  value: v,
+                })
+              }
+              step="any"
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey={
+                    load.type === "point" ? "force" : load.type === "udl" ? "udl" : "moment"
+                  }
+                  value={
+                    load.type === "point"
+                      ? props.forceUnit
+                      : load.type === "udl"
+                        ? props.udlUnit
+                        : props.momentUnit
+                  }
+                  onChange={
+                    load.type === "point"
+                      ? props.setForceUnit
+                      : load.type === "udl"
+                        ? props.setUdlUnit
+                        : props.setMomentUnit
                   }
                 />
-              </label>
+              }
+            />
+
+            {load.type === "point" || load.type === "moment" ? (
+              <CalculatorUnitField
+                label="Position along span"
+                value={load.position}
+                onChange={(v) =>
+                  props.updateLoad(i, {
+                    ...load,
+                    position: v,
+                  })
+                }
+                step="any"
+                unit={
+                  <ModuleUnitSelect
+                    moduleId="beams"
+                    fieldKey="length"
+                    value={props.lengthUnit}
+                    onChange={props.setLengthUnit}
+                  />
+                }
+              />
             ) : load.type === "udl" ? (
               <div className={`${calculatorInputGridCompactClass}`}>
-                <label className={calculatorFieldLabelClass}>
-                  Start position
-                  <input
-                    type="number"
-                    step="any"
-                    className={`${calculatorNumberInputClass} mt-1 w-full`}
-                    value={load.start}
-                    onChange={(e) =>
-                      props.updateLoad(i, {
-                        ...(load as UDL),
-                        start: +e.target.value,
-                      })
-                    }
-                  />
-                </label>
-                <label className={calculatorFieldLabelClass}>
-                  End position
-                  <input
-                    type="number"
-                    step="any"
-                    className={`${calculatorNumberInputClass} mt-1 w-full`}
-                    value={load.end}
-                    onChange={(e) =>
-                      props.updateLoad(i, {
-                        ...(load as UDL),
-                        end: +e.target.value,
-                      })
-                    }
-                  />
-                </label>
+                <CalculatorUnitField
+                  label="Start position"
+                  value={load.start}
+                  onChange={(v) =>
+                    props.updateLoad(i, {
+                      ...(load as UDL),
+                      start: v,
+                    })
+                  }
+                  step="any"
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="beams"
+                      fieldKey="length"
+                      value={props.lengthUnit}
+                      onChange={props.setLengthUnit}
+                    />
+                  }
+                />
+                <CalculatorUnitField
+                  label="End position"
+                  value={load.end}
+                  onChange={(v) =>
+                    props.updateLoad(i, {
+                      ...(load as UDL),
+                      end: v,
+                    })
+                  }
+                  step="any"
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="beams"
+                      fieldKey="length"
+                      value={props.lengthUnit}
+                      onChange={props.setLengthUnit}
+                    />
+                  }
+                />
               </div>
             ) : null}
           </div>

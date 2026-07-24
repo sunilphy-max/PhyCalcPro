@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.phycalcpro.com" }],
+        destination: "https://phycalcpro.com/:path*",
+        permanent: true,
+      },
+      {
         source: "/products/profiles",
         destination: "/products/materials/profiles",
         permanent: true,

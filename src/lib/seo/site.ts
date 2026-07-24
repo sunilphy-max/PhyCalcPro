@@ -53,7 +53,7 @@ export function buildPageMetadata({
     title,
     description,
     alternates: {
-      canonical: canonicalPath,
+      canonical: url,
     },
     openGraph: {
       title: pageTitle,
@@ -93,6 +93,9 @@ export const rootMetadata: Metadata = {
     template: titleTemplate,
   },
   description: defaultDescription,
+  alternates: {
+    canonical: SITE_URL,
+  },
   icons: {
     icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
     apple: "/phycalcpro-logo.png",

@@ -5,7 +5,7 @@ import { buildPageMetadata } from "@/lib/seo/site";
 export const metadata = buildPageMetadata({
   title: "Documentation",
   description:
-    "Engineering reference for PhyCalcPro calculator modules: governing formulas, numerical methods, design-code checks, assumptions, limitations, and known gaps.",
+    "Engineering selection and analysis guides for PhyCalcPro calculators: workflows, formulas, worked examples, design-code checks, assumptions, and limitations.",
   path: "/documentation",
 });
 
@@ -18,8 +18,9 @@ export default function DocumentationPage() {
         PhyCalcPro documentation
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-8 text-slate-600 dark:text-slate-300">
-        Engineering reference for all calculator modules: governing formulas, numerical methods,
-        design-code checks, assumptions, limitations, and known gaps.
+        Engineering knowledge guides for all calculator modules: how engineers select and analyze
+        components, governing formulas, worked examples, FAQ, design-code checks, and known
+        limitations.
       </p>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -48,7 +49,7 @@ export default function DocumentationPage() {
         >
           <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Browse by module</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Jump to any module for purpose, equations, inputs/outputs, and gaps.
+            Selection and analysis guides with formulas, worked examples, FAQ, and calculator links.
           </p>
         </Link>
       </div>
@@ -65,10 +66,15 @@ export default function DocumentationPage() {
             <em>Not available</em> means the check is catalogued but not yet verified for that code.
           </li>
           <li>
-            Export **structured PDF** reports (title block, metrics, engineering checks, formulas, charts) plus CSV — included during early access (no signup required).
+            Export structured PDF reports (title block, metrics, engineering checks, formulas, charts)
+            plus CSV — included during early access (no signup required).
           </li>
           <li>
-            Save and reload work from the <Link href="/projects" className="font-medium underline">Projects</Link> dashboard; flagship modules support cross-calculator handoff (e.g. gear → shaft → bearing).
+            Save and reload work from the{" "}
+            <Link href="/projects" className="font-medium underline">
+              Projects
+            </Link>{" "}
+            dashboard; flagship modules support cross-calculator handoff (e.g. gear → shaft → bearing).
           </li>
         </ul>
         <p className="mt-4 text-sm text-slate-500">
@@ -83,7 +89,7 @@ export default function DocumentationPage() {
       </section>
 
       <section className="mt-12">
-        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Modules by category</h2>
+        <h2 className="text-xl font-semibold text-slate-950 dark:text-white">Guides by category</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           {categories.map((cat) => (
             <div

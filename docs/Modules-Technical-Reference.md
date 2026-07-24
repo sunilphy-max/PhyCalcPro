@@ -177,7 +177,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 
 ## 3. Module reference (source files)
 
-Per-module documentation is authored in `docs/modules/{moduleId}.md` (63 files). Each file documents purpose, physics, governing equations, numerical method, inputs/outputs, design-code checks, assumptions, and numbered references. The web site compiles these into the full reference and per-module pages at `/documentation/modules/{moduleId}`.
+Per-module documentation is authored in `docs/modules/{moduleId}.md` (65 catalog guides). Each file is an **engineering knowledge guide** (selection/analysis workflow, formulas, worked example, FAQ, calculator link) plus the technical reference block: purpose, physics, governing equations, numerical method, inputs/outputs, design-code checks, assumptions, and numbered references. YAML frontmatter supplies SEO title/description. The web site compiles these into the full reference and per-module pages at `/documentation/modules/{moduleId}`.
 
 Do **not** duplicate module write-ups in this file — edit the individual module files instead.
 
@@ -273,9 +273,9 @@ When adding a module:
 1. Register in `src/data/modules.ts` and `moduleStandardCatalog.ts`.
 2. Add `moduleMaturity` entry and `moduleProfiles` fields.
 3. Follow the page contract in [Homogenization-Roadmap.md](./Homogenization-Roadmap.md).
-4. Add `docs/modules/{moduleId}.md` with all required sections; run `node scripts/audit-module-docs.mjs`.
+4. Add `docs/modules/{moduleId}.md` as a knowledge guide (frontmatter + workflow/example/FAQ + technical sections); run `node scripts/audit-module-docs.mjs`.
 5. Add verification JSON when the solver is stable; see [VerificationGuide.md](./VerificationGuide.md).
 
 ---
 
-*Last updated: 2026-07 — reflects shaft/bearing/spring upgrades and site-wide verification registry.*
+*Last updated: 2026-07-23 — engineering knowledge-guide documentation for all catalog modules.*

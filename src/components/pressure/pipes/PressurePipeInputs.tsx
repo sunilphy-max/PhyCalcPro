@@ -117,7 +117,7 @@ export default function PressurePipeInputs({
           onChange={setE}
           min={1e8}
           step={1e8}
-          unit={<ModuleUnitSelect moduleId="pipes" fieldKey="E" value={EUnit} onChange={setEUnit} />}
+          unit={<ModuleUnitSelect moduleId="pipes" fieldKey="modulus" value={EUnit} onChange={setEUnit} />}
         />
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
           <h3 className="text-sm font-semibold text-slate-900">Mesh refinement</h3>

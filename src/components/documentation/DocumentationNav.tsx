@@ -7,7 +7,7 @@ import { categories } from "@/data/modules";
 const TOP_LINKS = [
   { href: "/documentation", label: "Overview" },
   { href: "/documentation/reference", label: "Full reference" },
-  { href: "/documentation/modules", label: "All modules" },
+  { href: "/documentation/modules", label: "Module guides" },
   { href: "/documentation/supabase", label: "Supabase setup" },
 ] as const;
 

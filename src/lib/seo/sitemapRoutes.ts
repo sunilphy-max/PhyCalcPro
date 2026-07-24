@@ -1,10 +1,11 @@
-import { allModules } from "@/data/modules";
+import { allModules, categories } from "@/data/modules";
 import { getAllModuleIdsForDocs } from "@/lib/documentation/loadReference";
 
 const CATEGORY_IDS = new Set([
   "structural",
   "power-transmission",
   "machine",
+  "bearings",
   "springs",
   "fasteners",
   "materials",
@@ -60,6 +61,8 @@ function changeFrequencyFor(
 }
 
 export function collectSitemapRoutes(): string[] {
+  const categoryRoutes = categories.map((category) => `/products/${category.id}`);
+
   const moduleRoutes = allModules
     .map((module) => module.route)
     .filter((route) => route.startsWith("/products/"));
@@ -72,7 +75,9 @@ export function collectSitemapRoutes(): string[] {
     docRoutes.push("/documentation/modules/profiles");
   }
 
-  return [...new Set([...STATIC_ROUTES, ...moduleRoutes, ...docRoutes])].sort((a, b) => {
+  return [
+    ...new Set([...STATIC_ROUTES, ...categoryRoutes, ...moduleRoutes, ...docRoutes]),
+  ].sort((a, b) => {
     if (a === "/") return -1;
     if (b === "/") return 1;
     return a.localeCompare(b);
