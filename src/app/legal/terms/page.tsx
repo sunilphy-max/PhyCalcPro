@@ -30,7 +30,7 @@ export default function TermsPage() {
               <p>
                 These Terms of Service (“Terms”) are a contract between you and{" "}
                 <strong>PhyCalcPro</strong> (“we,” “us,” or “our”) governing access to and use of
-                phycalcpro.com and related tools (the “Service”). By accessing or using the Service,
+                www.phycalcpro.com and related tools (the “Service”). By accessing or using the Service,
                 you agree to these Terms and our{" "}
                 <Link href="/legal/privacy">Privacy Policy</Link>. If you do not agree, do not use
                 the Service.

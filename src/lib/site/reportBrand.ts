@@ -5,7 +5,7 @@ export const REPORT_SUPPORT_EMAIL = "support@phycalcpro.com";
 export function getReportSiteUrl(): string {
   const url = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (url) return url.replace(/\/+$/, "");
-  return "https://phycalcpro.com";
+  return "https://www.phycalcpro.com";
 }
 
 export const REPORT_DISCLAIMER =

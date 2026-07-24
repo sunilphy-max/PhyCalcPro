@@ -34,7 +34,7 @@ Copy `.env.example` to `.env.local` and set:
 - `STRIPE_PRICE_PRO_MONTHLY` — Price ID for Pro subscription
 - `STRIPE_PRICE_DONATION` — Price ID for one-time donation
 - `LICENSE_SIGNING_SECRET` — HMAC secret for entitlement tokens (32+ random bytes)
-- `NEXT_PUBLIC_APP_URL` — e.g. `https://phycalcpro.com` or `http://localhost:3000`
+- `NEXT_PUBLIC_APP_URL` — e.g. `https://www.phycalcpro.com` or `http://localhost:3000`
 - `NEXT_PUBLIC_DEV_ENTITLEMENT` — `free` \| `pro` \| `supporter` \| unset (local dev only; unset = normal Free)
 - `NEXT_PUBLIC_VALIDATION_MODE=true` — unlocks Indicative + US + EU + ISO + PDF for site-wide validation (never on public production)
 - `NEXT_PUBLIC_FREE_LAUNCH=true` — unlocks all features; hides Pricing/Account (see Launch-Plan)

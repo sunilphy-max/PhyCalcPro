@@ -6,12 +6,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   async redirects() {
     return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.phycalcpro.com" }],
-        destination: "https://phycalcpro.com/:path*",
-        permanent: true,
-      },
+      // Host canonicalization (www ↔ apex) must be done ONLY in Vercel Domains.
+      // Preferred production host: https://www.phycalcpro.com (apex redirects to www).
+      // Do not add an opposing host redirect here — that caused ERR_TOO_MANY_REDIRECTS.
       {
         source: "/products/profiles",
         destination: "/products/materials/profiles",

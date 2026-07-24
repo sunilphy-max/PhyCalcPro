@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://phycalcpro.com"
+  process.env.NEXT_PUBLIC_APP_URL?.trim() || "https://www.phycalcpro.com"
 ).replace(/\/+$/, "");
 
 export const SITE_NAME = "PhyCalcPro";

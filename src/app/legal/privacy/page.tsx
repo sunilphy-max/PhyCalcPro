@@ -29,7 +29,7 @@ export default function PrivacyPage() {
             <>
               <p>
                 This Privacy Policy describes how <strong>PhyCalcPro</strong> (“we,” “us,” or “our”)
-                processes personal information when you use phycalcpro.com and related product pages
+                processes personal information when you use www.phycalcpro.com and related product pages
                 (the “Service”). PhyCalcPro is operated as a product brand. For privacy requests,
                 contact{" "}
                 <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.

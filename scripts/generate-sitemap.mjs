@@ -1,7 +1,7 @@
 /**
  * Generates public/sitemap.xml from Next.js app routes and module documentation pages.
  * Note: production uses src/app/sitemap.ts (dynamic). This script is a static fallback only.
- * Usage: node scripts/generate-sitemap.mjs [--base-url https://phycalcpro.com]
+ * Usage: node scripts/generate-sitemap.mjs [--base-url https://www.phycalcpro.com]
  */
 import fs from "fs";
 import path from "path";
@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const APP_DIR = path.join(ROOT, "src", "app");
-const DEFAULT_BASE_URL = "https://phycalcpro.com";
+const DEFAULT_BASE_URL = "https://www.phycalcpro.com";
 
 const CATEGORY_IDS = new Set([
   "structural",
