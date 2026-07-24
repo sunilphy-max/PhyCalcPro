@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import CalculatorLayout from "@/components/CalculatorLayout";
@@ -14,7 +14,7 @@ import { useApplyDesignFields } from "@/hooks/useApplyDesignFields";
 import { toBase } from "@/lib/units/conversions";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 
-export default function Page() {
+function MaterialDatabasePageContent() {
   const { wrapResult } = useStandardCalculation("material-db");
   const searchParams = useSearchParams();
   const urlMaterial = searchParams.get("material");
@@ -109,5 +109,13 @@ export default function Page() {
         />
       }
     />
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <MaterialDatabasePageContent />
+    </Suspense>
   );
 }
