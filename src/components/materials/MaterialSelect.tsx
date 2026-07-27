@@ -8,7 +8,8 @@ import {
   type MaterialProfile,
 } from "@/lib/materials/materialProfiles";
 import { calculatorFieldLabelClass, calculatorSelectClass } from "@/components/calculator/styles";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { subscribeMaterialApply } from "@/lib/workspace/materialEvents";
 
 type Props = {
   profile: MaterialProfile;
@@ -42,6 +43,16 @@ export default function MaterialSelect({
     return map;
   }, [materialsForProfile]);
 
+  // Centralized materials bus — workspace / DB / URL apply flows through here
+  useEffect(() => {
+    return subscribeMaterialApply((detail) => {
+      const inProfile = materialsForProfile.some((m) => m.name === detail.material.name);
+      if (!inProfile) return;
+      if (detail.profile && detail.profile !== profile && !inProfile) return;
+      onChange(detail.material.name);
+    });
+  }, [profile, onChange, materialsForProfile]);
+
   return (
     <div className={className}>
       <label className={calculatorFieldLabelClass}>
@@ -52,7 +63,10 @@ export default function MaterialSelect({
           onChange={(e) => onChange(e.target.value)}
         >
           {Array.from(grouped.entries()).map(([category, items]) => (
-            <optgroup key={category} label={materialCategoryLabels[category as keyof typeof materialCategoryLabels]}>
+            <optgroup
+              key={category}
+              label={materialCategoryLabels[category as keyof typeof materialCategoryLabels]}
+            >
               {items.map((m) => (
                 <option key={m.id} value={m.name}>
                   {m.name}

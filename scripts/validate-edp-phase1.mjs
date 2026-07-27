@@ -1,6 +1,5 @@
 /**
- * EDP-1 scorecard validation — flagship modules must register design modes,
- * use CalculatorResultsShell / ExportableReport patterns, and expose workspace chrome hooks.
+ * EDP-1 scorecard validation — flagship modules + fleet workspace shell.
  *
  * Run: node scripts/validate-edp-phase1.mjs
  */
@@ -9,6 +8,12 @@ import path from "node:path";
 
 const root = process.cwd();
 const errors = [];
+
+const layoutPath = path.join(root, "src/components/CalculatorLayout.tsx");
+const layout = fs.readFileSync(layoutPath, "utf8");
+if (!layout.includes("ModuleWorkspaceShell") || !layout.includes("ModuleWorkspaceProvider")) {
+  errors.push("CalculatorLayout must wrap modules with ModuleWorkspaceProvider + ModuleWorkspaceShell");
+}
 
 const F1 = [
   {
@@ -23,18 +28,12 @@ const F1 = [
   },
   {
     id: "bearings",
-    page: "src/app/products/bearings/page.tsx",
+    page: "src/app/products/bearings/selection/page.tsx",
     results: "src/components/machine/bearings/BearingResults.tsx",
   },
 ];
 
-const registryPath = path.join(root, "src/lib/design-workflows/designModeRegistry.ts");
-const registry = fs.readFileSync(registryPath, "utf8");
-
 for (const mod of F1) {
-  if (!registry.includes(`"${mod.id}"`) && !registry.includes(`'${mod.id}'`)) {
-    // designModeRegistry uses object keys — soft check via moduleDesignWorkflows or registry content
-  }
   const pagePath = path.join(root, mod.page);
   const resultsPath = path.join(root, mod.results);
   if (!fs.existsSync(pagePath)) {
@@ -51,24 +50,28 @@ for (const mod of F1) {
   if (!/CalculatorResultsShell|ExportableReport|CalculatorLayout/.test(page + results)) {
     errors.push(`${mod.id}: expected CalculatorLayout / CalculatorResultsShell / ExportableReport`);
   }
+  if (/import\s+WorkspaceChrome\b|<\s*WorkspaceChrome\b/.test(page) && mod.id === "beams") {
+    errors.push("beams: must not wrap with page-level WorkspaceChrome (use CalculatorLayout fleet shell)");
+  }
   if (mod.id === "beams") {
-    if (!page.includes("WorkspaceChrome")) {
-      errors.push("beams: WorkspaceChrome required for EDP-0/1 gold template");
-    }
     if (!page.includes("useLiveModuleSolve") && !page.includes("livePreview")) {
       errors.push("beams: live solve (useLiveModuleSolve or livePreview) required");
+    }
+    if (!page.includes("summary=")) {
+      errors.push("beams: Design Summary rail via CalculatorLayout summary prop required");
     }
   }
 }
 
-const contractPath = path.join(root, "src/lib/workspace/designWorkspaceContract.ts");
-if (!fs.existsSync(contractPath)) {
-  errors.push("missing DesignWorkspaceContract");
-}
-
-const edpDoc = path.join(root, "docs/Engineering-Decision-Platform-Roadmap.md");
-if (!fs.existsSync(edpDoc)) {
-  errors.push("missing docs/Engineering-Decision-Platform-Roadmap.md");
+for (const rel of [
+  "src/lib/workspace/designWorkspaceContract.ts",
+  "src/lib/workspace/workspaceRegistry.ts",
+  "src/lib/workspace/materialEvents.ts",
+  "docs/Engineering-Decision-Platform-Roadmap.md",
+]) {
+  if (!fs.existsSync(path.join(root, rel))) {
+    errors.push(`missing ${rel}`);
+  }
 }
 
 if (errors.length) {
@@ -77,4 +80,4 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log("validate-edp-phase1: F1 scorecard checks passed.");
+console.log("validate-edp-phase1: F1 scorecard + fleet workspace shell checks passed.");

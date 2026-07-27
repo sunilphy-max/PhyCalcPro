@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignCandidate";
@@ -18,18 +18,12 @@ import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
-import { materials, type Material } from "@/data/materials";
+import { materials } from "@/data/materials";
 import {
   getBeamApplicationPreset,
   type BeamApplicationId,
 } from "@/lib/structural/beams/applicationPresets";
 import { useBeamApplicationPreset } from "@/hooks/useApplicationPreset";
-import WorkspaceChrome from "@/components/workspace/WorkspaceChrome";
-import CalculatorKnowledgePanel from "@/components/calculator/CalculatorKnowledgePanel";
-import WorkspaceMaterialsPanel from "@/components/workspace/WorkspaceMaterialsPanel";
-import WorkspaceAiPanel from "@/components/workspace/WorkspaceAiPanel";
-import WorkspaceTeachPanel, { BEAM_TEACH_PROMPTS } from "@/components/workspace/WorkspaceTeachPanel";
-import WorkspaceReportPanel from "@/components/workspace/WorkspaceReportPanel";
 import EngineeringScene, { exportSceneManifest } from "@/components/workspace/EngineeringScene";
 import {
   exportDiagramDxf,
@@ -39,7 +33,6 @@ import CalculatorDesignSummary, {
   type DesignSummaryRow,
 } from "@/components/calculator/CalculatorDesignSummary";
 import ExplainDesignCard from "@/components/calculator/ExplainDesignCard";
-import { buildBeamWorkspaceContract } from "@/lib/workspace/designWorkspaceContract";
 import { useLiveModuleSolve } from "@/hooks/useLiveModuleSolve";
 import {
   appendRevision,
@@ -47,7 +40,16 @@ import {
   loadRevisions,
   type ProjectRevision,
 } from "@/lib/workspace/projectRevisions";
-import type { CopilotParams } from "@/lib/copilot/types";
+import {
+  useModuleWorkspaceOptional,
+  useRegisterWorkspaceMaterialApply,
+} from "@/contexts/ModuleWorkspaceContext";
+import { subscribeMaterialApply } from "@/lib/workspace/materialEvents";
+import { solveBeamEngine } from "@/lib/structural/beams/engine";
+import { useDesignCode } from "@/contexts/DesignCodeContext";
+import { attachBeamCalculationSpec } from "@/lib/standards";
+import { useDesignCodeUnits } from "@/hooks/useDesignCodeUnits";
+import type { CalculationSpec } from "@/lib/standards/types";
 
 type BeamProjectData = {
   length: number;
@@ -62,11 +64,6 @@ type BeamProjectData = {
   sectionDesignation?: string;
 };
 type BeamProject = LocalProject<BeamProjectData>;
-import { solveBeamEngine } from "@/lib/structural/beams/engine";
-import { useDesignCode } from "@/contexts/DesignCodeContext";
-import { attachBeamCalculationSpec } from "@/lib/standards";
-import { useDesignCodeUnits } from "@/hooks/useDesignCodeUnits";
-import type { CalculationSpec } from "@/lib/standards/types";
 
 const getNewLoadId = () =>
   typeof crypto !== "undefined" && crypto.randomUUID
@@ -83,6 +80,63 @@ const BEAM_UNIT_FIELD_KEYS = [
 ] as const;
 
 const DEFAULT_BEAM_MATERIAL = materials[0]!;
+
+const downloadText = (filename: string, content: string, mime: string) => {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+/**
+ * Runs inside CalculatorLayout's ModuleWorkspaceProvider so fleet hooks can
+ * register material apply, summary rows, and the live Model tab.
+ */
+function BeamFleetWorkspaceSync({
+  material,
+  setMaterial,
+  summaryRows,
+  revisions,
+  modelTab,
+}: {
+  material: string;
+  setMaterial: (name: string) => void;
+  summaryRows: DesignSummaryRow[];
+  revisions: ProjectRevision[];
+  modelTab: ReactNode;
+}) {
+  const workspace = useModuleWorkspaceOptional();
+
+  useRegisterWorkspaceMaterialApply((m) => setMaterial(m.name));
+
+  useEffect(() => {
+    return subscribeMaterialApply((detail) => {
+      setMaterial(detail.material.name);
+    });
+  }, [setMaterial]);
+
+  useEffect(() => {
+    workspace?.setSelectedMaterialName(material);
+  }, [workspace, material]);
+
+  useEffect(() => {
+    workspace?.setSummaryRows(summaryRows);
+  }, [workspace, summaryRows]);
+
+  useEffect(() => {
+    workspace?.setRevisions(revisions);
+  }, [workspace, revisions]);
+
+  useEffect(() => {
+    workspace?.setTabOverride("model", modelTab);
+    return () => workspace?.setTabOverride("model", null);
+  }, [workspace, modelTab]);
+
+  return null;
+}
 
 function BeamsPageContent() {
   // =========================
@@ -125,14 +179,13 @@ function BeamsPageContent() {
   const [livePreview, setLivePreview] = useState(true);
   const [supportLeft, setSupportLeft] = useState(0);
   const [supportRight, setSupportRight] = useState(5);
-  const [teachMode, setTeachMode] = useState<"student" | "professional">("student");
   const [revisions, setRevisions] = useState<ProjectRevision[]>(() =>
     loadRevisions("beam", "Beam Project")
   );
   const [engineerName, setEngineerName] = useState("");
 
   // =========================
-  // LOADS (STEP 6)
+  // LOADS
   // =========================
   const [loads, setLoads] = useState<Load[]>(() => [
     {
@@ -144,48 +197,48 @@ function BeamsPageContent() {
   ]);
 
   const addPointLoad = () => {
-  setLoads([
-    ...loads,
-    {
-      id: getNewLoadId(),
-      type: "point",
-      value: 500,
-      position: length / 2,
-    },
-  ]);
-};
+    setLoads([
+      ...loads,
+      {
+        id: getNewLoadId(),
+        type: "point",
+        value: 500,
+        position: length / 2,
+      },
+    ]);
+  };
 
- const addUDL = () => {
-  setLoads([
-    ...loads,
-    {
-      id: getNewLoadId(),
-      type: "udl",
-      value: 200,
-      start: 1,
-      end: 4,
-    },
-  ]);
-};
-const handleLoadDrag = (
-  id: string,
-  updates: Partial<Extract<Load, { type: "point" }>>
-) => {
-  setLoads((prevLoads) =>
-    prevLoads.map((load) => {
-      if (load.id !== id) return load;
+  const addUDL = () => {
+    setLoads([
+      ...loads,
+      {
+        id: getNewLoadId(),
+        type: "udl",
+        value: 200,
+        start: 1,
+        end: 4,
+      },
+    ]);
+  };
 
-      if (load.type === "point") {
-        return {
-          ...load,
-          ...updates,
-        };
-      }
+  const handleLoadDrag = (
+    id: string,
+    updates: Partial<Extract<Load, { type: "point" }>>
+  ) => {
+    setLoads((prevLoads) =>
+      prevLoads.map((load) => {
+        if (load.id !== id) return load;
+        if (load.type === "point") {
+          return {
+            ...load,
+            ...updates,
+          };
+        }
+        return load;
+      })
+    );
+  };
 
-      return load;
-    })
-  );
-};
   const updateLoad = (index: number, newLoad: Load) => {
     const updated = [...loads];
     updated[index] = newLoad;
@@ -219,6 +272,7 @@ const handleLoadDrag = (
   const [savedProjects, setSavedProjects] = useState<BeamProject[]>(() =>
     loadLocalProjects<BeamProjectData>("beam")
   );
+
   // =========================
   // SOLVER
   // =========================
@@ -239,7 +293,6 @@ const handleLoadDrag = (
 
   const designUserInputs = useMemo((): ModuleUserInputs => {
     const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
-    // Shared DesignTargetFields store SI; prefer those over local display-unit fallbacks.
     const allowableStressPa =
       designTargets.designMaxStressPa != null
         ? Number(designTargets.designMaxStressPa)
@@ -391,6 +444,7 @@ const handleLoadDrag = (
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
     }),
   });
+
   const runCheck = (sectionI = I, sectionC = c) => {
     const { normalized, raw, output: converted } = beamPipeline.run({
       length,
@@ -514,7 +568,6 @@ const handleLoadDrag = (
     enabled: livePreview && mode !== "design",
     input: liveInput,
     solve: () => {
-      // Side-effect solve via runCheck path — return a token for the hook
       runCheck();
       return true;
     },
@@ -578,82 +631,79 @@ const handleLoadDrag = (
   const explainBullets = useMemo(() => {
     if (!result?.applicationContext) return [];
     const ctx = result.applicationContext;
-    const bullets = [
+    return [
       `Governing application: ${ctx.label}.`,
       `Deflection limit ratio L/${ctx.deflectionLimitRatio} (${applicationPreset.id}).`,
       `Material ${material}: Fy ≈ ${Math.round((selectedMaterial.yieldStress ?? 0) / 1e6)} MPa.`,
     ];
-    if (teachMode === "professional" && result.calculationSpec?.standards?.length) {
-      bullets.push(
-        `Standards: ${result.calculationSpec.standards.map((s) => s.document).join(", ")}`
-      );
-    }
-    return bullets;
-  }, [result, material, selectedMaterial, applicationPreset, teachMode]);
+  }, [result, material, selectedMaterial, applicationPreset]);
 
-  const applyMaterial = (m: Material) => {
-    setMaterial(m.name);
-  };
-
-  const applyAiParams = (payload: {
-    params: CopilotParams;
-    startModuleId: string | null;
-    explanation: string;
-    source: "llm" | "deterministic";
-  }) => {
-    const p = payload.params;
-    if (p.length != null && p.length > 0.05) {
-      setLength(fromBase(p.length, "length", lengthUnit));
-    }
-    if (p.mass != null) {
-      const forceN = p.mass * 9.80665;
-      setForce(fromBase(forceN, "force", forceUnit));
-      setLoads((prev) => {
-        const point = prev.find((l) => l.type === "point");
-        if (!point || point.type !== "point") {
-          return [
-            {
-              id: getNewLoadId(),
-              type: "point" as const,
-              value: fromBase(forceN, "force", forceUnit),
-              position: length / 2,
-            },
-            ...prev,
-          ];
-        }
-        return prev.map((l) =>
-          l.id === point.id && l.type === "point"
-            ? { ...l, value: fromBase(forceN, "force", forceUnit) }
-            : l
-        );
-      });
-    } else if (p.force != null) {
-      setForce(fromBase(p.force, "force", forceUnit));
-    }
-  };
-
-  const downloadText = (filename: string, content: string, mime: string) => {
-    const blob = new Blob([content], { type: mime });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const workspaceContract = useMemo(
-    () =>
-      buildBeamWorkspaceContract({
-        calculationSpec: result?.calculationSpec,
-        materialBindings: { materialName: material, boundFields: ["E", "yieldStress"] },
-        aiContext: {
-          moduleId: "beams",
-          briefHint: `Steel beam span ${length} ${lengthUnit}`,
-          knownParams: { length: toBase(length, "length", lengthUnit) },
-        },
-      }),
-    [result?.calculationSpec, material, length, lengthUnit]
+  const modelTab = useMemo(
+    () => (
+      <div className="space-y-3">
+        <EngineeringScene
+          length={Math.max(toBase(length, "length", lengthUnit), 0.5)}
+          deflection={result?.deflection}
+          mode="beam"
+        />
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
+            onClick={() =>
+              downloadText(
+                "beam-schematic.svg",
+                exportDiagramSvgString({
+                  length: toBase(length, "length", lengthUnit),
+                  labels: [
+                    `Support: ${support}`,
+                    `Material: ${material}`,
+                    `Max δ: ${result?.maxDeflection ?? "—"} ${lengthUnit}`,
+                  ],
+                }),
+                "image/svg+xml"
+              )
+            }
+          >
+            Export SVG
+          </button>
+          <button
+            type="button"
+            className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
+            onClick={() =>
+              downloadText(
+                "beam-schematic.dxf",
+                exportDiagramDxf({
+                  length: toBase(length, "length", lengthUnit),
+                  title: `PhyCalcPro beam ${projectName}`,
+                }),
+                "application/dxf"
+              )
+            }
+          >
+            Export DXF
+          </button>
+          <button
+            type="button"
+            className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
+            onClick={() =>
+              downloadText(
+                "beam-scene.json",
+                exportSceneManifest({
+                  moduleId: "beams",
+                  length: toBase(length, "length", lengthUnit),
+                  deflection: result?.deflection,
+                }),
+                "application/json"
+              )
+            }
+          >
+            Export scene manifest
+          </button>
+        </div>
+      </div>
+    ),
+    [length, lengthUnit, result, support, material, projectName]
   );
 
   // =========================
@@ -708,12 +758,13 @@ const handleLoadDrag = (
   };
 
   // =========================
-  // UI
+  // UI — CalculatorLayout owns FLEET ModuleWorkspaceShell (no page-level WorkspaceChrome)
   // =========================
-  const calculator = (
+  return (
     <CalculatorLayout
       moduleId="beams"
       title="Beam Analysis Module"
+      summary={<CalculatorDesignSummary rows={summaryRows} committed={Boolean(result)} />}
       footer={
         <SavedProjectsFooter
           projects={savedProjects}
@@ -722,6 +773,13 @@ const handleLoadDrag = (
       }
       inputs={
         <div className="space-y-3">
+          <BeamFleetWorkspaceSync
+            material={material}
+            setMaterial={setMaterial}
+            summaryRows={summaryRows}
+            revisions={revisions}
+            modelTab={modelTab}
+          />
           <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
             <input
               type="checkbox"
@@ -792,7 +850,6 @@ const handleLoadDrag = (
             }
             setDesignMaxStress={setDesignMaxStress}
           />
-          <CalculatorDesignSummary rows={summaryRows} committed={Boolean(result)} />
           <ExplainDesignCard bullets={explainBullets} />
         </div>
       }
@@ -816,126 +873,6 @@ const handleLoadDrag = (
           }}
         />
       }
-    />
-  );
-
-  return (
-    <WorkspaceChrome
-      contract={workspaceContract}
-      calculator={calculator}
-      banner={
-        <p className="text-xs text-slate-500">
-          Beam Design Workspace — calculator, knowledge, materials, 3D model, report, and AI in one place.
-        </p>
-      }
-      tabs={{
-        knowledge: <CalculatorKnowledgePanel knowledgeSlug="beams" />,
-        materials: (
-          <WorkspaceMaterialsPanel selectedName={material} onApply={applyMaterial} />
-        ),
-        model: (
-          <div className="space-y-3">
-            <EngineeringScene
-              length={Math.max(toBase(length, "length", lengthUnit), 0.5)}
-              deflection={result?.deflection}
-              mode="beam"
-            />
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
-                onClick={() =>
-                  downloadText(
-                    "beam-schematic.svg",
-                    exportDiagramSvgString({
-                      length: toBase(length, "length", lengthUnit),
-                      labels: [
-                        `Support: ${support}`,
-                        `Material: ${material}`,
-                        `Max δ: ${result?.maxDeflection ?? "—"} ${lengthUnit}`,
-                      ],
-                    }),
-                    "image/svg+xml"
-                  )
-                }
-              >
-                Export SVG
-              </button>
-              <button
-                type="button"
-                className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
-                onClick={() =>
-                  downloadText(
-                    "beam-schematic.dxf",
-                    exportDiagramDxf({
-                      length: toBase(length, "length", lengthUnit),
-                      title: `PhyCalcPro beam ${projectName}`,
-                    }),
-                    "application/dxf"
-                  )
-                }
-              >
-                Export DXF
-              </button>
-              <button
-                type="button"
-                className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
-                onClick={() =>
-                  downloadText(
-                    "beam-scene.json",
-                    exportSceneManifest({
-                      moduleId: "beams",
-                      length: toBase(length, "length", lengthUnit),
-                      deflection: result?.deflection,
-                    }),
-                    "application/json"
-                  )
-                }
-              >
-                Export scene manifest
-              </button>
-            </div>
-          </div>
-        ),
-        report: (
-          <WorkspaceReportPanel
-            projectName={projectName}
-            engineer={engineerName}
-            summaryRows={summaryRows}
-            revisions={revisions}
-            onSaveRevision={(note) =>
-              setRevisions(
-                appendRevision(
-                  "beam",
-                  projectName,
-                  note,
-                  hashInputs({ length, loads, material, support }),
-                  engineerName || undefined
-                )
-              )
-            }
-            onExportPackage={() => {
-              // Trigger existing results export affordance — user also has Export on results shell
-              window.dispatchEvent(new CustomEvent("phycalcpro:export-report", { detail: { moduleId: "beams" } }));
-              calculate();
-            }}
-          />
-        ),
-        ai: (
-          <WorkspaceAiPanel
-            moduleId="beams"
-            defaultBrief={`Design a steel beam spanning ${length} ${lengthUnit}.`}
-            onApply={applyAiParams}
-          />
-        ),
-        teach: (
-          <WorkspaceTeachPanel
-            prompts={BEAM_TEACH_PROMPTS}
-            mode={teachMode}
-            onModeChange={setTeachMode}
-          />
-        ),
-      }}
     />
   );
 }

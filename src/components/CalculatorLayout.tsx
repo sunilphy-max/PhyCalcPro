@@ -16,6 +16,8 @@ import PowerTrainAssemblyBootstrap from "@/components/design-workflows/PowerTrai
 import { DesignWorkflowProvider } from "@/contexts/DesignWorkflowContext";
 import { PowerTrainAssemblyProvider, usePowerTrainAssemblyOptional } from "@/contexts/PowerTrainAssemblyContext";
 import { CalculatorReportProvider, useCalculatorReportOptional } from "@/contexts/CalculatorReportContext";
+import { ModuleWorkspaceProvider } from "@/contexts/ModuleWorkspaceContext";
+import ModuleWorkspaceShell from "@/components/workspace/ModuleWorkspaceShell";
 import { getModuleStandardProfile } from "@/lib/standards/moduleCatalog";
 import { getModuleDesignWorkflow } from "@/lib/design-workflows/moduleDesignWorkflows";
 import { stepIdForModule } from "@/lib/design-workflows/powerTrainAssembly";
@@ -25,6 +27,8 @@ import { calculatorSidebarClass, calculatorWorkspaceClass } from "@/components/c
 /**
  * Module layout: full-width inputs before first calculation; inputs left + results right after.
  * Optional `summary` renders a persistent sticky Design Summary rail on the right.
+ * When `moduleId` is set, wraps the module in fleet-wide Design Workspace chrome (Knowledge,
+ * Materials, Report, AI, Teach) unless `workspace={false}`.
  */
 type Props = {
   inputs?: ReactNode;
@@ -39,6 +43,8 @@ type Props = {
   moduleId?: string;
   /** Override automatic stage detection from CalculatorResultsShell. */
   hasResults?: boolean;
+  /** Opt out of Design Workspace chrome (rare). Default: enabled when moduleId is set. */
+  workspace?: boolean;
 };
 
 function CalculatorLayoutBody({
@@ -214,11 +220,24 @@ function CalculatorLayoutBody({
 }
 
 export default function CalculatorLayout(props: Props) {
+  const workspaceEnabled = props.workspace !== false && Boolean(props.moduleId);
+  const body = <CalculatorLayoutBody {...props} />;
+
   return (
     <PowerTrainAssemblyProvider>
       <DesignWorkflowProvider moduleId={props.moduleId}>
         <CalculatorReportProvider moduleId={props.moduleId}>
-          <CalculatorLayoutBody {...props} />
+          {props.moduleId && workspaceEnabled ? (
+            <ModuleWorkspaceProvider moduleId={props.moduleId} workspaceEnabled>
+              <Suspense fallback={body}>
+                <ModuleWorkspaceShell moduleId={props.moduleId} title={props.title}>
+                  {body}
+                </ModuleWorkspaceShell>
+              </Suspense>
+            </ModuleWorkspaceProvider>
+          ) : (
+            body
+          )}
         </CalculatorReportProvider>
       </DesignWorkflowProvider>
     </PowerTrainAssemblyProvider>

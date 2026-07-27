@@ -24,6 +24,9 @@ Shared components live in `src/components/calculator/`. See [AGENTS.md](../AGENT
 - **Single products nav** — only `src/app/products/layout.tsx` renders `ProductsCategoryBar` (category chip links on hub/landings; breadcrumb on modules).
 - **Category layouts** — passthrough wrappers only (no duplicate chrome).
 - **inputs / results** — two-column module chrome via `CalculatorLayout`; legacy `left/center/right` props are forbidden on product pages.
+- **Design Workspace (fleet)** — when `moduleId` is set, `CalculatorLayout` wraps the module in `ModuleWorkspaceProvider` + `ModuleWorkspaceShell` (Knowledge / Materials / Report / AI / Teach tabs). Opt out with `workspace={false}`. Do **not** wrap pages in a second `WorkspaceChrome`.
+- **Central materials** — `src/lib/workspace/materialEvents.ts` + Materials workspace tab + `?material=` deep links; `MaterialSelect` listens so catalog grades apply on any binding module. Registry: `workspaceRegistry.ts` / `modulesAcceptingCatalogMaterial()`.
+- **Design Summary rail** — prefer `CalculatorLayout` `summary={...}` (bearings / beams pattern) for live checklists.
 
 ## Units
 

@@ -57,3 +57,9 @@ A **Design Workspace** = calculator + knowledge + materials + interactive model 
 - [Homogenization-Roadmap.md](./Homogenization-Roadmap.md) — module UI contract
 - [validation-master-checklist.md](./validation-master-checklist.md) — engineer sign-off
 - [Launch-Plan.md](./Launch-Plan.md) — GTM / monetization phases
+
+## Fleet rollout status
+
+- **Workspace chrome:** enabled for all calculators via `CalculatorLayout` → `ModuleWorkspaceShell` (Knowledge, Materials, Report, AI, Teach; Model where registered).
+- **Materials:** centralized catalog + `materialEvents` bus; Materials DB deep-links every catalog-binding module; `?material=` works fleet-wide.
+- **Design Summary rail:** use `CalculatorLayout` `summary` prop (beams + bearings pattern).
