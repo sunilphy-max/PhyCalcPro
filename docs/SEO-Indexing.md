@@ -31,11 +31,23 @@ Do not add an opposing host redirect in [`next.config.ts`](../next.config.ts); c
 
 ## Canonicals
 
-Every indexable page emits an absolute `<link rel="canonical">` from [`buildPageMetadata`](../src/lib/seo/site.ts) (and a root fallback on `rootMetadata`). Example:
+Every indexable page emits an absolute `<link rel="canonical">` via [`buildPageMetadata`](../src/lib/seo/site.ts) (marketing pages, category landings, and calculator layouts). Example:
 
 `https://www.phycalcpro.com/products/structural/beams`
 
-After deploy, use Search Console **URL Inspection** and confirm “user-declared canonical” matches the www absolute URL. “Duplicate without user-selected canonical” typically clears after Google recrawls (days–weeks).
+Also enforced:
+
+| Rule | How |
+|------|-----|
+| No trailing slash | `trailingSlash: false` in [`next.config.ts`](../next.config.ts) → `/products/` **308** → `/products` |
+| www host | Vercel Domains: apex → `www.phycalcpro.com` (prefer permanent redirect) |
+| Absolute URLs | `NEXT_PUBLIC_APP_URL=https://www.phycalcpro.com` |
+
+After deploy, use Search Console **URL Inspection** and confirm “user-declared canonical” matches the www absolute URL. “Duplicate without user-selected canonical” typically clears after Google recrawls (days–weeks). Request indexing on the preferred URL if the report still shows an old duplicate pair.
+
+### Verification token pitfall
+
+`NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` must be **only** the token string (e.g. `BbqwgmEAk…`), not the full HTML `<meta …>` tag. Pasting the whole tag breaks the meta and can confuse Search Console verification.
 
 ## Register and submit sitemap
 

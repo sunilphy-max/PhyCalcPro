@@ -74,10 +74,31 @@ export function buildPageMetadata({
   };
 }
 
-const googleSiteVerification =
-  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || undefined;
-const bingSiteVerification =
-  process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION?.trim() || undefined;
+/** Accept raw token or a pasted full `<meta ... content="TOKEN">` snippet. */
+function verificationToken(raw: string | undefined): string | undefined {
+  const value = raw?.trim();
+  if (!value) return undefined;
+  const decoded = value
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/&amp;/gi, "&");
+  const fromMeta = decoded.match(/\bcontent\s*=\s*["']([^"']+)["']/i)?.[1]?.trim();
+  if (fromMeta) return fromMeta;
+  // Reject accidental full-tag paste without a parseable content= attribute.
+  if (/^</.test(decoded) || /google-site-verification|msvalidate/i.test(decoded)) {
+    return undefined;
+  }
+  return decoded;
+}
+
+const googleSiteVerification = verificationToken(
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+);
+const bingSiteVerification = verificationToken(
+  process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+);
 
 const siteVerification: NonNullable<Metadata["verification"]> = {
   ...(googleSiteVerification ? { google: googleSiteVerification } : {}),
@@ -93,9 +114,8 @@ export const rootMetadata: Metadata = {
     template: titleTemplate,
   },
   description: defaultDescription,
-  alternates: {
-    canonical: SITE_URL,
-  },
+  // Do not set a site-wide canonical here — child routes that omit
+  // buildPageMetadata would incorrectly inherit the homepage URL.
   icons: {
     icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
     apple: "/phycalcpro-logo.png",

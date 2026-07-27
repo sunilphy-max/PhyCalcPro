@@ -4,6 +4,8 @@ import { withSentryConfig } from "@sentry/nextjs";
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["10.0.0.59"],
   poweredByHeader: false,
+  // Prefer /products over /products/ (Next also 308-redirects trailing slashes by default).
+  trailingSlash: false,
   async redirects() {
     return [
       // Host canonicalization (www ↔ apex) must be done ONLY in Vercel Domains.
