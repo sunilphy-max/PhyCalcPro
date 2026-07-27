@@ -1,6 +1,8 @@
 # Product roadmap — remaining gaps
 
-Tracking items from the expansion roadmap (CAD output excluded by design).
+Tracking items from the expansion roadmap. Product vision and phase ladder: [Engineering-Decision-Platform-Roadmap.md](./Engineering-Decision-Platform-Roadmap.md) (EDP-0…EDP-7).
+
+**CAD / 3D:** Schematic CAD visualization and export (SVG/DXF/glTF) are **in scope under EDP-4** — not manufacturing detailing or CAM.
 
 ## Completed (this session)
 
@@ -49,6 +51,7 @@ Tracking items from the expansion roadmap (CAD output excluded by design).
 | Micropitting | US AGMA implementation marked planned |
 | Benchmark coverage | Remaining modules without JSON fixtures; bearings vendor gold |
 
-## CAD
+## CAD / 3D (EDP-4)
 
-- Intentionally excluded (no 2D/3D export, no gear tooth CAD).
+- **In scope:** schematic 2D SVG/DXF export, view-only 3D scenes (beams/shafts), glTF attachment export.
+- **Out of scope:** manufacturing detailing, gear-tooth CAD, CAM, full solid modeling.

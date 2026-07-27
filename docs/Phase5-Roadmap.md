@@ -50,10 +50,10 @@ Without Supabase, the app works with browser-local projects (`/projects`) and lo
 
 ## What remains on the product roadmap
 
-See [Product-Roadmap-Gaps.md](./Product-Roadmap-Gaps.md) and [Modules-Technical-Reference.md](./Modules-Technical-Reference.md) §13:
+See [Product-Roadmap-Gaps.md](./Product-Roadmap-Gaps.md), [Engineering-Decision-Platform-Roadmap.md](./Engineering-Decision-Platform-Roadmap.md) (EDP-0…EDP-7), and [Modules-Technical-Reference.md](./Modules-Technical-Reference.md) §13:
 
 - Full multi-bolt VDI 2230 system FEA
 - Gear scuffing / micropitting (ISO 6336-20/22)
 - Shaft DIN 743 / AGMA fatigue as formal code checks
-- CAD/SVG/DXF export for geometry modules
+- CAD/SVG/DXF/glTF schematic export (in progress under EDP-4)
 - Design-alternative comparison with weight/cost scoring

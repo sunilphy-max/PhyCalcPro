@@ -7,6 +7,8 @@
  * kg/m³ for density.
  */
 
+import { materialsExtra } from "@/data/materialsExtra";
+
 export type MaterialCategory =
   | "structural-steel"
   | "alloy-steel"
@@ -21,6 +23,9 @@ export type MaterialCategory =
   | "copper-alloy"
   | "polymer"
   | "other";
+
+export type MaterialCostBand = "low" | "moderate" | "high" | "premium";
+export type MaterialCorrosionClass = "poor" | "fair" | "good" | "excellent";
 
 export type Material = {
   /** Stable slug for storage across renames */
@@ -54,6 +59,16 @@ export type Material = {
   bearingStrength?: number;
   /** Coefficient of thermal expansion (1/K) */
   thermalExpansion?: number;
+  /** Relative cost band for selection UX (EDP-3) */
+  costBand?: MaterialCostBand;
+  /** Relative corrosion resistance class */
+  corrosionClass?: MaterialCorrosionClass;
+  /** Machinability index (AISI 1212 ≈ 100) where known */
+  machinabilityIndex?: number;
+  /** Optional fatigue curve identifier for future S-N binding */
+  fatigueCurveId?: string;
+  /** Thermal conductivity (W/(m·K)) when published */
+  thermalConductivity?: number;
 };
 
 const steel = { E: 210e9, density: 7850, poisson: 0.3, thermalExpansion: 12e-6 } as const;
@@ -66,7 +81,7 @@ function rivetFromSteel(yieldStress: number, ultimateStrength: number) {
   };
 }
 
-export const materials: Material[] = [
+const materialsCore: Material[] = [
   // ===================== Structural steels (EN 10025 / ASTM) =====================
   { id: "s235jr", name: "S235JR", category: "structural-steel", standard: "EN 10025-2", ...steel, ...weldSteel, ...rivetFromSteel(235e6, 360e6), yieldStress: 235e6, ultimateStrength: 360e6 },
   { id: "s275jr", name: "S275JR", category: "structural-steel", standard: "EN 10025-2", ...steel, ...weldSteel, ...rivetFromSteel(275e6, 430e6), yieldStress: 275e6, ultimateStrength: 430e6 },
@@ -167,9 +182,44 @@ export const materials: Material[] = [
   { id: "poly-uhmwpe", name: "UHMW-PE", category: "polymer", E: 0.7e9, density: 930, poisson: 0.45, thermalExpansion: 200e-6, yieldStress: 22e6, ultimateStrength: 48e6 },
 
   // ===================== Other =====================
-  { id: "concrete-c30", name: "Concrete C30/37", category: "other", standard: "EN 1992", E: 33e9, density: 2400, poisson: 0.2, thermalExpansion: 10e-6, yieldStress: 30e6, ultimateStrength: 38e6 },
-  { id: "glulam-gl24h", name: "Glulam GL24h", category: "other", standard: "EN 14080", E: 11.5e9, density: 420, poisson: 0.3, thermalExpansion: 5e-6, yieldStress: 24e6, ultimateStrength: 24e6 },
+  { id: "concrete-c30", name: "Concrete C30/37", category: "other", standard: "EN 1992", E: 33e9, density: 2400, poisson: 0.2, thermalExpansion: 10e-6, yieldStress: 30e6, ultimateStrength: 38e6, costBand: "low", corrosionClass: "fair" },
+  { id: "glulam-gl24h", name: "Glulam GL24h", category: "other", standard: "EN 14080", E: 11.5e9, density: 420, poisson: 0.3, thermalExpansion: 5e-6, yieldStress: 24e6, ultimateStrength: 24e6, costBand: "moderate", corrosionClass: "fair" },
+
+  // ===================== EDP-3 densification (steels / Al / Ti / Cu / polymer) =====================
+  { id: "astm-a588", name: "ASTM A588 (weathering)", category: "structural-steel", standard: "ASTM A588", E: 200e9, density: 7850, poisson: 0.3, thermalExpansion: 12e-6, ...weldSteel, ...rivetFromSteel(345e6, 485e6), yieldStress: 345e6, ultimateStrength: 485e6, costBand: "moderate", corrosionClass: "good", machinabilityIndex: 55 },
+  { id: "astm-a709-50", name: "ASTM A709 Gr.50", category: "structural-steel", standard: "ASTM A709", E: 200e9, density: 7850, poisson: 0.3, thermalExpansion: 12e-6, ...weldSteel, ...rivetFromSteel(345e6, 450e6), yieldStress: 345e6, ultimateStrength: 450e6, costBand: "moderate", corrosionClass: "fair", machinabilityIndex: 55 },
+  { id: "astm-a913-65", name: "ASTM A913 Gr.65", category: "structural-steel", standard: "ASTM A913", E: 200e9, density: 7850, poisson: 0.3, thermalExpansion: 12e-6, ...weldSteel, ...rivetFromSteel(450e6, 550e6), yieldStress: 450e6, ultimateStrength: 550e6, costBand: "high", corrosionClass: "fair", machinabilityIndex: 45 },
+  { id: "en-s690ql", name: "S690QL", category: "structural-steel", standard: "EN 10025-6", ...steel, ...weldSteel, ...rivetFromSteel(690e6, 770e6), yieldStress: 690e6, ultimateStrength: 770e6, costBand: "high", corrosionClass: "fair", machinabilityIndex: 40 },
+  { id: "aisi-4140-ann", name: "AISI 4140 annealed", category: "alloy-steel", standard: "ASTM A29", ...steel, ...weldSteel, ...rivetFromSteel(415e6, 655e6), yieldStress: 415e6, ultimateStrength: 655e6, hardnessHB: 197, enduranceLimit: 310e6, costBand: "moderate", corrosionClass: "fair", machinabilityIndex: 66, fatigueCurveId: "steel-qt-generic" },
+  { id: "aisi-8620", name: "AISI 8620 carburizing", category: "gear-steel", standard: "ASTM A29", ...steel, yieldStress: 385e6, ultimateStrength: 635e6, hardnessHB: 150, costBand: "moderate", corrosionClass: "fair", machinabilityIndex: 60 },
+  { id: "ss-2205-pipe", name: "Duplex 2205 (pipe)", category: "stainless-steel", standard: "ASTM A790", E: 200e9, density: 7800, poisson: 0.3, thermalExpansion: 13e-6, ...rivetFromSteel(450e6, 655e6), yieldStress: 450e6, ultimateStrength: 655e6, costBand: "high", corrosionClass: "excellent", machinabilityIndex: 30 },
+  { id: "ss-904l", name: "904L", category: "stainless-steel", standard: "EN 10088-2", E: 195e9, density: 8000, poisson: 0.3, thermalExpansion: 15e-6, ...rivetFromSteel(220e6, 490e6), yieldStress: 220e6, ultimateStrength: 490e6, costBand: "premium", corrosionClass: "excellent", machinabilityIndex: 25 },
+  { id: "al-6063-t6", name: "AW-6063 T6", category: "aluminum", standard: "ASTM B221", E: 68.9e9, density: 2700, poisson: 0.33, thermalExpansion: 23.4e-6, ...rivetFromSteel(214e6, 241e6), yieldStress: 214e6, ultimateStrength: 241e6, costBand: "moderate", corrosionClass: "good", machinabilityIndex: 90, thermalConductivity: 200 },
+  { id: "al-7050-t7451", name: "AW-7050 T7451", category: "aluminum", standard: "ASTM B209", E: 71.7e9, density: 2830, poisson: 0.33, thermalExpansion: 23.5e-6, ...rivetFromSteel(470e6, 525e6), yieldStress: 470e6, ultimateStrength: 525e6, costBand: "premium", corrosionClass: "fair", machinabilityIndex: 70, enduranceLimit: 150e6 },
+  { id: "al-5086-h116", name: "AW-5086 H116", category: "aluminum", standard: "ASTM B209", E: 71e9, density: 2660, poisson: 0.33, thermalExpansion: 23.8e-6, ...rivetFromSteel(207e6, 290e6), yieldStress: 207e6, ultimateStrength: 290e6, costBand: "moderate", corrosionClass: "excellent", machinabilityIndex: 80 },
+  { id: "ti-grade-5-eli", name: "Ti-6Al-4V ELI", category: "titanium", standard: "ASTM F136", E: 114e9, density: 4430, poisson: 0.34, thermalExpansion: 8.6e-6, yieldStress: 795e6, ultimateStrength: 860e6, costBand: "premium", corrosionClass: "excellent", machinabilityIndex: 22 },
+  { id: "ti-grade-23", name: "Ti Grade 23", category: "titanium", standard: "ASTM B265", E: 114e9, density: 4430, poisson: 0.34, thermalExpansion: 8.6e-6, yieldStress: 760e6, ultimateStrength: 825e6, costBand: "premium", corrosionClass: "excellent", machinabilityIndex: 22 },
+  { id: "cu-c11000", name: "C11000 ETP copper", category: "copper-alloy", standard: "ASTM B152", E: 117e9, density: 8940, poisson: 0.34, thermalExpansion: 17e-6, ...rivetFromSteel(69e6, 220e6), yieldStress: 69e6, ultimateStrength: 220e6, costBand: "high", corrosionClass: "good", machinabilityIndex: 20, thermalConductivity: 391 },
+  { id: "cu-c36000", name: "C36000 free-cutting brass", category: "copper-alloy", standard: "ASTM B16", E: 97e9, density: 8500, poisson: 0.34, thermalExpansion: 20.5e-6, ...rivetFromSteel(125e6, 340e6), yieldStress: 125e6, ultimateStrength: 340e6, costBand: "moderate", corrosionClass: "good", machinabilityIndex: 100 },
+  { id: "cu-c63000", name: "C63000 aluminum bronze", category: "copper-alloy", standard: "ASTM B150", E: 117e9, density: 7580, poisson: 0.32, thermalExpansion: 16e-6, ...rivetFromSteel(345e6, 620e6), yieldStress: 345e6, ultimateStrength: 620e6, hardnessHB: 185, costBand: "high", corrosionClass: "excellent", machinabilityIndex: 20 },
+  { id: "poly-nylon-6", name: "PA6 (nylon 6)", category: "polymer", E: 2.8e9, density: 1130, poisson: 0.39, thermalExpansion: 80e-6, yieldStress: 70e6, ultimateStrength: 75e6, costBand: "low", corrosionClass: "good", machinabilityIndex: 80 },
+  { id: "poly-pps", name: "PPS", category: "polymer", E: 4.0e9, density: 1350, poisson: 0.38, thermalExpansion: 50e-6, yieldStress: 90e6, ultimateStrength: 95e6, costBand: "high", corrosionClass: "excellent", machinabilityIndex: 60 },
+  { id: "poly-pvdf", name: "PVDF", category: "polymer", E: 2.0e9, density: 1780, poisson: 0.38, thermalExpansion: 120e-6, yieldStress: 50e6, ultimateStrength: 55e6, costBand: "high", corrosionClass: "excellent", machinabilityIndex: 50 },
+  { id: "comp-cfrp-ud", name: "CFRP UD epoxy (0° lamina)", category: "other", standard: "indicative", E: 135e9, density: 1580, poisson: 0.3, thermalExpansion: 0.5e-6, yieldStress: 1500e6, ultimateStrength: 1800e6, costBand: "premium", corrosionClass: "excellent", machinabilityIndex: 10 },
+  { id: "comp-gfrp-woven", name: "GFRP woven epoxy", category: "other", standard: "indicative", E: 25e9, density: 1850, poisson: 0.28, thermalExpansion: 10e-6, yieldStress: 350e6, ultimateStrength: 400e6, costBand: "high", corrosionClass: "good", machinabilityIndex: 30 },
+  { id: "astm-a106-b", name: "ASTM A106 Gr.B", category: "structural-steel", standard: "ASTM A106", E: 200e9, density: 7850, poisson: 0.3, thermalExpansion: 12e-6, ...weldSteel, ...rivetFromSteel(240e6, 415e6), yieldStress: 240e6, ultimateStrength: 415e6, costBand: "low", corrosionClass: "fair", machinabilityIndex: 60 },
+  { id: "astm-a53-b", name: "ASTM A53 Gr.B", category: "structural-steel", standard: "ASTM A53", E: 200e9, density: 7850, poisson: 0.3, thermalExpansion: 12e-6, ...weldSteel, ...rivetFromSteel(240e6, 415e6), yieldStress: 240e6, ultimateStrength: 415e6, costBand: "low", corrosionClass: "fair", machinabilityIndex: 60 },
+  { id: "en-p355nh", name: "P355NH", category: "structural-steel", standard: "EN 10028-3", ...steel, ...weldSteel, ...rivetFromSteel(355e6, 510e6), yieldStress: 355e6, ultimateStrength: 510e6, costBand: "moderate", corrosionClass: "fair", machinabilityIndex: 50 },
+  { id: "aisi-304l", name: "AISI 304L plate", category: "stainless-steel", standard: "ASTM A240", E: 193e9, density: 8000, poisson: 0.29, thermalExpansion: 17e-6, ...rivetFromSteel(170e6, 485e6), yieldStress: 170e6, ultimateStrength: 485e6, costBand: "high", corrosionClass: "excellent", machinabilityIndex: 45 },
+  { id: "aisi-316l", name: "AISI 316L plate", category: "stainless-steel", standard: "ASTM A240", E: 193e9, density: 8000, poisson: 0.29, thermalExpansion: 16e-6, ...rivetFromSteel(170e6, 485e6), yieldStress: 170e6, ultimateStrength: 485e6, costBand: "high", corrosionClass: "excellent", machinabilityIndex: 45 },
+  { id: "al-1100-h14", name: "AW-1100 H14", category: "aluminum", standard: "ASTM B209", E: 69e9, density: 2710, poisson: 0.33, thermalExpansion: 23.6e-6, ...rivetFromSteel(95e6, 110e6), yieldStress: 95e6, ultimateStrength: 110e6, costBand: "low", corrosionClass: "good", machinabilityIndex: 95, thermalConductivity: 222 },
+  { id: "al-2014-t6", name: "AW-2014 T6", category: "aluminum", standard: "ASTM B209", E: 73.1e9, density: 2800, poisson: 0.33, thermalExpansion: 23e-6, ...rivetFromSteel(415e6, 485e6), yieldStress: 415e6, ultimateStrength: 485e6, costBand: "high", corrosionClass: "fair", machinabilityIndex: 70 },
+  { id: "spring-17-7ph", name: "17-7PH spring temper", category: "spring-wire", standard: "ASTM A313", E: 204e9, G: 76e9, density: 7800, poisson: 0.3, yieldStress: 1400e6, ultimateStrength: 1650e6, costBand: "high", corrosionClass: "good", machinabilityIndex: 40 },
+  { id: "cast-gjl-300", name: "EN-GJL-300", category: "cast-iron", standard: "EN 1561", E: 125e9, density: 7250, poisson: 0.26, thermalExpansion: 10.5e-6, yieldStress: 195e6, ultimateStrength: 300e6, hardnessHB: 230, costBand: "low", corrosionClass: "fair", machinabilityIndex: 70 },
+  { id: "cast-gjs-700", name: "EN-GJS-700-2", category: "cast-iron", standard: "EN 1563", E: 176e9, density: 7200, poisson: 0.275, thermalExpansion: 11e-6, yieldStress: 420e6, ultimateStrength: 700e6, hardnessHB: 250, costBand: "moderate", corrosionClass: "fair", machinabilityIndex: 55 },
 ];
+
+export const materials: Material[] = [...materialsCore, ...materialsExtra];
 
 export const materialCategoryLabels: Record<MaterialCategory, string> = {
   "structural-steel": "Structural steel",

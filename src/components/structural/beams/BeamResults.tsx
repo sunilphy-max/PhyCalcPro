@@ -31,6 +31,8 @@ type Props = {
     id: string,
     updates: Partial<Extract<Load, { type: "point" }>>
   ) => void;
+  supportPositions?: { id: string; x: number }[];
+  onSupportDrag?: (id: string, x: number) => void;
 };
 
 export default function BeamResults({
@@ -42,6 +44,8 @@ export default function BeamResults({
   applicationContext,
   workflowMode,
   onLoadDrag,
+  supportPositions,
+  onSupportDrag,
 }: Props) {
   return (
     <CalculatorResultsShell
@@ -78,6 +82,8 @@ export default function BeamResults({
           applicationContext={applicationContext ?? result.applicationContext}
           workflowMode={workflowMode}
           onLoadDrag={onLoadDrag}
+          supportPositions={supportPositions}
+          onSupportDrag={onSupportDrag}
         />
       ) : null}
     </CalculatorResultsShell>

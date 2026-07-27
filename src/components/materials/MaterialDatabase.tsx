@@ -92,6 +92,11 @@ export default function MaterialDatabase({ highlightMaterial, querySeed }: Props
                 <span>ν = {material.poisson}</span>
                 {material.enduranceLimit ? <span>Se = {mpa(material.enduranceLimit)}</span> : null}
                 {material.hardnessHB ? <span>{material.hardnessHB} HB</span> : null}
+                {material.costBand ? <span>Cost: {material.costBand}</span> : null}
+                {material.corrosionClass ? <span>Corrosion: {material.corrosionClass}</span> : null}
+                {material.machinabilityIndex != null ? (
+                  <span>Machinability: {material.machinabilityIndex}</span>
+                ) : null}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link

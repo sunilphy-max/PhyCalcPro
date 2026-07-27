@@ -12,6 +12,7 @@ const allNavigationItems = [
   { href: "/", label: "Home" },
   { href: "/products", label: "Products" },
   { href: "/copilot", label: "Copilot" },
+  { href: "/learn", label: "Learn" },
   { href: "/projects", label: "Projects" },
   { href: "/pricing", label: "Pricing", monetizationOnly: true },
   { href: "/status", label: "Quality" },

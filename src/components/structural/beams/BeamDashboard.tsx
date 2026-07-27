@@ -42,6 +42,8 @@ type Props = {
     id: string,
     updates: Partial<Extract<Load, { type: "point" }>>
   ) => void;
+  supportPositions?: { id: string; x: number }[];
+  onSupportDrag?: (id: string, x: number) => void;
 };
 
 export default function BeamDashboard({
@@ -54,6 +56,8 @@ export default function BeamDashboard({
   applicationContext,
   workflowMode,
   onLoadDrag,
+  supportPositions,
+  onSupportDrag,
   units = { length: "m", force: "N", moment: "N·m", stress: "Pa" },
 }: Props) {
   const [probeX, setProbeX] = useState<number | null>(null);
@@ -94,10 +98,13 @@ export default function BeamDashboard({
             length={length}
             support={support}
             onLoadDrag={onLoadDrag}
+            supportPositions={supportPositions}
+            onSupportDrag={onSupportDrag}
             probeX={probeX}
             setProbeX={setProbeX}
             xPositions={result.x}
             deflection={result.deflection}
+            animateDeflection
           />
         ),
       },

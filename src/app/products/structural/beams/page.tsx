@@ -18,12 +18,36 @@ import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
-import { materials } from "@/data/materials";
+import { materials, type Material } from "@/data/materials";
 import {
   getBeamApplicationPreset,
   type BeamApplicationId,
 } from "@/lib/structural/beams/applicationPresets";
 import { useBeamApplicationPreset } from "@/hooks/useApplicationPreset";
+import WorkspaceChrome from "@/components/workspace/WorkspaceChrome";
+import CalculatorKnowledgePanel from "@/components/calculator/CalculatorKnowledgePanel";
+import WorkspaceMaterialsPanel from "@/components/workspace/WorkspaceMaterialsPanel";
+import WorkspaceAiPanel from "@/components/workspace/WorkspaceAiPanel";
+import WorkspaceTeachPanel, { BEAM_TEACH_PROMPTS } from "@/components/workspace/WorkspaceTeachPanel";
+import WorkspaceReportPanel from "@/components/workspace/WorkspaceReportPanel";
+import EngineeringScene, { exportSceneManifest } from "@/components/workspace/EngineeringScene";
+import {
+  exportDiagramDxf,
+  exportDiagramSvgString,
+} from "@/components/workspace/InteractiveDiagramKit";
+import CalculatorDesignSummary, {
+  type DesignSummaryRow,
+} from "@/components/calculator/CalculatorDesignSummary";
+import ExplainDesignCard from "@/components/calculator/ExplainDesignCard";
+import { buildBeamWorkspaceContract } from "@/lib/workspace/designWorkspaceContract";
+import { useLiveModuleSolve } from "@/hooks/useLiveModuleSolve";
+import {
+  appendRevision,
+  hashInputs,
+  loadRevisions,
+  type ProjectRevision,
+} from "@/lib/workspace/projectRevisions";
+import type { CopilotParams } from "@/lib/copilot/types";
 
 type BeamProjectData = {
   length: number;
@@ -98,6 +122,14 @@ function BeamsPageContent() {
   const [momentUnit, setMomentUnit] = useState("N·m");
   const [stressUnit, setStressUnit] = useState("Pa");
   const [meshSegments, setMeshSegments] = useState(40);
+  const [livePreview, setLivePreview] = useState(true);
+  const [supportLeft, setSupportLeft] = useState(0);
+  const [supportRight, setSupportRight] = useState(5);
+  const [teachMode, setTeachMode] = useState<"student" | "professional">("student");
+  const [revisions, setRevisions] = useState<ProjectRevision[]>(() =>
+    loadRevisions("beam", "Beam Project")
+  );
+  const [engineerName, setEngineerName] = useState("");
 
   // =========================
   // LOADS (STEP 6)
@@ -467,6 +499,163 @@ const handleLoadDrag = (
     runCheck();
   };
 
+  // Keep support handles in sync when span changes
+  useEffect(() => {
+    setSupportLeft(0);
+    setSupportRight(length);
+  }, [length]);
+
+  const liveInput = useMemo(
+    () => ({ length, I, c, support, meshSegments, loads, material, designCode }),
+    [length, I, c, support, meshSegments, loads, material, designCode]
+  );
+
+  useLiveModuleSolve({
+    enabled: livePreview && mode !== "design",
+    input: liveInput,
+    solve: () => {
+      // Side-effect solve via runCheck path — return a token for the hook
+      runCheck();
+      return true;
+    },
+    onResult: () => {},
+    settleMs: 120,
+  });
+
+  const supportPositions =
+    support === "simply_supported"
+      ? [
+          { id: "left", x: supportLeft },
+          { id: "right", x: supportRight },
+        ]
+      : support === "cantilever"
+        ? [{ id: "left", x: supportLeft }]
+        : [
+            { id: "left", x: supportLeft },
+            { id: "right", x: supportRight },
+          ];
+
+  const handleSupportDrag = (id: string, x: number) => {
+    if (id === "left") setSupportLeft(Math.min(x, supportRight - length * 0.05));
+    if (id === "right") setSupportRight(Math.max(x, supportLeft + length * 0.05));
+  };
+
+  const summaryRows: DesignSummaryRow[] = useMemo(() => {
+    if (!result?.applicationContext) {
+      return [
+        { label: "Status", value: "Awaiting solve", status: "neutral" },
+        { label: "Material", value: material, status: "neutral" },
+        { label: "Span", value: `${length} ${lengthUnit}`, status: "neutral" },
+      ];
+    }
+    const ctx = result.applicationContext;
+    const stressOk = (ctx.stressUtilization ?? 0) <= 1;
+    const deflOk = (ctx.deflectionUtilization ?? 0) <= 1;
+    return [
+      {
+        label: "Stress utilization",
+        value: `${((ctx.stressUtilization ?? 0) * 100).toFixed(1)}%`,
+        status: stressOk ? "ok" : "fail",
+      },
+      {
+        label: "Deflection utilization",
+        value: `${((ctx.deflectionUtilization ?? 0) * 100).toFixed(1)}%`,
+        status: deflOk ? "ok" : "fail",
+      },
+      {
+        label: "Max moment",
+        value: `${result.maxMoment.toPrecision(4)} ${momentUnit}`,
+        status: "neutral",
+      },
+      {
+        label: "Material",
+        value: material,
+        status: "neutral",
+      },
+    ];
+  }, [result, material, length, lengthUnit, momentUnit]);
+
+  const explainBullets = useMemo(() => {
+    if (!result?.applicationContext) return [];
+    const ctx = result.applicationContext;
+    const bullets = [
+      `Governing application: ${ctx.label}.`,
+      `Deflection limit ratio L/${ctx.deflectionLimitRatio} (${applicationPreset.id}).`,
+      `Material ${material}: Fy ≈ ${Math.round((selectedMaterial.yieldStress ?? 0) / 1e6)} MPa.`,
+    ];
+    if (teachMode === "professional" && result.calculationSpec?.standards?.length) {
+      bullets.push(
+        `Standards: ${result.calculationSpec.standards.map((s) => s.document).join(", ")}`
+      );
+    }
+    return bullets;
+  }, [result, material, selectedMaterial, applicationPreset, teachMode]);
+
+  const applyMaterial = (m: Material) => {
+    setMaterial(m.name);
+  };
+
+  const applyAiParams = (payload: {
+    params: CopilotParams;
+    startModuleId: string | null;
+    explanation: string;
+    source: "llm" | "deterministic";
+  }) => {
+    const p = payload.params;
+    if (p.length != null && p.length > 0.05) {
+      setLength(fromBase(p.length, "length", lengthUnit));
+    }
+    if (p.mass != null) {
+      const forceN = p.mass * 9.80665;
+      setForce(fromBase(forceN, "force", forceUnit));
+      setLoads((prev) => {
+        const point = prev.find((l) => l.type === "point");
+        if (!point || point.type !== "point") {
+          return [
+            {
+              id: getNewLoadId(),
+              type: "point" as const,
+              value: fromBase(forceN, "force", forceUnit),
+              position: length / 2,
+            },
+            ...prev,
+          ];
+        }
+        return prev.map((l) =>
+          l.id === point.id && l.type === "point"
+            ? { ...l, value: fromBase(forceN, "force", forceUnit) }
+            : l
+        );
+      });
+    } else if (p.force != null) {
+      setForce(fromBase(p.force, "force", forceUnit));
+    }
+  };
+
+  const downloadText = (filename: string, content: string, mime: string) => {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const workspaceContract = useMemo(
+    () =>
+      buildBeamWorkspaceContract({
+        calculationSpec: result?.calculationSpec,
+        materialBindings: { materialName: material, boundFields: ["E", "yieldStress"] },
+        aiContext: {
+          moduleId: "beams",
+          briefHint: `Steel beam span ${length} ${lengthUnit}`,
+          knownParams: { length: toBase(length, "length", lengthUnit) },
+        },
+      }),
+    [result?.calculationSpec, material, length, lengthUnit]
+  );
+
   // =========================
   // SAVE
   // =========================
@@ -487,6 +676,15 @@ const handleLoadDrag = (
     });
 
     setSavedProjects(projects);
+    setRevisions(
+      appendRevision(
+        "beam",
+        projectName,
+        "Saved project",
+        hashInputs({ length, force, loads, material, support }),
+        engineerName || undefined
+      )
+    );
     setSaving(false);
   };
 
@@ -512,7 +710,7 @@ const handleLoadDrag = (
   // =========================
   // UI
   // =========================
-  return (
+  const calculator = (
     <CalculatorLayout
       moduleId="beams"
       title="Beam Analysis Module"
@@ -523,7 +721,23 @@ const handleLoadDrag = (
         />
       }
       inputs={
-        <BeamInputs
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={livePreview}
+              onChange={(e) => setLivePreview(e.target.checked)}
+            />
+            Live preview (deferred solve)
+          </label>
+          <input
+            type="text"
+            value={engineerName}
+            onChange={(e) => setEngineerName(e.target.value)}
+            placeholder="Engineer (for reports)"
+            className="w-full rounded border border-slate-200 px-2 py-1 text-xs dark:border-slate-600 dark:bg-slate-900"
+          />
+          <BeamInputs
             projectName={projectName}
             setProjectName={setProjectName}
             length={length}
@@ -578,15 +792,20 @@ const handleLoadDrag = (
             }
             setDesignMaxStress={setDesignMaxStress}
           />
+          <CalculatorDesignSummary rows={summaryRows} committed={Boolean(result)} />
+          <ExplainDesignCard bullets={explainBullets} />
+        </div>
       }
       results={
         <BeamResults
-          key={result ? JSON.stringify(result) : "empty"}
+          key={result ? `${result.maxMoment}-${result.maxDeflection}` : "empty"}
           result={result}
           length={length}
           support={support}
           loads={loads}
           onLoadDrag={handleLoadDrag}
+          supportPositions={supportPositions}
+          onSupportDrag={handleSupportDrag}
           applicationContext={result?.applicationContext}
           workflowMode={mode}
           units={{
@@ -597,6 +816,126 @@ const handleLoadDrag = (
           }}
         />
       }
+    />
+  );
+
+  return (
+    <WorkspaceChrome
+      contract={workspaceContract}
+      calculator={calculator}
+      banner={
+        <p className="text-xs text-slate-500">
+          Beam Design Workspace — calculator, knowledge, materials, 3D model, report, and AI in one place.
+        </p>
+      }
+      tabs={{
+        knowledge: <CalculatorKnowledgePanel knowledgeSlug="beams" />,
+        materials: (
+          <WorkspaceMaterialsPanel selectedName={material} onApply={applyMaterial} />
+        ),
+        model: (
+          <div className="space-y-3">
+            <EngineeringScene
+              length={Math.max(toBase(length, "length", lengthUnit), 0.5)}
+              deflection={result?.deflection}
+              mode="beam"
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
+                onClick={() =>
+                  downloadText(
+                    "beam-schematic.svg",
+                    exportDiagramSvgString({
+                      length: toBase(length, "length", lengthUnit),
+                      labels: [
+                        `Support: ${support}`,
+                        `Material: ${material}`,
+                        `Max δ: ${result?.maxDeflection ?? "—"} ${lengthUnit}`,
+                      ],
+                    }),
+                    "image/svg+xml"
+                  )
+                }
+              >
+                Export SVG
+              </button>
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
+                onClick={() =>
+                  downloadText(
+                    "beam-schematic.dxf",
+                    exportDiagramDxf({
+                      length: toBase(length, "length", lengthUnit),
+                      title: `PhyCalcPro beam ${projectName}`,
+                    }),
+                    "application/dxf"
+                  )
+                }
+              >
+                Export DXF
+              </button>
+              <button
+                type="button"
+                className="rounded border border-slate-300 px-2 py-1 text-xs dark:border-slate-600"
+                onClick={() =>
+                  downloadText(
+                    "beam-scene.json",
+                    exportSceneManifest({
+                      moduleId: "beams",
+                      length: toBase(length, "length", lengthUnit),
+                      deflection: result?.deflection,
+                    }),
+                    "application/json"
+                  )
+                }
+              >
+                Export scene manifest
+              </button>
+            </div>
+          </div>
+        ),
+        report: (
+          <WorkspaceReportPanel
+            projectName={projectName}
+            engineer={engineerName}
+            summaryRows={summaryRows}
+            revisions={revisions}
+            onSaveRevision={(note) =>
+              setRevisions(
+                appendRevision(
+                  "beam",
+                  projectName,
+                  note,
+                  hashInputs({ length, loads, material, support }),
+                  engineerName || undefined
+                )
+              )
+            }
+            onExportPackage={() => {
+              // Trigger existing results export affordance — user also has Export on results shell
+              window.dispatchEvent(new CustomEvent("phycalcpro:export-report", { detail: { moduleId: "beams" } }));
+              calculate();
+            }}
+          />
+        ),
+        ai: (
+          <WorkspaceAiPanel
+            moduleId="beams"
+            defaultBrief={`Design a steel beam spanning ${length} ${lengthUnit}.`}
+            onApply={applyAiParams}
+          />
+        ),
+        teach: (
+          <WorkspaceTeachPanel
+            prompts={BEAM_TEACH_PROMPTS}
+            mode={teachMode}
+            onModeChange={setTeachMode}
+          />
+        ),
+      }}
     />
   );
 }

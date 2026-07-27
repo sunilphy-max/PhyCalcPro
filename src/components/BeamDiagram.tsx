@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Load, SupportType } from "@/lib/structural/beams/types";
 
 type ReactionForces = {
@@ -20,12 +20,18 @@ type Props = {
     updates: Partial<Extract<Load, { type: "point" }>>
   ) => void;
 
+  /** Optional support-position handles (fractional span 0…length) */
+  supportPositions?: { id: string; x: number }[];
+  onSupportDrag?: (id: string, x: number) => void;
+
   probeX?: number | null;
   setProbeX?: (x: number | null) => void;
 
   xPositions?: number[];
   deflection?: number[];
   reactions?: number[] | ReactionForces;
+  /** Animate deformed shape from flat → solved (EDP-1) */
+  animateDeflection?: boolean;
 };
 
 
@@ -34,11 +40,14 @@ export default function BeamDiagram({
   loads = [],
   support,
   onLoadDrag,
+  supportPositions,
+  onSupportDrag,
   probeX,
   setProbeX,
   xPositions,
   deflection,
   reactions,
+  animateDeflection = true,
 }: Props) {
   const width = 600;
   const height = 140;
@@ -50,22 +59,47 @@ export default function BeamDiagram({
   // simple visual scaling (prevents huge arrows)
   const safeLoads = loads ?? [];
 const [draggingId, setDraggingId] = useState<string | null>(null);
+const [draggingSupportId, setDraggingSupportId] = useState<string | null>(null);
+const [deflectionAmp, setDeflectionAmp] = useState(animateDeflection ? 0 : 1);
 const maxLoad = Math.max(
   ...safeLoads.map((l) => Math.abs(l.value)),
   1
 );
 
+  useEffect(() => {
+    if (!animateDeflection) {
+      setDeflectionAmp(1);
+      return;
+    }
+    setDeflectionAmp(0);
+    let raf = 0;
+    const start = performance.now();
+    const duration = 650;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      // ease-out cubic
+      setDeflectionAmp(1 - (1 - t) ** 3);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [animateDeflection, deflection, xPositions, length]);
+
   const scaleLoad = (v: number) =>
     Math.max(20, (Math.abs(v) / maxLoad) * 60);
 const unitLabel = "N"; 
 const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-  if (!draggingId || !onLoadDrag) return;
-
   const rect = e.currentTarget.getBoundingClientRect();
   const x = e.clientX - rect.left;
-
   const raw = (x / rect.width) * length;
   const clamped = Math.max(0, Math.min(length, raw));
+
+  if (draggingSupportId && onSupportDrag) {
+    onSupportDrag(draggingSupportId, clamped);
+    return;
+  }
+
+  if (!draggingId || !onLoadDrag) return;
 
   setProbeX?.(clamped);
   onLoadDrag(draggingId, { position: clamped });
@@ -73,6 +107,7 @@ const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
 
 const handleMouseUp = () => {
     setDraggingId(null);
+    setDraggingSupportId(null);
   };
 
   const maxDeflection = deflection?.length
@@ -85,7 +120,7 @@ const handleMouseUp = () => {
     xPositions && deflection && xPositions.length === deflection.length
       ? xPositions
           .map((x, i) => {
-            const scaledY = 70 - (deflection[i] ?? 0) * deflectionScale;
+            const scaledY = 70 - (deflection[i] ?? 0) * deflectionScale * deflectionAmp;
             return `${i === 0 ? "M" : "L"} ${scaleX(x)} ${scaledY}`;
           })
           .join(" ")
@@ -139,6 +174,20 @@ const handleMouseUp = () => {
           strokeWidth={4}
         />
 
+        {supportPositions?.map((sp) => (
+          <g key={sp.id}>
+            <polygon
+              points={`${scaleX(sp.x)},78 ${scaleX(sp.x) - 10},95 ${scaleX(sp.x) + 10},95`}
+              fill="#0f172a"
+              style={{ cursor: onSupportDrag ? "ew-resize" : "default" }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setDraggingSupportId(sp.id);
+              }}
+            />
+          </g>
+        ))}
+
         {deformationPath && (
           <path
             d={deformationPath}
@@ -146,6 +195,7 @@ const handleMouseUp = () => {
             stroke="#2563eb"
             strokeWidth={2}
             opacity={0.95}
+            style={{ transition: animateDeflection ? undefined : "d 0.2s ease" }}
           />
         )}
 
