@@ -102,7 +102,7 @@ const allModuleIds = [
   "unit-converter",
 ];
 
-const SKIP_FILES = new Set(["bearings-suite-audit.md", "spring-modules-user-tasks.md"]);
+const SKIP_FILES = new Set(["spring-modules-user-tasks.md"]);
 
 function stripFrontmatter(content) {
   if (!content.startsWith("---\n") && !content.startsWith("---\r\n")) {

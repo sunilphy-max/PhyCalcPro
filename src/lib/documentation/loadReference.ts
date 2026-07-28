@@ -199,7 +199,7 @@ function loadModuleFilesFromDisk(): Map<string, ModuleDocSection> {
   const map = new Map<string, ModuleDocSection>();
   if (!existsSync(MODULES_DIR)) return map;
 
-  const skip = new Set(["bearings-suite-audit.md", "spring-modules-user-tasks.md"]);
+  const skip = new Set(["spring-modules-user-tasks.md"]);
   for (const file of readdirSync(MODULES_DIR).filter((f) => f.endsWith(".md"))) {
     if (skip.has(file)) continue;
     const section = readModuleFile(path.join(MODULES_DIR, file));

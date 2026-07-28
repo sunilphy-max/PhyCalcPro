@@ -8,7 +8,9 @@ import {
   useMemo,
   useRef,
   useState,
+  type Dispatch,
   type ReactNode,
+  type SetStateAction,
 } from "react";
 import type { Material } from "@/data/materials";
 import type { DesignSummaryRow } from "@/components/calculator/CalculatorDesignSummary";
@@ -26,9 +28,9 @@ type ModuleWorkspaceContextValue = {
   registerMaterialApply: (handler: MaterialApplyHandler | null) => void;
   applyMaterial: (material: Material) => void;
   summaryRows: DesignSummaryRow[];
-  setSummaryRows: (rows: DesignSummaryRow[]) => void;
+  setSummaryRows: Dispatch<SetStateAction<DesignSummaryRow[]>>;
   revisions: ProjectRevision[];
-  setRevisions: (rows: ProjectRevision[]) => void;
+  setRevisions: Dispatch<SetStateAction<ProjectRevision[]>>;
   tabOverrides: TabOverrides;
   setTabOverride: (tab: Exclude<WorkspaceTabId, "calculator">, content: ReactNode | null) => void;
   selectedMaterialName: string | null;
@@ -64,10 +66,12 @@ export function ModuleWorkspaceProvider({
     (tab: Exclude<WorkspaceTabId, "calculator">, content: ReactNode | null) => {
       setTabOverrides((prev) => {
         if (content == null) {
+          if (!(tab in prev)) return prev;
           const next = { ...prev };
           delete next[tab];
           return next;
         }
+        if (prev[tab] === content) return prev;
         return { ...prev, [tab]: content };
       });
     },
@@ -136,15 +140,17 @@ export function useModuleWorkspace() {
 /** Register a page-level material apply handler (e.g. beams setMaterial). */
 export function useRegisterWorkspaceMaterialApply(handler: MaterialApplyHandler | null) {
   const ctx = useModuleWorkspaceOptional();
+  const registerMaterialApply = ctx?.registerMaterialApply;
   const handlerRef = useRef(handler);
   handlerRef.current = handler;
+  const hasHandler = handler != null;
 
   useEffect(() => {
-    if (!ctx) return;
+    if (!registerMaterialApply) return;
     const stable: MaterialApplyHandler = (m) => {
       handlerRef.current?.(m);
     };
-    ctx.registerMaterialApply(handler ? stable : null);
-    return () => ctx.registerMaterialApply(null);
-  }, [ctx, handler]);
+    registerMaterialApply(hasHandler ? stable : null);
+    return () => registerMaterialApply(null);
+  }, [registerMaterialApply, hasHandler]);
 }

@@ -117,7 +117,7 @@ This is the platform layer needed for MITCalc-style worksheets. As of the full r
 - **`designModeRegistry.ts`** maps every module ID to a category design solver (catalog sweep, reverse sizing, or optimization screen).
 - **`computedCandidates.ts`** calls the registry so the advisor shows live ranked candidates from page `userInputs`.
 - **Calculate** branches on workflow mode: **Validate** runs the forward solver only; **Auto-design** applies the best registry candidate then re-runs validation; **Compare** ranks options without auto-apply (Apply in the advisor loads a row and switches to Validate).
-- Shared helpers: `sweepCatalogForUtilization`, `materialCatalogService`, `scripts/scaffold-design-mode.mjs`.
+- Shared helpers: `sweepCatalogForUtilization`, `materialCatalogService`, `Archive/scripts-oneoff/scaffold-design-mode.mjs` (historical).
 - Full mode behavior: see [`docs/Design-Workflow-Reference.md`](Design-Workflow-Reference.md).
 
 | Coverage type | Auto-design behavior |

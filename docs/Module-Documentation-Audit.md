@@ -55,7 +55,7 @@ Parsed by [`src/lib/documentation/parseFrontmatter.ts`](../src/lib/documentation
 | Item | Count |
 |------|-------|
 | Catalog modules with guides | 65 |
-| Skip non-doc files | `bearings-suite-audit.md`, `spring-modules-user-tasks.md` |
+| Skip non-doc files | `spring-modules-user-tasks.md` (bearings suite audit archived under `Archive/docs-historical/modules/`) |
 | Obsolete audit ids (no file expected) | `load-case-manager`, `safety-factor`, `formula-reference` |
 
 ## Verification commands

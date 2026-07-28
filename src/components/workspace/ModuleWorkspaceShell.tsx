@@ -34,6 +34,9 @@ type Props = {
  */
 export default function ModuleWorkspaceShell({ moduleId, title, children }: Props) {
   const workspace = useModuleWorkspaceOptional();
+  const setRevisions = workspace?.setRevisions;
+  const setSelectedMaterialName = workspace?.setSelectedMaterialName;
+  const applyMaterial = workspace?.applyMaterial;
   const entry = useMemo(() => getModuleWorkspaceEntry(moduleId), [moduleId]);
   const contract = useMemo(() => {
     const base = buildWorkspaceContractForModule(moduleId);
@@ -50,15 +53,18 @@ export default function ModuleWorkspaceShell({ moduleId, title, children }: Prop
     const name = decodeURIComponent(materialQuery);
     const material = findMaterial(name);
     if (!material) return;
-    workspace?.setSelectedMaterialName(material.name);
-    workspace?.applyMaterial(material);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- apply once when query changes
-  }, [materialQuery, moduleId]);
+    setSelectedMaterialName?.(material.name);
+    applyMaterial?.(material);
+  }, [materialQuery, moduleId, setSelectedMaterialName, applyMaterial]);
 
   useEffect(() => {
-    if (!workspace) return;
-    workspace.setRevisions(loadRevisions(moduleId, projectName));
-  }, [moduleId, projectName, workspace]);
+    if (!setRevisions) return;
+    const next = loadRevisions(moduleId, projectName);
+    setRevisions((prev) => {
+      if (prev.length === 0 && next.length === 0) return prev;
+      return next;
+    });
+  }, [moduleId, projectName, setRevisions]);
 
   if (workspace && !workspace.workspaceEnabled) {
     return <>{children}</>;

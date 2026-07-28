@@ -109,6 +109,10 @@ function BeamFleetWorkspaceSync({
   modelTab: ReactNode;
 }) {
   const workspace = useModuleWorkspaceOptional();
+  const setSelectedMaterialName = workspace?.setSelectedMaterialName;
+  const setSummaryRows = workspace?.setSummaryRows;
+  const setRevisions = workspace?.setRevisions;
+  const setTabOverride = workspace?.setTabOverride;
 
   useRegisterWorkspaceMaterialApply((m) => setMaterial(m.name));
 
@@ -119,21 +123,21 @@ function BeamFleetWorkspaceSync({
   }, [setMaterial]);
 
   useEffect(() => {
-    workspace?.setSelectedMaterialName(material);
-  }, [workspace, material]);
+    setSelectedMaterialName?.(material);
+  }, [setSelectedMaterialName, material]);
 
   useEffect(() => {
-    workspace?.setSummaryRows(summaryRows);
-  }, [workspace, summaryRows]);
+    setSummaryRows?.(summaryRows);
+  }, [setSummaryRows, summaryRows]);
 
   useEffect(() => {
-    workspace?.setRevisions(revisions);
-  }, [workspace, revisions]);
+    setRevisions?.(revisions);
+  }, [setRevisions, revisions]);
 
   useEffect(() => {
-    workspace?.setTabOverride("model", modelTab);
-    return () => workspace?.setTabOverride("model", null);
-  }, [workspace, modelTab]);
+    setTabOverride?.("model", modelTab);
+    return () => setTabOverride?.("model", null);
+  }, [setTabOverride, modelTab]);
 
   return null;
 }
