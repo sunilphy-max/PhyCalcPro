@@ -66,7 +66,7 @@ export function buildShaftCodeChecks(
       value: din.governingFatigueSF,
       limit: din.SminFatigue,
       status: fatigueStatus,
-      standardRef: "DIN 743-1",
+      standardRef: { body: "DIN", document: "743-1" },
     });
     checks.push({
       id: "din743_static",
@@ -75,7 +75,7 @@ export function buildShaftCodeChecks(
       value: din.governingStaticSF,
       limit: din.SminStatic,
       status: staticStatus,
-      standardRef: "DIN 743-1",
+      standardRef: { body: "DIN", document: "743-1" },
     });
   }
 
