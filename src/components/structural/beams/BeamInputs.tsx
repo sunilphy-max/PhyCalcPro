@@ -229,16 +229,16 @@ export default function BeamInputs(props: Props) {
         />
         {selectedMaterial ? (
           <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
               E {(selectedMaterial.E / 1e9).toFixed(1)} GPa
             </span>
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
               Fy {((selectedMaterial.yieldStress ?? 0) / 1e6).toFixed(0)} MPa
             </span>
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
               ρ {selectedMaterial.density} kg/m³
             </span>
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
               α {((selectedMaterial.thermalExpansion ?? 0) * 1e6).toFixed(1)} µ/°C
             </span>
           </div>

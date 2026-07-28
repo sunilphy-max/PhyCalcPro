@@ -343,33 +343,50 @@ export default function BeamDashboard({
         </CalculatorMetricGrid>
       ) : null}
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-sm dark:border-slate-700 dark:bg-slate-900/50">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-          Design summary
-        </p>
-        <p className="mt-1 text-slate-700 dark:text-slate-200">
-          {application
-            ? application.stressUtilization <= 1 &&
-              application.deflectionUtilization <= 1
-              ? `Design passes screening (${application.standards.join(", ") || "indicative"}).`
-              : `Design fails screening — governing limit: ${
-                  application.stressUtilization >= application.deflectionUtilization
-                    ? "flexure/stress"
-                    : "deflection"
-                }.`
-            : "Run solve to attach application checks."}
-        </p>
+      <CalculatorMetricGrid cols={2}>
+        <CalculatorMetricCard
+          label="Design screening"
+          value={
+            application
+              ? application.stressUtilization <= 1 && application.deflectionUtilization <= 1
+                ? "Pass"
+                : "Fail"
+              : "—"
+          }
+          tone={
+            application
+              ? application.stressUtilization <= 1 && application.deflectionUtilization <= 1
+                ? "green"
+                : "red"
+              : "default"
+          }
+        />
+        <CalculatorMetricCard
+          label="Governing limit"
+          value={
+            application
+              ? application.stressUtilization >= application.deflectionUtilization
+                ? "Flexure / stress"
+                : "Deflection"
+              : "Run solve for checks"
+          }
+          tone="orange"
+        />
         {governingEq ? (
-          <p className="mt-2 font-mono text-xs text-slate-600 dark:text-slate-300">
-            {governingEq.label}: {governingEq.expression.replace(/\\\\/g, "\\")}
-          </p>
+          <CalculatorMetricCard
+            label={governingEq.label}
+            value={governingEq.expression.replace(/\\\\/g, "\\")}
+            tone="purple"
+          />
         ) : null}
         {application?.standards?.length ? (
-          <p className="mt-1 text-xs text-slate-500">
-            Applicable standards: {application.standards.join(", ")}
-          </p>
+          <CalculatorMetricCard
+            label="Applicable standards"
+            value={application.standards.join(", ")}
+            tone="blue"
+          />
         ) : null}
-      </div>
+      </CalculatorMetricGrid>
 
       <CalculatorMetricGrid cols={2} className="sm:grid-cols-5">
         <CalculatorMetricCard
