@@ -49,6 +49,25 @@ function routeFromPage(pagePath) {
 
 const pageRoutes = new Set(productPages.map(routeFromPage));
 
+/** True for Next.js dynamic segments like `[id]` or `[...slug]`. */
+function isDynamicRoute(route) {
+  return /\[.+\]/.test(route);
+}
+
+/**
+ * Allow detail pages under a registered module (e.g. /products/materials/database/[id]
+ * when /products/materials/database is in modules.ts).
+ */
+function hasRegisteredParentModule(route) {
+  const parts = route.split("/").filter(Boolean); // products, ...
+  // Walk up from immediate parent to category root
+  for (let len = parts.length - 1; len >= 2; len--) {
+    const parent = "/" + parts.slice(0, len).join("/");
+    if (registryRoutes.has(parent)) return true;
+  }
+  return false;
+}
+
 for (const route of registryRoutes) {
   if (!pageRoutes.has(route)) {
     errors.push(`Missing page.tsx for registry route: ${route}`);
@@ -57,6 +76,7 @@ for (const route of registryRoutes) {
 
 for (const route of pageRoutes) {
   if (registryRoutes.has(route) || categoryLandingRoutes.has(route)) continue;
+  if (isDynamicRoute(route) && hasRegisteredParentModule(route)) continue;
   errors.push(`Orphan page.tsx not in modules.ts: ${route}`);
 }
 
