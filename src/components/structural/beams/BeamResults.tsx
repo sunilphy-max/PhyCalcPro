@@ -3,6 +3,7 @@
 import type {
   BeamApplicationContext,
   BeamResult,
+  BeamSupport,
   Load,
   SupportType,
 } from "@/lib/structural/beams/types";
@@ -22,30 +23,29 @@ type DisplayUnits = {
 type Props = {
   result: (BeamResult & { calculationSpec?: CalculationSpec }) | null;
   length: number;
-  support: SupportType;
+  support: SupportType | "continuous";
+  supports?: BeamSupport[];
   loads: Load[];
   units?: DisplayUnits;
   applicationContext?: BeamApplicationContext;
   workflowMode?: DesignWorkflowMode;
-  onLoadDrag?: (
-    id: string,
-    updates: Partial<Extract<Load, { type: "point" }>>
-  ) => void;
-  supportPositions?: { id: string; x: number }[];
+  onLoadDrag?: (id: string, updates: Partial<Load>) => void;
   onSupportDrag?: (id: string, x: number) => void;
+  sectionDepth?: number;
 };
 
 export default function BeamResults({
   result,
   length,
   support,
+  supports,
   loads,
   units,
   applicationContext,
   workflowMode,
   onLoadDrag,
-  supportPositions,
   onSupportDrag,
+  sectionDepth,
 }: Props) {
   return (
     <CalculatorResultsShell
@@ -65,6 +65,10 @@ export default function BeamResults({
               { metric: "maxShear", value: result.maxShear },
               { metric: "maxStress", value: result.maxStress },
               { metric: "maxDeflection", value: result.maxDeflection },
+              ...(result.supportReactions ?? []).map((r) => ({
+                metric: `reaction_${r.supportId}_Fy`,
+                value: r.Fy,
+              })),
             ]
           : undefined
       }
@@ -78,12 +82,13 @@ export default function BeamResults({
           loads={loads}
           length={length}
           support={support}
+          supports={supports}
           units={units}
           applicationContext={applicationContext ?? result.applicationContext}
           workflowMode={workflowMode}
           onLoadDrag={onLoadDrag}
-          supportPositions={supportPositions}
           onSupportDrag={onSupportDrag}
+          sectionDepth={sectionDepth}
         />
       ) : null}
     </CalculatorResultsShell>

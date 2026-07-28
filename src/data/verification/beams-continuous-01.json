@@ -1,0 +1,24 @@
+{
+  "id": "beams-continuous-01",
+  "moduleId": "beams",
+  "designCode": "US",
+  "description": "Two equal spans with full UDL — intermediate support; peak moment below single-span wL²/8",
+  "inputs": {
+    "length": 6,
+    "E": 210000000000,
+    "I": 0.00005,
+    "c": 0.1,
+    "supports": [
+      { "id": "a", "x": 0, "kind": "pin" },
+      { "id": "b", "x": 3, "kind": "roller" },
+      { "id": "c", "x": 6, "kind": "roller" }
+    ],
+    "meshSegments": 60,
+    "loads": [{ "id": "u1", "type": "udl", "value": 2000, "start": 0, "end": 6 }]
+  },
+  "expected": {
+    "maxMoment": 2250
+  },
+  "tolerancePercent": 8,
+  "source": "Two-span continuous beam under UDL — |M|_max ≈ w ℓ²/8 at mid-support for equal spans ℓ=L/2 → 2000*(3)²/8 = 2250 N·m"
+}

@@ -58,15 +58,15 @@ function MaterialDatabasePageContent() {
   return (
     <CalculatorLayout
       moduleId="material-db"
-      title="Material Database"
+      title="Material Encyclopedia"
       hasResults={true}
       inputs={
         <div className={calculatorPanelClass}>
           <div>
-            <h3 className="text-lg font-semibold text-slate-950">Materials Reference</h3>
+            <h3 className="text-lg font-semibold text-slate-950">Browse & screen</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Browse the full catalog on the right. Optionally screen by required allowable stress in Design or Select
-              mode, then Apply a candidate.
+              Search the catalog on the right, open a datasheet for full properties, or screen by
+              required allowable stress in Design or Select mode.
             </p>
           </div>
 

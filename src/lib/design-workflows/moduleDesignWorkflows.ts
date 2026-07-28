@@ -327,8 +327,11 @@ const MODULE_OVERRIDES: Record<string, Partial<ModuleDesignWorkflow>> = {
     autoSizingTargets: ["Minimum shaft diameter", "Nearest standard diameter", "Fatigue safety factor", "Bearing slope/deflection", "Critical speed margin"],
     catalogTables: ["Standard shaft diameters", "DIN 743 factors", "AGMA/ASME shaft factors", "Keyway dimensions", "Bearing series"],
     linkedWorkflowModuleIds: ["keys-splines", "bearings", "housing", "gears", "fatigue", "shaft-hubs"],
-    expertNotes: ["MITCalc-like shaft design must link torque, bending, Kt/Kf, fatigue, bearings, keys and critical speed."],
-    gaps: ["Full DIN 743 EU worksheet (K_sigma, K_tau, gamma_F) and AGMA 6001 load templates still need integration."],
+    expertNotes: [
+      "Integrated worksheet: FEM static/combined, Kf/Goodman, DIN 743-1/2/3 EU multi-station, AGMA 6001 templates, keys, retaining rings, bearing L10, critical-speed modes.",
+      "Refine catalog bearings and splines in linked modules when designation-level selection is required.",
+    ],
+    gaps: [],
   },
   gears: {
     maturity: "solver-backed",

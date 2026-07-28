@@ -1,5 +1,10 @@
 import type { BeamConfig } from "./types";
-import { solveBeam } from "./solver";
+import {
+  effectiveLoads,
+  solveBeam,
+  supportPresetLabel,
+  supportValidationWarnings,
+} from "./solver";
 
 export type BeamEngineInput = BeamConfig;
 
@@ -11,6 +16,7 @@ export type BeamEngineResult = {
   stress: number[];
   slope: number[];
   reactions?: number[];
+  supportReactions?: import("./types").SupportReaction[];
 
   maxMoment: number;
   maxShear: number;
@@ -22,11 +28,12 @@ export type BeamEngineResult = {
   };
   solverMeta?: {
     meshSegments: number;
-    support: BeamConfig["support"];
+    support: ReturnType<typeof supportPresetLabel>;
     solver: "beam-fem";
     warnings: string[];
   };
 };
+
 type SolverOutput = {
   x: number[];
   shear: number[];
@@ -35,7 +42,22 @@ type SolverOutput = {
   stress: number[];
   slope: number[];
   reactions?: number[];
+  supportReactions?: import("./types").SupportReaction[];
 };
+
+function totalVerticalLoad(loads: ReturnType<typeof effectiveLoads>): number {
+  return loads.reduce((acc, load) => {
+    if (load.type === "point") return acc + load.value;
+    if (load.type === "udl") {
+      return acc + load.value * Math.max(load.end - load.start, 0);
+    }
+    if (load.type === "triangular") {
+      const L = Math.max(load.end - load.start, 0);
+      return acc + 0.5 * (load.wStart + load.wEnd) * L;
+    }
+    return acc;
+  }, 0);
+}
 
 export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
   if (input.length <= 0) {
@@ -47,8 +69,15 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
   if (input.c <= 0) {
     throw new Error("Distance c must be positive.");
   }
-  if (!input.loads.length) {
+
+  const loads = effectiveLoads(input);
+  if (!loads.length) {
     throw new Error("At least one load is required.");
+  }
+
+  const supportWarnings = supportValidationWarnings(input);
+  if (supportWarnings.some((w) => w.includes("At least one support"))) {
+    throw new Error(supportWarnings[0]);
   }
 
   const raw = solveBeam(input) as SolverOutput;
@@ -61,21 +90,18 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
 
   const stress = clean(raw.stress);
   const maxStress = Math.max(...stress.map((v) => Math.abs(v || 0)));
-  const warnings: string[] = [];
+  const warnings: string[] = [...supportWarnings];
   if ((input.meshSegments ?? 0) < 20) {
     warnings.push("Low mesh density may underpredict peak stress.");
   }
 
-  const totalPointAndUdl = input.loads.reduce((acc, load) => {
-    if (load.type === "point") return acc + load.value;
-    if (load.type === "udl") return acc + load.value * Math.max(load.end - load.start, 0);
-    return acc;
-  }, 0);
-  const totalReaction = (raw.reactions ?? []).reduce((acc, reaction, index) => {
-    return index % 2 === 0 ? acc + reaction : acc;
-  }, 0);
-  // Reactions are positive upward, applied loads positive downward
-  const staticEquilibriumResidual = Math.abs(totalReaction - totalPointAndUdl);
+  const totalApplied = totalVerticalLoad(loads);
+  const totalReaction = (raw.supportReactions ?? []).reduce(
+    (acc, r) => acc + r.Fy,
+    0
+  );
+  // Reactions positive upward, applied loads positive downward
+  const staticEquilibriumResidual = Math.abs(totalReaction - totalApplied);
 
   return {
     x: clean(raw.x),
@@ -85,6 +111,7 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
     stress,
     slope: clean(raw.slope),
     reactions: raw.reactions,
+    supportReactions: raw.supportReactions,
 
     maxMoment,
     maxShear,
@@ -102,10 +129,9 @@ export function solveBeamEngine(input: BeamEngineInput): BeamEngineResult {
     },
     solverMeta: {
       meshSegments: input.meshSegments ?? 0,
-      support: input.support,
+      support: supportPresetLabel(input),
       solver: "beam-fem",
       warnings,
     },
   };
-
 }

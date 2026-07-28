@@ -5,6 +5,7 @@ import { attachGearCalculationSpec } from "./evaluators/gears";
 import { attachColumnCalculationSpec } from "./evaluators/columns";
 import { attachCombinedLoadingCalculationSpec } from "./evaluators/combinedLoading";
 import { attachWeldCalculationSpec } from "./evaluators/welds";
+import { attachShaftCalculationSpec } from "./evaluators/shafts";
 
 const MODULE_SPECIFIC: Partial<
   Record<string, (result: Record<string, unknown>, designCode: DesignCodeId) => Record<string, unknown>>
@@ -18,6 +19,7 @@ const MODULE_SPECIFIC: Partial<
       unknown
     >,
   welds: (r, code) => attachWeldCalculationSpec(r as never, code) as Record<string, unknown>,
+  shafts: (r, code) => attachShaftCalculationSpec(r as never, code) as Record<string, unknown>,
 };
 
 export function withCalculationSpec<T extends object>(

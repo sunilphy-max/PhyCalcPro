@@ -18,8 +18,13 @@ import {
   determineGoverningMode,
   determineSafetyStatus,
 } from "./femPost";
-import { buildKtProfile } from "./stressConcentration";
+import { buildKtProfile, buildKfProfile } from "./stressConcentration";
 import { evaluateShaftFatigue, rotatingShaftStressState } from "./fatigueCheck";
+import { designShaftKey } from "./keysSizing";
+import { evaluateRetainingRingFeatures } from "./retainingRings";
+import { screenBearingLifeFromReactions } from "./bearingLifeScreen";
+import { runDin743FromFem } from "./din743/fromFem";
+import { agma6001LoadTemplate } from "./agma6001/interfaceLoads";
 import type { ShaftConfig, ShaftResult } from "./types";
 
 export function solveShaftFEM(config: ShaftConfig): ShaftResult {
@@ -32,6 +37,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     criticalSpeedMarginMin: config.limits?.criticalSpeedMarginMin ?? 1.25,
     targetStaticSafetyFactor: config.limits?.targetStaticSafetyFactor ?? 1.5,
     targetFatigueSafetyFactor: config.limits?.targetFatigueSafetyFactor ?? 1.5,
+    targetBearingLifeHours: config.limits?.targetBearingLifeHours ?? 20_000,
   };
 
   const model = generateShaftMesh(
@@ -56,11 +62,23 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
 
   const post = recoverStresses(model, displacements);
   const globalKt = Math.max(config.stressConcentrationFactor ?? 1, 1);
+  const features = config.stressFeatures ?? [];
+  const useNotchSensitivity = config.fatigue?.useNotchSensitivity !== false;
+
   const ktProfile = buildKtProfile(
     post.x,
     post.bendingStress,
     post.shearStress,
-    config.stressFeatures ?? [],
+    features,
+    globalKt,
+    geometry.diameter
+  );
+  const kfProfile = buildKfProfile(
+    post.x,
+    ktProfile,
+    features,
+    material,
+    useNotchSensitivity,
     globalKt
   );
 
@@ -80,7 +98,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   const criticalSection = model.nodes[criticalIndex]?.x ?? 0;
 
   const M = buildLumpedMassMatrix(model);
-  const { speedsRpm } = computeLateralCriticalSpeeds(stiffness, M, constraints, 2);
+  const { speedsRpm } = computeLateralCriticalSpeeds(stiffness, M, constraints, 3);
   const criticalSpeed = speedsRpm[0] ?? 0;
 
   const operatingRpm = config.operatingRpm ?? 0;
@@ -97,6 +115,29 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
 
   let fatigueSafetyFactor: number | null = null;
   let fatigueStatus: ShaftResult["fatigueStatus"] = "n/a";
+  let fatigueDetail: ShaftResult["fatigueDetail"] = null;
+
+  const din743Worksheet = runDin743FromFem({
+    config,
+    x: post.x,
+    bendingStress: post.bendingStress,
+    shearStress: post.shearStress,
+    model,
+    criticalIndex,
+  });
+
+  const kSigma =
+    config.din743?.K_sigma != null && config.din743.K_sigma > 1
+      ? config.din743.K_sigma
+      : (din743Worksheet?.autoK_sigma ?? 1);
+  const kTau =
+    config.din743?.K_tau != null && config.din743.K_tau > 1
+      ? config.din743.K_tau
+      : (din743Worksheet?.autoK_tau ?? 1);
+  const gammaF =
+    config.din743?.gamma_F != null && config.din743.gamma_F > 1
+      ? config.din743.gamma_F
+      : (din743Worksheet?.autoGamma_F ?? 1);
 
   const fatigueEnabled =
     config.fatigue?.enabled === true ||
@@ -105,16 +146,18 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   if (fatigueEnabled && material.ultimateStrength > 0) {
     const critBending = post.bendingStress[criticalIndex] ?? 0;
     const critShear = post.shearStress[criticalIndex] ?? 0;
-    const critKt = ktProfile[criticalIndex] ?? 1;
+    const critKf = kfProfile[criticalIndex] ?? 1;
     const dCrit = diameterAtNode(model, criticalIndex);
-    const kSigma = config.din743?.K_sigma ?? 1;
-    const kTau = config.din743?.K_tau ?? 1;
-    const gammaF = config.din743?.gamma_F ?? 1;
+
+    // Axial mean from net axial loads (steady)
+    const axialForce = loads.reduce((sum, l) => sum + (l.axialForce ?? 0), 0);
+    const axialMean =
+      dCrit > 0 ? (4 * Math.abs(axialForce)) / (Math.PI * dCrit * dCrit) : 0;
 
     const stressState = rotatingShaftStressState(
-      critBending * critKt * kSigma,
-      critShear * critKt * kTau,
-      0,
+      critBending * critKf * kSigma,
+      critShear * critKf * kTau,
+      axialMean,
       config.fatigue?.alternatingTorqueFraction ?? 0
     );
     stressState.diameter = dCrit;
@@ -122,12 +165,18 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     const fatigue = evaluateShaftFatigue(
       material,
       stressState,
-      { enabled: true, surfaceFinish: config.fatigue?.surfaceFinish ?? "machined" },
+      {
+        enabled: true,
+        surfaceFinish: config.fatigue?.surfaceFinish ?? "machined",
+        alternatingTorqueFraction: config.fatigue?.alternatingTorqueFraction,
+        useNotchSensitivity,
+      },
       limits.targetFatigueSafetyFactor,
       gammaF
     );
     fatigueSafetyFactor = fatigue.safetyFactor;
     fatigueStatus = fatigue.status;
+    fatigueDetail = fatigue.detail;
   }
 
   const staticStatus = determineSafetyStatus(safetyFactor, limits.targetStaticSafetyFactor);
@@ -154,7 +203,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     designStatus = "warning";
   }
 
-  const governingFailureMode = determineGoverningMode({
+  let governingFailureMode = determineGoverningMode({
     staticSf: safetyFactor,
     targetStatic: limits.targetStaticSafetyFactor,
     fatigueSf: fatigueSafetyFactor,
@@ -165,7 +214,73 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     targetCritical: limits.criticalSpeedMarginMin,
   });
 
+  if (din743Worksheet) {
+    if (din743Worksheet.designStatus === "critical") {
+      designStatus = "critical";
+      if (
+        din743Worksheet.governingFatigueSF < din743Worksheet.SminFatigue ||
+        din743Worksheet.governingStaticSF < din743Worksheet.SminStatic
+      ) {
+        governingFailureMode =
+          din743Worksheet.governingFatigueSF <= din743Worksheet.governingStaticSF
+            ? "DIN 743 fatigue"
+            : "DIN 743 static";
+      }
+    } else if (din743Worksheet.designStatus === "warning" && designStatus === "safe") {
+      designStatus = "warning";
+      governingFailureMode = "DIN 743 margin";
+    }
+  }
+
   const bearingReactions = extractBearingReactions(stiffness, F, displacements, model, supports);
+  const bearingLifeScreens = screenBearingLifeFromReactions({
+    reactions: bearingReactions,
+    slopes: slopesAtBearings,
+    shaftDiameter: geometry.diameter,
+    operatingRpm,
+    targetLifeHours: limits.targetBearingLifeHours,
+  });
+
+  const keysDesign = designShaftKey({
+    shaftDiameter: geometry.diameter,
+    torque: maxTorque,
+    material,
+    keyLength: config.keyLength,
+  });
+
+  const retainingRingChecks = evaluateRetainingRingFeatures(
+    features,
+    geometry.diameter,
+    material,
+    useNotchSensitivity
+  );
+
+  const agma6001Template =
+    config.agma6001?.enabled === true
+      ? agma6001LoadTemplate(
+          config.agma6001.interfaceKind ?? "helical_gear",
+          config.agma6001.duty ?? "light_shock"
+        )
+      : null;
+
+  // Fold retaining-ring axial failures into design status
+  if (retainingRingChecks.some((c) => c.status === "critical")) {
+    designStatus = "critical";
+  } else if (retainingRingChecks.some((c) => c.status === "warning") && designStatus === "safe") {
+    designStatus = "warning";
+  }
+  if (keysDesign?.status === "critical") {
+    designStatus = "critical";
+  } else if (keysDesign?.status === "warning" && designStatus === "safe") {
+    designStatus = "warning";
+  }
+  if (
+    operatingRpm > 0 &&
+    bearingLifeScreens.some((b) => b.status === "critical") &&
+    designStatus !== "critical"
+  ) {
+    designStatus = designStatus === "safe" ? "warning" : designStatus;
+  }
 
   const refD = geometry.diameter;
   const radius = refD / 2;
@@ -176,6 +291,7 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   return {
     ...post,
     stressConcentrationFactor: ktProfile,
+    fatigueConcentrationFactor: kfProfile,
     vonMisesStress: adjustedVonMises,
     maxStress,
     maxShearStress: maxShear,
@@ -195,10 +311,16 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     criticalSpeedMargin,
     fatigueSafetyFactor,
     fatigueStatus,
+    fatigueDetail,
     deflectionUtilization,
     slopeUtilization,
     bearingReactions,
     bearingSlopes: slopesAtBearings,
+    bearingLifeScreens,
+    keysDesign,
+    retainingRingChecks,
+    din743Worksheet,
+    agma6001Template,
     analysisType: "FEA",
     diameter: refD,
     radius,

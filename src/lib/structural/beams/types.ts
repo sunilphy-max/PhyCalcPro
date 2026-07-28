@@ -21,7 +21,16 @@ export type MomentLoad = BaseLoad & {
   position: number;
 };
 
-export type Load = PointLoad | UDL | MomentLoad;
+/** Linear distributed load (triangular when one end is 0; trapezoidal otherwise). */
+export type TriangularLoad = BaseLoad & {
+  type: "triangular";
+  wStart: number;
+  wEnd: number;
+  start: number;
+  end: number;
+};
+
+export type Load = PointLoad | UDL | MomentLoad | TriangularLoad;
 
 export type BeamApplicationContext = {
   id: string;
@@ -45,14 +54,39 @@ export type SupportType =
   | "cantilever"
   | "fixed_fixed";
 
+export type SupportKind = "pin" | "roller" | "fixed";
+
+export type BeamSupport = {
+  id: string;
+  x: number;
+  kind: SupportKind;
+};
+
+export type SupportReaction = {
+  supportId: string;
+  x: number;
+  kind: SupportKind;
+  Fy: number;
+  Mz?: number;
+};
+
 export type BeamConfig = {
   length: number;
   E: number;
   I: number;
   c: number;
-  support: SupportType;
+  /** Preset end condition; used when `supports` is omitted. */
+  support?: SupportType;
+  /** Explicit supports (enables intermediate / continuous beams). */
+  supports?: BeamSupport[];
   loads: Load[];
   meshSegments?: number;
+  /** Optional section area (m²) for self-weight and reporting. */
+  area?: number;
+  /** Include gravity self-weight as UDL when area + density provided. */
+  includeSelfWeight?: boolean;
+  /** Material density kg/m³ for self-weight. */
+  density?: number;
 };
 
 export type BeamResult = {
@@ -66,14 +100,17 @@ export type BeamResult = {
   maxDeflection: number;
   maxMoment: number;
   maxShear: number;
+  /** Raw DOF reaction vector (legacy). */
   reactions?: number[];
+  /** Mapped reactions at each support. */
+  supportReactions?: SupportReaction[];
   physicsChecks?: {
     staticEquilibriumResidual: number;
     finiteValues: boolean;
   };
   solverMeta?: {
     meshSegments: number;
-    support: SupportType;
+    support: SupportType | "continuous";
     solver: "beam-fem";
     warnings: string[];
   };

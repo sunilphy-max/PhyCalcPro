@@ -27,6 +27,9 @@ import type {
   StressFeature,
 } from "@/lib/machine/shafts/types";
 import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
+import type { Din743HeatTreatment, Din743SurfaceProcess } from "@/data/catalogs/din743/types";
+import type { Din743MeanStressCase } from "@/lib/machine/shafts/din743/types";
+import type { Agma6001DutyClass, Agma6001InterfaceKind } from "@/lib/machine/shafts/agma6001/interfaceLoads";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview";
@@ -89,6 +92,8 @@ function ShaftsPageContent() {
   const [operatingRpm, setOperatingRpm] = useState(0);
   const [includeSelfWeight, setIncludeSelfWeight] = useState(false);
   const [surfaceFinish, setSurfaceFinish] = useState<SurfaceFinish>("machined");
+  const [alternatingTorqueFraction, setAlternatingTorqueFraction] = useState(0);
+  const [useNotchSensitivity, setUseNotchSensitivity] = useState(true);
 
   const [lengthUnit, setLengthUnit] = useState("m");
   const [modulusUnit, setModulusUnit] = useState("Pa");
@@ -102,6 +107,14 @@ function ShaftsPageContent() {
   const [din743K_sigma, setDin743K_sigma] = useState(1);
   const [din743K_tau, setDin743K_tau] = useState(1);
   const [din743Gamma_F, setDin743Gamma_F] = useState(1);
+  const [din743MaterialId, setDin743MaterialId] = useState("");
+  const [din743HeatTreatment, setDin743HeatTreatment] = useState<Din743HeatTreatment | "">("");
+  const [din743Rz, setDin743Rz] = useState(6.3);
+  const [din743SurfaceProcess, setDin743SurfaceProcess] = useState<Din743SurfaceProcess>("none");
+  const [din743MeanCase, setDin743MeanCase] = useState<Din743MeanStressCase>(1);
+  const [agma6001Enabled, setAgma6001Enabled] = useState(false);
+  const [agma6001Kind, setAgma6001Kind] = useState<Agma6001InterfaceKind>("helical_gear");
+  const [agma6001Duty, setAgma6001Duty] = useState<Agma6001DutyClass>("light_shock");
   const [projectName, setProjectName] = useState("Shaft Project");
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<ShaftProject[]>(() =>
@@ -182,6 +195,16 @@ function ShaftsPageContent() {
         filletRadius: f.filletRadius
           ? toBase(f.filletRadius, "length", lengthUnit)
           : undefined,
+        grooveDepth: f.grooveDepth
+          ? toBase(f.grooveDepth, "length", lengthUnit)
+          : undefined,
+        grooveWidth: f.grooveWidth
+          ? toBase(f.grooveWidth, "length", lengthUnit)
+          : undefined,
+        axialRetentionLoad:
+          f.axialRetentionLoad != null
+            ? toBase(f.axialRetentionLoad, "force", forceUnit)
+            : undefined,
       })),
       meshSegments: Math.max(10, Math.round(meshSegments)),
       stressConcentrationFactor,
@@ -190,12 +213,25 @@ function ShaftsPageContent() {
       fatigue: {
         enabled: operatingRpm > 0,
         surfaceFinish,
+        alternatingTorqueFraction,
+        useNotchSensitivity,
       },
       din743: {
         K_sigma: din743K_sigma,
         K_tau: din743K_tau,
         gamma_F: din743Gamma_F,
       },
+      din743Worksheet: {
+        enabled: true,
+        materialId: din743MaterialId || undefined,
+        heatTreatmentOverride: din743HeatTreatment || undefined,
+        Rz_um: din743Rz,
+        surfaceProcess: din743SurfaceProcess,
+        meanStressCase: din743MeanCase,
+      },
+      agma6001: agma6001Enabled
+        ? { enabled: true, interfaceKind: agma6001Kind, duty: agma6001Duty }
+        : undefined,
     };
   }, [
     diameter,
@@ -216,9 +252,19 @@ function ShaftsPageContent() {
     operatingRpm,
     includeSelfWeight,
     surfaceFinish,
+    alternatingTorqueFraction,
+    useNotchSensitivity,
     din743K_sigma,
     din743K_tau,
     din743Gamma_F,
+    din743MaterialId,
+    din743HeatTreatment,
+    din743Rz,
+    din743SurfaceProcess,
+    din743MeanCase,
+    agma6001Enabled,
+    agma6001Kind,
+    agma6001Duty,
     useSteppedGeometry,
     segments,
   ]);
@@ -298,6 +344,26 @@ function ShaftsPageContent() {
       bearingSlopes: raw.bearingSlopes.map((s) => ({
         ...s,
         position: fromBase(s.position, "length", lengthUnit),
+      })),
+      bearingLifeScreens: raw.bearingLifeScreens.map((b) => ({
+        ...b,
+        position: fromBase(b.position, "length", lengthUnit),
+        radialForce: fromBase(b.radialForce, "force", forceUnit),
+        requiredDynamicRating: fromBase(b.requiredDynamicRating, "force", forceUnit),
+        estimatedDynamicRating:
+          b.estimatedDynamicRating != null
+            ? fromBase(b.estimatedDynamicRating, "force", forceUnit)
+            : null,
+      })),
+      // Key geometry stays in SI (m) so the dashboard can show mm consistently
+      keysDesign: raw.keysDesign,
+      retainingRingChecks: raw.retainingRingChecks.map((r) => ({
+        ...r,
+        position: fromBase(r.position, "length", lengthUnit),
+        grooveDepth: fromBase(r.grooveDepth, "length", lengthUnit),
+        grooveWidth: fromBase(r.grooveWidth, "length", lengthUnit),
+        axialCapacity: fromBase(r.axialCapacity, "force", forceUnit),
+        axialLoad: fromBase(r.axialLoad, "force", forceUnit),
       })),
     };
 
@@ -469,6 +535,10 @@ function ShaftsPageContent() {
             setIncludeSelfWeight={setIncludeSelfWeight}
             surfaceFinish={surfaceFinish}
             setSurfaceFinish={setSurfaceFinish}
+            alternatingTorqueFraction={alternatingTorqueFraction}
+            setAlternatingTorqueFraction={setAlternatingTorqueFraction}
+            useNotchSensitivity={useNotchSensitivity}
+            setUseNotchSensitivity={setUseNotchSensitivity}
             meshSegments={meshSegments}
             setMeshSegments={setMeshSegments}
             stressConcentrationFactor={stressConcentrationFactor}
@@ -479,6 +549,22 @@ function ShaftsPageContent() {
             setDin743K_tau={setDin743K_tau}
             din743Gamma_F={din743Gamma_F}
             setDin743Gamma_F={setDin743Gamma_F}
+            din743MaterialId={din743MaterialId}
+            setDin743MaterialId={setDin743MaterialId}
+            din743HeatTreatment={din743HeatTreatment}
+            setDin743HeatTreatment={setDin743HeatTreatment}
+            din743Rz={din743Rz}
+            setDin743Rz={setDin743Rz}
+            din743SurfaceProcess={din743SurfaceProcess}
+            setDin743SurfaceProcess={setDin743SurfaceProcess}
+            din743MeanCase={din743MeanCase}
+            setDin743MeanCase={setDin743MeanCase}
+            agma6001Enabled={agma6001Enabled}
+            setAgma6001Enabled={setAgma6001Enabled}
+            agma6001Kind={agma6001Kind}
+            setAgma6001Kind={setAgma6001Kind}
+            agma6001Duty={agma6001Duty}
+            setAgma6001Duty={setAgma6001Duty}
             onCalculate={calculate}
             onSave={saveProject}
             saving={saving}
@@ -492,6 +578,7 @@ function ShaftsPageContent() {
           projectName={projectName}
           layout={{ length, diameter, loads, supports, lengthUnit }}
           lengthUnit={lengthUnit}
+          forceUnit={forceUnit}
           workflowMode={workflowMode}
         />
       }

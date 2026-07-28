@@ -1,22 +1,36 @@
 "use client";
 
-import { Load, UDL } from "@/lib/structural/beams/types";
+import {
+  Load,
+  UDL,
+  TriangularLoad,
+  type BeamSupport,
+  type SupportKind,
+  type SupportType,
+} from "@/lib/structural/beams/types";
 import MaterialSelect from "@/components/materials/MaterialSelect";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import RolledSectionPicker from "@/components/design-workflows/RolledSectionPicker";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/moduleDesignWorkflows";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
-import {
-  getBeamApplicationPreset,
-} from "@/lib/structural/beams/applicationPresets";
+import { getBeamApplicationPreset } from "@/lib/structural/beams/applicationPresets";
 import { useBeamApplicationPreset } from "@/hooks/useApplicationPreset";
 import { materials } from "@/data/materials";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
-import { calculatorDangerLinkClass, calculatorFieldLabelClass, calculatorInputGridCompactClass, calculatorInputGridTightClass, calculatorLoadCardClass, calculatorSecondaryButtonClass, calculatorSelectClass, calculatorTextInputClass } from "@/components/calculator/styles";
+import {
+  calculatorDangerLinkClass,
+  calculatorFieldLabelClass,
+  calculatorInputGridCompactClass,
+  calculatorInputGridTightClass,
+  calculatorLoadCardClass,
+  calculatorSecondaryButtonClass,
+  calculatorSelectClass,
+  calculatorTextInputClass,
+} from "@/components/calculator/styles";
 
 type Props = {
   projectName: string;
@@ -49,8 +63,12 @@ type Props = {
   c: number;
   setC: (v: number) => void;
 
-  support: "simply_supported" | "cantilever" | "fixed_fixed";
-  setSupport: (v: "simply_supported" | "cantilever" | "fixed_fixed") => void;
+  support: SupportType;
+  setSupport: (v: SupportType) => void;
+  supports: BeamSupport[];
+  updateSupport: (id: string, patch: Partial<BeamSupport>) => void;
+  addSupport: () => void;
+  removeSupport: (id: string) => void;
 
   material: string;
   setMaterial: (v: string) => void;
@@ -64,6 +82,12 @@ type Props = {
   removeLoad: (i: number) => void;
   addPointLoad: () => void;
   addUDL: () => void;
+  addMoment: () => void;
+  addTriangular: () => void;
+
+  includeSelfWeight: boolean;
+  setIncludeSelfWeight: (v: boolean) => void;
+  sectionArea?: number;
 
   meshSegments: number;
   setMeshSegments: (value: number) => void;
@@ -78,28 +102,32 @@ type Props = {
   setDesignMaxStress?: (value: number) => void;
 };
 
+function loadTitle(load: Load): string {
+  if (load.type === "point") return "Point load";
+  if (load.type === "udl") return load.id === "self-weight" ? "Self-weight (UDL)" : "UDL";
+  if (load.type === "triangular") return "Triangular / variable";
+  return "Applied moment";
+}
+
 export default function BeamInputs(props: Props) {
   const { applicationId } = useBeamApplicationPreset();
   const selectedApplication = getBeamApplicationPreset(applicationId);
   const isDesignMode = props.workflowMode === "design";
   const showManualSection = !isDesignMode;
 
+  const selectedMaterial =
+    materials.find((m) => m.name === props.material) ?? materials[0];
   const defaultDesignStress =
-    ((materials.find((m) => m.name === props.material)?.yieldStress ?? 250e6) *
-      selectedApplication.allowableStressRatio) /
+    ((selectedMaterial?.yieldStress ?? 250e6) * selectedApplication.allowableStressRatio) /
     (props.stressUnit === "MPa" ? 1e6 : props.stressUnit === "Pa" ? 1 : 1e6);
 
   return (
     <CalculatorInputPanel
       title="Beam analysis"
-      description="Deflection, bending moment, and shear for point loads, UDLs, and applied moments."
+      description="Continuous-beam FEM with draggable supports, multi-load cases, and catalog sections."
       footer={
         <div className="space-y-2">
-          <CalculatorCalculateButton
-            onClick={props.onCalculate}
-            label="Solve beam"
-            designAware
-          />
+          <CalculatorCalculateButton onClick={props.onCalculate} label="Solve beam" designAware />
           <button
             type="button"
             onClick={props.saveProject}
@@ -125,23 +153,96 @@ export default function BeamInputs(props: Props) {
 
       <CalculatorFormSection title="Support & material">
         <label className={calculatorFieldLabelClass}>
-          Support condition
+          Support preset
           <select
             className={`${calculatorSelectClass} mt-2`}
             value={props.support}
-            onChange={(e) => props.setSupport(e.target.value as Props["support"])}
+            onChange={(e) => props.setSupport(e.target.value as SupportType)}
           >
             <option value="simply_supported">Simply supported</option>
             <option value="cantilever">Cantilever</option>
             <option value="fixed_fixed">Fixed–fixed</option>
           </select>
         </label>
+        <p className="text-xs text-slate-500">
+          Preset seeds end supports. Add or drag supports for continuous beams.
+        </p>
+
+        <div className="space-y-2">
+          {props.supports.map((sp) => (
+            <div key={sp.id} className={calculatorLoadCardClass}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-sm font-medium text-slate-900 dark:text-white">
+                  Support {sp.id}
+                </span>
+                {props.supports.length > 1 ? (
+                  <button
+                    type="button"
+                    className={calculatorDangerLinkClass}
+                    onClick={() => props.removeSupport(sp.id)}
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
+              <div className={calculatorInputGridCompactClass}>
+                <label className={calculatorFieldLabelClass}>
+                  Kind
+                  <select
+                    className={`${calculatorSelectClass} mt-2`}
+                    value={sp.kind}
+                    onChange={(e) =>
+                      props.updateSupport(sp.id, { kind: e.target.value as SupportKind })
+                    }
+                  >
+                    <option value="pin">Pin</option>
+                    <option value="roller">Roller</option>
+                    <option value="fixed">Fixed</option>
+                  </select>
+                </label>
+                <CalculatorUnitField
+                  label="Position"
+                  value={sp.x}
+                  onChange={(v) => props.updateSupport(sp.id, { x: v })}
+                  step="any"
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="beams"
+                      fieldKey="length"
+                      value={props.lengthUnit}
+                      onChange={props.setLengthUnit}
+                    />
+                  }
+                />
+              </div>
+            </div>
+          ))}
+          <button type="button" onClick={props.addSupport} className={calculatorSecondaryButtonClass}>
+            + Intermediate support
+          </button>
+        </div>
 
         <MaterialSelect
           profile="structural"
           value={props.material}
           onChange={props.setMaterial}
         />
+        {selectedMaterial ? (
+          <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+              E {(selectedMaterial.E / 1e9).toFixed(1)} GPa
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+              Fy {((selectedMaterial.yieldStress ?? 0) / 1e6).toFixed(0)} MPa
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+              ρ {selectedMaterial.density} kg/m³
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+              α {((selectedMaterial.thermalExpansion ?? 0) * 1e6).toFixed(1)} µ/°C
+            </span>
+          </div>
+        ) : null}
       </CalculatorFormSection>
 
       {isDesignMode ? null : (
@@ -197,67 +298,141 @@ export default function BeamInputs(props: Props) {
             />
           </>
         ) : null}
+
+        {isDesignMode ? (
+          <div className={`${calculatorInputGridTightClass} mt-2`}>
+            <CalculatorUnitField
+              label="Design max deflection"
+              value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
+              onChange={(v) => props.setDesignMaxDeflection?.(v)}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey="length"
+                  value={props.lengthUnit}
+                  onChange={props.setLengthUnit}
+                />
+              }
+            />
+            <CalculatorUnitField
+              label="Design max stress"
+              value={props.designMaxStress ?? defaultDesignStress}
+              onChange={(v) => props.setDesignMaxStress?.(v)}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey="stress"
+                  value={props.stressUnit}
+                  onChange={props.setStressUnit}
+                />
+              }
+            />
+          </div>
+        ) : null}
       </CalculatorFormSection>
 
       <CalculatorFormSection
         title="Loads"
-        description="Add point forces, distributed loads, or moments along the span."
+        description="Point, UDL, triangular/variable, moment, and optional self-weight."
       >
+        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+          <input
+            type="checkbox"
+            checked={props.includeSelfWeight}
+            onChange={(e) => props.setIncludeSelfWeight(e.target.checked)}
+          />
+          Include self-weight
+          {props.sectionArea != null && props.sectionArea > 0
+            ? ` (A = ${(props.sectionArea * 1e4).toFixed(2)} cm²)`
+            : " — select a catalog section for area"}
+        </label>
+
         {(props.loads ?? []).map((load, i) => (
-          <div key={i} className={calculatorLoadCardClass}>
+          <div key={load.id || i} className={calculatorLoadCardClass}>
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-medium text-slate-900 dark:text-white">
-                {load.type === "point" ? "Point load" : load.type === "udl" ? "UDL" : "Applied moment"}
+                {loadTitle(load)}
               </span>
-              <button type="button" className={calculatorDangerLinkClass} onClick={() => props.removeLoad(i)}>
+              <button
+                type="button"
+                className={calculatorDangerLinkClass}
+                onClick={() => props.removeLoad(i)}
+              >
                 Remove
               </button>
             </div>
 
-            <CalculatorUnitField
-              label="Magnitude"
-              value={load.value}
-              onChange={(v) =>
-                props.updateLoad(i, {
-                  ...load,
-                  value: v,
-                })
-              }
-              step="any"
-              unit={
-                <ModuleUnitSelect
-                  moduleId="beams"
-                  fieldKey={
-                    load.type === "point" ? "force" : load.type === "udl" ? "udl" : "moment"
+            {load.type === "triangular" ? (
+              <div className={calculatorInputGridCompactClass}>
+                <CalculatorUnitField
+                  label="w at start"
+                  value={load.wStart}
+                  onChange={(v) =>
+                    props.updateLoad(i, { ...(load as TriangularLoad), wStart: v })
                   }
-                  value={
-                    load.type === "point"
-                      ? props.forceUnit
-                      : load.type === "udl"
-                        ? props.udlUnit
-                        : props.momentUnit
-                  }
-                  onChange={
-                    load.type === "point"
-                      ? props.setForceUnit
-                      : load.type === "udl"
-                        ? props.setUdlUnit
-                        : props.setMomentUnit
+                  step="any"
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="beams"
+                      fieldKey="udl"
+                      value={props.udlUnit}
+                      onChange={props.setUdlUnit}
+                    />
                   }
                 />
-              }
-            />
+                <CalculatorUnitField
+                  label="w at end"
+                  value={load.wEnd}
+                  onChange={(v) =>
+                    props.updateLoad(i, { ...(load as TriangularLoad), wEnd: v })
+                  }
+                  step="any"
+                  unit={
+                    <ModuleUnitSelect
+                      moduleId="beams"
+                      fieldKey="udl"
+                      value={props.udlUnit}
+                      onChange={props.setUdlUnit}
+                    />
+                  }
+                />
+              </div>
+            ) : (
+              <CalculatorUnitField
+                label="Magnitude"
+                value={load.value}
+                onChange={(v) => props.updateLoad(i, { ...load, value: v })}
+                step="any"
+                unit={
+                  <ModuleUnitSelect
+                    moduleId="beams"
+                    fieldKey={
+                      load.type === "point" ? "force" : load.type === "udl" ? "udl" : "moment"
+                    }
+                    value={
+                      load.type === "point"
+                        ? props.forceUnit
+                        : load.type === "udl"
+                          ? props.udlUnit
+                          : props.momentUnit
+                    }
+                    onChange={
+                      load.type === "point"
+                        ? props.setForceUnit
+                        : load.type === "udl"
+                          ? props.setUdlUnit
+                          : props.setMomentUnit
+                    }
+                  />
+                }
+              />
+            )}
 
             {load.type === "point" || load.type === "moment" ? (
               <CalculatorUnitField
                 label="Position along span"
                 value={load.position}
-                onChange={(v) =>
-                  props.updateLoad(i, {
-                    ...load,
-                    position: v,
-                  })
-                }
+                onChange={(v) => props.updateLoad(i, { ...load, position: v })}
                 step="any"
                 unit={
                   <ModuleUnitSelect
@@ -268,14 +443,14 @@ export default function BeamInputs(props: Props) {
                   />
                 }
               />
-            ) : load.type === "udl" ? (
-              <div className={`${calculatorInputGridCompactClass}`}>
+            ) : load.type === "udl" || load.type === "triangular" ? (
+              <div className={calculatorInputGridCompactClass}>
                 <CalculatorUnitField
                   label="Start position"
                   value={load.start}
                   onChange={(v) =>
                     props.updateLoad(i, {
-                      ...(load as UDL),
+                      ...(load as UDL | TriangularLoad),
                       start: v,
                     })
                   }
@@ -294,7 +469,7 @@ export default function BeamInputs(props: Props) {
                   value={load.end}
                   onChange={(v) =>
                     props.updateLoad(i, {
-                      ...(load as UDL),
+                      ...(load as UDL | TriangularLoad),
                       end: v,
                     })
                   }
@@ -320,11 +495,17 @@ export default function BeamInputs(props: Props) {
           <button type="button" onClick={props.addUDL} className={calculatorSecondaryButtonClass}>
             + UDL
           </button>
+          <button type="button" onClick={props.addTriangular} className={calculatorSecondaryButtonClass}>
+            + Triangular
+          </button>
+          <button type="button" onClick={props.addMoment} className={calculatorSecondaryButtonClass}>
+            + Moment
+          </button>
         </div>
       </CalculatorFormSection>
 
       <CalculatorFormSection title="Result units">
-        <div className={`${calculatorInputGridTightClass}`}>
+        <div className={calculatorInputGridTightClass}>
           <label className={calculatorFieldLabelClass}>
             Moment units
             <div className="mt-2">

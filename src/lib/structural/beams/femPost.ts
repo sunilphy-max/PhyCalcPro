@@ -1,5 +1,5 @@
 ﻿import { FEMModel } from "./femTypes";
-import { Load, SupportType } from "./types";
+import type { Load, SupportReaction } from "./types";
 
 export type FEMPostResult = {
   x: number[];
@@ -11,56 +11,42 @@ export type FEMPostResult = {
   reactions?: number[];
 };
 
-function getSupportMoments(reactions: number[], support: SupportType, nodeCount: number) {
-  // The FEM reaction moment acts on the beam from the support; the internal
-  // bending moment diagram (sagging positive) starts at its negative, e.g. a
-  // cantilever with tip load P has M(0) = -P·L, not +P·L.
-  if (support === "cantilever") {
-    return {
-      leftMoment: -(reactions[1] || 0),
-      rightMoment: 0,
-    };
-  }
-
-  if (support === "fixed_fixed") {
-    return {
-      leftMoment: -(reactions[1] || 0),
-      rightMoment: -(reactions[nodeCount * 2 - 1] || 0),
-    };
-  }
-
-  return {
-    leftMoment: 0,
-    rightMoment: 0,
-  };
-}
-
 function shearAtPosition(
   x: number,
   loads: Load[],
-  reactions: number[],
-  support: SupportType,
-  endX: number
+  supportReactions: SupportReaction[]
 ) {
   let shear = 0;
+  const eps = 1e-12;
 
-  if (x >= 0) {
-    shear += reactions[0] || 0;
-  }
-
-  if ((support === "simply_supported" || support === "fixed_fixed") && x >= endX) {
-    shear += reactions[reactions.length - 2] || 0;
+  for (const r of supportReactions) {
+    if (r.x <= x + eps) shear += r.Fy;
   }
 
   for (const load of loads) {
-    if (load.type === "point" && load.position <= x) {
+    if (load.type === "point" && load.position <= x + eps) {
       shear -= load.value;
     }
 
     if (load.type === "udl") {
       const overlap = Math.max(0, Math.min(load.end, x) - load.start);
-      if (overlap > 0) {
-        shear -= load.value * overlap;
+      if (overlap > 0) shear -= load.value * overlap;
+    }
+
+    if (load.type === "triangular") {
+      const a = load.start;
+      const b = load.end;
+      const overlapEnd = Math.min(b, x);
+      if (overlapEnd > a) {
+        const wa = load.wStart;
+        const wb = load.wEnd;
+        const L = b - a;
+        if (L > 0) {
+          const wAt = (t: number) => wa + (wb - wa) * ((t - a) / L);
+          const x1 = a;
+          const x2 = overlapEnd;
+          shear -= 0.5 * (wAt(x1) + wAt(x2)) * (x2 - x1);
+        }
       }
     }
   }
@@ -73,9 +59,9 @@ export function postProcessFEM(
   displacements: number[],
   I: number,
   c: number,
-  E: number,
+  _E: number,
   loads: Load[],
-  support: SupportType,
+  supportReactions: SupportReaction[],
   reactions: number[]
 ): FEMPostResult {
   const x: number[] = [];
@@ -89,25 +75,33 @@ export function postProcessFEM(
     x.push(node.x);
     const v = displacements[node.id * 2];
     const theta = displacements[node.id * 2 + 1];
-    deflection.push(Number.isFinite(v) ? v : 0);
-    rotation.push(Number.isFinite(theta) ? theta : 0);
+    deflection.push(Number.isFinite(v) ? v! : 0);
+    rotation.push(Number.isFinite(theta) ? theta! : 0);
   }
 
-  const endX = x[x.length - 1] ?? 0;
-  const { leftMoment } = getSupportMoments(reactions, support, model.nodes.length);
-
   for (let i = 0; i < x.length; i++) {
-    const shearValue = shearAtPosition(x[i], loads, reactions, support, endX);
+    const shearValue = shearAtPosition(x[i]!, loads, supportReactions);
     shear.push(Number.isFinite(shearValue) ? shearValue : 0);
   }
 
-  moment.push(Number.isFinite(leftMoment) ? leftMoment : 0);
+  // Start moment from left-end fixed support (continuous beam → M continuous thereafter)
+  let M0 = 0;
+  for (const r of supportReactions) {
+    if (r.kind === "fixed" && r.Mz != null && Math.abs(r.x - (x[0] ?? 0)) <= 1e-12) {
+      M0 -= r.Mz;
+    }
+  }
+  moment.push(Number.isFinite(M0) ? M0 : 0);
+
   for (let i = 1; i < x.length; i++) {
-    const dx = x[i] - x[i - 1];
-    // Sample shear at the interval midpoint: exact for nodal point loads
-    // (avoids averaging across the step discontinuity) and for linear UDL shear.
-    const midShear = shearAtPosition(0.5 * (x[i - 1] + x[i]), loads, reactions, support, endX);
-    moment.push(moment[i - 1] + (Number.isFinite(midShear) ? midShear : 0) * dx);
+    const dx = x[i]! - x[i - 1]!;
+    const midShear = shearAtPosition(
+      0.5 * (x[i - 1]! + x[i]!),
+      loads,
+      supportReactions
+    );
+    const Mi = moment[i - 1]! + (Number.isFinite(midShear) ? midShear : 0) * dx;
+    moment.push(Number.isFinite(Mi) ? Mi : 0);
   }
 
   for (const M of moment) {

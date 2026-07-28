@@ -8,6 +8,7 @@ import {
   type Material,
   type MaterialCategory,
 } from "@/data/materials";
+import { materialDatasheetHref } from "@/lib/materials/materialPage";
 
 type Props = {
   selectedName?: string;
@@ -43,6 +44,7 @@ export default function WorkspaceMaterialsPanel({
   );
 
   const compared = materials.filter((m) => compareIds.includes(m.id));
+  const selected = materials.find((m) => m.name === selectedName);
 
   const toggleCompare = (id: string) => {
     setCompareIds((prev) =>
@@ -54,9 +56,22 @@ export default function WorkspaceMaterialsPanel({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Material library</h3>
-        <Link href={calculatorHref} className="text-xs font-medium text-sky-700 hover:underline dark:text-sky-400">
-          Open full database
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          {selected ? (
+            <Link
+              href={materialDatasheetHref(selected.id)}
+              className="text-xs font-medium text-sky-700 hover:underline dark:text-sky-400"
+            >
+              View datasheet
+            </Link>
+          ) : null}
+          <Link
+            href={calculatorHref}
+            className="text-xs font-medium text-sky-700 hover:underline dark:text-sky-400"
+          >
+            Open full database
+          </Link>
+        </div>
       </div>
       <div className="grid gap-2 sm:grid-cols-[1fr_180px]">
         <input
@@ -129,7 +144,11 @@ export default function WorkspaceMaterialsPanel({
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p className="font-semibold text-slate-900 dark:text-white">{m.name}</p>
+                <p className="font-semibold text-slate-900 dark:text-white">
+                  <Link href={materialDatasheetHref(m.id)} className="hover:underline">
+                    {m.name}
+                  </Link>
+                </p>
                 <p className="text-[11px] text-slate-500">
                   {m.standard ?? "—"} · Fy {Math.round(m.yieldStress / 1e6)} MPa
                   {m.costBand ? ` · ${m.costBand}` : ""}
@@ -157,7 +176,9 @@ export default function WorkspaceMaterialsPanel({
           </li>
         ))}
       </ul>
-      <p className="text-[11px] text-slate-500">{results.length} matches · catalog {materials.length}</p>
+      <p className="text-[11px] text-slate-500">
+        {results.length} matches · catalog {materials.length}
+      </p>
     </div>
   );
 }

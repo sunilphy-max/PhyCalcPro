@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
+import BeamStressContour from "@/components/structural/beams/BeamStressContour";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
@@ -14,12 +15,14 @@ import {
 import type {
   BeamApplicationContext,
   BeamResult,
+  BeamSupport,
   Load,
   SupportType,
 } from "@/lib/structural/beams/types";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
 import { diagnoseBeam } from "@/lib/structural/beams/diagnosis";
+import { beamsEquations } from "@/lib/standards/equations/beams";
 
 type DisplayUnits = {
   length: string;
@@ -32,18 +35,16 @@ type Props = {
   result: BeamResult;
   loads: Load[];
   length: number;
-  support: SupportType;
+  support: SupportType | "continuous";
+  supports?: BeamSupport[];
   units?: DisplayUnits;
   caseLabel?: string;
   combinationMode?: "active" | "envelope";
   applicationContext?: BeamApplicationContext;
   workflowMode?: DesignWorkflowMode;
-  onLoadDrag?: (
-    id: string,
-    updates: Partial<Extract<Load, { type: "point" }>>
-  ) => void;
-  supportPositions?: { id: string; x: number }[];
+  onLoadDrag?: (id: string, updates: Partial<Load>) => void;
   onSupportDrag?: (id: string, x: number) => void;
+  sectionDepth?: number;
 };
 
 export default function BeamDashboard({
@@ -51,13 +52,14 @@ export default function BeamDashboard({
   loads,
   length,
   support,
+  supports,
   caseLabel,
   combinationMode = "active",
   applicationContext,
   workflowMode,
   onLoadDrag,
-  supportPositions,
   onSupportDrag,
+  sectionDepth,
   units = { length: "m", force: "N", moment: "N·m", stress: "Pa" },
 }: Props) {
   const [probeX, setProbeX] = useState<number | null>(null);
@@ -87,6 +89,28 @@ export default function BeamDashboard({
         }
       : null;
 
+  const criticalMomentIndex = useMemo(() => {
+    let best = 0;
+    let peak = -Infinity;
+    result.moment.forEach((m, i) => {
+      if (Math.abs(m) > peak) {
+        peak = Math.abs(m);
+        best = i;
+      }
+    });
+    return best;
+  }, [result.moment]);
+
+  const safetyFactor = useMemo(() => {
+    if (!application) return null;
+    const util = Math.max(
+      application.stressUtilization,
+      application.deflectionUtilization,
+      1e-9
+    );
+    return 1 / util;
+  }, [application]);
+
   const plotTabs = useMemo((): PlotPickerTab[] => {
     const tabs: PlotPickerTab[] = [
       {
@@ -97,13 +121,14 @@ export default function BeamDashboard({
             loads={loads}
             length={length}
             support={support}
+            supports={supports}
             onLoadDrag={onLoadDrag}
-            supportPositions={supportPositions}
             onSupportDrag={onSupportDrag}
             probeX={probeX}
             setProbeX={setProbeX}
             xPositions={result.x}
             deflection={result.deflection}
+            supportReactions={result.supportReactions}
             animateDeflection
           />
         ),
@@ -158,17 +183,25 @@ export default function BeamDashboard({
         id: "stress",
         label: "Bending stress",
         content: (
-          <EngineeringPlot
-            title="Stress Distribution σ(x)"
-            x={result.x}
-            y={result.stress}
-            yLabel="Stress"
-            xLabel="Position along beam"
-            xUnit={units.length}
-            unitLabel={units.stress}
-            probeX={probeX}
-            color="#7c3aed"
-          />
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
+            <EngineeringPlot
+              title="Stress Distribution σ(x)"
+              x={result.x}
+              y={result.stress}
+              yLabel="Stress"
+              xLabel="Position along beam"
+              xUnit={units.length}
+              unitLabel={units.stress}
+              probeX={probeX}
+              color="#7c3aed"
+            />
+            <BeamStressContour
+              depth={sectionDepth ?? 2 * 0.1}
+              maxStress={result.maxStress}
+              criticalMoment={result.moment[criticalMomentIndex] ?? 0}
+              stressUnit={units.stress}
+            />
+          </div>
         ),
       });
     }
@@ -199,12 +232,26 @@ export default function BeamDashboard({
     });
 
     return tabs;
-  }, [loads, length, support, onLoadDrag, probeX, result, units]);
+  }, [
+    loads,
+    length,
+    support,
+    supports,
+    onLoadDrag,
+    onSupportDrag,
+    probeX,
+    result,
+    units,
+    sectionDepth,
+    criticalMomentIndex,
+  ]);
 
   const diagnosis = useMemo(() => {
     if (workflowMode !== "diagnose") return null;
     return diagnoseBeam(result);
   }, [workflowMode, result]);
+
+  const governingEq = beamsEquations[0];
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -217,26 +264,29 @@ export default function BeamDashboard({
         </div>
       ) : null}
 
-      {/* Key results first */}
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label={`Max moment (${units.moment})`}
-          numericValue={result.maxMoment} unit={units.moment}
+          numericValue={result.maxMoment}
+          unit={units.moment}
           tone="purple"
         />
         <CalculatorMetricCard
           label={`Max shear (${units.force})`}
-          numericValue={result.maxShear} unit={units.force}
+          numericValue={result.maxShear}
+          unit={units.force}
           tone="blue"
         />
         <CalculatorMetricCard
           label={`Max stress (${units.stress})`}
-          numericValue={result.maxStress} unit={units.stress}
+          numericValue={result.maxStress}
+          unit={units.stress}
           tone="orange"
         />
         <CalculatorMetricCard
           label={`Max deflection (${units.length})`}
-          numericValue={result.maxDeflection} unit={units.length}
+          numericValue={result.maxDeflection}
+          unit={units.length}
           tone="green"
         />
       </CalculatorMetricGrid>
@@ -244,29 +294,82 @@ export default function BeamDashboard({
       {application ? (
         <CalculatorMetricGrid cols={4}>
           <CalculatorMetricCard
-            label="Application stress utilization"
-            numericValue={application.stressUtilization} unit="—"
+            label="Stress utilization"
+            numericValue={application.stressUtilization}
+            unit="—"
             status={application.stressUtilization <= 1 ? "safe" : "danger"}
             tone="orange"
           />
           <CalculatorMetricCard
-            label="Application deflection utilization"
-            numericValue={application.deflectionUtilization} unit="—"
+            label="Deflection utilization"
+            numericValue={application.deflectionUtilization}
+            unit="—"
             status={application.deflectionUtilization <= 1 ? "safe" : "danger"}
             tone="blue"
           />
           <CalculatorMetricCard
-            label={`Allowable stress (${units.stress})`}
-            numericValue={application.allowableStress} unit={units.stress}
-            tone="purple"
+            label="Safety factor (governing)"
+            numericValue={safetyFactor ?? undefined}
+            unit="—"
+            status={
+              safetyFactor != null && safetyFactor >= 1 ? "safe" : "danger"
+            }
+            tone="green"
           />
           <CalculatorMetricCard
-            label={`Deflection limit (${units.length})`}
-            numericValue={application.deflectionLimit} unit={units.length}
-            tone="green"
+            label={`Allowable stress (${units.stress})`}
+            numericValue={application.allowableStress}
+            unit={units.stress}
+            tone="purple"
           />
         </CalculatorMetricGrid>
       ) : null}
+
+      {(result.supportReactions?.length ?? 0) > 0 ? (
+        <CalculatorMetricGrid
+          cols={
+            Math.min(4, result.supportReactions!.length) as 2 | 3 | 4
+          }
+        >
+          {result.supportReactions!.map((r) => (
+            <CalculatorMetricCard
+              key={r.supportId}
+              label={`Reaction ${r.supportId} (${r.kind})`}
+              numericValue={r.Fy}
+              unit={units.force}
+              tone="green"
+            />
+          ))}
+        </CalculatorMetricGrid>
+      ) : null}
+
+      <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-3 text-sm dark:border-slate-700 dark:bg-slate-900/50">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Design summary
+        </p>
+        <p className="mt-1 text-slate-700 dark:text-slate-200">
+          {application
+            ? application.stressUtilization <= 1 &&
+              application.deflectionUtilization <= 1
+              ? `Design passes screening (${application.standards.join(", ") || "indicative"}).`
+              : `Design fails screening — governing limit: ${
+                  application.stressUtilization >= application.deflectionUtilization
+                    ? "flexure/stress"
+                    : "deflection"
+                }.`
+            : "Run solve to attach application checks."}
+        </p>
+        {governingEq ? (
+          <p className="mt-2 font-mono text-xs text-slate-600 dark:text-slate-300">
+            {governingEq.label}: {governingEq.expression.replace(/\\\\/g, "\\")}
+          </p>
+        ) : null}
+        {application?.standards?.length ? (
+          <p className="mt-1 text-xs text-slate-500">
+            Applicable standards: {application.standards.join(", ")}
+          </p>
+        ) : null}
+      </div>
 
       <CalculatorMetricGrid cols={2} className="sm:grid-cols-5">
         <CalculatorMetricCard
@@ -274,25 +377,25 @@ export default function BeamDashboard({
           value={caseLabel ?? (combinationMode === "envelope" ? "Envelope" : "Active")}
         />
         <CalculatorMetricCard
-          label={`Position`}
+          label="Position"
           numericValue={probeData ? probeData.x : undefined}
           unit={probeData ? units.length : undefined}
           value={probeData ? undefined : "Click beam model"}
         />
         <CalculatorMetricCard
-          label={`Shear`}
+          label="Shear"
           numericValue={probeData ? probeData.shear : undefined}
           unit={probeData ? units.force : undefined}
           value={probeData ? undefined : "—"}
         />
         <CalculatorMetricCard
-          label={`Moment`}
+          label="Moment"
           numericValue={probeData ? probeData.moment : undefined}
           unit={probeData ? units.moment : undefined}
           value={probeData ? undefined : "—"}
         />
         <CalculatorMetricCard
-          label={`Deflection`}
+          label="Deflection"
           numericValue={probeData ? probeData.deflection : undefined}
           unit={probeData ? units.length : undefined}
           value={probeData ? undefined : "—"}

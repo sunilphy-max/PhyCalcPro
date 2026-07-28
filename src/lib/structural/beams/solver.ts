@@ -1,41 +1,49 @@
-import { BeamConfig, BeamResult } from "./types";
-
+import { BeamConfig, BeamResult, Load, UDL } from "./types";
 import { solveBeamFEM } from "./femSolver";
 import { postProcessFEM } from "./femPost";
-
 import { maxAbs } from "../../shared/math";
+import {
+  inferSupportPreset,
+  resolveSupports,
+  validateSupports,
+} from "./supports";
 
-export function solveBeam(
-  config: BeamConfig
-): BeamResult {
+const G = 9.80665;
 
-  const {
+export function synthesizeSelfWeightLoad(config: BeamConfig): UDL | null {
+  if (!config.includeSelfWeight) return null;
+  const area = config.area;
+  const density = config.density;
+  if (area == null || area <= 0 || density == null || density <= 0) return null;
+  return {
+    id: "self-weight",
+    type: "udl",
+    value: area * density * G,
+    start: 0,
+    end: config.length,
+  };
+}
+
+export function effectiveLoads(config: BeamConfig): Load[] {
+  const selfWeight = synthesizeSelfWeightLoad(config);
+  if (!selfWeight) return config.loads;
+  if (config.loads.some((l) => l.id === "self-weight")) return config.loads;
+  return [...config.loads, selfWeight];
+}
+
+export function solveBeam(config: BeamConfig): BeamResult {
+  const { length, E, I, c } = config;
+  const supports = resolveSupports(config);
+  const loads = effectiveLoads(config);
+
+  const fem = solveBeamFEM({
     length,
     loads,
-    support,
-
+    supports,
     E,
     I,
-    c,
-  } = config;
-
-  // -----------------------------------
-  // FEM SOLUTION
-  // -----------------------------------
-
-  const fem =
-    solveBeamFEM({
-      length,
-      loads,
-      support,
-      E,
-      I,
-      meshSegments: config.meshSegments,
-    });
-
-  // -----------------------------------
-  // POST PROCESS
-  // -----------------------------------
+    meshSegments: config.meshSegments,
+  });
 
   const results = postProcessFEM(
     fem.model,
@@ -43,12 +51,10 @@ export function solveBeam(
     I,
     c,
     E,
-    config.loads,
-    config.support,
+    loads,
+    fem.supportReactions,
     fem.reactions
   );
-
-  results.reactions = fem.reactions;
 
   return {
     x: results.x,
@@ -62,5 +68,14 @@ export function solveBeam(
     maxMoment: maxAbs(results.moment),
     maxShear: maxAbs(results.shear),
     reactions: fem.reactions,
+    supportReactions: fem.supportReactions,
   };
+}
+
+export function supportValidationWarnings(config: BeamConfig): string[] {
+  return validateSupports(resolveSupports(config), config.length);
+}
+
+export function supportPresetLabel(config: BeamConfig) {
+  return inferSupportPreset(resolveSupports(config), config.length);
 }

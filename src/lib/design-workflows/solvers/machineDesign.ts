@@ -158,8 +158,10 @@ export function designGearModule(userInputs: ModuleUserInputs): ModuleDesignMode
 
 export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignModeResult {
   const targetSf = userInputs.targetSafetyFactor ?? 2;
+  const targetFatigueSf = Math.min(targetSf, 1.5);
   const length = userInputs.length ?? 0.6;
   const loads = resolveShaftLoads(userInputs, length);
+  const rpm = userInputs.rpm ?? userInputs.speedDriver ?? 0;
   const diametersMm = ISO_PREFERRED_SHAFT_DIAMETERS_MM.filter((d) => d >= 20 && d <= 120);
 
   const items = diametersMm.map((dMm) => {
@@ -170,13 +172,34 @@ export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignM
         material: SHAFT_MATERIAL,
         loads,
         meshSegments: 20,
+        operatingRpm: rpm > 0 ? rpm : undefined,
+        fatigue:
+          rpm > 0
+            ? { enabled: true, surfaceFinish: "machined", useNotchSensitivity: true }
+            : undefined,
       });
-      const util = targetSf / Math.max(res.safetyFactor, 1e-9);
+      const staticUtil = targetSf / Math.max(res.safetyFactor, 1e-9);
+      const fatigueUtil =
+        res.fatigueSafetyFactor != null
+          ? targetFatigueSf / Math.max(res.fatigueSafetyFactor, 1e-9)
+          : 0;
+      const csUtil =
+        res.criticalSpeedMargin != null
+          ? 1.25 / Math.max(res.criticalSpeedMargin, 1e-9)
+          : 0;
+      const util = Math.max(staticUtil, fatigueUtil, csUtil);
+      const parts = [`static SF ${res.safetyFactor.toFixed(2)}`];
+      if (res.fatigueSafetyFactor != null) {
+        parts.push(`fatigue SF ${res.fatigueSafetyFactor.toFixed(2)}`);
+      }
+      if (res.criticalSpeedMargin != null) {
+        parts.push(`CS margin ${res.criticalSpeedMargin.toFixed(2)}×`);
+      }
       return {
         label: `Ø${dMm} mm`,
         utilization: util,
         fields: { diameter: dMm, diameterUnit: "mm" },
-        detail: `SF ${res.safetyFactor.toFixed(2)}`,
+        detail: parts.join(", "),
       };
     } catch {
       return { label: `Ø${dMm}`, utilization: 99, fields: { diameter: dMm }, detail: "invalid" };
@@ -187,9 +210,10 @@ export function designShaftDiameter(userInputs: ModuleUserInputs): ModuleDesignM
     loads.length > 1
       ? `${loads.length} load cases`
       : `T=${loads[0]?.torque ?? 0} N·m, M=${loads[0]?.bendingMoment ?? 0} N·m`;
+  const rpmNote = rpm > 0 ? ` @ ${rpm} RPM (fatigue + critical speed)` : "";
   return fromSweep(
     sweepCatalogForUtilization(items),
-    `Shaft diameter sweep for combined FEA stress (${loadSummary}) and target SF.`
+    `Shaft diameter sweep for combined FEA stress (${loadSummary})${rpmNote} and target SF.`
   );
 }
 

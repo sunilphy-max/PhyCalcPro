@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-21T22:00:06.657Z",
-  "total": 85,
-  "passed": 85,
+  "ranAt": "2026-07-28T03:23:10.788Z",
+  "total": 86,
+  "passed": 86,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -39,6 +39,19 @@
           "field": "maxMoment",
           "expected": 12500,
           "actual": 12500.000000000873,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "beams-continuous-01",
+      "moduleId": "beams",
+      "pass": true,
+      "fields": [
+        {
+          "field": "maxMoment",
+          "expected": 2250,
+          "actual": 2247.500000200699,
           "pass": true
         }
       ]
@@ -1780,7 +1793,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.9198297468195,
+          "actual": 256.91982974682753,
           "pass": true
         }
       ]

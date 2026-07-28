@@ -186,15 +186,21 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     genericIndicativeCheck("deflection", "Shaft deflection", "deflection"),
     genericIndicativeCheck("critical_speed", "Critical speed margin", "safety_factor"),
     genericIndicativeCheck("fatigue", "Fatigue safety (Goodman)", "safety_factor"),
+    genericIndicativeCheck("din743_fatigue", "DIN 743 fatigue safety", "safety_factor"),
+    genericIndicativeCheck("din743_static", "DIN 743 static safety", "safety_factor"),
   ], {
     standardsByCode: {
-      US: [{ body: "AGMA", document: "6001", note: "Interface loads" }],
-      EU: [{ body: "DIN", document: "743", note: "Shaft fatigue" }],
+      US: [{ body: "AGMA", document: "6001", note: "Interface load templates + Goodman screening" }],
+      EU: [
+        { body: "DIN", document: "743-1", note: "Load capacity — general" },
+        { body: "DIN", document: "743-2", note: "Notch α/β catalogs" },
+        { body: "DIN", document: "743-3", note: "Material strength tables" },
+      ],
     },
-    indicativeMethod: "Combined stress + Goodman fatigue + critical-speed screening (DIN 743 / AGMA oriented)",
+    indicativeMethod: "FEM combined stress + Goodman + DIN 743-1/2/3 multi-station worksheet + critical-speed screening",
     limitations: [
-      "DIN 743 / AGMA fatigue factors are partial — notch catalogs and full multi-station worksheets not complete.",
-      "Professional screening — verify critical shafts with specialized shaft software before release.",
+      "DIN 743 Method-C screening with published formula/chart fits — verify critical shafts against the licensed standard text.",
+      "AGMA 6001 provides interface load templates; tooth strength remains in the gears module.",
     ],
   }),
   housing: withCodeChecks("housing", "Bearing Housing", [

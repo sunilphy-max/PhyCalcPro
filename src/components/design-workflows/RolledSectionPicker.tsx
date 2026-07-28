@@ -1,6 +1,11 @@
 "use client";
 
-import { ROLLED_SECTIONS, ROLLED_SECTION_FAMILIES, sectionsByFamily } from "@/lib/materials/rolled-sections/data";
+import { useMemo, useState } from "react";
+import {
+  ROLLED_SECTIONS,
+  ROLLED_SECTION_FAMILIES,
+  sectionsByFamily,
+} from "@/lib/materials/rolled-sections/data";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
 
 type Props = {
@@ -11,6 +16,8 @@ type Props = {
   className?: string;
 };
 
+const BEAM_FAMILIES = ["W", "S", "C", "L", "RHS", "SHS", "Pipe", "IPE", "UPN"] as const;
+
 export default function RolledSectionPicker({
   designation,
   onDesignationChange,
@@ -18,11 +25,28 @@ export default function RolledSectionPicker({
   familyFilter,
   className = "",
 }: Props) {
-  const families = familyFilter ? [familyFilter] : [...ROLLED_SECTION_FAMILIES];
-  const options = families.flatMap((family) => sectionsByFamily(family));
+  const [family, setFamily] = useState<string>(familyFilter ?? "W");
+  const [query, setQuery] = useState("");
+
+  const families = familyFilter
+    ? [familyFilter]
+    : BEAM_FAMILIES.filter((f) =>
+        (ROLLED_SECTION_FAMILIES as readonly string[]).includes(f)
+      );
+
+  const options = useMemo(() => {
+    const base =
+      family === "Custom"
+        ? []
+        : sectionsByFamily(family.length ? family : families[0] ?? "W");
+    const q = query.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter((d) => d.toLowerCase().includes(q));
+  }, [family, families, query]);
 
   const handleChange = (next: string) => {
     onDesignationChange(next);
+    if (!next) return;
     const section = ROLLED_SECTIONS[next];
     if (section) onSectionApplied(next, section);
   };
@@ -30,25 +54,65 @@ export default function RolledSectionPicker({
   const selected = designation ? ROLLED_SECTIONS[designation] : undefined;
 
   return (
-    <div className={`space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 ${className}`}>
-      <label className="text-xs font-semibold uppercase tracking-wide text-slate-600">
-        Rolled section catalog
+    <div className={`space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40 ${className}`}>
+      <label className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+        Beam section library
       </label>
-      <select
-        className="w-full rounded border border-slate-300 bg-white p-2 text-sm"
-        value={designation}
-        onChange={(e) => handleChange(e.target.value)}
-      >
-        <option value="">Manual section properties</option>
-        {options.map((item) => (
-          <option key={item} value={item}>
-            {item}
-          </option>
+
+      <div className="flex flex-wrap gap-1">
+        {[...families, "Custom"].map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => {
+              setFamily(f);
+              if (f === "Custom") {
+                onDesignationChange("");
+              }
+            }}
+            className={`rounded-md px-2 py-1 text-[11px] font-medium ${
+              family === f
+                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+                : "bg-white text-slate-600 ring-1 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-600"
+            }`}
+          >
+            {f}
+          </button>
         ))}
-      </select>
+      </div>
+
+      {family !== "Custom" ? (
+        <>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${family} shapes…`}
+            className="w-full rounded border border-slate-300 bg-white p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+          />
+          <select
+            className="w-full rounded border border-slate-300 bg-white p-2 text-sm dark:border-slate-600 dark:bg-slate-900"
+            value={designation}
+            onChange={(e) => handleChange(e.target.value)}
+          >
+            <option value="">Select section…</option>
+            {options.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </>
+      ) : (
+        <p className="text-xs text-slate-600 dark:text-slate-300">
+          Custom: enter I and c manually in Geometry.
+        </p>
+      )}
+
       {selected ? (
-        <p className="text-xs leading-5 text-slate-600">
-          I<sub>x</sub> {(selected.ix * 1e6).toFixed(2)}×10⁻⁶ m⁴ · S<sub>x</sub>{" "}
+        <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">
+          I<sub>x</sub> {(selected.ix * 1e6).toFixed(2)}×10⁻⁶ m⁴ · I<sub>y</sub>{" "}
+          {(selected.iy * 1e6).toFixed(2)}×10⁻⁶ m⁴ · S<sub>x</sub>{" "}
           {(selected.sx * 1e6).toFixed(2)}×10⁻⁶ m³ · A {(selected.area * 1e4).toFixed(2)} cm² ·{" "}
           {selected.weight.toFixed(1)} kg/m
         </p>

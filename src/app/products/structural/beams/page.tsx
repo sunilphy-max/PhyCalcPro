@@ -7,7 +7,18 @@ import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignC
 import CalculatorLayout from "@/components/CalculatorLayout";
 import { fromBase, toBase } from "@/lib/units/conversions";
 import { normalizeInput } from "@/lib/physics";
-import type { Load, UDL, BeamConfig, BeamResult } from "@/lib/structural/beams/types";
+import type {
+  Load,
+  UDL,
+  TriangularLoad,
+  BeamConfig,
+  BeamResult,
+  BeamSupport,
+  SupportType,
+} from "@/lib/structural/beams/types";
+import { supportsFromPreset } from "@/lib/structural/beams/supports";
+import { buildBeamExplanations } from "@/lib/structural/beams/explanations";
+import { ROLLED_SECTIONS } from "@/lib/materials/rolled-sections/data";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import { useCalculationPipeline } from "@/hooks/useCalculationPipeline";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -152,10 +163,13 @@ function BeamsPageContent() {
   const [I, setI] = useState(1e-6);
   const [c, setC] = useState(0.05);
 
-  const [support, setSupport] = useState<
-    "simply_supported" | "cantilever" | "fixed_fixed"
-  >("simply_supported");
-  const [material, setMaterial] = useState("S275JR");
+  const [support, setSupport] = useState<SupportType>("simply_supported");
+  const [supports, setSupports] = useState<BeamSupport[]>(() =>
+    supportsFromPreset("simply_supported", 5)
+  );
+  const [material, setMaterial] = useState("ASTM A36");
+  const [includeSelfWeight, setIncludeSelfWeight] = useState(false);
+  const [sectionArea, setSectionArea] = useState<number | undefined>(undefined);
   const searchParams = useSearchParams();
   useEffect(() => {
     const q = searchParams.get("material");
@@ -181,8 +195,6 @@ function BeamsPageContent() {
   const [stressUnit, setStressUnit] = useState("Pa");
   const [meshSegments, setMeshSegments] = useState(40);
   const [livePreview, setLivePreview] = useState(true);
-  const [supportLeft, setSupportLeft] = useState(0);
-  const [supportRight, setSupportRight] = useState(5);
   const [revisions, setRevisions] = useState<ProjectRevision[]>(() =>
     loadRevisions("beam", "Beam Project")
   );
@@ -225,18 +237,62 @@ function BeamsPageContent() {
     ]);
   };
 
-  const handleLoadDrag = (
-    id: string,
-    updates: Partial<Extract<Load, { type: "point" }>>
-  ) => {
+  const addMoment = () => {
+    setLoads([
+      ...loads,
+      {
+        id: getNewLoadId(),
+        type: "moment",
+        value: 1000,
+        position: length / 2,
+      },
+    ]);
+  };
+
+  const addTriangular = () => {
+    setLoads([
+      ...loads,
+      {
+        id: getNewLoadId(),
+        type: "triangular",
+        wStart: 0,
+        wEnd: 200,
+        start: 0,
+        end: length,
+      },
+    ]);
+  };
+
+  const handleLoadDrag = (id: string, updates: Partial<Load>) => {
     setLoads((prevLoads) =>
       prevLoads.map((load) => {
         if (load.id !== id) return load;
-        if (load.type === "point") {
-          return {
-            ...load,
-            ...updates,
-          };
+        if (load.type === "point" || load.type === "moment") {
+          const next = { ...load, ...updates } as typeof load;
+          if ("position" in updates && typeof updates.position === "number") {
+            next.position = Math.max(0, Math.min(length, updates.position));
+          }
+          return next;
+        }
+        if (load.type === "udl") {
+          const next = { ...load, ...updates } as UDL;
+          if (typeof next.start === "number" && typeof next.end === "number") {
+            const a = Math.max(0, Math.min(length, next.start));
+            const b = Math.max(0, Math.min(length, next.end));
+            next.start = Math.min(a, b);
+            next.end = Math.max(a, b);
+          }
+          return next;
+        }
+        if (load.type === "triangular") {
+          const next = { ...load, ...updates } as TriangularLoad;
+          if (typeof next.start === "number" && typeof next.end === "number") {
+            const a = Math.max(0, Math.min(length, next.start));
+            const b = Math.max(0, Math.min(length, next.end));
+            next.start = Math.min(a, b);
+            next.end = Math.max(a, b);
+          }
+          return next;
         }
         return load;
       })
@@ -253,8 +309,49 @@ function BeamsPageContent() {
     setLoads(loads.filter((_, i) => i !== index));
   };
 
-  const isUDL = (load: Load): load is UDL => load.type === "udl";
+  const handleSupportPresetChange = (next: SupportType) => {
+    setSupport(next);
+    setSupports(supportsFromPreset(next, length));
+  };
 
+  const updateSupport = (id: string, patch: Partial<BeamSupport>) => {
+    setSupports((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? {
+              ...s,
+              ...patch,
+              x:
+                patch.x != null
+                  ? Math.max(0, Math.min(length, patch.x))
+                  : s.x,
+            }
+          : s
+      )
+    );
+  };
+
+  const addSupport = () => {
+    setSupports((prev) => [
+      ...prev,
+      {
+        id: getNewLoadId(),
+        x: length / 2,
+        kind: "roller",
+      },
+    ]);
+  };
+
+  const removeSupport = (id: string) => {
+    setSupports((prev) => (prev.length <= 1 ? prev : prev.filter((s) => s.id !== id)));
+  };
+
+  const handleSupportDrag = (id: string, x: number) => {
+    updateSupport(id, { x });
+  };
+
+  const isUDL = (load: Load): load is UDL => load.type === "udl";
+  const isTriangular = (load: Load): load is TriangularLoad => load.type === "triangular";
   // =========================
   // UI STATE
   // =========================
@@ -281,16 +378,19 @@ function BeamsPageContent() {
   // SOLVER
   // =========================
   const beamMaterials = materials.filter((m) =>
-    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "other"].includes(m.category)
+    ["structural-steel", "alloy-steel", "stainless-steel", "aluminum", "titanium", "cast-iron", "other"].includes(
+      m.category
+    )
   );
   const selectedMaterial =
     beamMaterials.find((m) => m.name === material) ?? beamMaterials[0] ?? DEFAULT_BEAM_MATERIAL;
   const applicationPreset = getBeamApplicationPreset(applicationId);
 
   const applySectionProperties = useCallback(
-    (_designation: string, section: { ix: number; depth: number }) => {
+    (_designation: string, section: { ix: number; depth: number; area?: number }) => {
       setI(section.ix);
       setC(section.depth / 2);
+      if (section.area != null) setSectionArea(section.area);
     },
     []
   );
@@ -361,9 +461,12 @@ function BeamsPageContent() {
       length: number;
       I: number;
       c: number;
-      support: BeamConfig["support"];
+      support: SupportType;
+      supports: BeamSupport[];
       meshSegments: number;
       loads: Load[];
+      includeSelfWeight: boolean;
+      area?: number;
     }): BeamConfig => ({
       length: normalizeInput({
         value: input.length,
@@ -382,17 +485,29 @@ function BeamsPageContent() {
         dimension: "length",
       }),
       support: input.support,
+      supports: input.supports.map((s) => ({
+        ...s,
+        x: normalizeInput({
+          value: s.x,
+          unit: lengthUnit,
+          dimension: "length",
+        }),
+      })),
       meshSegments: Math.max(10, Math.round(input.meshSegments)),
+      includeSelfWeight: input.includeSelfWeight,
+      area: input.area,
+      density: selectedMaterial.density,
       loads: input.loads.map((l) => {
         const loadFactor = applicationPreset.loadFactor;
         if (l.type === "point") {
           return {
             ...l,
-            value: normalizeInput({
-              value: l.value,
-              unit: forceUnit,
-              dimension: "force",
-            }) * loadFactor,
+            value:
+              normalizeInput({
+                value: l.value,
+                unit: forceUnit,
+                dimension: "force",
+              }) * loadFactor,
             position: normalizeInput({
               value: l.position,
               unit: lengthUnit,
@@ -403,11 +518,39 @@ function BeamsPageContent() {
         if (isUDL(l)) {
           return {
             ...l,
-            value: normalizeInput({
-              value: l.value,
-              unit: udlUnit,
-              dimension: "forcePerLength",
-            }) * loadFactor,
+            value:
+              normalizeInput({
+                value: l.value,
+                unit: udlUnit,
+                dimension: "forcePerLength",
+              }) * loadFactor,
+            start: normalizeInput({
+              value: l.start,
+              unit: lengthUnit,
+              dimension: "length",
+            }),
+            end: normalizeInput({
+              value: l.end,
+              unit: lengthUnit,
+              dimension: "length",
+            }),
+          };
+        }
+        if (isTriangular(l)) {
+          return {
+            ...l,
+            wStart:
+              normalizeInput({
+                value: l.wStart,
+                unit: udlUnit,
+                dimension: "forcePerLength",
+              }) * loadFactor,
+            wEnd:
+              normalizeInput({
+                value: l.wEnd,
+                unit: udlUnit,
+                dimension: "forcePerLength",
+              }) * loadFactor,
             start: normalizeInput({
               value: l.start,
               unit: lengthUnit,
@@ -422,11 +565,12 @@ function BeamsPageContent() {
         }
         return {
           ...l,
-          value: normalizeInput({
-            value: l.value,
-            unit: momentUnit,
-            dimension: "moment",
-          }) * loadFactor,
+          value:
+            normalizeInput({
+              value: l.value,
+              unit: momentUnit,
+              dimension: "moment",
+            }) * loadFactor,
           position: normalizeInput({
             value: l.position,
             unit: lengthUnit,
@@ -446,17 +590,29 @@ function BeamsPageContent() {
       maxMoment: fromBase(raw.maxMoment, "moment", momentUnit),
       maxStress: fromBase(raw.maxStress, "stress", stressUnit),
       maxDeflection: fromBase(raw.maxDeflection, "length", lengthUnit),
+      supportReactions: raw.supportReactions?.map((r) => ({
+        ...r,
+        Fy: fromBase(r.Fy, "force", forceUnit),
+        Mz: r.Mz != null ? fromBase(r.Mz, "moment", momentUnit) : undefined,
+        x: fromBase(r.x, "length", lengthUnit),
+      })),
     }),
   });
 
   const runCheck = (sectionI = I, sectionC = c) => {
+    const catalogArea =
+      sectionArea ??
+      (sectionDesignation ? ROLLED_SECTIONS[sectionDesignation]?.area : undefined);
     const { normalized, raw, output: converted } = beamPipeline.run({
       length,
       I: sectionI,
       c: sectionC,
       support,
+      supports,
       meshSegments,
       loads,
+      includeSelfWeight,
+      area: catalogArea,
     });
 
     const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
@@ -521,13 +677,19 @@ function BeamsPageContent() {
 
   const calculate = () => {
     if (mode === "design") {
+      const catalogArea =
+        sectionArea ??
+        (sectionDesignation ? ROLLED_SECTIONS[sectionDesignation]?.area : undefined);
       const { normalized } = beamPipeline.run({
         length,
         I,
         c,
         support,
+        supports,
         meshSegments,
         loads,
+        includeSelfWeight,
+        area: catalogArea,
       });
       const yieldStressPa = selectedMaterial.yieldStress ?? 250e6;
       const allowableStressPa =
@@ -557,15 +719,43 @@ function BeamsPageContent() {
     runCheck();
   };
 
-  // Keep support handles in sync when span changes
+  // Clamp support positions when span changes
   useEffect(() => {
-    setSupportLeft(0);
-    setSupportRight(length);
+    setSupports((prev) =>
+      prev.map((s) => ({
+        ...s,
+        x: Math.max(0, Math.min(length, s.x)),
+      }))
+    );
   }, [length]);
 
   const liveInput = useMemo(
-    () => ({ length, I, c, support, meshSegments, loads, material, designCode }),
-    [length, I, c, support, meshSegments, loads, material, designCode]
+    () => ({
+      length,
+      I,
+      c,
+      support,
+      supports,
+      meshSegments,
+      loads,
+      material,
+      designCode,
+      includeSelfWeight,
+      sectionArea,
+    }),
+    [
+      length,
+      I,
+      c,
+      support,
+      supports,
+      meshSegments,
+      loads,
+      material,
+      designCode,
+      includeSelfWeight,
+      sectionArea,
+    ]
   );
 
   useLiveModuleSolve({
@@ -578,24 +768,6 @@ function BeamsPageContent() {
     onResult: () => {},
     settleMs: 120,
   });
-
-  const supportPositions =
-    support === "simply_supported"
-      ? [
-          { id: "left", x: supportLeft },
-          { id: "right", x: supportRight },
-        ]
-      : support === "cantilever"
-        ? [{ id: "left", x: supportLeft }]
-        : [
-            { id: "left", x: supportLeft },
-            { id: "right", x: supportRight },
-          ];
-
-  const handleSupportDrag = (id: string, x: number) => {
-    if (id === "left") setSupportLeft(Math.min(x, supportRight - length * 0.05));
-    if (id === "right") setSupportRight(Math.max(x, supportLeft + length * 0.05));
-  };
 
   const summaryRows: DesignSummaryRow[] = useMemo(() => {
     if (!result?.applicationContext) {
@@ -633,14 +805,22 @@ function BeamsPageContent() {
   }, [result, material, length, lengthUnit, momentUnit]);
 
   const explainBullets = useMemo(() => {
-    if (!result?.applicationContext) return [];
-    const ctx = result.applicationContext;
-    return [
-      `Governing application: ${ctx.label}.`,
-      `Deflection limit ratio L/${ctx.deflectionLimitRatio} (${applicationPreset.id}).`,
-      `Material ${material}: Fy ≈ ${Math.round((selectedMaterial.yieldStress ?? 0) / 1e6)} MPa.`,
-    ];
-  }, [result, material, selectedMaterial, applicationPreset]);
+    if (!result) return [];
+    return buildBeamExplanations({
+      result,
+      length: toBase(length, "length", lengthUnit),
+      loads,
+      supports: supports.map((s) => ({
+        ...s,
+        x: toBase(s.x, "length", lengthUnit),
+      })),
+      supportPreset: result.solverMeta?.support,
+      materialName: material,
+      yieldMPa: (selectedMaterial.yieldStress ?? 0) / 1e6,
+      applicationContext: result.applicationContext,
+      standards: result.applicationContext?.standards,
+    });
+  }, [result, length, lengthUnit, loads, supports, material, selectedMaterial]);
 
   const modelTab = useMemo(
     () => (
@@ -758,6 +938,7 @@ function BeamsPageContent() {
     setSectionDesignation(p.sectionDesignation ?? "");
     if (p.support === "simply_supported" || p.support === "cantilever" || p.support === "fixed_fixed") {
       setSupport(p.support);
+      setSupports(supportsFromPreset(p.support, p.length));
     }
   };
 
@@ -825,7 +1006,11 @@ function BeamsPageContent() {
             c={c}
             setC={setC}
             support={support}
-            setSupport={setSupport}
+            setSupport={handleSupportPresetChange}
+            supports={supports}
+            updateSupport={updateSupport}
+            addSupport={addSupport}
+            removeSupport={removeSupport}
             loads={loads}
             material={material}
             setMaterial={setMaterial}
@@ -833,6 +1018,14 @@ function BeamsPageContent() {
             removeLoad={removeLoad}
             addPointLoad={addPointLoad}
             addUDL={addUDL}
+            addMoment={addMoment}
+            addTriangular={addTriangular}
+            includeSelfWeight={includeSelfWeight}
+            setIncludeSelfWeight={setIncludeSelfWeight}
+            sectionArea={
+              sectionArea ??
+              (sectionDesignation ? ROLLED_SECTIONS[sectionDesignation]?.area : undefined)
+            }
             onCalculate={calculate}
             saveProject={saveProject}
             saving={saving}
@@ -862,13 +1055,14 @@ function BeamsPageContent() {
           key={result ? `${result.maxMoment}-${result.maxDeflection}` : "empty"}
           result={result}
           length={length}
-          support={support}
+          support={result?.solverMeta?.support ?? support}
+          supports={supports}
           loads={loads}
           onLoadDrag={handleLoadDrag}
-          supportPositions={supportPositions}
           onSupportDrag={handleSupportDrag}
           applicationContext={result?.applicationContext}
           workflowMode={mode}
+          sectionDepth={c * 2}
           units={{
             length: lengthUnit,
             force: forceUnit,

@@ -3,6 +3,12 @@
  */
 
 import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
+import type { Din743WorksheetOptions, Din743WorksheetResult } from "./din743/types";
+import type {
+  Agma6001DutyClass,
+  Agma6001InterfaceKind,
+  Agma6001LoadTemplate,
+} from "./agma6001/interfaceLoads";
 
 export type ShaftMaterial = {
   name: string;
@@ -45,7 +51,9 @@ export type LoadCase = {
   transverseForce?: number;
 };
 
-export type StressFeatureType = "shoulder_fillet" | "keyway" | "custom";
+export type StressFeatureType = "shoulder_fillet" | "keyway" | "retaining_ring" | "custom";
+
+export type KeywayStyle = "sled_runner" | "end_milled";
 
 export type StressFeature = {
   position: number;
@@ -56,6 +64,14 @@ export type StressFeature = {
   smallerDiameter?: number;
   /** Fillet radius (m) */
   filletRadius?: number;
+  /** Keyway style (default sled_runner) */
+  keywayStyle?: KeywayStyle;
+  /** Retaining-ring groove depth (m) */
+  grooveDepth?: number;
+  /** Retaining-ring groove width (m) */
+  grooveWidth?: number;
+  /** Axial thrust retained by the ring (N) — for capacity check */
+  axialRetentionLoad?: number;
   customKt?: number;
 };
 
@@ -64,16 +80,24 @@ export type ShaftFatigueOptions = {
   surfaceFinish?: SurfaceFinish;
   /** Alternating torque fraction (0–1) for pulsating torsion */
   alternatingTorqueFraction?: number;
+  /** Use fatigue stress concentration Kf = 1+q(Kt−1); default true */
+  useNotchSensitivity?: boolean;
 };
 
-/** DIN 743 influence and fatigue reduction coefficients (worksheet inputs). */
+/** DIN 743 influence and fatigue reduction coefficients (worksheet inputs / overrides). */
 export type ShaftDin743Coefficients = {
-  /** Bending stress influence factor K_σ (default 1) */
+  /** Bending stress influence factor K_σ (default 1; auto from DIN 743-2 when worksheet runs) */
   K_sigma?: number;
   /** Torsion stress influence factor K_τ (default 1) */
   K_tau?: number;
-  /** Fatigue strength reduction factor γ_F (default 1) */
+  /** Fatigue strength reduction / yield enlargement factor γ_F (default 1) */
   gamma_F?: number;
+};
+
+export type ShaftAgma6001Options = {
+  enabled?: boolean;
+  interfaceKind?: Agma6001InterfaceKind;
+  duty?: Agma6001DutyClass;
 };
 
 export type ShaftAnalysisLimits = {
@@ -87,6 +111,8 @@ export type ShaftAnalysisLimits = {
   targetStaticSafetyFactor?: number;
   /** Target fatigue safety factor (default 1.5) */
   targetFatigueSafetyFactor?: number;
+  /** Target bearing L10 life for screening (hours, default 20000) */
+  targetBearingLifeHours?: number;
 };
 
 export type ShaftConfig = {
@@ -101,8 +127,15 @@ export type ShaftConfig = {
   operatingRpm?: number;
   includeSelfWeight?: boolean;
   fatigue?: ShaftFatigueOptions;
+  /** Legacy / manual DIN multipliers (overrides when > 1) */
   din743?: ShaftDin743Coefficients;
+  /** Full DIN 743-1/2/3 EU worksheet options */
+  din743Worksheet?: Din743WorksheetOptions;
+  /** AGMA 6001 interface load template (US) */
+  agma6001?: ShaftAgma6001Options;
   limits?: ShaftAnalysisLimits;
+  /** Optional key length override for integrated key sizing (m) */
+  keyLength?: number;
 };
 
 export type BearingReaction = {
@@ -111,6 +144,64 @@ export type BearingReaction = {
   forceZ: number;
   momentY: number;
   momentZ: number;
+};
+
+export type ShaftFatigueDetail = {
+  safetyFactor: number;
+  bendingSf: number;
+  torsionSf: number;
+  combinedSf: number;
+  sigmaA: number;
+  sigmaM: number;
+  tauA: number;
+  tauM: number;
+  vonMisesA: number;
+  vonMisesM: number;
+  correctedEndurance: number;
+  ultimateStrength: number;
+  /** Mean-stress axis for Goodman plot (Pa) */
+  goodmanMean: number[];
+  /** Allowable alternating stress on Goodman line (Pa) */
+  goodmanAllowable: number[];
+};
+
+export type ShaftKeysDesign = {
+  shaftDiameter: number;
+  width: number;
+  height: number;
+  length: number;
+  shearStress: number;
+  bearingStress: number;
+  shearSafety: number;
+  bearingSafety: number;
+  capacityTorque: number;
+  appliedTorque: number;
+  standard: string;
+  status: "safe" | "warning" | "critical";
+};
+
+export type ShaftRetainingRingCheck = {
+  position: number;
+  grooveDepth: number;
+  grooveWidth: number;
+  kt: number;
+  kf: number;
+  axialCapacity: number;
+  axialLoad: number;
+  safetyFactor: number;
+  status: "safe" | "warning" | "critical" | "n/a";
+};
+
+export type ShaftBearingLifeScreen = {
+  position: number;
+  radialForce: number;
+  slopeRad: number;
+  requiredDynamicRating: number;
+  /** Rough catalog C estimate for this bore (N); null if unavailable */
+  estimatedDynamicRating: number | null;
+  estimatedL10Hours: number | null;
+  targetLifeHours: number;
+  status: "safe" | "warning" | "critical" | "n/a";
 };
 
 export type ShaftResult = {
@@ -125,6 +216,8 @@ export type ShaftResult = {
   slope: number[];
   rotation: number[];
   stressConcentrationFactor: number[];
+  /** Fatigue stress concentration Kf along shaft */
+  fatigueConcentrationFactor: number[];
 
   maxStress: number;
   maxShearStress: number;
@@ -147,12 +240,22 @@ export type ShaftResult = {
 
   fatigueSafetyFactor: number | null;
   fatigueStatus: "safe" | "warning" | "critical" | "n/a";
+  fatigueDetail: ShaftFatigueDetail | null;
 
   deflectionUtilization: number;
   slopeUtilization: number;
 
   bearingReactions: BearingReaction[];
   bearingSlopes: { position: number; slopeRad: number }[];
+  bearingLifeScreens: ShaftBearingLifeScreen[];
+
+  keysDesign: ShaftKeysDesign | null;
+  retainingRingChecks: ShaftRetainingRingCheck[];
+
+  /** DIN 743-1/2/3 EU multi-station worksheet (null only if explicitly disabled) */
+  din743Worksheet: Din743WorksheetResult | null;
+  /** AGMA 6001 interface load template when enabled */
+  agma6001Template: Agma6001LoadTemplate | null;
 
   analysisType: "FEA";
 

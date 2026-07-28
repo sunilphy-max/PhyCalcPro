@@ -57,10 +57,11 @@ const maturityById: Record<string, Omit<ModuleMaturity, "moduleId">> = {
   },
   shafts: {
     numericalDepth: 4,
-    validationQuality: 3,
-    refactorRisk: "high",
+    validationQuality: 4,
+    refactorRisk: "medium",
     maturityBand: "fem",
-    notes: "Mechanics + fatigue pipeline with many derived parameters.",
+    notes:
+      "1D FEM + DIN 743-1/2/3 EU worksheet (material/notch catalogs), AGMA 6001 templates, keys/rings/bearing L10.",
   },
   gears: {
     numericalDepth: 4,

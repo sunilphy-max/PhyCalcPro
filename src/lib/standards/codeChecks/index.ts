@@ -4,3 +4,4 @@ export * from "./gears";
 export * from "./columns";
 export * from "./combinedLoading";
 export * from "./welds";
+export * from "./shafts";

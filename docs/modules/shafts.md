@@ -113,19 +113,19 @@ PhyCalcPro uses 1D FEA beam elements with lumped masses. The first two lateral e
 
 ## Use the PhyCalcPro calculator
 
-Run a full shaft analysis — static stress, Goodman fatigue, deflection, and critical speed — in the [Shaft Design Calculator](/products/machine/shafts).
+Run a full shaft worksheet — static + combined loading, Goodman fatigue with Kf, keys, retaining rings, bearing L10, deflection, and critical speed — in the [Shaft Design Calculator](/products/machine/shafts).
 
 ---
 
 **Purpose**
 
-Analyze rotating shafts under combined bending, torsion, and axial loads using 1D FEA. Supports stepped/hollow geometry, configurable bearing supports, transverse forces, stress concentrations, fatigue screening (Marin + Goodman), FEA critical speed, and bearing reaction handoff.
+Analyze rotating shafts under combined bending, torsion, and axial loads using 1D FEA. One worksheet covers static + combined loading, stress concentrations (Kt/Kf), Marin–Goodman fatigue with diagram, critical speed modes, integrated key sizing, retaining-ring grooves, and bearing L10 screening with handoff to the bearings suite.
 
 **Physics & theory**
 
 Power-transmitting shafts experience bending from belt/gear forces, torsion from transmitted torque, and occasional axial thrust. Stress at any section combines normal and bending stress with torsional shear; von Mises equivalent stress governs static yield checks for ductile materials.
 
-Rotating shafts subject the outermost fiber to fully reversed bending stress each revolution, making fatigue the dominant failure mode for most industrial shafts. Torsion is typically steady. The modified Goodman diagram plots alternating stress against mean stress, with the endurance limit and ultimate strength as intercepts.
+Rotating shafts subject the outermost fiber to fully reversed bending stress each revolution, making fatigue the dominant failure mode for most industrial shafts. Torsion is typically steady (or partially alternating). The modified Goodman diagram plots alternating stress against mean stress, with the endurance limit and ultimate strength as intercepts. Fatigue uses \(K_f = 1 + q(K_t - 1)\) with Neuber notch sensitivity.
 
 Critical (whirling) speed is the shaft rotational frequency that coincides with a lateral bending natural frequency. Operating near critical speed causes large vibration amplitudes and bearing damage. The Rayleigh method or FEA eigenvalue extraction identifies the first lateral modes.
 
@@ -153,28 +153,32 @@ Fatigue (Indicative/US): modified Goodman on von Mises alternating/mean componen
 | `geometry` | Uniform or stepped segments (length, OD, ID) |
 | `supports` | Bearing positions — pin (journal) or fixed |
 | `loads` | Torque, bending moment, transverse force, axial force at stations |
-| `stressFeatures` | Shoulder fillet, keyway, or custom Kt |
-| `operatingRpm` | Enables fatigue and critical speed margin |
+| `stressFeatures` | Shoulder fillet, keyway (sled/end-milled), retaining-ring groove, or custom Kt |
+| `operatingRpm` | Enables fatigue, critical speed margin, and bearing L10 screen |
+| `fatigue` | Surface finish, alternating torque fraction, notch sensitivity (Kf) |
 | `material` | E, G, density, yield, ultimate strength |
 
 **Outputs**
 
-- T(x), M(x), V(x), \( \sigma_{\mathrm{vm}}(x) \), deflection, slope, critical speed, fatigue SF
-- Bearing reactions and slope utilization
-- Governing failure mode (static / fatigue / deflection / slope / whirling)
+- T(x), M(x), V(x), \( \sigma_{\mathrm{vm}}(x) \), deflection, slope, critical speed modes, fatigue SF + Goodman diagram
+- Bearing reactions, slope utilization, and ISO 281 basic L10 screening
+- Integrated DIN 6885 key sizing and retaining-ring axial capacity
+- Governing failure mode (static / fatigue / deflection / slope / whirling / keys / rings)
 
 **Design codes & checks**
 
-- **Indicative:** von Mises static, deflection, critical speed margin, Goodman fatigue
-- **US:** AGMA 6001 interface loads (context via gear handoff)
-- **EU:** DIN 743 full worksheet — *not yet implemented*; use Indicative fatigue for screening
+- **Indicative:** von Mises static, deflection, critical speed margin, Goodman fatigue with Kf
+- **US:** AGMA 6001 interface load templates (Ka, Kol, Km) + Goodman screening
+- **EU:** Full DIN 743-1/2/3 multi-station worksheet — material catalog (Part 3), notch α/β catalogs (Part 2), fatigue & static safety with K1/K2/KF/KV/γ_F (Part 1)
 
 **Assumptions & limitations**
 
 - Linear elastic Timoshenko/Euler shaft model; no 3D fillet FEA
-- Kt from Peterson/Shigley approximations, not DIN 743-2 tables
-- Critical speed: first two lateral modes; gyroscopic/damping omitted
-- DIN 743 influence factors (K1, K2, K3, beta, K_V) not yet integrated
+- DIN 743 Method-C screening with published chart/formula fits — verify critical shafts against the licensed DIN text and measured material certificates
+- Critical speed: first three lateral modes; gyroscopic/damping omitted
+- Bearing L10 uses a rough deep-groove C(d) estimate — refine in bearings module
+- Retaining-ring axial capacity is a screening estimate, not a manufacturer catalog rating
+- AGMA 6001 templates cover interface loads only; gear tooth strength remains in the gears module
 
 **Verification**
 

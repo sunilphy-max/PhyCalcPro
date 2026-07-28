@@ -3,11 +3,18 @@
 import { useState } from "react";
 import type {
   BearingSupport,
+  KeywayStyle,
   LoadCase,
   ShaftSegment,
   StressFeature,
+  StressFeatureType,
 } from "@/lib/machine/shafts/types";
 import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
+import type { Din743MeanStressCase } from "@/lib/machine/shafts/din743/types";
+import type { Din743HeatTreatment, Din743SurfaceProcess } from "@/data/catalogs/din743/types";
+import type { Agma6001DutyClass, Agma6001InterfaceKind } from "@/lib/machine/shafts/agma6001/interfaceLoads";
+import { DIN743_MATERIAL_CATALOG } from "@/data/catalogs/din743/materials";
+import { featureTypeLabel } from "@/lib/machine/shafts/stressConcentration";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
@@ -63,6 +70,10 @@ type Props = {
   setIncludeSelfWeight: (v: boolean) => void;
   surfaceFinish: SurfaceFinish;
   setSurfaceFinish: (f: SurfaceFinish) => void;
+  alternatingTorqueFraction: number;
+  setAlternatingTorqueFraction: (v: number) => void;
+  useNotchSensitivity: boolean;
+  setUseNotchSensitivity: (v: boolean) => void;
   meshSegments: number;
   setMeshSegments: (value: number) => void;
   stressConcentrationFactor: number;
@@ -73,10 +84,32 @@ type Props = {
   setDin743K_tau: (v: number) => void;
   din743Gamma_F: number;
   setDin743Gamma_F: (v: number) => void;
+  din743MaterialId: string;
+  setDin743MaterialId: (v: string) => void;
+  din743HeatTreatment: Din743HeatTreatment | "";
+  setDin743HeatTreatment: (v: Din743HeatTreatment | "") => void;
+  din743Rz: number;
+  setDin743Rz: (v: number) => void;
+  din743SurfaceProcess: Din743SurfaceProcess;
+  setDin743SurfaceProcess: (v: Din743SurfaceProcess) => void;
+  din743MeanCase: Din743MeanStressCase;
+  setDin743MeanCase: (v: Din743MeanStressCase) => void;
+  agma6001Enabled: boolean;
+  setAgma6001Enabled: (v: boolean) => void;
+  agma6001Kind: Agma6001InterfaceKind;
+  setAgma6001Kind: (v: Agma6001InterfaceKind) => void;
+  agma6001Duty: Agma6001DutyClass;
+  setAgma6001Duty: (v: Agma6001DutyClass) => void;
   onCalculate: () => void;
   onSave: () => void;
   saving: boolean;
 };
+
+function updateFeature(features: StressFeature[], index: number, patch: Partial<StressFeature>) {
+  const next = [...features];
+  next[index] = { ...next[index]!, ...patch };
+  return next;
+}
 
 export default function ShaftInputs({
   projectName,
@@ -119,6 +152,10 @@ export default function ShaftInputs({
   setIncludeSelfWeight,
   surfaceFinish,
   setSurfaceFinish,
+  alternatingTorqueFraction,
+  setAlternatingTorqueFraction,
+  useNotchSensitivity,
+  setUseNotchSensitivity,
   meshSegments,
   setMeshSegments,
   stressConcentrationFactor,
@@ -129,6 +166,22 @@ export default function ShaftInputs({
   setDin743K_tau,
   din743Gamma_F,
   setDin743Gamma_F,
+  din743MaterialId,
+  setDin743MaterialId,
+  din743HeatTreatment,
+  setDin743HeatTreatment,
+  din743Rz,
+  setDin743Rz,
+  din743SurfaceProcess,
+  setDin743SurfaceProcess,
+  din743MeanCase,
+  setDin743MeanCase,
+  agma6001Enabled,
+  setAgma6001Enabled,
+  agma6001Kind,
+  setAgma6001Kind,
+  agma6001Duty,
+  setAgma6001Duty,
   onCalculate,
   onSave,
   saving,
@@ -193,23 +246,46 @@ export default function ShaftInputs({
     ]);
   };
 
-  const addShoulderFeature = () => {
-    setStressFeatures([
-      ...stressFeatures,
-      {
-        position: length / 2,
-        type: "shoulder_fillet",
-        largerDiameter: diameter * 1.2,
-        smallerDiameter: diameter,
-        filletRadius: diameter * 0.02,
-      },
-    ]);
+  const addFeature = (type: StressFeatureType) => {
+    const base: StressFeature = {
+      position: length / 2,
+      type,
+    };
+    if (type === "shoulder_fillet") {
+      setStressFeatures([
+        ...stressFeatures,
+        {
+          ...base,
+          largerDiameter: diameter * 1.2,
+          smallerDiameter: diameter,
+          filletRadius: diameter * 0.05,
+        },
+      ]);
+    } else if (type === "keyway") {
+      setStressFeatures([
+        ...stressFeatures,
+        { ...base, keywayStyle: "sled_runner", smallerDiameter: diameter },
+      ]);
+    } else if (type === "retaining_ring") {
+      setStressFeatures([
+        ...stressFeatures,
+        {
+          ...base,
+          smallerDiameter: diameter,
+          grooveDepth: diameter * 0.03,
+          grooveWidth: diameter * 0.04,
+          axialRetentionLoad: 0,
+        },
+      ]);
+    } else {
+      setStressFeatures([...stressFeatures, { ...base, customKt: 2 }]);
+    }
   };
 
   return (
     <CalculatorInputPanel
       title="Shaft design"
-      description="FEA shaft analysis: stepped geometry, bearings, transverse loads, fatigue, and critical speed."
+      description="Full shaft worksheet: static + combined loading, fatigue (Goodman/Kf), bearings, keys, retaining rings, and critical speed."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton onClick={onCalculate} label="Solve shaft" designAware />
@@ -358,12 +434,20 @@ export default function ShaftInputs({
       <section className="space-y-3 border-t border-slate-200 pt-4">
         <h3 className="text-sm font-semibold text-slate-900">Operating conditions</h3>
         <CalculatorUnitField
-          label="Operating speed (RPM) — for fatigue & critical speed margin"
+          label="Operating speed (RPM) — fatigue, critical speed, bearing L10"
           value={operatingRpm}
           onChange={setOperatingRpm}
           min={0}
           step="any"
           unit={<span className="text-sm text-slate-500">RPM</span>}
+        />
+        <CalculatorNumberField
+          label="Alternating torque fraction (0 = steady torsion, 1 = fully reversing)"
+          value={alternatingTorqueFraction}
+          onChange={setAlternatingTorqueFraction}
+          min={0}
+          max={1}
+          step={0.05}
         />
         <label className="flex items-center gap-2 text-sm text-slate-700">
           <input
@@ -418,29 +502,98 @@ export default function ShaftInputs({
             <option value="as-forged">As forged</option>
           </select>
         </div>
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={useNotchSensitivity}
+            onChange={(e) => setUseNotchSensitivity(e.target.checked)}
+          />
+          Apply notch sensitivity (Kf = 1 + q(Kt − 1))
+        </label>
       </section>
 
       <CalculatorFormSection
-        title="DIN 743 coefficients"
-        description="Influence and fatigue reduction factors for EU shaft worksheets (K_σ, K_τ, γ_F)."
+        title="DIN 743 EU worksheet"
+        description="Parts 1–3: material catalog, notch α/β, size/surface factors, multi-station fatigue & static safety (Smin ≥ 1.2)."
       >
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-slate-700">DIN 743-3 material</label>
+          <select
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={din743MaterialId}
+            onChange={(e) => setDin743MaterialId(e.target.value)}
+          >
+            <option value="">Auto-match from Su</option>
+            {DIN743_MATERIAL_CATALOG.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.designation} (σB={m.sigmaB_MPa} MPa)
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-slate-700">Heat treatment override</label>
+          <select
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            value={din743HeatTreatment}
+            onChange={(e) => setDin743HeatTreatment(e.target.value as Din743HeatTreatment | "")}
+          >
+            <option value="">From catalog material</option>
+            <option value="normalized">Normalized</option>
+            <option value="quenched_tempered">Quenched & tempered</option>
+            <option value="case_hardened">Case hardened</option>
+            <option value="nitrided">Nitrided</option>
+            <option value="induction_hardened">Induction hardened</option>
+          </select>
+        </div>
+        <div className={calculatorInputGridTightClass}>
+          <CalculatorNumberField label="Rz roughness (µm)" value={din743Rz} onChange={setDin743Rz} min={0.4} step={0.1} />
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-slate-700">Surface process KV</label>
+            <select
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              value={din743SurfaceProcess}
+              onChange={(e) => setDin743SurfaceProcess(e.target.value as Din743SurfaceProcess)}
+            >
+              <option value="none">None (KV=1)</option>
+              <option value="rolled">Rolled</option>
+              <option value="shot_peened">Shot peened</option>
+              <option value="nitrided_surface">Nitrided surface</option>
+              <option value="induction_surface">Induction surface</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium text-slate-700">Mean-stress case</label>
+            <select
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              value={din743MeanCase}
+              onChange={(e) => setDin743MeanCase(Number(e.target.value) as Din743MeanStressCase)}
+            >
+              <option value={1}>Case 1 — constant mean</option>
+              <option value={2}>Case 2 — proportional</option>
+            </select>
+          </div>
+        </div>
+        <p className="text-xs text-slate-500">
+          Manual overrides below only apply when &gt; 1; otherwise K_σ, K_τ, γ_F are computed from DIN 743-2.
+        </p>
         <div className={calculatorInputGridTightClass}>
           <CalculatorNumberField
-            label="K_σ bending"
+            label="K_σ override"
             value={din743K_sigma}
             onChange={setDin743K_sigma}
             step={0.05}
             min={1}
           />
           <CalculatorNumberField
-            label="K_τ torsion"
+            label="K_τ override"
             value={din743K_tau}
             onChange={setDin743K_tau}
             step={0.05}
             min={1}
           />
           <CalculatorNumberField
-            label="γ_F fatigue"
+            label="γ_F override"
             value={din743Gamma_F}
             onChange={setDin743Gamma_F}
             step={0.05}
@@ -449,8 +602,58 @@ export default function ShaftInputs({
         </div>
       </CalculatorFormSection>
 
+      <CalculatorFormSection
+        title="AGMA 6001 interface loads (US)"
+        description="Optional application / overload templates for gearing and belt drives on the shaft."
+      >
+        <label className="flex items-center gap-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            checked={agma6001Enabled}
+            onChange={(e) => setAgma6001Enabled(e.target.checked)}
+          />
+          Enable AGMA 6001 load template
+        </label>
+        {agma6001Enabled && (
+          <div className={calculatorInputGridTightClass}>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Interface</label>
+              <select
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={agma6001Kind}
+                onChange={(e) => setAgma6001Kind(e.target.value as Agma6001InterfaceKind)}
+              >
+                <option value="helical_gear">Helical gear</option>
+                <option value="spur_gear">Spur gear</option>
+                <option value="bevel_gear">Bevel gear</option>
+                <option value="worm_gear">Worm gear</option>
+                <option value="v_belt">V-belt</option>
+                <option value="chain">Chain</option>
+                <option value="coupling">Coupling</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-slate-700">Duty</label>
+              <select
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                value={agma6001Duty}
+                onChange={(e) => setAgma6001Duty(e.target.value as Agma6001DutyClass)}
+              >
+                <option value="uniform">Uniform</option>
+                <option value="light_shock">Light shock</option>
+                <option value="moderate_shock">Moderate shock</option>
+                <option value="heavy_shock">Heavy shock</option>
+              </select>
+            </div>
+          </div>
+        )}
+      </CalculatorFormSection>
+
       <section className="space-y-3 border-t border-slate-200 pt-4">
         <h3 className="text-sm font-semibold text-slate-900">Load cases</h3>
+        <p className="text-xs text-slate-500">
+          Combined loading: torque (torsion), bending moment, transverse force, and axial force at each station.
+        </p>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
           <CalculatorUnitField
             label="Torque (T)"
@@ -521,8 +724,8 @@ export default function ShaftInputs({
         )}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2">
-        <h3 className="text-sm font-semibold text-slate-900">Stress concentrations</h3>
+      <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-slate-900">Stress concentrations & features</h3>
         <CalculatorUnitField
           label="Global Kt (fallback)"
           value={stressConcentrationFactor}
@@ -531,19 +734,170 @@ export default function ShaftInputs({
           step="any"
           unit={<span className="text-sm text-slate-500">—</span>}
         />
-        <button type="button" onClick={addShoulderFeature} className="text-xs font-medium text-blue-600">
-          + Add shoulder fillet feature
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => addFeature("shoulder_fillet")} className="text-xs font-medium text-blue-600">
+            + Shoulder fillet
+          </button>
+          <button type="button" onClick={() => addFeature("keyway")} className="text-xs font-medium text-blue-600">
+            + Keyway
+          </button>
+          <button type="button" onClick={() => addFeature("retaining_ring")} className="text-xs font-medium text-blue-600">
+            + Retaining ring groove
+          </button>
+          <button type="button" onClick={() => addFeature("custom")} className="text-xs font-medium text-blue-600">
+            + Custom Kt
+          </button>
+        </div>
+
         {stressFeatures.map((f, i) => (
-          <div key={i} className="text-xs text-slate-600">
-            {f.type} @ {formatEngineeringValue(f.position, lengthUnit)}
-            <button
-              type="button"
-              className="ml-2 text-red-600"
-              onClick={() => setStressFeatures(stressFeatures.filter((_, j) => j !== i))}
-            >
-              remove
-            </button>
+          <div key={i} className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-semibold text-slate-800">{featureTypeLabel(f.type)}</span>
+              <button
+                type="button"
+                className="text-red-600"
+                onClick={() => setStressFeatures(stressFeatures.filter((_, j) => j !== i))}
+              >
+                Remove
+              </button>
+            </div>
+            <label className="block space-y-1">
+              <span className="text-slate-600">Position</span>
+              <input
+                type="number"
+                className="w-full rounded border px-2 py-1"
+                value={f.position}
+                onChange={(e) =>
+                  setStressFeatures(updateFeature(stressFeatures, i, { position: Number(e.target.value) }))
+                }
+              />
+            </label>
+
+            {f.type === "shoulder_fillet" && (
+              <div className="grid grid-cols-3 gap-2">
+                <label className="space-y-1">
+                  <span className="text-slate-600">D large</span>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-2 py-1"
+                    value={f.largerDiameter ?? diameter * 1.2}
+                    onChange={(e) =>
+                      setStressFeatures(
+                        updateFeature(stressFeatures, i, { largerDiameter: Number(e.target.value) })
+                      )
+                    }
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-slate-600">d small</span>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-2 py-1"
+                    value={f.smallerDiameter ?? diameter}
+                    onChange={(e) =>
+                      setStressFeatures(
+                        updateFeature(stressFeatures, i, { smallerDiameter: Number(e.target.value) })
+                      )
+                    }
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-slate-600">Fillet r</span>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-2 py-1"
+                    value={f.filletRadius ?? diameter * 0.05}
+                    onChange={(e) =>
+                      setStressFeatures(
+                        updateFeature(stressFeatures, i, { filletRadius: Number(e.target.value) })
+                      )
+                    }
+                  />
+                </label>
+              </div>
+            )}
+
+            {f.type === "keyway" && (
+              <label className="block space-y-1">
+                <span className="text-slate-600">Keyway style</span>
+                <select
+                  className="w-full rounded border px-2 py-1"
+                  value={f.keywayStyle ?? "sled_runner"}
+                  onChange={(e) =>
+                    setStressFeatures(
+                      updateFeature(stressFeatures, i, {
+                        keywayStyle: e.target.value as KeywayStyle,
+                      })
+                    )
+                  }
+                >
+                  <option value="sled_runner">Sled-runner (Kt≈1.6)</option>
+                  <option value="end_milled">End-milled (Kt≈2.14)</option>
+                </select>
+              </label>
+            )}
+
+            {f.type === "retaining_ring" && (
+              <div className="grid grid-cols-2 gap-2">
+                <label className="space-y-1">
+                  <span className="text-slate-600">Groove depth</span>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-2 py-1"
+                    value={f.grooveDepth ?? diameter * 0.03}
+                    onChange={(e) =>
+                      setStressFeatures(
+                        updateFeature(stressFeatures, i, { grooveDepth: Number(e.target.value) })
+                      )
+                    }
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-slate-600">Groove width</span>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-2 py-1"
+                    value={f.grooveWidth ?? diameter * 0.04}
+                    onChange={(e) =>
+                      setStressFeatures(
+                        updateFeature(stressFeatures, i, { grooveWidth: Number(e.target.value) })
+                      )
+                    }
+                  />
+                </label>
+                <label className="col-span-2 space-y-1">
+                  <span className="text-slate-600">Axial retention load ({forceUnit})</span>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-2 py-1"
+                    value={f.axialRetentionLoad ?? 0}
+                    onChange={(e) =>
+                      setStressFeatures(
+                        updateFeature(stressFeatures, i, {
+                          axialRetentionLoad: Number(e.target.value),
+                        })
+                      )
+                    }
+                  />
+                </label>
+              </div>
+            )}
+
+            {f.type === "custom" && (
+              <label className="block space-y-1">
+                <span className="text-slate-600">Custom Kt</span>
+                <input
+                  type="number"
+                  className="w-full rounded border px-2 py-1"
+                  value={f.customKt ?? 2}
+                  min={1}
+                  step={0.05}
+                  onChange={(e) =>
+                    setStressFeatures(updateFeature(stressFeatures, i, { customKt: Number(e.target.value) }))
+                  }
+                />
+              </label>
+            )}
           </div>
         ))}
       </section>

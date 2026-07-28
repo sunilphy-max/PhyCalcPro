@@ -1,17 +1,19 @@
 ---
-seoTitle: "Engineering Material Database: Properties, Selection & Comparison"
-seoDescription: "How engineers look up and compare material properties — elastic moduli, yield strength, density, thermal expansion — for consistent design calculations."
+seoTitle: "Engineering Material Encyclopedia: Properties, Composition & Selection"
+seoDescription: "Look up graded material datasheets — mechanical, thermal, electrical, composition, corrosion, and alternatives — then push properties into PhyCalcPro calculators."
 guideHeadline: "How Engineers Select and Compare Materials"
-keywords: ["material properties", "Young's modulus", "yield strength", "material selection", "density", "thermal expansion"]
+keywords: ["material properties", "Young's modulus", "yield strength", "material selection", "density", "thermal expansion", "material datasheet"]
 ---
 
 ### Material Database (`material-db`)
 
 ## How engineers look up material properties
 
-Every stress, deflection, and thermal calculation starts with material data. Engineers need elastic moduli to predict stiffness, yield and ultimate strengths to set allowable loads, density for weight budgets, and thermal expansion coefficients for fit-at-temperature checks. A centralized, searchable database eliminates transcription errors and ensures every module in a project uses the same property set.
+Every stress, deflection, and thermal calculation starts with material data. Engineers need elastic moduli to predict stiffness, yield and ultimate strengths to set allowable loads, density for weight budgets, and thermal expansion coefficients for fit-at-temperature checks. A centralized encyclopedia eliminates transcription errors and ensures every module in a project uses the same property set.
 
-This guide covers how to navigate alloy families, compare candidates side-by-side, and push selected properties into downstream PhyCalcPro solvers.
+PhyCalcPro's Material Database combines browse/screen of the graded catalog, per-grade datasheets (overview through alternatives at `/products/materials/database/[id]`), and one-click `?material=` handoff into calculators.
+
+This guide covers how to navigate alloy families, open datasheets, compare candidates, and push selected properties into downstream solvers.
 
 ## Material families and when to use them
 
@@ -33,8 +35,9 @@ This guide covers how to navigate alloy families, compare candidates side-by-sid
 1. **Define requirements** — operating temperature range, load type (static / fatigue / impact), corrosion environment, weight target.
 2. **Screen families** — eliminate classes that cannot meet one or more hard constraints.
 3. **Compare candidates** — rank by \(\sigma_y / \rho\), \(E / \rho\), cost per kg, machinability, and availability.
-4. **Retrieve properties** — pull \(E\), \(G\), \(\sigma_y\), \(\sigma_u\), \(\rho\), \(\alpha\) into design modules.
-5. **Verify provenance** — confirm values against mill test reports or code-approved tables for certified work.
+4. **Open a datasheet** — review mechanical and secondary properties, standards, and alternatives for flagship grades.
+5. **Retrieve properties** — use “Use in …” links or the Materials workspace tab to pull \(E\), \(G\), \(\sigma_y\), \(\sigma_u\), \(\rho\), \(\alpha\) into design modules.
+6. **Verify provenance** — confirm values against mill test reports or code-approved tables for certified work.
 
 ## Key quantities and formulas
 
@@ -69,7 +72,7 @@ W = \rho \, V \, g
 1. Shear stress at surface: \(\tau = 16T / (\pi d^3) = 16 \times 200 / (\pi \times 0.05^3) \approx 8.1\) MPa — modest.
 2. Corrosion rules out plain carbon steel without coating. Filter to 316 stainless (\(\sigma_y = 205\) MPa, \(\rho = 8000\) kg/m³) and duplex 2205 (\(\sigma_y = 450\) MPa, \(\rho = 7800\) kg/m³).
 3. Shaft mass \(\approx \rho \pi d^2 L / 4 \approx 8000 \times 1.18 \times 10^{-3} = 9.4\) kg — exceeds target. Consider Al 7075-T6 (\(\rho = 2810\) kg/m³, \(\sigma_y = 503\) MPa): mass drops to 3.3 kg.
-4. Check galvanic compatibility with pump housing material. If acceptable, retrieve Al 7075-T6 properties into the shaft solver.
+4. Open the AW-7075 T6 datasheet for composition and corrosion notes, then Use in Shafts.
 
 ## Common mistakes and checks
 
@@ -103,11 +106,11 @@ Yes — enter custom \(E\), \(\sigma_y\), \(\sigma_u\), \(\rho\), \(\alpha\), an
 
 ## Use the PhyCalcPro calculator
 
-Open the [Material database](/products/materials/database). Search or browse by alloy family; compare properties side-by-side; select a material to auto-populate downstream calculators with consistent \(E\), \(G\), \(\sigma_y\), \(\rho\), and \(\alpha\).
+Open the [Material encyclopedia](/products/materials/database). Search or browse by alloy family; open a datasheet for full sections; select a material to auto-populate downstream calculators with consistent \(E\), \(G\), \(\sigma_y\), \(\rho\), and \(\alpha\`.
 
 **Purpose**
 
-Searchable reference data for engineering material properties — elastic moduli, strength, density, thermal expansion — used as defaults across PhyCalcPro modules. Centralizes material selection for consistent handoff to solvers.
+Searchable encyclopedia for engineering material properties — elastic moduli, strength, density, thermal expansion, composition, and selection guidance — used as defaults across PhyCalcPro modules. Centralizes material selection for consistent handoff to solvers.
 
 **Physics & theory**
 

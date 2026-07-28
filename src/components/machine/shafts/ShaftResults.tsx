@@ -20,10 +20,18 @@ type Props = {
   projectName: string;
   layout?: LayoutPreview;
   lengthUnit?: string;
+  forceUnit?: string;
   workflowMode?: DesignWorkflowMode;
 };
 
-export default function ShaftResults({ result, projectName, layout, lengthUnit = "m", workflowMode }: Props) {
+export default function ShaftResults({
+  result,
+  projectName,
+  layout,
+  lengthUnit = "m",
+  forceUnit = "N",
+  workflowMode,
+}: Props) {
   return (
     <CalculatorResultsShell
       moduleId="shafts"
@@ -45,11 +53,26 @@ export default function ShaftResults({ result, projectName, layout, lengthUnit =
               { metric: "criticalSpeed", value: result.criticalSpeed },
               { metric: "criticalSpeedMargin", value: result.criticalSpeedMargin ?? 0 },
               { metric: "fatigueSafetyFactor", value: result.fatigueSafetyFactor ?? 0 },
+              { metric: "din743FatigueSF", value: result.din743Worksheet?.governingFatigueSF ?? 0 },
+              { metric: "din743StaticSF", value: result.din743Worksheet?.governingStaticSF ?? 0 },
+              { metric: "keyShearSafety", value: result.keysDesign?.shearSafety ?? 0 },
+              {
+                metric: "bearingL10_0",
+                value: result.bearingLifeScreens[0]?.estimatedL10Hours ?? 0,
+              },
             ]
           : undefined
       }
     >
-      {result ? <ShaftDashboard result={result} layout={layout} lengthUnit={lengthUnit} workflowMode={workflowMode} /> : null}
+      {result ? (
+        <ShaftDashboard
+          result={result}
+          layout={layout}
+          lengthUnit={lengthUnit}
+          forceUnit={forceUnit}
+          workflowMode={workflowMode}
+        />
+      ) : null}
     </CalculatorResultsShell>
   );
 }

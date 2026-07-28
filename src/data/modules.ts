@@ -483,7 +483,7 @@ export const categories: EngineeringCategory[] = [
   {
     id: "materials",
     title: "Materials & Sections",
-    description: "Material properties and cross-sections",
+    description: "Material encyclopedia, properties, and cross-sections",
 
     icon: Layers,
     color: "from-orange-500 to-orange-600",
@@ -492,7 +492,7 @@ export const categories: EngineeringCategory[] = [
       {
         id: "material-db",
         title: "Material Database",
-        description: "Steel, aluminum, alloys properties",
+        description: "Encyclopedia of grades with properties, composition, and calculator links",
         route: "/products/materials/database",
         category: "materials",
         icon: Database,

@@ -14,6 +14,13 @@ export type RolledSectionProps = {
 
 function inferFamily(designation: string, family?: string): string {
   if (family) return family;
+  if (designation.startsWith("Pipe")) return "Pipe";
+  if (designation.startsWith("HSS")) {
+    // Square if equal outer dims in designation HSS###x###
+    const m = designation.match(/^HSS(\d+)x(\d+)/);
+    if (m && m[1] === m[2]) return "SHS";
+    return "RHS";
+  }
   if (designation.startsWith("W")) return "W";
   if (designation.startsWith("S")) return "S";
   if (designation.startsWith("C")) return "C";
@@ -34,7 +41,19 @@ export const ROLLED_SECTIONS: Record<string, RolledSectionProps> = Object.fromEn
   })
 );
 
-export const ROLLED_SECTION_FAMILIES = ["W", "S", "C", "L", "IPE", "UPN", "L-EN", "UK"] as const;
+export const ROLLED_SECTION_FAMILIES = [
+  "W",
+  "S",
+  "C",
+  "L",
+  "RHS",
+  "SHS",
+  "Pipe",
+  "IPE",
+  "UPN",
+  "L-EN",
+  "UK",
+] as const;
 
 /** EN/UK designation aliases → canonical catalog key */
 export const ROLLED_SECTION_ALIASES: Record<string, string> = {

@@ -1,9 +1,9 @@
 /**
- * Shaft fatigue screening — rotating-bending + steady torsion (Shigley / Marin).
+ * Shaft fatigue screening — rotating-bending + torsion (Shigley / Marin / Goodman).
  */
 
 import { solveFatigueEngine } from "@/lib/materials/fatigue/engine";
-import type { ShaftFatigueOptions, ShaftMaterial } from "./types";
+import type { ShaftFatigueDetail, ShaftFatigueOptions, ShaftMaterial } from "./types";
 import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
 
 export type FatigueStressState = {
@@ -20,12 +20,22 @@ export type ShaftFatigueResult = {
   bendingSf: number;
   torsionSf: number;
   combinedSf: number;
+  detail: ShaftFatigueDetail;
 };
 
 const ENDURANCE_FRACTION = 0.5;
 
 export function estimateEnduranceLimit(material: ShaftMaterial): number {
   return ENDURANCE_FRACTION * material.ultimateStrength;
+}
+
+function buildGoodmanCurve(Se: number, Su: number, points = 31): {
+  mean: number[];
+  allowable: number[];
+} {
+  const mean = Array.from({ length: points }, (_, i) => (Su * i) / (points - 1));
+  const allowable = mean.map((sm) => Se * (1 - sm / Math.max(Su, 1e-9)));
+  return { mean, allowable };
 }
 
 export function evaluateShaftFatigue(
@@ -36,13 +46,13 @@ export function evaluateShaftFatigue(
   gammaF = 1
 ): ShaftFatigueResult {
   const finish: SurfaceFinish = options.surfaceFinish ?? "machined";
-  const Se = estimateEnduranceLimit(material) / Math.max(gammaF, 1e-9);
+  const SePrime = estimateEnduranceLimit(material) / Math.max(gammaF, 1e-9);
 
   const bending = solveFatigueEngine({
     alternatingStress: stress.bendingAmplitude,
     meanStress: stress.bendingMean,
     ultimateStrength: material.ultimateStrength,
-    enduranceLimit: Se,
+    enduranceLimit: SePrime,
     surfaceFinish: finish,
     loadType: "bending",
     characteristicDiameter: stress.diameter,
@@ -53,7 +63,7 @@ export function evaluateShaftFatigue(
     alternatingStress: stress.shearAmplitude,
     meanStress: stress.shearMean,
     ultimateStrength: material.ultimateStrength,
-    enduranceLimit: Se,
+    enduranceLimit: SePrime,
     surfaceFinish: finish,
     loadType: "torsion",
     characteristicDiameter: stress.diameter,
@@ -71,7 +81,7 @@ export function evaluateShaftFatigue(
     alternatingStress: vmA,
     meanStress: vmM,
     ultimateStrength: material.ultimateStrength,
-    enduranceLimit: Se,
+    enduranceLimit: SePrime,
     surfaceFinish: finish,
     loadType: "bending",
     characteristicDiameter: stress.diameter,
@@ -82,12 +92,30 @@ export function evaluateShaftFatigue(
   const status =
     combinedSf >= targetSf ? "safe" : combinedSf >= targetSf * 0.8 ? "warning" : "critical";
 
+  const curve = buildGoodmanCurve(combined.correctedEndurance, material.ultimateStrength);
+
   return {
     safetyFactor: combinedSf,
     status,
     bendingSf: bending.safetyFactor,
     torsionSf: torsion.safetyFactor,
     combinedSf,
+    detail: {
+      safetyFactor: combinedSf,
+      bendingSf: bending.safetyFactor,
+      torsionSf: torsion.safetyFactor,
+      combinedSf,
+      sigmaA,
+      sigmaM,
+      tauA,
+      tauM,
+      vonMisesA: vmA,
+      vonMisesM: vmM,
+      correctedEndurance: combined.correctedEndurance,
+      ultimateStrength: material.ultimateStrength,
+      goodmanMean: curve.mean,
+      goodmanAllowable: curve.allowable,
+    },
   };
 }
 

@@ -22,6 +22,9 @@ describe("shaft FEM regression", () => {
     });
     expect(res.maxStress).toBeCloseTo(17_759_752, -3);
     expect(res.safetyFactor).toBeCloseTo(14.08, 1);
+    expect(res.keysDesign).not.toBeNull();
+    expect(res.keysDesign!.width).toBeGreaterThan(0);
+    expect(res.fatigueConcentrationFactor.length).toBe(res.x.length);
   });
 
   it("simply supported center force: M_max ≈ FL/4", () => {
@@ -47,6 +50,7 @@ describe("shaft FEM regression", () => {
       meshSegments: 30,
     });
     expect(res.criticalSpeed).toBeGreaterThan(100);
+    expect(res.criticalSpeedModes.length).toBeGreaterThanOrEqual(1);
   });
 
   it("shoulder fillet Kt increases with stress concentration", () => {
@@ -54,15 +58,55 @@ describe("shaft FEM regression", () => {
     expect(kt).toBeGreaterThan(1.2);
   });
 
-  it("fatigue SF computed when operating rpm is set", () => {
+  it("fatigue SF and Goodman detail when operating rpm is set", () => {
     const res = solveShaftEngine({
       geometry: { diameter: 0.05, length: 1 },
       material: STEEL,
       loads: [{ position: 0.5, torque: 100, bendingMoment: 200 }],
       operatingRpm: 1500,
       meshSegments: 30,
+      stressFeatures: [
+        { position: 0.5, type: "keyway", keywayStyle: "sled_runner" },
+        {
+          position: 0.25,
+          type: "retaining_ring",
+          grooveDepth: 0.0015,
+          grooveWidth: 0.002,
+          axialRetentionLoad: 2000,
+        },
+      ],
+      fatigue: {
+        enabled: true,
+        surfaceFinish: "machined",
+        alternatingTorqueFraction: 0.2,
+        useNotchSensitivity: true,
+      },
     });
     expect(res.fatigueSafetyFactor).not.toBeNull();
     expect(res.fatigueSafetyFactor!).toBeGreaterThan(1);
+    expect(res.fatigueDetail).not.toBeNull();
+    expect(res.fatigueDetail!.goodmanMean.length).toBeGreaterThan(10);
+    expect(res.retainingRingChecks.length).toBe(1);
+    expect(res.bearingLifeScreens.length).toBeGreaterThan(0);
+  });
+
+  it("end-milled keyway raises Kt vs sled-runner", () => {
+    const base = solveShaftEngine({
+      geometry: { diameter: 0.05, length: 1 },
+      material: STEEL,
+      loads: [{ position: 0.5, torque: 100, bendingMoment: 200 }],
+      stressFeatures: [{ position: 0.5, type: "keyway", keywayStyle: "sled_runner" }],
+      meshSegments: 30,
+    });
+    const endMilled = solveShaftEngine({
+      geometry: { diameter: 0.05, length: 1 },
+      material: STEEL,
+      loads: [{ position: 0.5, torque: 100, bendingMoment: 200 }],
+      stressFeatures: [{ position: 0.5, type: "keyway", keywayStyle: "end_milled" }],
+      meshSegments: 30,
+    });
+    expect(Math.max(...endMilled.stressConcentrationFactor)).toBeGreaterThan(
+      Math.max(...base.stressConcentrationFactor)
+    );
   });
 });

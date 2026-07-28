@@ -53,10 +53,10 @@ const METAL_CATEGORIES: MaterialCategory[] = [
 
 export const MATERIAL_PROFILES: Record<MaterialProfile, ProfileConfig> = {
   structural: {
-    categories: [...METAL_CATEGORIES],
-    fields: ["E", "yieldStress", "ultimateStrength", "poisson"],
+    categories: [...METAL_CATEGORIES, "other"],
+    fields: ["E", "yieldStress", "ultimateStrength", "poisson", "density"],
     allowCustom: true,
-    defaultMaterialId: "s275jr",
+    defaultMaterialId: "astm-a36",
   },
   "machine-shaft": {
     categories: ["alloy-steel", "structural-steel", "stainless-steel", "aluminum", "titanium"],
