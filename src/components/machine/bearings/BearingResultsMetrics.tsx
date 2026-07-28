@@ -12,11 +12,16 @@ import {
   BEARING_TYPE_LABELS,
   type BearingCatalogEntry,
 } from "@/data/catalogs/bearingCatalog";
+import {
+  provenanceLabel,
+  type RatingProvenance,
+} from "@/data/bearings/constructionDefaults";
 
 type Props = {
   result: BearingResult;
   loadUnit: string;
   catalogEntry?: BearingCatalogEntry;
+  ratingsProvenance?: RatingProvenance;
 };
 
 function utilizationStatus(value: number, limit: number, higherIsSafe: boolean): "safe" | "danger" {
@@ -29,7 +34,12 @@ function hasLubricationFactors(result: BearingResult): boolean {
 }
 
 /** Registers all bearing metrics into the unified results table (cards render nothing). */
-export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }: Props) {
+export default function BearingResultsMetrics({
+  result,
+  loadUnit,
+  catalogEntry,
+  ratingsProvenance = "oem_scaled",
+}: Props) {
   const f = result.modifiedLifeFactors;
   const aIsoBase = f.aIso;
   const aSkfEffective = result.aIso;
@@ -231,17 +241,21 @@ export default function BearingResultsMetrics({ result, loadUnit, catalogEntry }
             value={`d=${result.geometry.boreMm} D=${result.geometry.outerDiameterMm} B=${result.geometry.widthMm} mm`}
           />
           <CalculatorMetricCard
-            label="Ratings C / C₀"
+            label={`Ratings C / C₀ (${provenanceLabel(ratingsProvenance)})`}
             value={`${formatDisplayNumber(fromBase(result.dynamicLoadRatingN, "force", loadUnit))} / ${formatDisplayNumber(fromBase(result.staticLoadRatingN, "force", loadUnit))} ${loadUnit}`}
+            title={`C and C₀ provenance: ${provenanceLabel(ratingsProvenance)}`}
           />
           {result.modifiedLifeFactors?.fatigueLoadLimitN != null ? (
             <CalculatorMetricCard
-              label={
-                catalogEntry?.fatigueLoadLimitFromDatasheet
-                  ? "Fatigue limit Pu (datasheet)"
-                  : "Fatigue limit Pu (est.)"
-              }
+              label={`Fatigue limit Pu (${provenanceLabel(
+                ratingsProvenance === "user_override"
+                  ? "user_override"
+                  : catalogEntry?.fatigueLoadLimitFromDatasheet || catalogEntry?.puSource === "datasheet"
+                    ? "datasheet"
+                    : "estimated"
+              )})`}
               value={`${formatDisplayNumber(fromBase(result.modifiedLifeFactors.fatigueLoadLimitN, "force", loadUnit))} ${loadUnit}`}
+              title="Pu may be datasheet, C₀-ratio estimate, or user override"
             />
           ) : null}
           <CalculatorMetricCard

@@ -66,7 +66,9 @@ s_0 = \frac{C_0}{P_0}
 
 Dynamic utilization is commonly reported as \(P/C\) (lower is more conservative for a fixed life target).
 
-## Worked example
+## Worked examples
+
+### 1. Conveyor roller (deep groove)
 
 **Given:** Deep-groove application, \(F_r = 4.5\,\mathrm{kN}\), \(F_a = 1.2\,\mathrm{kN}\), \(n = 1800\,\mathrm{rpm}\), target \(L_{10h} = 20{,}000\,\mathrm{h}\), grease, moderate cleanliness, 90% reliability.
 
@@ -85,7 +87,45 @@ C \approx 66\,\mathrm{kN}
 3. Screen catalog deep-groove bearings with bore matching the shaft, \(C \gtrsim 66\,\mathrm{kN}\), check \(C_0/P_0\), limiting speed, and grease life.
 4. Apply modified life if \(\kappa\) and \(e_C\) are known; a low \(\kappa\) can cut \(L_{nm}\) well below basic \(L_{10h}\).
 
+**Try it:** [Life tool](/products/bearings/life?type=deep_groove) · [Selection](/products/bearings/selection?type=deep_groove)
+
 **Interpretation:** Meeting basic \(L_{10h}\) on paper is not enough if lubricant film or contamination is poor—always review \(a_{\mathrm{ISO}}\) factors.
+
+### 2. Electric motor L₁₀ (high speed)
+
+**Given:** Deep-groove motor bearing, \(F_r = 2.0\,\mathrm{kN}\), \(F_a = 0.4\,\mathrm{kN}\), \(n = 3600\,\mathrm{rpm}\), target \(L_{10h} = 40{,}000\,\mathrm{h}\), grease-filled 2RS, clean enclosure.
+
+1. Check Fa/Fr against type factor \(e\); form \(P\).
+2. Back-calculate required \(C\) at 3600 rpm (life in hours shrinks as \(n\) rises for the same \(C/P\)).
+3. Verify limiting / reference speed for grease, min load against skidding, and relubrication interval if open.
+4. Prefer sealed deep-groove with adequate C3 clearance when thermal growth is expected.
+
+**Try it:** [Life calculator](/products/bearings/life?type=deep_groove) · [Speed tool](/products/bearings/speed)
+
+### 3. Angular contact / ballscrew (duplex)
+
+**Given:** Angular-contact pair for a ballscrew support, \(F_r = 1.5\,\mathrm{kN}\), \(F_a = 3.0\,\mathrm{kN}\), \(n = 2500\,\mathrm{rpm}\), target \(L_{10h} = 10{,}000\,\mathrm{h}\), O (back-to-back) arrangement with light preload.
+
+1. Use angular-contact X, Y factors; Fa usually dominates → combined \(P\).
+2. Size for duplex life (Weibull combination of stations) and check Ka / moment stiffness for the O arrangement.
+3. Confirm preload class vs thermal growth; face-to-face (X) if misalignment dominates.
+4. Hand off designation into Selection Expert mode for κ, contamination, and fits.
+
+**Try it:** [Selection (angular)](/products/bearings/selection?type=angular_contact) · [Arrangement guide](/products/bearings/arrangement)
+
+## Standards scope (ISO 281 / 76 / 492 / ABMA)
+
+### ISO 281 — Dynamic load ratings and rating life
+Defines basic and modified rating life, equivalent dynamic load \(P\), reliability factor \(a_1\), and life modification \(a_{\mathrm{ISO}}\) from \(\kappa\), \(e_C\), and \(P_u\). PhyCalcPro’s Life and Selection tools use this screening form. **Limits:** not a substitute for full elastic FEA (ISO 16281) or vendor GBLM.
+
+### ISO 76 — Static load ratings
+Defines basic static load rating \(C_0\), equivalent static load \(P_0\), and safety factor \(s_0 = C_0/P_0\). Use for peak / shock / start-up checks even when life is adequate.
+
+### ISO 492 — Dimensional and running accuracy (radial bearings)
+Tolerance classes (Normal, P6, P5, …) for bore, OD, width, and running accuracy. Selection of P5/P4 is a manufacturing / precision decision — the calculator screens life and load; specify accuracy class on the purchase order.
+
+### ABMA / ANSI (inch series)
+ABMA standards cover inch designations, load ratings conventions, and US customary presentation. PhyCalcPro’s catalog includes inch-series entries with geometry in inches where authored; physics remains ISO 281/76 screening unless an ABMA-specific method is stated.
 
 ## Common mistakes and checks
 
@@ -125,7 +165,7 @@ Yes. The shaft module can publish bearing reactions and slopes; the bearings cal
 
 ## Use the PhyCalcPro calculator
 
-Open the [Rolling bearings calculator](/products/bearings/selection). Enter Fr, Fa, speed, and life target; pick application profile and manufacturer filters; run **Auto-design** to rank designations, or **Validate** a known part number. Review Lnm factors, static SF, speed margin, and arrangement stiffness before freezing the BOM.
+Open the [Bearing Engineering Suite hub](/products/bearings) or jump straight to [Selection](/products/bearings/selection). Focused tools: [Life (ISO 281)](/products/bearings/life), [Database](/products/bearings/database), [Equivalent load](/products/bearings/loads), [Arrangement](/products/bearings/arrangement), [Speed](/products/bearings/speed), [Lubrication](/products/bearings/lubrication), [Failure](/products/bearings/failure), [Mounting](/products/bearings/mounting). Enter Fr, Fa, speed, and life target; pick application profile and manufacturer filters; run **Auto-design** to rank designations, or **Validate** a known part number. Review Lnm factors, static SF, speed margin, and arrangement stiffness before freezing the BOM.
 
 **Purpose**
 
@@ -238,5 +278,7 @@ Closed-form ISO 281 / ISO 76 screening over a filtered catalog. Auto-design rank
 
 1. ISO 281:2007 — Dynamic load ratings and rating life.
 2. ISO 76 — Static load ratings.
-3. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 11.
-4. SKF Rolling Bearings Catalogue — application factors and lubrication guidance.
+3. ISO 492 — Rolling bearings — Radial bearings — Geometrical product specifications (GPS) and tolerance values.
+4. ABMA / ANSI B3.x — Inch bearing load ratings and dimensional practices (presentation / designation).
+5. Shigley, J. E., & Budynas, R. G. *Mechanical Engineering Design*, 11th ed., Ch. 11.
+6. SKF Rolling Bearings Catalogue — application factors and lubrication guidance.

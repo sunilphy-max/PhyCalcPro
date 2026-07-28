@@ -35,8 +35,18 @@ export default function BearingCopilotPanel({ onApply }: Props) {
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Bearing copilot</h2>
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-            Describe loads, speed, and life — ranks the catalog using ISO 281 / SKF rating life. Bearing
-            module only; does not run shafts or housing.
+            Describe loads, speed, and life — ranks the catalog using ISO 281 / SKF rating life. Or jump to{" "}
+            <a href="/products/bearings/life" className="font-medium text-indigo-700 underline dark:text-indigo-300">
+              Life
+            </a>{" "}
+            /{" "}
+            <a
+              href="/products/bearings/database"
+              className="font-medium text-indigo-700 underline dark:text-indigo-300"
+            >
+              Database
+            </a>
+            .
           </p>
         </div>
       </div>

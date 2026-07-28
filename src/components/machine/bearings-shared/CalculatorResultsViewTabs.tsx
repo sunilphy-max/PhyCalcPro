@@ -1,10 +1,30 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { BarChart3, FileText, Stethoscope, Table2 } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Droplets,
+  FileText,
+  Gauge,
+  Layers,
+  LayoutDashboard,
+  Stethoscope,
+  Table2,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
-export type CalculatorResultsViewId = "summary" | "charts" | "diagnose" | "report";
+export type CalculatorResultsViewId =
+  | "summary"
+  | "overview"
+  | "life"
+  | "loads"
+  | "lubrication"
+  | "arrangement"
+  | "catalog"
+  | "charts"
+  | "diagnose"
+  | "report";
 
 export type CalculatorResultsViewTab = {
   id: CalculatorResultsViewId;
@@ -81,6 +101,12 @@ export default function CalculatorResultsViewTabs({
 
 export const CALCULATOR_VIEW_ICONS = {
   summary: Table2,
+  overview: LayoutDashboard,
+  life: Gauge,
+  loads: Layers,
+  lubrication: Droplets,
+  arrangement: BookOpen,
+  catalog: BookOpen,
   charts: BarChart3,
   diagnose: Stethoscope,
   report: FileText,

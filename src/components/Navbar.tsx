@@ -15,7 +15,6 @@ const allNavigationItems = [
   { href: "/learn", label: "Learn" },
   { href: "/projects", label: "Projects" },
   { href: "/pricing", label: "Pricing", monetizationOnly: true },
-  { href: "/status", label: "Quality" },
   { href: "/support", label: "Support" },
   { href: "/documentation", label: "Docs" },
 ] as const;

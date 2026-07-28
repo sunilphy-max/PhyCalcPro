@@ -238,7 +238,7 @@ function compileModuleReference(markdownById: Map<string, ModuleDocSection>): st
   const parts: string[] = [
     "## 3. Module reference",
     "",
-    "Per-module engineering knowledge guides live in `docs/modules/{moduleId}.md`. Each page covers selection/analysis workflow, worked examples, FAQ, plus **purpose**, **physics & theory**, **governing equations**, **numerical method**, **inputs**, **outputs**, **design codes & checks**, **assumptions & limitations**, and **references**. Browse individually at `/documentation/modules/{moduleId}`.",
+    "Per-module engineering knowledge guides live in `docs/modules/{moduleId}.md`. Each page covers selection/analysis workflow, worked examples, FAQ, plus **purpose**, **physics & theory**, **governing equations**, **numerical method**, **inputs**, **outputs**, **design codes & checks**, **assumptions & limitations**, and **references**. Every module documentation page also includes a **Validation & quality** section (release tier, catalog status, benchmarks). Browse individually at `/documentation/modules/{moduleId}`. Fleet maturity dashboard: `/status`.",
     "",
   ];
 

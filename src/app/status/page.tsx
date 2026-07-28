@@ -40,8 +40,14 @@ export default function StatusPage() {
           Quality & maturity dashboard
         </h1>
         <p className="mt-4 max-w-2xl text-slate-600 leading-7 dark:text-slate-300">
-          Release tiers combine catalog validation status, numerical maturity, and automated
-          benchmark results. Run{" "}
+          Fleet-wide release tiers for operators and release QA. Engineers looking up trust signals
+          for a single calculator should use the{" "}
+          <strong>Validation & quality</strong> section in that module&apos;s{" "}
+          <Link href="/documentation/modules" className="font-medium underline">
+            documentation guide
+          </Link>
+          . Tiers combine catalog validation status, numerical maturity, and automated benchmark
+          results. Run{" "}
           <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
             npm run test:verification
           </code>{" "}

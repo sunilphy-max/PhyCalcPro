@@ -44,7 +44,17 @@ export default function TrustPage() {
           <li>You validate cases against your standard worksheets.</li>
           <li>You add benchmarks to <code className="rounded bg-slate-100 px-1 text-sm dark:bg-slate-800">src/data/verification/</code>.</li>
           <li>CI passes <code className="rounded bg-slate-100 px-1 text-sm dark:bg-slate-800">npm run test:verification</code>.</li>
-          <li>Module reaches <strong>verified</strong> on <Link href="/status" className="underline">Quality</Link>.</li>
+          <li>
+            Module reaches <strong>verified</strong> on the{" "}
+            <Link href="/status" className="underline">
+              Quality & maturity dashboard
+            </Link>{" "}
+            (also summarized under Validation & quality in each{" "}
+            <Link href="/documentation/modules" className="underline">
+              module guide
+            </Link>
+            ).
+          </li>
           <li>After review, we promote to <strong>certified</strong> in the catalog.</li>
         </ol>
       </section>

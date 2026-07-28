@@ -8,6 +8,7 @@ import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { useState, useMemo, useCallback, useDeferredValue } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -291,6 +292,7 @@ export default function Page() {
   };
 
   return (
+    <BearingSuiteChrome>
     <CalculatorLayout
       moduleId="housing"
       title="Bearing Housing"
@@ -404,5 +406,6 @@ export default function Page() {
         />
       }
     />
+    </BearingSuiteChrome>
   );
 }

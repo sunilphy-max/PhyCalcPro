@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import MarkdownContent from "@/components/documentation/MarkdownContent";
+import ModuleValidationQualitySection from "@/components/documentation/ModuleValidationQualitySection";
 
 type Props = {
   knowledgeSlug: string;
@@ -16,6 +17,7 @@ type DocPayload = {
 
 /**
  * In-product knowledge panel (EDP-2) — loads module guide markdown via API.
+ * Includes a compact Validation & quality summary (moved off the global nav Quality tab).
  */
 export default function CalculatorKnowledgePanel({ knowledgeSlug, title }: Props) {
   const [doc, setDoc] = useState<DocPayload | null>(null);
@@ -58,6 +60,9 @@ export default function CalculatorKnowledgePanel({ knowledgeSlug, title }: Props
           Open full guide
         </Link>
       </div>
+
+      <ModuleValidationQualitySection moduleId={knowledgeSlug} variant="compact" />
+
       {loading ? (
         <p className="text-sm text-slate-500">Loading guide…</p>
       ) : error ? (

@@ -7,6 +7,7 @@ import { usePlainBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useSavedProjects } from "@/hooks/useSavedProjects";
 import { useState, useMemo, useCallback, useDeferredValue } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -272,6 +273,7 @@ export default function Page() {
   };
 
   return (
+    <BearingSuiteChrome>
     <CalculatorLayout
       moduleId="plain-bearings"
       title="Plain Bearings"
@@ -382,5 +384,6 @@ export default function Page() {
         />
       }
     />
+    </BearingSuiteChrome>
   );
 }

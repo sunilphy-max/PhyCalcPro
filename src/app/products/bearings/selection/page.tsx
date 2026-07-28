@@ -5,8 +5,10 @@ import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRollingBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState, useMemo, useCallback, useDeferredValue } from "react";
+import { useState, useMemo, useCallback, useDeferredValue, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import CalculatorLayout from "@/components/CalculatorLayout";
+import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
 import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
@@ -63,6 +65,7 @@ import {
 import type { BearingCopilotApplyPayload } from "@/lib/copilot/bearingCopilot";
 import type { BearingSystemWizardValues } from "@/components/machine/bearings/BearingSystemWizard";
 import type { BearingConfig } from "@/lib/machine/bearings/types";
+import { resolveRatingsProvenance } from "@/data/bearings/constructionDefaults";
 
 type BearingProjectData = {
   radialLoad: number;
@@ -165,7 +168,7 @@ function buildRatingsOverride(
 }
 
 
-export default function Page() {
+function BearingSelectionPage() {
   const { mode: workflowMode } = useDesignWorkflow();
   const [radialLoad, setRadialLoad] = useState(500);
   const [radialUnit, setRadialUnit] = useState("N");
@@ -188,6 +191,26 @@ export default function Page() {
   const [applicationProfile, setApplicationProfile] = useState<BearingApplicationProfile | "all">("all");
   const [bearingType, setBearingType] = useState<BearingType>("deep_groove");
   const [designation, setDesignation] = useState("6205");
+  const [uiComplexity, setUiComplexity] = useState<"simple" | "expert">("simple");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const typeParam = searchParams.get("type");
+    const designationParam = searchParams.get("designation");
+    if (typeParam) {
+      setBearingType(typeParam as BearingType);
+    }
+    if (designationParam) {
+      const entry = findBearing(designationParam);
+      if (entry) {
+        setDesignation(entry.designation);
+        setBearingType(entry.type);
+        setManufacturer(entry.manufacturer);
+      } else {
+        setDesignation(designationParam);
+      }
+    }
+  }, [searchParams]);
   const [reliability, setReliability] = useState<BearingReliability>(90);
   const [lubricationClass, setLubricationClass] = useState<LubricationClass | "">("");
   const [manufacturer, setManufacturer] = useState<BearingManufacturer>("SKF");
@@ -672,6 +695,10 @@ export default function Page() {
           designation: entry.designation,
           result: solved,
           costIndex: entry.costIndex,
+          provenance: resolveRatingsProvenance({
+            ratingsOverrideEnabled,
+            entry,
+          }),
         });
       } catch {
         /* skip invalid */
@@ -1050,9 +1077,10 @@ export default function Page() {
   );
 
   return (
+    <BearingSuiteChrome>
     <CalculatorLayout
       moduleId="bearings"
-      title="Bearing Load Rating & Life (SKF / ISO 281)"
+      title="Bearing Selection — Load Rating & Life (ISO 281)"
       summary={
         <BearingDesignSummaryPanel
           preview={deferredLivePreview?.preview ?? null}
@@ -1111,6 +1139,8 @@ export default function Page() {
             }}
           />
           <BearingInputs
+            uiComplexity={uiComplexity}
+            setUiComplexity={setUiComplexity}
             radialLoad={radialLoad}
             setRadialLoad={setRadialLoad}
             radialUnit={radialUnit}
@@ -1313,9 +1343,19 @@ export default function Page() {
           compareRows={compareRows}
           mountedBom={mountedBom}
           inputRows={reportInputRows}
+          ratingsOverrideEnabled={ratingsOverrideEnabled}
           onSelectDesignation={applyDesignation}
         />
       }
     />
+    </BearingSuiteChrome>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={null}>
+      <BearingSelectionPage />
+    </Suspense>
   );
 }

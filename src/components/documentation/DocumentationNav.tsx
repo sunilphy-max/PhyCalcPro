@@ -9,6 +9,7 @@ const TOP_LINKS = [
   { href: "/documentation/reference", label: "Full reference" },
   { href: "/documentation/modules", label: "Module guides" },
   { href: "/documentation/supabase", label: "Supabase setup" },
+  { href: "/status", label: "Quality dashboard" },
 ] as const;
 
 type Props = {

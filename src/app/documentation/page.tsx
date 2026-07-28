@@ -78,12 +78,17 @@ export default function DocumentationPage() {
           </li>
         </ul>
         <p className="mt-4 text-sm text-slate-500">
-          <Link href="/trust" className="font-medium underline">
-            Trust & responsibility
+          Per-module validation and release tiers live in each{" "}
+          <Link href="/documentation/modules" className="font-medium underline">
+            module guide
           </Link>
-          {" · "}
+          {" "}(Validation & quality). Fleet dashboard:{" "}
           <Link href="/status" className="font-medium underline">
             Quality & maturity
+          </Link>
+          {" · "}
+          <Link href="/trust" className="font-medium underline">
+            Trust & responsibility
           </Link>
         </p>
       </section>

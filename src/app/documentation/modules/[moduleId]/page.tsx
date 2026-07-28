@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import MarkdownContent from "@/components/documentation/MarkdownContent";
 import ModuleCatalogPanel from "@/components/documentation/ModuleCatalogPanel";
+import ModuleValidationQualitySection from "@/components/documentation/ModuleValidationQualitySection";
 import DocumentationToc from "@/components/documentation/DocumentationToc";
 import {
   getAllModuleIdsForDocs,
@@ -126,6 +127,8 @@ export default async function ModuleDocumentationPage({ params }: Props) {
             </p>
           )}
 
+          <ModuleValidationQualitySection moduleId={moduleId} />
+
           {related.length > 0 ? (
             <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
               <h2 className="text-lg font-semibold text-slate-950 dark:text-white">
@@ -145,18 +148,16 @@ export default async function ModuleDocumentationPage({ params }: Props) {
               </ul>
             </section>
           ) : null}
-
-          {maturity?.notes ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
-              <strong className="text-slate-900 dark:text-white">Maintainer note:</strong>{" "}
-              {maturity.notes}
-            </div>
-          ) : null}
         </div>
 
         <aside className="hidden xl:block">
           <div className="sticky top-24 space-y-4">
-            <DocumentationToc items={rawDoc?.toc ?? []} />
+            <DocumentationToc
+              items={[
+                ...(rawDoc?.toc ?? []),
+                { id: "validation-quality", title: "Validation & quality" },
+              ]}
+            />
             {calculatorRoute ? (
               <a
                 href={calculatorRoute}

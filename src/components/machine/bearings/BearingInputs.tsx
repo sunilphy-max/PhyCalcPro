@@ -51,7 +51,6 @@ import {
   APPLICATION_PROFILE_META,
   BEARING_MANUFACTURERS,
   BEARING_MANUFACTURER_LABELS,
-  BEARING_TYPE_LABELS,
   SEAL_TYPE_LABELS,
   type BearingUnitSystem,
 } from "@/data/catalogs/bearingCatalog";
@@ -64,6 +63,8 @@ export type LoadSpectrumUiStep = {
 };
 
 type Props = {
+  uiComplexity?: "simple" | "expert";
+  setUiComplexity?: Dispatch<SetStateAction<"simple" | "expert">>;
   radialLoad: number;
   setRadialLoad: Dispatch<SetStateAction<number>>;
   radialUnit: string;
@@ -179,6 +180,8 @@ function calculateLabelForMode(mode?: DesignWorkflowMode): string {
 }
 
 export default function BearingInputs({
+  uiComplexity = "expert",
+  setUiComplexity,
   radialLoad,
   setRadialLoad,
   radialUnit,
@@ -997,7 +1000,12 @@ export default function BearingInputs({
                       {ratingsOverrideEnabled ? (
                         <div className={calculatorInputGridClass}>
                           <div className="min-w-0 space-y-1.5">
-                            <label className={calculatorFieldLabelClass}>C dynamic (N)</label>
+                            <label className={calculatorFieldLabelClass}>
+                              C dynamic (N){" "}
+                              <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold uppercase text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
+                                User override
+                              </span>
+                            </label>
                             <input
                               type="number"
                               min={0}
@@ -1007,7 +1015,12 @@ export default function BearingInputs({
                             />
                           </div>
                           <div className="min-w-0 space-y-1.5">
-                            <label className={calculatorFieldLabelClass}>C₀ static (N)</label>
+                            <label className={calculatorFieldLabelClass}>
+                              C₀ static (N){" "}
+                              <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold uppercase text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
+                                User override
+                              </span>
+                            </label>
                             <input
                               type="number"
                               min={0}
@@ -1017,7 +1030,12 @@ export default function BearingInputs({
                             />
                           </div>
                           <div className="min-w-0 space-y-1.5">
-                            <label className={calculatorFieldLabelClass}>Pu fatigue (N)</label>
+                            <label className={calculatorFieldLabelClass}>
+                              Pu fatigue (N){" "}
+                              <span className="rounded bg-amber-100 px-1 py-0.5 text-[10px] font-semibold uppercase text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">
+                                User override
+                              </span>
+                            </label>
                             <input
                               type="number"
                               min={0}
@@ -1159,7 +1177,89 @@ export default function BearingInputs({
         </div>
       ) : null}
 
-      <BearingInputTabs>{renderTab}</BearingInputTabs>
+      {setUiComplexity ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/50">
+          <p className="text-xs text-slate-500">
+            {uiComplexity === "simple"
+              ? "Simple: type, loads, speed, life, designation"
+              : "Expert: full ISO 281 factors, duplex, spectrum, overrides"}
+          </p>
+          <div className="flex rounded-lg border border-slate-200 dark:border-slate-600">
+            <button
+              type="button"
+              onClick={() => setUiComplexity("simple")}
+              className={`px-2.5 py-1 text-xs font-semibold ${
+                uiComplexity === "simple" ? "bg-cyan-600 text-white" : "text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              Simple
+            </button>
+            <button
+              type="button"
+              onClick={() => setUiComplexity("expert")}
+              className={`px-2.5 py-1 text-xs font-semibold ${
+                uiComplexity === "expert" ? "bg-cyan-600 text-white" : "text-slate-600 dark:text-slate-300"
+              }`}
+            >
+              Expert
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {uiComplexity === "simple" ? (
+        <div className="space-y-4">
+          <BearingTypePicker
+            value={bearingType}
+            availableTypes={availableTypes}
+            onChange={setBearingType}
+          />
+          <div className={calculatorInputGridClass}>
+            <CalculatorUnitField
+              label="Radial load Fr"
+              value={radialLoad}
+              onChange={setRadialLoad}
+              min={0}
+              step="any"
+              unit={
+                <ModuleUnitSelect moduleId="bearings" fieldKey="load" value={radialUnit} onChange={setRadialUnit} />
+              }
+            />
+            <CalculatorUnitField
+              label="Axial load Fa"
+              value={axialLoad}
+              onChange={setAxialLoad}
+              min={0}
+              step="any"
+              unit={<span className="text-xs text-slate-500">{axialUnit}</span>}
+            />
+            <CalculatorUnitField label="Speed" value={speed} onChange={setSpeed} min={0} unit="rpm" />
+            <CalculatorUnitField label="Required L10h" value={lifeHours} onChange={setLifeHours} min={0} unit="h" />
+          </div>
+          <label className={calculatorFieldLabelClass}>
+            Designation
+            <input
+              className={`${calculatorTextInputClass} mt-1`}
+              value={designation}
+              onChange={(e) => setDesignation(e.target.value)}
+              placeholder="e.g. 6205"
+            />
+          </label>
+          <p className="text-xs text-slate-500">
+            Need κ, duplex, spectrum, or overrides? Switch to Expert. Or open{" "}
+            <a href="/products/bearings/life" className="text-cyan-700 underline dark:text-cyan-400">
+              Life
+            </a>{" "}
+            /{" "}
+            <a href="/products/bearings/database" className="text-cyan-700 underline dark:text-cyan-400">
+              Database
+            </a>
+            .
+          </p>
+        </div>
+      ) : (
+        <BearingInputTabs>{renderTab}</BearingInputTabs>
+      )}
 
       {wizardOpen && onSystemWizardApply && systemWizardSizingConfig ? (
         <BearingSystemWizard

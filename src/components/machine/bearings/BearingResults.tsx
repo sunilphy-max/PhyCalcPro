@@ -1,7 +1,16 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { BarChart3, FileText, Stethoscope, Table2 } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Droplets,
+  FileText,
+  Gauge,
+  Layers,
+  LayoutDashboard,
+  Stethoscope,
+} from "lucide-react";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import type { ReportRow } from "@/lib/export/reportPayload";
@@ -39,7 +48,17 @@ import CalculatorResultsViewTabs, {
   type CalculatorResultsViewId,
 } from "@/components/machine/bearings-shared/CalculatorResultsViewTabs";
 import { buildBearingCsvRows, buildBearingReportSections } from "@/lib/machine/bearings/reportSections";
+import BearingConstructionCard from "@/components/machine/bearings/BearingConstructionCard";
+import BearingDecisionDashboard from "@/components/machine/bearings/BearingDecisionDashboard";
+import BearingReactionDiagram from "@/components/machine/bearings/BearingReactionDiagram";
 import { findBearing } from "@/data/catalogs/bearingCatalog";
+import { resolveRatingsProvenance } from "@/data/bearings/constructionDefaults";
+import {
+  buildOperatingEnvelope,
+  reliabilityLifeCurve,
+  reliabilityPercentFromA1,
+} from "@/lib/machine/bearings/bearingDecisionDashboard";
+import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 
 type Props = {
   result: WithCalculationSpec<BearingResult> | null;
@@ -52,6 +71,7 @@ type Props = {
   compareRows?: BearingCompareRow[];
   mountedBom?: MountedBomResult | null;
   inputRows?: ReportRow[];
+  ratingsOverrideEnabled?: boolean;
   onSelectDesignation?: (designation: string) => void;
 };
 
@@ -66,6 +86,7 @@ export default function BearingResults({
   compareRows = [],
   mountedBom = null,
   inputRows = [],
+  ratingsOverrideEnabled = false,
   onSelectDesignation,
 }: Props) {
   const reportSections = useMemo(() => {
@@ -79,6 +100,10 @@ export default function BearingResults({
   }, [result, crossManufacturerRecommendation?.advisor]);
 
   const catalogEntry = result?.designation ? findBearing(result.designation) : undefined;
+  const ratingsProvenance = resolveRatingsProvenance({
+    ratingsOverrideEnabled,
+    entry: catalogEntry,
+  });
 
   const plotTabs = useMemo((): PlotPickerTab[] => {
     if (!result) return [];
@@ -119,6 +144,13 @@ export default function BearingResults({
       return result.staticLoadRatingN / Math.max(p0Static, 1e-9);
     });
 
+    const relCurve = reliabilityLifeCurve(result);
+    const envelope = buildOperatingEnvelope(result, catalogEntry?.catalogFactors);
+    const frDisp = envelope.frN.map((v) => fromBase(v, "force", loadUnit));
+    const faDisp = envelope.faN.map((v) => fromBase(v, "force", loadUnit));
+    const frDuty = fromBase(Math.abs(result.radialLoad), "force", loadUnit);
+    const faDuty = fromBase(Math.abs(result.axialLoad), "force", loadUnit);
+
     return [
       {
         id: "life-load",
@@ -156,6 +188,53 @@ export default function BearingResults({
         ),
       },
       {
+        id: "reliability-life",
+        label: "Reliability vs life",
+        content: (
+          <div className="space-y-2">
+            <EngineeringPlot
+              title="Modified life vs reliability (a₁)"
+              x={relCurve.reliabilityPercent}
+              y={relCurve.lifeHours}
+              yLabel="Modified rating life Lnm"
+              xLabel="Reliability"
+              xUnit="%"
+              unitLabel="h"
+              probeX={reliabilityPercentFromA1(result.a1)}
+              showPeak={false}
+            />
+            <p className="text-xs text-slate-500">
+              Current a₁ = {formatDisplayNumber(result.a1)} scales Lnm from the ISO 281 Table 3
+              reliability factors.
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: "load-envelope",
+        label: "Fr / Fa envelope",
+        content: (
+          <div className="space-y-2">
+            <EngineeringPlot
+              title="Radial / axial operating envelope (P ≤ P_allow at target life)"
+              x={frDisp}
+              y={faDisp}
+              yLabel="Axial load Fa"
+              xLabel="Radial load Fr"
+              xUnit={loadUnit}
+              unitLabel={loadUnit}
+              probeX={frDuty}
+              showPeak={false}
+            />
+            <p className="text-xs text-slate-500">
+              Duty point: Fr = {formatDisplayNumber(frDuty)} {loadUnit}, Fa ={" "}
+              {formatDisplayNumber(faDuty)} {loadUnit}. Curve is the ISO 281 equivalent-load
+              capacity boundary at the required life (screening).
+            </p>
+          </div>
+        ),
+      },
+      {
         id: "utilization",
         label: "P/C margin",
         content: (
@@ -189,43 +268,7 @@ export default function BearingResults({
         ),
       },
     ];
-  }, [loadUnit, result, speedRpm]);
-
-  const summaryContent = result ? (
-    <div className="space-y-4">
-      {workflowMode !== "diagnose" && crossManufacturerRecommendation?.primary ? (
-        <BearingRecommendations
-          result={result}
-          recommendation={crossManufacturerRecommendation}
-          compareRows={compareRows}
-          onSelect={onSelectDesignation}
-        />
-      ) : null}
-      {compareRows.length >= 2 ? <BearingCompareTable rows={compareRows} /> : null}
-      {mountedBom ? <MountedBomPanel bom={mountedBom} compact /> : null}
-
-      <BearingLifeFactorsCard result={result} />
-      <BearingPairedStationsCard result={result} loadUnit={loadUnit} />
-      <BearingDuplexStiffnessCard result={result} />
-      <BearingThermalEquilibriumCard result={result} />
-      <BearingThermalCard result={result} />
-      <BearingRelubricationCard result={result} />
-      <BearingAuxSpeedEnergyCard result={result} />
-      <BearingDefectFrequenciesCard result={result} />
-      {result.bearingType ? (
-        <BearingReferenceVisual
-          bearingType={result.bearingType}
-          sealType={catalogEntry?.sealType ?? "open"}
-          arrangement={arrangement}
-          compact
-        />
-      ) : null}
-      <p className="text-xs text-slate-500 dark:text-slate-400">
-        Full parameter table is above. SKF rating life Lnm = a₁ · aSKF · (C/P)^p per ISO 281:2007
-        (aSKF ≡ aISO from κ, eC, Pu/P).
-      </p>
-    </div>
-  ) : null;
+  }, [catalogEntry?.catalogFactors, loadUnit, result, speedRpm]);
 
   const viewTabs = useMemo(() => {
     if (!result) return [];
@@ -233,10 +276,150 @@ export default function BearingResults({
     const tabs: {
       id: CalculatorResultsViewId;
       label: string;
-      icon: typeof Table2;
+      icon: typeof LayoutDashboard;
       content: ReactNode;
     }[] = [
-      { id: "summary", label: "Summary", icon: Table2, content: summaryContent },
+      {
+        id: "overview",
+        label: "Overview",
+        icon: LayoutDashboard,
+        content: (
+          <div className="space-y-4">
+            {workflowMode !== "diagnose" && crossManufacturerRecommendation?.primary ? (
+              <BearingRecommendations
+                result={result}
+                recommendation={crossManufacturerRecommendation}
+                compareRows={compareRows}
+                onSelect={onSelectDesignation}
+              />
+            ) : null}
+            {compareRows.length >= 2 ? <BearingCompareTable rows={compareRows} /> : null}
+            {mountedBom ? <MountedBomPanel bom={mountedBom} compact /> : null}
+            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
+            {result.bearingType ? (
+              <BearingConstructionCard
+                entry={catalogEntry}
+                bearingType={result.bearingType}
+                ratingsProvenance={ratingsProvenance}
+              />
+            ) : null}
+            {result.geometry ? (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
+                <p>
+                  Geometry preview: d={result.geometry.boreMm} · D={result.geometry.outerDiameterMm} · B=
+                  {result.geometry.widthMm} mm
+                </p>
+                {result.bearingType ? (
+                  <div className="mt-2">
+                    <BearingReferenceVisual
+                      bearingType={result.bearingType}
+                      sealType={catalogEntry?.sealType ?? "open"}
+                      arrangement={arrangement}
+                      compact
+                    />
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            <BearingAuxSpeedEnergyCard result={result} />
+          </div>
+        ),
+      },
+      {
+        id: "life",
+        label: "Life",
+        icon: Gauge,
+        content: (
+          <div className="space-y-4">
+            <BearingLifeFactorsCard result={result} />
+            <EngineeringPlotPicker
+              tabs={plotTabs.filter(
+                (t) =>
+                  t.id === "life-load" ||
+                  t.id === "life-speed" ||
+                  t.id === "reliability-life"
+              )}
+              defaultTabId="life-load"
+              label="Life sensitivity"
+              variant="segmented"
+            />
+          </div>
+        ),
+      },
+      {
+        id: "loads",
+        label: "Loads",
+        icon: Layers,
+        content: (
+          <div className="space-y-4">
+            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
+            <BearingPairedStationsCard result={result} loadUnit={loadUnit} />
+            <EngineeringPlotPicker
+              tabs={plotTabs.filter(
+                (t) =>
+                  t.id === "load-envelope" ||
+                  t.id === "static-margin" ||
+                  t.id === "utilization"
+              )}
+              defaultTabId="load-envelope"
+              label="Load margin charts"
+              variant="segmented"
+            />
+          </div>
+        ),
+      },
+      {
+        id: "lubrication",
+        label: "Lubrication",
+        icon: Droplets,
+        content: (
+          <div className="space-y-4">
+            <BearingRelubricationCard result={result} />
+            <BearingThermalCard result={result} />
+            <BearingThermalEquilibriumCard result={result} />
+          </div>
+        ),
+      },
+      {
+        id: "arrangement",
+        label: "Arrangement",
+        icon: BookOpen,
+        content: (
+          <div className="space-y-4">
+            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
+            <BearingDuplexStiffnessCard result={result} />
+            {result.bearingType ? (
+              <BearingReferenceVisual
+                bearingType={result.bearingType}
+                sealType={catalogEntry?.sealType ?? "open"}
+                arrangement={arrangement}
+                compact
+              />
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        id: "catalog",
+        label: "Catalog",
+        icon: BookOpen,
+        content: (
+          <div className="space-y-4">
+            {result.bearingType ? (
+              <BearingConstructionCard
+                entry={catalogEntry}
+                bearingType={result.bearingType}
+                ratingsProvenance={ratingsProvenance}
+              />
+            ) : null}
+            <BearingDefectFrequenciesCard result={result} />
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Ratings provenance: {ratingsProvenance.replace("_", " ")}. Confirm critical duty with OEM
+              Product Select / datasheets — this catalog is representative screening.
+            </p>
+          </div>
+        ),
+      },
       {
         id: "charts",
         label: "Charts",
@@ -259,7 +442,7 @@ export default function BearingResults({
     ];
 
     if (workflowMode === "diagnose" && diagnosis) {
-      tabs.splice(2, 0, {
+      tabs.splice(1, 0, {
         id: "diagnose",
         label: "Diagnose",
         icon: Stethoscope,
@@ -270,7 +453,21 @@ export default function BearingResults({
     }
 
     return tabs;
-  }, [diagnosis, inputRows, onSelectDesignation, plotTabs, result, summaryContent, workflowMode]);
+  }, [
+    arrangement,
+    catalogEntry,
+    compareRows,
+    crossManufacturerRecommendation,
+    diagnosis,
+    inputRows,
+    loadUnit,
+    mountedBom,
+    onSelectDesignation,
+    plotTabs,
+    ratingsProvenance,
+    result,
+    workflowMode,
+  ]);
 
   return (
     <CalculatorResultsShell
@@ -294,9 +491,19 @@ export default function BearingResults({
     >
       {result ? (
         <div className="space-y-4">
-          <BearingResultsMetrics result={result} loadUnit={loadUnit} catalogEntry={catalogEntry} />
+          <BearingDecisionDashboard result={result} />
+          <BearingResultsMetrics
+            result={result}
+            loadUnit={loadUnit}
+            catalogEntry={catalogEntry}
+            ratingsProvenance={ratingsProvenance}
+          />
           <BearingStatusBanner result={result} />
-          <CalculatorResultsViewTabs tabs={viewTabs} defaultTab="summary" ariaLabel="Bearing results views" />
+          <CalculatorResultsViewTabs
+            tabs={viewTabs}
+            defaultTab="overview"
+            ariaLabel="Bearing results views"
+          />
         </div>
       ) : null}
     </CalculatorResultsShell>

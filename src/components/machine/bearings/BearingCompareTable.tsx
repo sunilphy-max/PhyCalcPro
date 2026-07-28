@@ -3,11 +3,16 @@
 import type { BearingResult } from "@/lib/machine/bearings/types";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import { BEARING_TYPE_LABELS } from "@/data/catalogs/bearingCatalog";
+import {
+  provenanceLabel,
+  type RatingProvenance,
+} from "@/data/bearings/constructionDefaults";
 
 export type BearingCompareRow = {
   designation: string;
   result: BearingResult;
   costIndex?: number;
+  provenance?: RatingProvenance;
 };
 
 type Props = {
@@ -26,12 +31,23 @@ export default function BearingCompareTable({ rows, onRemove }: Props) {
   }[] = [
     { label: "Family", value: (r) => BEARING_TYPE_LABELS[r.result.bearingType] },
     {
+      label: "Geometry d×D×B (mm)",
+      value: (r) =>
+        r.result.geometry
+          ? `${formatDisplayNumber(r.result.geometry.boreMm)}×${formatDisplayNumber(r.result.geometry.outerDiameterMm)}×${formatDisplayNumber(r.result.geometry.widthMm)}`
+          : "—",
+    },
+    {
       label: "C (kN)",
       value: (r) => formatDisplayNumber(r.result.dynamicLoadRatingN / 1000),
     },
     {
       label: "C₀ (kN)",
       value: (r) => formatDisplayNumber(r.result.staticLoadRatingN / 1000),
+    },
+    {
+      label: "Ratings provenance",
+      value: (r) => (r.provenance ? provenanceLabel(r.provenance) : "—"),
     },
     {
       label: "P/C",
