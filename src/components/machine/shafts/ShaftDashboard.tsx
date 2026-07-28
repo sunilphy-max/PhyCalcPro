@@ -2,7 +2,9 @@
 
 import { useMemo } from "react";
 import EngineeringPlot from "@/components/EngineeringPlot";
-import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview";
+import ShaftLoadingDiagram from "@/components/machine/shafts/ShaftLoadingDiagram";
+import CriticalSpeedGauge from "@/components/machine/shafts/CriticalSpeedGauge";
+import ShaftBearingCatalogPanel from "@/components/machine/shafts/ShaftBearingCatalogPanel";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
@@ -10,7 +12,9 @@ import {
   type PlotPickerTab,
 } from "@/components/calculator/results";
 import { formatDisplayNumber, formatEngineeringValue } from "@/lib/display/formatEngineering";
+import { fromBase } from "@/lib/units/conversions";
 import type { BearingSupport, LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
+import type { ShaftCatalogBearingPick } from "@/lib/machine/shafts/shaftBearingCatalog";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
 import { diagnoseShaft } from "@/lib/machine/shafts/diagnosis";
@@ -28,6 +32,10 @@ type Props = {
   layout?: LayoutPreview;
   lengthUnit?: string;
   forceUnit?: string;
+  operatingRpm?: number;
+  shaftDiameterM?: number;
+  bearingCatalogPicks?: ShaftCatalogBearingPick[];
+  onBearingCatalogPick?: (positionM: number, designation: string | null) => void;
   workflowMode?: DesignWorkflowMode;
 };
 
@@ -36,6 +44,10 @@ export default function ShaftDashboard({
   layout,
   lengthUnit = "m",
   forceUnit = "N",
+  operatingRpm = 0,
+  shaftDiameterM,
+  bearingCatalogPicks = [],
+  onBearingCatalogPick,
   workflowMode,
 }: Props) {
   const status = useMemo<"safe" | "danger">(
@@ -55,13 +67,20 @@ export default function ShaftDashboard({
     if (layout) {
       tabs.push({
         id: "layout",
-        label: "Shaft layout",
+        label: "Loading diagram",
         content: (
-          <ShaftLayoutPreview
+          <ShaftLoadingDiagram
             length={layout.length}
             diameter={layout.diameter}
             loads={layout.loads}
+            supports={layout.supports}
             lengthUnit={layout.lengthUnit}
+            reactions={result.bearingReactions.map((r) => ({
+              ...r,
+              position: fromBase(r.position, "length", lengthUnit),
+            }))}
+            bendingX={result.x.map((xi) => fromBase(xi, "length", lengthUnit))}
+            bendingMoment={result.bendingMomentDistribution}
           />
         ),
       });
@@ -107,16 +126,19 @@ export default function ShaftDashboard({
         label: "Combined stress",
         content: (
           <EngineeringPlot
-            title="Combined Stress (static + Kt)"
+            title="Combined stress (von Mises + max principal)"
             x={result.x}
             y={result.vonMisesStress}
-            yLabel="Von Mises stress"
+            yLabel="Equivalent von Mises"
             xLabel="Position along shaft"
             xUnit={xUnit}
             unitLabel="Pa"
             series={[
-              { y: result.bendingStress, label: "Bending stress" },
-              { y: result.shearStress, label: "Torsional shear" },
+              {
+                y: result.principalStress,
+                label: "Max principal σ₁",
+                color: "#c2410c",
+              },
             ]}
           />
         ),
@@ -130,21 +152,6 @@ export default function ShaftDashboard({
             x={result.x}
             y={result.bendingMomentDistribution}
             yLabel="Bending moment"
-            xLabel="Position along shaft"
-            xUnit={xUnit}
-            unitLabel="N·m"
-          />
-        ),
-      },
-      {
-        id: "torque",
-        label: "Torque",
-        content: (
-          <EngineeringPlot
-            title="Torque Distribution"
-            x={result.x}
-            y={result.torqueDistribution}
-            yLabel="Torque"
             xLabel="Position along shaft"
             xUnit={xUnit}
             unitLabel="N·m"
@@ -197,21 +204,6 @@ export default function ShaftDashboard({
         ),
       },
       {
-        id: "rotation",
-        label: "Torsional rotation",
-        content: (
-          <EngineeringPlot
-            title="Torsional Rotation"
-            x={result.x}
-            y={result.rotation}
-            yLabel="Rotation"
-            xLabel="Position along shaft"
-            xUnit={xUnit}
-            unitLabel="rad"
-          />
-        ),
-      },
-      {
         id: "kt",
         label: "Kt / Kf",
         content: (
@@ -240,7 +232,7 @@ export default function ShaftDashboard({
 
   const keys = result.keysDesign;
   const rings = result.retainingRingChecks ?? [];
-  const bearings = result.bearingLifeScreens ?? [];
+  const boreM = shaftDiameterM ?? result.diameter ?? 0;
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -259,28 +251,9 @@ export default function ShaftDashboard({
           value={result.isSafe ? "Safe" : "Check required"}
           status={status}
         />
-        <CalculatorMetricCard label="Static safety factor" numericValue={result.safetyFactor} unit="—" tone="blue" />
+        <CalculatorMetricCard label="Safety factor" numericValue={result.safetyFactor} unit="—" tone="blue" />
         <CalculatorMetricCard
-          label="Governing check"
-          value={result.governingFailureMode}
-          tone="orange"
-        />
-        <CalculatorMetricCard
-          label="Critical section"
-          numericValue={result.criticalSection}
-          unit={lengthUnit}
-          tone="purple"
-        />
-      </CalculatorMetricGrid>
-
-      <CalculatorMetricGrid cols={4}>
-        <CalculatorMetricCard
-          label="Max von Mises stress"
-          numericValue={result.maxStress} unit="Pa"
-          tone="red"
-        />
-        <CalculatorMetricCard
-          label="Fatigue safety factor"
+          label="Goodman factor"
           value={
             result.fatigueSafetyFactor != null
               ? formatDisplayNumber(result.fatigueSafetyFactor)
@@ -289,25 +262,44 @@ export default function ShaftDashboard({
           tone={result.fatigueStatus === "safe" ? "blue" : "amber"}
         />
         <CalculatorMetricCard
+          label="Governing check"
+          value={result.governingFailureMode}
+          tone="orange"
+        />
+      </CalculatorMetricGrid>
+
+      <CalculatorMetricGrid cols={4}>
+        <CalculatorMetricCard
+          label="Equivalent von Mises"
+          numericValue={result.maxStress}
+          unit="Pa"
+          tone="red"
+        />
+        <CalculatorMetricCard
+          label="Max principal stress"
+          numericValue={result.maxPrincipalStress}
+          unit="Pa"
+          tone="orange"
+        />
+        <CalculatorMetricCard
+          label="Critical section"
+          numericValue={result.criticalSection}
+          unit={lengthUnit}
+          tone="purple"
+        />
+        <CalculatorMetricCard
           label="1st critical speed"
           numericValue={result.criticalSpeed}
           unit="RPM"
           tone="blue"
         />
-        <CalculatorMetricCard
-          label="Critical speed margin"
-          value={
-            result.criticalSpeedMargin != null
-              ? `${formatDisplayNumber(result.criticalSpeedMargin)}×`
-              : "N/A (set RPM)"
-          }
-          tone={
-            result.criticalSpeedMargin != null && result.criticalSpeedMargin >= 1.25
-              ? "blue"
-              : "amber"
-          }
-        />
       </CalculatorMetricGrid>
+
+      <CriticalSpeedGauge
+        operatingRpm={operatingRpm}
+        criticalSpeed={result.criticalSpeed}
+        margin={result.criticalSpeedMargin}
+      />
 
       {result.fatigueDetail && (
         <CalculatorMetricGrid cols={4}>
@@ -317,8 +309,8 @@ export default function ShaftDashboard({
             unit="Pa"
           />
           <CalculatorMetricCard
-            label="τm / τa (torsion)"
-            value={`${formatDisplayNumber(result.fatigueDetail.tauM)} / ${formatDisplayNumber(result.fatigueDetail.tauA)}`}
+            label="σa / σm (von Mises)"
+            value={`${formatDisplayNumber(result.fatigueDetail.vonMisesA)} / ${formatDisplayNumber(result.fatigueDetail.vonMisesM)}`}
             unit="Pa"
           />
           <CalculatorMetricCard
@@ -327,8 +319,8 @@ export default function ShaftDashboard({
             unit="—"
           />
           <CalculatorMetricCard
-            label="Torsion fatigue SF"
-            numericValue={result.fatigueDetail.torsionSf}
+            label="Combined fatigue SF"
+            numericValue={result.fatigueDetail.combinedSf}
             unit="—"
           />
         </CalculatorMetricGrid>
@@ -336,18 +328,20 @@ export default function ShaftDashboard({
 
       <EngineeringPlotPicker
         tabs={plotTabs}
-        defaultTabId={result.fatigueDetail ? "goodman" : layout ? "layout" : "von-mises"}
+        defaultTabId={layout ? "layout" : result.fatigueDetail ? "goodman" : "von-mises"}
         label="Result chart"
       />
 
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label="Max deflection"
-          numericValue={result.maxDeflection} unit={lengthUnit}
+          numericValue={result.maxDeflection}
+          unit={lengthUnit}
         />
         <CalculatorMetricCard
           label="Deflection utilization"
-          numericValue={Number(result.deflectionUtilization * 100)} unit="%"
+          numericValue={Number(result.deflectionUtilization * 100)}
+          unit="%"
         />
         <CalculatorMetricCard
           label="Max bearing slope"
@@ -356,7 +350,8 @@ export default function ShaftDashboard({
         />
         <CalculatorMetricCard
           label="Slope utilization"
-          numericValue={Number(result.slopeUtilization * 100)} unit="%"
+          numericValue={Number(result.slopeUtilization * 100)}
+          unit="%"
         />
       </CalculatorMetricGrid>
 
@@ -374,22 +369,29 @@ export default function ShaftDashboard({
         </div>
       )}
 
-      {bearings.length > 0 && (
+      {(result.bearingLifeScreens?.length ?? 0) > 0 && onBearingCatalogPick && (
+        <ShaftBearingCatalogPanel
+          screens={result.bearingLifeScreens}
+          picks={bearingCatalogPicks}
+          onPick={onBearingCatalogPick}
+          shaftDiameterM={boreM}
+          operatingRpm={operatingRpm}
+          lengthUnit={lengthUnit}
+          forceUnit={forceUnit}
+        />
+      )}
+
+      {(result.bearingLifeScreens?.length ?? 0) > 0 && !onBearingCatalogPick && (
         <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm space-y-2">
           <h3 className="text-sm font-semibold text-slate-900">Bearing life screening (ISO 281 basic L10)</h3>
-          <p className="text-xs text-slate-500">
-            Rough deep-groove C estimate vs bore — refine in the bearings module with catalog handoff.
-          </p>
           <ul className="space-y-2 text-sm text-slate-700">
-            {bearings.map((b, i) => (
+            {result.bearingLifeScreens.map((b, i) => (
               <li key={i} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
                 <div className="font-medium">
                   Support @ {formatEngineeringValue(b.position, lengthUnit)} — {b.status.toUpperCase()}
                 </div>
                 <div className="mt-1 text-xs text-slate-600">
-                  Fr = {formatEngineeringValue(b.radialForce, forceUnit)} · slope{" "}
-                  {formatDisplayNumber(b.slopeRad * 1000)} mrad · required C{" "}
-                  {formatEngineeringValue(b.requiredDynamicRating, "N")} · est. L10{" "}
+                  Fr = {formatEngineeringValue(b.radialForce, forceUnit)} · est. L10{" "}
                   {b.estimatedL10Hours != null
                     ? `${formatDisplayNumber(b.estimatedL10Hours)} h`
                     : "N/A (set RPM)"}
@@ -478,13 +480,21 @@ export default function ShaftDashboard({
               label="DIN fatigue S"
               numericValue={result.din743Worksheet.governingFatigueSF}
               unit="—"
-              tone={result.din743Worksheet.governingFatigueSF >= result.din743Worksheet.SminFatigue ? "blue" : "amber"}
+              tone={
+                result.din743Worksheet.governingFatigueSF >= result.din743Worksheet.SminFatigue
+                  ? "blue"
+                  : "amber"
+              }
             />
             <CalculatorMetricCard
               label="DIN static S"
               numericValue={result.din743Worksheet.governingStaticSF}
               unit="—"
-              tone={result.din743Worksheet.governingStaticSF >= result.din743Worksheet.SminStatic ? "blue" : "amber"}
+              tone={
+                result.din743Worksheet.governingStaticSF >= result.din743Worksheet.SminStatic
+                  ? "blue"
+                  : "amber"
+              }
             />
             <CalculatorMetricCard
               label="Auto K_σ / K_τ"

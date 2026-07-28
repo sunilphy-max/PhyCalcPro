@@ -5,10 +5,18 @@ import type {
   BearingSupport,
   KeywayStyle,
   LoadCase,
+  ShaftLoadKind,
   ShaftSegment,
   StressFeature,
   StressFeatureType,
 } from "@/lib/machine/shafts/types";
+import {
+  createShaftStation,
+  inferShaftLoadKind,
+  SHAFT_LOAD_KINDS,
+  shaftLoadKindLabel,
+} from "@/lib/machine/shafts/loadKind";
+import ShaftLoadLibrary from "@/components/machine/shafts/ShaftLoadLibrary";
 import type { SurfaceFinish } from "@/lib/materials/fatigue/types";
 import type { Din743MeanStressCase } from "@/lib/machine/shafts/din743/types";
 import type { Din743HeatTreatment, Din743SurfaceProcess } from "@/data/catalogs/din743/types";
@@ -206,12 +214,23 @@ export default function ShaftInputs({
       ...(hasAxial ? { axialForce: axialInput } : {}),
       ...(hasTransverse ? { transverseForce: transverseInput } : {}),
     };
+    newLoad.kind = inferShaftLoadKind(newLoad);
     setLoads([...loads, newLoad]);
     setTorqueInput(0);
     setBendingMomentInput(0);
     setAxialInput(0);
     setTransverseInput(0);
     setPositionInput(length / 2);
+  };
+
+  const addLibraryStation = (kind: ShaftLoadKind) => {
+    setLoads([...loads, createShaftStation(kind, length / 2, length)]);
+  };
+
+  const updateLoad = (index: number, patch: Partial<LoadCase>) => {
+    const next = [...loads];
+    next[index] = { ...next[index]!, ...patch };
+    setLoads(next);
   };
 
   const removeLoad = (index: number) => {
@@ -650,11 +669,14 @@ export default function ShaftInputs({
       </CalculatorFormSection>
 
       <section className="space-y-3 border-t border-slate-200 pt-4">
-        <h3 className="text-sm font-semibold text-slate-900">Load cases</h3>
+        <h3 className="text-sm font-semibold text-slate-900">Load stations</h3>
         <p className="text-xs text-slate-500">
-          Combined loading: torque (torsion), bending moment, transverse force, and axial force at each station.
+          Place Gear, Pulley, Torque, Bending, or Force stations. Combined loading is analyzed as von
+          Mises + principal stress (torsion is not shown separately).
         </p>
+        <ShaftLoadLibrary onAdd={addLibraryStation} />
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+          <p className="text-xs font-medium text-slate-700">Or enter components manually</p>
           <CalculatorUnitField
             label="Torque (T)"
             value={torqueInput}
@@ -702,25 +724,66 @@ export default function ShaftInputs({
         </div>
         {loads.length > 0 ? (
           <ul className="space-y-2">
-            {loads.map((load, index) => (
-              <li
-                key={`${index}-${load.position}`}
-                className="flex items-start justify-between gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm"
-              >
-                <div>
-                  <div className="font-medium text-slate-900">
-                    Station {index + 1} @ {formatEngineeringValue(load.position, lengthUnit, { digits: 3 })}
+            {loads.map((load, index) => {
+              const kind = inferShaftLoadKind(load);
+              return (
+                <li
+                  key={`${index}-${load.position}-${kind}`}
+                  className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 text-sm"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <select
+                          className="rounded border border-slate-300 bg-white px-2 py-1 text-xs font-semibold"
+                          value={kind}
+                          onChange={(e) =>
+                            updateLoad(index, { kind: e.target.value as ShaftLoadKind })
+                          }
+                        >
+                          {SHAFT_LOAD_KINDS.map((k) => (
+                            <option key={k} value={k}>
+                              {shaftLoadKindLabel(k)}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="text-xs text-slate-500">
+                          Station {index + 1}
+                        </span>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-slate-600">
+                        Position
+                        <input
+                          type="number"
+                          className="w-24 rounded border px-2 py-1"
+                          value={load.position}
+                          min={0}
+                          max={length}
+                          step="any"
+                          onChange={(e) =>
+                            updateLoad(index, {
+                              position: Math.min(Math.max(0, Number(e.target.value)), length),
+                            })
+                          }
+                        />
+                        <span>{lengthUnit}</span>
+                      </label>
+                      <div className="text-slate-600">{formatLoadSummary(load)}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeLoad(index)}
+                      className="shrink-0 text-xs font-medium text-red-600"
+                    >
+                      Remove
+                    </button>
                   </div>
-                  <div className="mt-1 text-slate-600">{formatLoadSummary(load)}</div>
-                </div>
-                <button type="button" onClick={() => removeLoad(index)} className="shrink-0 text-xs font-medium text-red-600">
-                  Remove
-                </button>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
         ) : (
-          <p className="text-sm text-slate-500">No load cases yet.</p>
+          <p className="text-sm text-slate-500">No stations yet — use the load library above.</p>
         )}
       </section>
 

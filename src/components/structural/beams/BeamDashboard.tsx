@@ -6,6 +6,8 @@ import BeamDiagram from "@/components/BeamDiagram";
 import EngineeringPlot from "@/components/EngineeringPlot";
 import FEAColorStrip from "@/components/shared/FEAColorStrip";
 import BeamStressContour from "@/components/structural/beams/BeamStressContour";
+import BeamFailureBanner from "@/components/structural/beams/BeamFailureBanner";
+import type { BeamLoadLibraryType } from "@/components/structural/beams/BeamLoadLibrary";
 import {
   CalculatorMetricCard,
   CalculatorMetricGrid,
@@ -22,6 +24,7 @@ import type {
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import GenericDiagnosisPanel from "@/components/design-workflows/GenericDiagnosisPanel";
 import { diagnoseBeam } from "@/lib/structural/beams/diagnosis";
+import { utilizationToMetricStatus } from "@/lib/structural/beams/utilizationStatus";
 import { beamsEquations } from "@/lib/standards/equations/beams";
 
 type DisplayUnits = {
@@ -30,6 +33,8 @@ type DisplayUnits = {
   moment: string;
   stress: string;
 };
+
+type LinkedPeak = "moment" | "stress" | "deflection";
 
 type Props = {
   result: BeamResult;
@@ -44,8 +49,22 @@ type Props = {
   workflowMode?: DesignWorkflowMode;
   onLoadDrag?: (id: string, updates: Partial<Load>) => void;
   onSupportDrag?: (id: string, x: number) => void;
+  onDropLoad?: (type: BeamLoadLibraryType, x: number) => void;
   sectionDepth?: number;
 };
+
+function peakIndexOf(values: number[]): number {
+  let best = 0;
+  let peak = -Infinity;
+  values.forEach((v, i) => {
+    const a = Math.abs(v);
+    if (a > peak) {
+      peak = a;
+      best = i;
+    }
+  });
+  return best;
+}
 
 export default function BeamDashboard({
   result,
@@ -59,10 +78,13 @@ export default function BeamDashboard({
   workflowMode,
   onLoadDrag,
   onSupportDrag,
+  onDropLoad,
   sectionDepth,
   units = { length: "m", force: "N", moment: "N·m", stress: "Pa" },
 }: Props) {
   const [probeX, setProbeX] = useState<number | null>(null);
+  const [activeTabId, setActiveTabId] = useState("model");
+  const [linkedPeak, setLinkedPeak] = useState<LinkedPeak | null>(null);
   const application = applicationContext ?? result.applicationContext;
 
   const probeIndex = useMemo(() => {
@@ -86,20 +108,51 @@ export default function BeamDashboard({
           shear: result.shear[probeIndex],
           moment: result.moment[probeIndex],
           deflection: result.deflection[probeIndex],
+          stress: result.stress?.[probeIndex],
         }
       : null;
 
-  const criticalMomentIndex = useMemo(() => {
-    let best = 0;
-    let peak = -Infinity;
-    result.moment.forEach((m, i) => {
-      if (Math.abs(m) > peak) {
-        peak = Math.abs(m);
-        best = i;
-      }
-    });
-    return best;
-  }, [result.moment]);
+  const criticalMomentIndex = useMemo(
+    () => peakIndexOf(result.moment),
+    [result.moment]
+  );
+  const criticalStressIndex = useMemo(
+    () => peakIndexOf(result.stress?.length ? result.stress : result.moment),
+    [result.stress, result.moment]
+  );
+  const criticalDeflectionIndex = useMemo(
+    () => peakIndexOf(result.deflection),
+    [result.deflection]
+  );
+
+  const jumpToLinkedPeak = (kind: LinkedPeak) => {
+    const criticalX = result.x[criticalMomentIndex] ?? length / 2;
+    if (kind === "deflection") {
+      // Corresponding δ at the critical (max |M|) section.
+      setProbeX(criticalX);
+      setLinkedPeak("deflection");
+      setActiveTabId("deflection");
+      return;
+    }
+    const index = kind === "moment" ? criticalMomentIndex : criticalStressIndex;
+    setProbeX(result.x[index] ?? length / 2);
+    setLinkedPeak(kind);
+    setActiveTabId(kind === "moment" ? "shear-moment" : "stress");
+  };
+
+  const jumpToGlobalPeak = (kind: LinkedPeak) => {
+    const index =
+      kind === "moment"
+        ? criticalMomentIndex
+        : kind === "stress"
+          ? criticalStressIndex
+          : criticalDeflectionIndex;
+    setProbeX(result.x[index] ?? length / 2);
+    setLinkedPeak(kind === "deflection" ? null : kind);
+    setActiveTabId(
+      kind === "moment" ? "shear-moment" : kind === "stress" ? "stress" : "deflection"
+    );
+  };
 
   const safetyFactor = useMemo(() => {
     if (!application) return null;
@@ -124,6 +177,7 @@ export default function BeamDashboard({
             supports={supports}
             onLoadDrag={onLoadDrag}
             onSupportDrag={onSupportDrag}
+            onDropLoad={onDropLoad}
             probeX={probeX}
             setProbeX={setProbeX}
             xPositions={result.x}
@@ -146,6 +200,10 @@ export default function BeamDashboard({
             xUnit={units.length}
             unitLabel={units.force}
             probeX={probeX}
+            onProbeChange={(x) => {
+              setProbeX(x);
+              setLinkedPeak("moment");
+            }}
             series={[
               {
                 y: result.moment,
@@ -172,6 +230,10 @@ export default function BeamDashboard({
             xUnit={units.length}
             unitLabel={units.length}
             probeX={probeX}
+            onProbeChange={(x) => {
+              setProbeX(x);
+              setLinkedPeak("deflection");
+            }}
             color="#0891b2"
           />
         ),
@@ -193,6 +255,10 @@ export default function BeamDashboard({
               xUnit={units.length}
               unitLabel={units.stress}
               probeX={probeX}
+              onProbeChange={(x) => {
+                setProbeX(x);
+                setLinkedPeak("stress");
+              }}
               color="#7c3aed"
             />
             <BeamStressContour
@@ -239,6 +305,7 @@ export default function BeamDashboard({
     supports,
     onLoadDrag,
     onSupportDrag,
+    onDropLoad,
     probeX,
     result,
     units,
@@ -252,6 +319,12 @@ export default function BeamDashboard({
   }, [workflowMode, result]);
 
   const governingEq = beamsEquations[0];
+  const chainButtonClass = (active: boolean) =>
+    `rounded-lg px-3 py-2 text-xs font-semibold transition ${
+      active
+        ? "bg-violet-600 text-white shadow-sm"
+        : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+    }`;
 
   return (
     <div className="grid grid-cols-1 gap-4">
@@ -264,32 +337,103 @@ export default function BeamDashboard({
         </div>
       ) : null}
 
+      {application ? (
+        <BeamFailureBanner
+          application={application}
+          maxStress={result.maxStress}
+          maxDeflection={result.maxDeflection}
+          stressUnit={units.stress}
+          lengthUnit={units.length}
+        />
+      ) : null}
+
       <CalculatorMetricGrid cols={4}>
         <CalculatorMetricCard
           label={`Max moment (${units.moment})`}
           numericValue={result.maxMoment}
           unit={units.moment}
           tone="purple"
+          onClick={() => jumpToGlobalPeak("moment")}
+          title="Show max moment on shear & moment diagram"
         />
         <CalculatorMetricCard
           label={`Max shear (${units.force})`}
           numericValue={result.maxShear}
           unit={units.force}
           tone="blue"
+          onClick={() => {
+            const i = peakIndexOf(result.shear);
+            setProbeX(result.x[i] ?? null);
+            setActiveTabId("shear-moment");
+            setLinkedPeak(null);
+          }}
+          title="Show max shear on diagram"
         />
         <CalculatorMetricCard
           label={`Max stress (${units.stress})`}
           numericValue={result.maxStress}
           unit={units.stress}
           tone="orange"
+          onClick={() => jumpToGlobalPeak("stress")}
+          title="Show max stress diagram"
         />
         <CalculatorMetricCard
           label={`Max deflection (${units.length})`}
           numericValue={result.maxDeflection}
           unit={units.length}
           tone="green"
+          onClick={() => jumpToGlobalPeak("deflection")}
+          title="Show max deflection diagram"
         />
       </CalculatorMetricGrid>
+
+      <div className="rounded-xl border border-violet-200/80 bg-violet-50/40 p-3 dark:border-violet-800/60 dark:bg-violet-950/30">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-violet-800 dark:text-violet-200">
+          Linked peaks
+        </p>
+        <p className="mb-3 text-xs text-slate-600 dark:text-slate-300">
+          Follow how maximum moment drives stress and deflection at the critical section.
+        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            className={chainButtonClass(linkedPeak === "moment")}
+            onClick={() => jumpToLinkedPeak("moment")}
+          >
+            Maximum moment
+          </button>
+          <span className="text-slate-400" aria-hidden>
+            →
+          </span>
+          <button
+            type="button"
+            className={chainButtonClass(linkedPeak === "stress")}
+            onClick={() => jumpToLinkedPeak("stress")}
+            disabled={!result.stress}
+          >
+            Maximum stress
+          </button>
+          <span className="text-slate-400" aria-hidden>
+            →
+          </span>
+          <button
+            type="button"
+            className={chainButtonClass(linkedPeak === "deflection")}
+            onClick={() => jumpToLinkedPeak("deflection")}
+          >
+            Corresponding deflection
+          </button>
+        </div>
+        {linkedPeak && probeData ? (
+          <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">
+            Probe at {probeData.x.toFixed(3)} {units.length}
+            {probeData.stress != null
+              ? ` · σ = ${probeData.stress.toExponential(3)} ${units.stress}`
+              : ""}
+            {` · δ = ${probeData.deflection.toExponential(3)} ${units.length}`}
+          </p>
+        ) : null}
+      </div>
 
       {application ? (
         <CalculatorMetricGrid cols={4}>
@@ -297,14 +441,14 @@ export default function BeamDashboard({
             label="Stress utilization"
             numericValue={application.stressUtilization}
             unit="—"
-            status={application.stressUtilization <= 1 ? "safe" : "danger"}
+            status={utilizationToMetricStatus(application.stressUtilization)}
             tone="orange"
           />
           <CalculatorMetricCard
             label="Deflection utilization"
             numericValue={application.deflectionUtilization}
             unit="—"
-            status={application.deflectionUtilization <= 1 ? "safe" : "danger"}
+            status={utilizationToMetricStatus(application.deflectionUtilization)}
             tone="blue"
           />
           <CalculatorMetricCard
@@ -312,7 +456,13 @@ export default function BeamDashboard({
             numericValue={safetyFactor ?? undefined}
             unit="—"
             status={
-              safetyFactor != null && safetyFactor >= 1 ? "safe" : "danger"
+              safetyFactor == null
+                ? undefined
+                : safetyFactor < 1
+                  ? "danger"
+                  : safetyFactor < 1 / 0.85
+                    ? "warning"
+                    : "safe"
             }
             tone="green"
           />
@@ -348,14 +498,37 @@ export default function BeamDashboard({
           label="Design screening"
           value={
             application
-              ? application.stressUtilization <= 1 && application.deflectionUtilization <= 1
-                ? "Pass"
-                : "Fail"
+              ? utilizationToMetricStatus(
+                  Math.max(
+                    application.stressUtilization,
+                    application.deflectionUtilization
+                  )
+                ) === "safe"
+                ? "Safe"
+                : utilizationToMetricStatus(
+                      Math.max(
+                        application.stressUtilization,
+                        application.deflectionUtilization
+                      )
+                    ) === "warning"
+                  ? "Near limit"
+                  : "Failure"
               : "—"
+          }
+          status={
+            application
+              ? utilizationToMetricStatus(
+                  Math.max(
+                    application.stressUtilization,
+                    application.deflectionUtilization
+                  )
+                )
+              : undefined
           }
           tone={
             application
-              ? application.stressUtilization <= 1 && application.deflectionUtilization <= 1
+              ? application.stressUtilization <= 1 &&
+                application.deflectionUtilization <= 1
                 ? "green"
                 : "red"
               : "default"
@@ -397,7 +570,7 @@ export default function BeamDashboard({
           label="Position"
           numericValue={probeData ? probeData.x : undefined}
           unit={probeData ? units.length : undefined}
-          value={probeData ? undefined : "Click beam model"}
+          value={probeData ? undefined : "Click beam or chart"}
         />
         <CalculatorMetricCard
           label="Shear"
@@ -419,7 +592,14 @@ export default function BeamDashboard({
         />
       </CalculatorMetricGrid>
 
-      <EngineeringPlotPicker tabs={plotTabs} defaultTabId="model" label="Result chart" />
+      <EngineeringPlotPicker
+        tabs={plotTabs}
+        defaultTabId="model"
+        activeTabId={activeTabId}
+        onTabChange={setActiveTabId}
+        label="Result chart"
+        variant="segmented"
+      />
 
       {result.solverMeta ? (
         <p className="text-xs text-slate-500 dark:text-slate-400">

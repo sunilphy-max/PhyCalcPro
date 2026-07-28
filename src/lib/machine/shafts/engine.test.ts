@@ -22,6 +22,8 @@ describe("shaft FEM regression", () => {
     });
     expect(res.maxStress).toBeCloseTo(17_759_752, -3);
     expect(res.safetyFactor).toBeCloseTo(14.08, 1);
+    expect(res.maxPrincipalStress).toBeGreaterThan(0);
+    expect(res.principalStress.length).toBe(res.x.length);
     expect(res.keysDesign).not.toBeNull();
     expect(res.keysDesign!.width).toBeGreaterThan(0);
     expect(res.fatigueConcentrationFactor.length).toBe(res.x.length);
@@ -108,5 +110,16 @@ describe("shaft FEM regression", () => {
     expect(Math.max(...endMilled.stressConcentrationFactor)).toBeGreaterThan(
       Math.max(...base.stressConcentrationFactor)
     );
+  });
+
+  it("max principal is at least as large as bending stress magnitude for pure bending", () => {
+    const res = solveShaftEngine({
+      geometry: { diameter: 0.04, length: 1 },
+      material: STEEL,
+      loads: [{ position: 0.5, bendingMoment: 200 }],
+      supports: simplySupportedSupports(1),
+      meshSegments: 40,
+    });
+    expect(res.maxPrincipalStress).toBeGreaterThanOrEqual(res.maxBendingStress * 0.95);
   });
 });

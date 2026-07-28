@@ -3,20 +3,27 @@ import { findMaterialById, materials } from "@/data/materials";
 import {
   listDatasheetIds,
   materialDatasheets,
+  getMaterialDatasheet,
 } from "@/data/materialDatasheets";
+import { materialUseCases } from "@/data/materialUseCases";
 import {
   getMaterialPage,
   listMaterialIds,
+  materialCompareHref,
   materialDatasheetHref,
 } from "@/lib/materials/materialPage";
 
 describe("material encyclopedia pages", () => {
-  it("ships ~25 flagship datasheets keyed to catalog ids", () => {
+  it("ships a complete datasheet for every catalog grade", () => {
     const ids = listDatasheetIds();
-    expect(ids.length).toBeGreaterThanOrEqual(24);
-    expect(ids.length).toBeLessThanOrEqual(30);
-    for (const id of ids) {
-      expect(findMaterialById(id), `missing catalog entry for datasheet ${id}`).toBeDefined();
+    expect(ids.length).toBe(materials.length);
+    for (const m of materials) {
+      const sheet = getMaterialDatasheet(m.id);
+      expect(sheet, `missing datasheet for ${m.id}`).toBeDefined();
+      expect(sheet!.summary.trim().length).toBeGreaterThan(0);
+      expect(sheet!.applications?.length ?? 0).toBeGreaterThan(0);
+      expect(sheet!.advantages?.length ?? 0).toBeGreaterThan(0);
+      expect(sheet!.limitations?.length ?? 0).toBeGreaterThan(0);
     }
   });
 
@@ -27,32 +34,31 @@ describe("material encyclopedia pages", () => {
     expect(page!.summary).toMatch(/316/i);
     expect(page!.composition.length).toBeGreaterThan(3);
     expect(page!.applications.length).toBeGreaterThan(0);
+    expect(page!.advantages.length).toBeGreaterThan(0);
+    expect(page!.limitations.length).toBeGreaterThan(0);
     expect(page!.standards.some((s) => s.code.includes("10088") || s.code.includes("A240"))).toBe(
       true
     );
     expect(page!.sectionAvailability.mechanical).toBe(true);
+    expect(page!.sectionAvailability.physical).toBe(true);
     expect(page!.sectionAvailability.composition).toBe(true);
     expect(page!.sectionAvailability.electrical).toBe(true);
+    expect(page!.sectionAvailability.advantages).toBe(true);
+    expect(page!.sectionAvailability.equivalents).toBe(true);
     expect(page!.electrical?.resistivity).toBeGreaterThan(0);
   });
 
-  it("returns mechanical-only availability when no datasheet exists", () => {
-    const withoutSheet = materials.find((m) => !(m.id in materialDatasheets));
-    expect(withoutSheet).toBeDefined();
-    const page = getMaterialPage(withoutSheet!.id);
+  it("always publishes physical properties from catalog density", () => {
+    const page = getMaterialPage("astm-a242");
     expect(page).toBeDefined();
-    expect(page!.hasDatasheet).toBe(false);
-    expect(page!.sectionAvailability.mechanical).toBe(true);
-    expect(page!.sectionAvailability.composition).toBe(false);
-    expect(page!.sectionAvailability.applications).toBe(false);
-    // Standards fall back to catalog standard string when present
-    if (withoutSheet!.standard) {
-      expect(page!.sectionAvailability.standards).toBe(true);
-      expect(page!.standards[0]?.code).toBe(withoutSheet!.standard);
-    }
+    expect(page!.hasDatasheet).toBe(true);
+    expect(page!.sectionAvailability.physical).toBe(true);
+    expect(page!.sectionAvailability.applications).toBe(true);
+    expect(page!.sectionAvailability.advantages).toBe(true);
+    expect(page!.material.density).toBeGreaterThan(0);
   });
 
-  it("resolves alternative ids to live catalog entries", () => {
+  it("resolves equivalent ids to live catalog entries", () => {
     const page = getMaterialPage("s355jr");
     expect(page!.alternatives.length).toBeGreaterThan(0);
     for (const alt of page!.alternatives) {
@@ -60,9 +66,12 @@ describe("material encyclopedia pages", () => {
     }
   });
 
-  it("builds datasheet hrefs from stable ids", () => {
+  it("builds datasheet and compare hrefs from stable ids", () => {
     expect(materialDatasheetHref("42crmo4-4140")).toBe(
       "/products/materials/database/42crmo4-4140"
+    );
+    expect(materialCompareHref(["astm-a36", "astm-a992", "al-6061"])).toBe(
+      "/products/materials/database/compare?ids=astm-a36,astm-a992,al-6061"
     );
     expect(listMaterialIds()).toContain("astm-a36");
   });
@@ -73,5 +82,24 @@ describe("material encyclopedia pages", () => {
       page!.material.E / (2 * (1 + page!.material.poisson)),
       -6
     );
+  });
+
+  it("curates use-case recommendations against live catalog ids", () => {
+    expect(materialUseCases.length).toBeGreaterThanOrEqual(8);
+    for (const useCase of materialUseCases) {
+      expect(useCase.recommendations.length).toBeGreaterThan(0);
+      for (const rec of useCase.recommendations) {
+        expect(findMaterialById(rec.materialId), `missing ${rec.materialId}`).toBeDefined();
+        expect(rec.reasons.length).toBeGreaterThan(0);
+      }
+    }
+    const beam = materialUseCases.find((u) => u.id === "beam");
+    expect(beam?.recommendations[0]?.materialId).toBe("astm-a992");
+  });
+
+  it("keeps hand-authored flagship narrative for A992", () => {
+    const sheet = materialDatasheets["astm-a992"];
+    expect(sheet.summary).toMatch(/wide-flange|W-shape/i);
+    expect(sheet.advantages?.some((a) => /weldability|W-shape|strength/i.test(a))).toBe(true);
   });
 });

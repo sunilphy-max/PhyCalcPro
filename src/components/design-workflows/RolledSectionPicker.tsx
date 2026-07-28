@@ -7,6 +7,7 @@ import {
   sectionsByFamily,
 } from "@/lib/materials/rolled-sections/data";
 import type { RolledSectionProps } from "@/lib/materials/rolled-sections/data";
+import BeamSectionPreview from "@/components/structural/beams/BeamSectionPreview";
 
 type Props = {
   designation: string;
@@ -110,12 +111,7 @@ export default function RolledSectionPicker({
       )}
 
       {selected ? (
-        <p className="text-xs leading-5 text-slate-600 dark:text-slate-300">
-          I<sub>x</sub> {(selected.ix * 1e6).toFixed(2)}×10⁻⁶ m⁴ · I<sub>y</sub>{" "}
-          {(selected.iy * 1e6).toFixed(2)}×10⁻⁶ m⁴ · S<sub>x</sub>{" "}
-          {(selected.sx * 1e6).toFixed(2)}×10⁻⁶ m³ · A {(selected.area * 1e4).toFixed(2)} cm² ·{" "}
-          {selected.weight.toFixed(1)} kg/m
-        </p>
+        <BeamSectionPreview designation={designation} section={selected} />
       ) : null}
     </div>
   );

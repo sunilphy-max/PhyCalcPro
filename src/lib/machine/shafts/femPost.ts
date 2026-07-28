@@ -13,10 +13,18 @@ export type ShaftStressRecovery = {
   shearStress: number[];
   bendingStress: number[];
   vonMisesStress: number[];
+  /** Algebraically larger principal stress σ₁ at outer fiber (Pa) */
+  principalStress: number[];
   deflection: number[];
   slope: number[];
   rotation: number[];
 };
+
+/** Max principal for plane stress: σ/2 + √((σ/2)² + τ²) */
+export function maxPrincipalFromNormalShear(normal: number, shear: number): number {
+  const half = normal / 2;
+  return half + Math.sqrt(half * half + shear * shear);
+}
 
 export function recoverStresses(
   model: ShaftFEMModel,
@@ -30,6 +38,7 @@ export function recoverStresses(
   const shearStress = Array(nNodes).fill(0);
   const bendingStress = Array(nNodes).fill(0);
   const vonMisesStress = Array(nNodes).fill(0);
+  const principalStress = Array(nNodes).fill(0);
   const deflection = Array(nNodes).fill(0);
   const slope = Array(nNodes).fill(0);
   const rotation = Array(nNodes).fill(0);
@@ -66,10 +75,16 @@ export function recoverStresses(
     const bendingStressXY = E * curvXY * radius;
     const bendingStressXZ = E * curvXZ * radius;
     const combinedBendingStress = Math.hypot(bendingStressXY, bendingStressXZ);
+    // Worst-fiber normal: tensile bending + axial (signed axial kept for principal)
+    const normalStress = combinedBendingStress + axialStress;
     const vonMises = Math.sqrt(
       axialStress * axialStress +
         3 * torsionalShearStress * torsionalShearStress +
         combinedBendingStress * combinedBendingStress
+    );
+    const principal = maxPrincipalFromNormalShear(
+      normalStress,
+      torsionalShearStress
     );
 
     const torque = Math.abs(G * element.polarMoment * torsionalStrain);
@@ -87,6 +102,7 @@ export function recoverStresses(
       shearStress[nodeIdx] += Math.abs(torsionalShearStress);
       bendingStress[nodeIdx] += combinedBendingStress;
       vonMisesStress[nodeIdx] += vonMises;
+      principalStress[nodeIdx] += principal;
       deflection[nodeIdx] += Math.hypot(v, w);
       slope[nodeIdx] += Math.hypot(thetaY, thetaZ);
       rotation[nodeIdx] += Math.abs(tx);
@@ -101,6 +117,7 @@ export function recoverStresses(
     shearStress[i] /= c;
     bendingStress[i] /= c;
     vonMisesStress[i] /= c;
+    principalStress[i] /= c;
     deflection[i] /= c;
     slope[i] /= c;
     rotation[i] /= c;
@@ -116,6 +133,7 @@ export function recoverStresses(
     shearStress,
     bendingStress,
     vonMisesStress,
+    principalStress,
     deflection,
     slope,
     rotation,

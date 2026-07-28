@@ -35,6 +35,8 @@ type Props = {
   /** Short quantity name for axis and legend (e.g. "Shear force") */
   yLabel: string;
   probeX?: number | null;
+  /** Click chart / peak to set a shared probe along x */
+  onProbeChange?: (x: number) => void;
   /** X-axis quantity label (e.g. "Position along beam") */
   xLabel?: string;
   /** Unit for x-axis values (e.g. "m", "deg") */
@@ -57,6 +59,7 @@ export default function EngineeringPlot({
   y,
   yLabel,
   probeX,
+  onProbeChange,
   xLabel = "Position",
   xUnit,
   unitLabel,
@@ -143,7 +146,19 @@ export default function EngineeringPlot({
       <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
         <div className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</div>
         {peakValue !== null ? (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+          <button
+            type="button"
+            disabled={!onProbeChange || peakX === null}
+            onClick={() => {
+              if (peakX !== null) onProbeChange?.(peakX);
+            }}
+            className={`rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200 ${
+              onProbeChange
+                ? "cursor-pointer transition hover:bg-red-100 dark:hover:bg-red-950/70"
+                : ""
+            }`}
+            title={onProbeChange ? "Jump probe to peak" : undefined}
+          >
             Peak: {formatEngineeringValue(peakValue, unitLabel ?? "", {
               useExponential:
                 Math.abs(peakValue) < 1e-3 || Math.abs(peakValue) >= 1e5,
@@ -154,7 +169,7 @@ export default function EngineeringPlot({
                 @ {formatEngineeringValue(peakX, xUnit, { digits: 3 })}
               </span>
             ) : null}
-          </div>
+          </button>
         ) : null}
       </div>
       <Plot
@@ -311,8 +326,29 @@ export default function EngineeringPlot({
           displaylogo: false,
           modeBarButtonsToRemove: ["lasso2d", "select2d"],
         }}
-        style={{ width: "100%", minHeight: plotTheme.plotHeight }}
+        style={{
+          width: "100%",
+          minHeight: plotTheme.plotHeight,
+          cursor: onProbeChange ? "crosshair" : undefined,
+        }}
         useResizeHandler
+        {...(onProbeChange
+          ? ({
+              onClick: (event: {
+                points?: Array<{ x?: number | string | null }>;
+              }) => {
+                const pt = event.points?.[0];
+                const raw = pt?.x;
+                const next =
+                  typeof raw === "number"
+                    ? raw
+                    : typeof raw === "string"
+                      ? Number(raw)
+                      : NaN;
+                if (Number.isFinite(next)) onProbeChange(next);
+              },
+            } as Record<string, unknown>)
+          : {})}
       />
     </div>
   );

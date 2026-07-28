@@ -83,8 +83,10 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
   );
 
   const adjustedVonMises = post.vonMisesStress.map((s, i) => s * (ktProfile[i] ?? 1));
+  const adjustedPrincipal = post.principalStress.map((s, i) => s * (ktProfile[i] ?? 1));
 
   const maxStress = Math.max(...adjustedVonMises, 0);
+  const maxPrincipalStress = Math.max(...adjustedPrincipal, 0);
   const maxShear = Math.max(...post.shearStress, 0);
   const maxBending = Math.max(...post.bendingStress, 0);
   const maxDeflection = Math.max(...post.deflection, 0);
@@ -293,7 +295,9 @@ export function solveShaftFEM(config: ShaftConfig): ShaftResult {
     stressConcentrationFactor: ktProfile,
     fatigueConcentrationFactor: kfProfile,
     vonMisesStress: adjustedVonMises,
+    principalStress: adjustedPrincipal,
     maxStress,
+    maxPrincipalStress,
     maxShearStress: maxShear,
     maxBendingStress: maxBending,
     maxDeflection,

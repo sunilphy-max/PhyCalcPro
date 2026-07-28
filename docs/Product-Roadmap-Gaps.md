@@ -50,6 +50,8 @@ Tracking items from the expansion roadmap. Product vision and phase ladder: [Eng
 | Multi-pulley | Closed-loop path layout (current: open chain) |
 | Micropitting | US AGMA implementation marked planned |
 | Benchmark coverage | Remaining modules without JSON fixtures; bearings vendor gold |
+| Design-first UX | Fleet rollout of Beam `DesignWorkflowStepper` + product-page supporting content beyond F1 |
+| Design-review reports | Fleet `build*ReportSections` (conclusion + materials narrative) beyond beams / bearings |
 
 ## CAD / 3D (EDP-4)
 

@@ -26,6 +26,9 @@ type Props = {
   status?: MetricStatus;
   size?: "sm" | "lg";
   className?: string;
+  /** Makes the card act as a button (e.g. jump probe / linked diagrams). */
+  onClick?: () => void;
+  title?: string;
 };
 
 const toneValueClass: Record<MetricTone, string> = {
@@ -66,6 +69,8 @@ export default function CalculatorMetricCard({
   status,
   size = "sm",
   className = "",
+  onClick,
+  title,
 }: Props) {
   const tableContext = useResultsTableActionsOptional();
 
@@ -91,11 +96,15 @@ export default function CalculatorMetricCard({
     numericValue !== undefined
       ? formatDisplayNumber(numericValue)
       : value;
+  const interactive = Boolean(onClick);
+  const sharedClass = `min-w-0 rounded-xl border p-4 shadow-sm text-left ${cardStyle} ${
+    interactive
+      ? "cursor-pointer transition hover:ring-2 hover:ring-cyan-400/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
+      : ""
+  } ${className}`.trim();
 
-  return (
-    <div
-      className={`min-w-0 rounded-xl border p-4 shadow-sm ${cardStyle} ${className}`.trim()}
-    >
+  const body = (
+    <>
       <div className="mb-1.5 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">
         {label}
       </div>
@@ -105,6 +114,20 @@ export default function CalculatorMetricCard({
         {display}
         {unit ? ` ${unit}` : null}
       </div>
+    </>
+  );
+
+  if (interactive) {
+    return (
+      <button type="button" onClick={onClick} title={title} className={sharedClass}>
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <div className={sharedClass} title={title}>
+      {body}
     </div>
   );
 }

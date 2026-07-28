@@ -7,6 +7,10 @@ import type {
   SupportReaction,
   SupportType,
 } from "@/lib/structural/beams/types";
+import {
+  BEAM_LOAD_DRAG_MIME,
+  type BeamLoadLibraryType,
+} from "@/components/structural/beams/BeamLoadLibrary";
 
 type DragTarget =
   | { kind: "point" | "moment"; id: string }
@@ -21,6 +25,8 @@ type Props = {
 
   onLoadDrag?: (id: string, updates: Partial<Load>) => void;
   onSupportDrag?: (id: string, x: number) => void;
+  /** Drop a load-library tile onto the beam at position x */
+  onDropLoad?: (type: BeamLoadLibraryType, x: number) => void;
 
   probeX?: number | null;
   setProbeX?: (x: number | null) => void;
@@ -39,6 +45,7 @@ export default function BeamDiagram({
   supports,
   onLoadDrag,
   onSupportDrag,
+  onDropLoad,
   probeX,
   setProbeX,
   xPositions,
@@ -47,14 +54,21 @@ export default function BeamDiagram({
   animateDeflection = true,
 }: Props) {
   const width = 600;
-  const height = 160;
+  const height = 168;
   const margin = 50;
   const beamY = 70;
 
   const scaleX = (x: number) => (x / Math.max(length, 1e-9)) * (width - 2 * margin) + margin;
 
+  const clientXToBeamX = (svg: SVGSVGElement, clientX: number) => {
+    const rect = svg.getBoundingClientRect();
+    const raw = ((clientX - rect.left) / Math.max(rect.width, 1e-9)) * length;
+    return Math.max(0, Math.min(length, raw));
+  };
+
   const safeLoads = loads ?? [];
   const [dragging, setDragging] = useState<DragTarget | null>(null);
+  const [dropHover, setDropHover] = useState(false);
   const [deflectionAmp, setDeflectionAmp] = useState(animateDeflection ? 0 : 1);
 
   const displaySupports: BeamSupport[] =
@@ -101,12 +115,8 @@ export default function BeamDiagram({
 
   const scaleLoad = (v: number) => Math.max(20, (Math.abs(v) / maxLoad) * 60);
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+  const applyDrag = (clamped: number) => {
     if (!dragging) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const raw = (x / rect.width) * length;
-    const clamped = Math.max(0, Math.min(length, raw));
 
     if (dragging.kind === "support") {
       onSupportDrag?.(dragging.id, clamped);
@@ -116,32 +126,42 @@ export default function BeamDiagram({
     if (!onLoadDrag) return;
     setProbeX?.(clamped);
 
-    if (dragging.kind === "point") {
+    if (dragging.kind === "point" || dragging.kind === "moment") {
       onLoadDrag(dragging.id, { position: clamped } as Partial<Load>);
       return;
     }
-    if (dragging.kind === "moment") {
-      onLoadDrag(dragging.id, { position: clamped } as Partial<Load>);
-      return;
-    }
-    if (dragging.kind === "udl-start") {
+    if (dragging.kind === "udl-start" || dragging.kind === "tri-start") {
       onLoadDrag(dragging.id, { start: clamped } as Partial<Load>);
       return;
     }
-    if (dragging.kind === "udl-end") {
-      onLoadDrag(dragging.id, { end: clamped } as Partial<Load>);
-      return;
-    }
-    if (dragging.kind === "tri-start") {
-      onLoadDrag(dragging.id, { start: clamped } as Partial<Load>);
-      return;
-    }
-    if (dragging.kind === "tri-end") {
+    if (dragging.kind === "udl-end" || dragging.kind === "tri-end") {
       onLoadDrag(dragging.id, { end: clamped } as Partial<Load>);
     }
   };
 
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!dragging) return;
+    applyDrag(clientXToBeamX(e.currentTarget, e.clientX));
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (!dragging) return;
+    const touch = e.touches[0];
+    if (!touch) return;
+    e.preventDefault();
+    applyDrag(clientXToBeamX(e.currentTarget, touch.clientX));
+  };
+
   const handleMouseUp = () => setDragging(null);
+
+  const handleDrop = (e: React.DragEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    setDropHover(false);
+    if (!onDropLoad) return;
+    const type = e.dataTransfer.getData(BEAM_LOAD_DRAG_MIME) as BeamLoadLibraryType;
+    if (!type || type === "self-weight") return;
+    onDropLoad(type, clientXToBeamX(e.currentTarget, e.clientX));
+  };
 
   const maxDeflection = deflection?.length
     ? Math.max(...deflection.map((v) => Math.abs(v)), 1)
@@ -170,14 +190,53 @@ export default function BeamDiagram({
     force >= 0 ? beamY - reactionHeight(force) : beamY + reactionHeight(force);
 
   return (
-    <div className="w-full rounded-lg bg-white p-4 shadow">
+    <div
+      className={`w-full rounded-lg bg-white p-4 shadow transition ring-offset-2 ${
+        dropHover ? "ring-2 ring-cyan-400" : ""
+      } ${dragging ? "ring-1 ring-amber-300" : ""}`}
+    >
+      <p className="mb-2 text-[11px] text-slate-500">
+        Drag loads and supports along the span
+        {onDropLoad ? " · drop a load from the library onto the beam" : ""}.
+        Click the beam to place a probe.
+      </p>
       <svg
         width="100%"
         viewBox={`0 0 ${width} ${height}`}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onMouseLeave={() => {
+          handleMouseUp();
+          setDropHover(false);
+        }}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleMouseUp}
+        onDragOver={(e) => {
+          if (!onDropLoad) return;
+          e.preventDefault();
+          setDropHover(true);
+        }}
+        onDragLeave={() => setDropHover(false)}
+        onDrop={handleDrop}
+        onClick={(e) => {
+          if (dragging) return;
+          if ((e.target as Element).closest("[data-beam-handle]")) return;
+          setProbeX?.(clientXToBeamX(e.currentTarget, e.clientX));
+        }}
+        style={{ touchAction: "none" }}
       >
+        {dropHover ? (
+          <rect
+            x={margin}
+            y={beamY - 18}
+            width={width - 2 * margin}
+            height={36}
+            fill="rgba(34,211,238,0.12)"
+            stroke="#22d3ee"
+            strokeDasharray="4 3"
+            rx={4}
+          />
+        ) : null}
         {Array.from({ length: 5 }).map((_, i) => {
           const y = 50 + i * 10;
           return (
@@ -248,8 +307,13 @@ export default function BeamDiagram({
                   width={12}
                   height={50}
                   fill="#334155"
+                  data-beam-handle=""
                   style={{ cursor: onSupportDrag ? "ew-resize" : "default" }}
                   onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "support", id: sp.id });
+                  }}
+                  onTouchStart={(e) => {
                     e.preventDefault();
                     setDragging({ kind: "support", id: sp.id });
                   }}
@@ -258,8 +322,13 @@ export default function BeamDiagram({
                 <polygon
                   points={`${sx},${beamY + 8} ${sx - 10},${beamY + 28} ${sx + 10},${beamY + 28}`}
                   fill={sp.kind === "roller" ? "#64748b" : "#0f172a"}
+                  data-beam-handle=""
                   style={{ cursor: onSupportDrag ? "ew-resize" : "default" }}
                   onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "support", id: sp.id });
+                  }}
+                  onTouchStart={(e) => {
                     e.preventDefault();
                     setDragging({ kind: "support", id: sp.id });
                   }}
@@ -313,18 +382,35 @@ export default function BeamDiagram({
         )}
 
         {safeLoads.map((load) => {
+          const isActive =
+            dragging != null &&
+            "id" in dragging &&
+            dragging.id === load.id;
+          const activeOpacity = isActive ? 1 : dragging ? 0.55 : 1;
+
           if (load.type === "point") {
             const x = scaleX(load.position);
             const h = scaleLoad(load.value);
             return (
-              <g key={load.id}>
+              <g key={load.id} opacity={activeOpacity}>
                 <line x1={x} y1={beamY - h} x2={x} y2={beamY} stroke="red" strokeWidth={2} />
                 <polygon
                   points={`${x},${beamY} ${x - 5},${beamY - 10} ${x + 5},${beamY - 10}`}
                   fill="red"
+                  data-beam-handle=""
                   style={{ cursor: "grab" }}
-                  onMouseDown={() => setDragging({ kind: "point", id: load.id })}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "point", id: load.id });
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "point", id: load.id });
+                  }}
                 />
+                {isActive ? (
+                  <circle cx={x} cy={beamY - h / 2} r={10} fill="none" stroke="#f59e0b" strokeWidth={2} />
+                ) : null}
                 <text x={x + 5} y={beamY - h - 5} fontSize="10" fill="red">
                   {load.value} N
                 </text>
@@ -335,19 +421,30 @@ export default function BeamDiagram({
           if (load.type === "moment") {
             const x = scaleX(load.position);
             return (
-              <g key={load.id}>
+              <g key={load.id} opacity={activeOpacity}>
                 <path
                   d={`M ${x - 14} ${beamY - 18} A 14 14 0 1 1 ${x + 14} ${beamY - 18}`}
                   fill="none"
                   stroke="#7c3aed"
                   strokeWidth={2}
+                  data-beam-handle=""
                   style={{ cursor: "grab" }}
-                  onMouseDown={() => setDragging({ kind: "moment", id: load.id })}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "moment", id: load.id });
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "moment", id: load.id });
+                  }}
                 />
                 <polygon
                   points={`${x + 14},${beamY - 18} ${x + 8},${beamY - 24} ${x + 20},${beamY - 22}`}
                   fill="#7c3aed"
                 />
+                {isActive ? (
+                  <circle cx={x} cy={beamY - 18} r={18} fill="none" stroke="#f59e0b" strokeWidth={2} />
+                ) : null}
                 <text x={x} y={beamY - 36} textAnchor="middle" fontSize="10" fill="#7c3aed">
                   {load.value} N·m
                 </text>
@@ -359,13 +456,15 @@ export default function BeamDiagram({
             const x1 = scaleX(Math.min(load.start, load.end));
             const x2 = scaleX(Math.max(load.start, load.end));
             return (
-              <g key={load.id}>
+              <g key={load.id} opacity={activeOpacity}>
                 <rect
                   x={x1}
                   y={60}
                   width={Math.max(x2 - x1, 1)}
                   height={20}
                   fill="rgba(0,0,255,0.15)"
+                  stroke={isActive ? "#f59e0b" : "none"}
+                  strokeWidth={isActive ? 2 : 0}
                 />
                 {Array.from({ length: 7 }).map((_, j) => {
                   const x = x1 + ((x2 - x1) / 6) * j;
@@ -384,16 +483,32 @@ export default function BeamDiagram({
                   cy={55}
                   r={5}
                   fill="#1d4ed8"
+                  data-beam-handle=""
                   style={{ cursor: "ew-resize" }}
-                  onMouseDown={() => setDragging({ kind: "udl-start", id: load.id })}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "udl-start", id: load.id });
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "udl-start", id: load.id });
+                  }}
                 />
                 <circle
                   cx={x2}
                   cy={55}
                   r={5}
                   fill="#1d4ed8"
+                  data-beam-handle=""
                   style={{ cursor: "ew-resize" }}
-                  onMouseDown={() => setDragging({ kind: "udl-end", id: load.id })}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "udl-end", id: load.id });
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "udl-end", id: load.id });
+                  }}
                 />
                 <text
                   x={(x1 + x2) / 2}
@@ -414,28 +529,44 @@ export default function BeamDiagram({
             const h1 = 10 + (Math.abs(load.wStart) / maxLoad) * 28;
             const h2 = 10 + (Math.abs(load.wEnd) / maxLoad) * 28;
             return (
-              <g key={load.id}>
+              <g key={load.id} opacity={activeOpacity}>
                 <polygon
                   points={`${x1},${beamY} ${x1},${beamY - h1} ${x2},${beamY - h2} ${x2},${beamY}`}
                   fill="rgba(14,165,233,0.2)"
-                  stroke="#0284c7"
-                  strokeWidth={1}
+                  stroke={isActive ? "#f59e0b" : "#0284c7"}
+                  strokeWidth={isActive ? 2 : 1}
                 />
                 <circle
                   cx={x1}
                   cy={beamY - h1}
                   r={5}
                   fill="#0284c7"
+                  data-beam-handle=""
                   style={{ cursor: "ew-resize" }}
-                  onMouseDown={() => setDragging({ kind: "tri-start", id: load.id })}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "tri-start", id: load.id });
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "tri-start", id: load.id });
+                  }}
                 />
                 <circle
                   cx={x2}
                   cy={beamY - h2}
                   r={5}
                   fill="#0284c7"
+                  data-beam-handle=""
                   style={{ cursor: "ew-resize" }}
-                  onMouseDown={() => setDragging({ kind: "tri-end", id: load.id })}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "tri-end", id: load.id });
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    setDragging({ kind: "tri-end", id: load.id });
+                  }}
                 />
                 <text
                   x={(x1 + x2) / 2}

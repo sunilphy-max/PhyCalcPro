@@ -27,6 +27,7 @@ import { searchBeamSections } from "@/lib/design-workflows/solvers/beamDesign";
 
 import BeamInputs from "@/components/structural/beams/BeamInputs";
 import BeamResults from "@/components/structural/beams/BeamResults";
+import type { BeamLoadLibraryType } from "@/components/structural/beams/BeamLoadLibrary";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import { materials } from "@/data/materials";
@@ -213,54 +214,140 @@ function BeamsPageContent() {
   ]);
 
   const addPointLoad = () => {
-    setLoads([
-      ...loads,
-      {
-        id: getNewLoadId(),
-        type: "point",
-        value: 500,
-        position: length / 2,
-      },
-    ]);
+    addPointLoadAt();
   };
 
   const addUDL = () => {
-    setLoads([
-      ...loads,
+    setLoads((prev) => [
+      ...prev,
       {
         id: getNewLoadId(),
         type: "udl",
         value: 200,
-        start: 1,
-        end: 4,
+        start: 0,
+        end: length,
       },
     ]);
   };
 
-  const addMoment = () => {
-    setLoads([
-      ...loads,
+  const addPartialUDL = (atX?: number) => {
+    const mid = atX ?? length / 2;
+    const half = Math.min(length * 0.2, Math.max(length / 8, 0.25));
+    const start = Math.max(0, mid - half);
+    const end = Math.min(length, mid + half);
+    setLoads((prev) => [
+      ...prev,
+      {
+        id: getNewLoadId(),
+        type: "udl",
+        value: 200,
+        start,
+        end: end > start ? end : Math.min(length, start + half),
+      },
+    ]);
+  };
+
+  const addMoment = (atX?: number) => {
+    setLoads((prev) => [
+      ...prev,
       {
         id: getNewLoadId(),
         type: "moment",
         value: 1000,
-        position: length / 2,
+        position: atX ?? length / 2,
       },
     ]);
   };
 
-  const addTriangular = () => {
-    setLoads([
-      ...loads,
+  const addTriangular = (atX?: number) => {
+    const mid = atX ?? length / 2;
+    const half = Math.min(length * 0.35, Math.max(length / 4, 0.5));
+    const start = Math.max(0, mid - half);
+    const end = Math.min(length, mid + half);
+    setLoads((prev) => [
+      ...prev,
       {
         id: getNewLoadId(),
         type: "triangular",
         wStart: 0,
         wEnd: 200,
-        start: 0,
-        end: length,
+        start,
+        end: end > start ? end : Math.min(length, start + half),
       },
     ]);
+  };
+
+  const addPointLoadAt = (atX?: number) => {
+    setLoads((prev) => [
+      ...prev,
+      {
+        id: getNewLoadId(),
+        type: "point",
+        value: 500,
+        position: atX ?? length / 2,
+      },
+    ]);
+  };
+
+  const handleLoadLibraryAdd = (type: BeamLoadLibraryType) => {
+    if (type === "self-weight") {
+      setIncludeSelfWeight((v) => !v);
+      return;
+    }
+    if (type === "point") {
+      addPointLoadAt();
+      return;
+    }
+    if (type === "udl") {
+      addUDL();
+      return;
+    }
+    if (type === "partial-udl") {
+      addPartialUDL();
+      return;
+    }
+    if (type === "triangular") {
+      addTriangular();
+      return;
+    }
+    if (type === "moment") {
+      addMoment();
+    }
+  };
+
+  const handleDropLoad = (type: BeamLoadLibraryType, x: number) => {
+    if (type === "self-weight") {
+      setIncludeSelfWeight(true);
+      return;
+    }
+    if (type === "point") {
+      addPointLoadAt(x);
+      return;
+    }
+    if (type === "udl") {
+      setLoads((prev) => [
+        ...prev,
+        {
+          id: getNewLoadId(),
+          type: "udl",
+          value: 200,
+          start: 0,
+          end: length,
+        },
+      ]);
+      return;
+    }
+    if (type === "partial-udl") {
+      addPartialUDL(x);
+      return;
+    }
+    if (type === "triangular") {
+      addTriangular(x);
+      return;
+    }
+    if (type === "moment") {
+      addMoment(x);
+    }
   };
 
   const handleLoadDrag = (id: string, updates: Partial<Load>) => {
@@ -948,7 +1035,7 @@ function BeamsPageContent() {
   return (
     <CalculatorLayout
       moduleId="beams"
-      title="Beam Analysis Module"
+      title="Beam Design Module"
       summary={<CalculatorDesignSummary rows={summaryRows} committed={Boolean(result)} />}
       footer={
         <SavedProjectsFooter
@@ -1018,8 +1105,10 @@ function BeamsPageContent() {
             removeLoad={removeLoad}
             addPointLoad={addPointLoad}
             addUDL={addUDL}
-            addMoment={addMoment}
-            addTriangular={addTriangular}
+            addPartialUDL={() => addPartialUDL()}
+            addMoment={() => addMoment()}
+            addTriangular={() => addTriangular()}
+            onLoadLibraryAdd={handleLoadLibraryAdd}
             includeSelfWeight={includeSelfWeight}
             setIncludeSelfWeight={setIncludeSelfWeight}
             sectionArea={
@@ -1046,6 +1135,7 @@ function BeamsPageContent() {
               )
             }
             setDesignMaxStress={setDesignMaxStress}
+            hasResult={Boolean(result)}
           />
           <ExplainDesignCard bullets={explainBullets} />
         </div>
@@ -1060,9 +1150,21 @@ function BeamsPageContent() {
           loads={loads}
           onLoadDrag={handleLoadDrag}
           onSupportDrag={handleSupportDrag}
+          onDropLoad={handleDropLoad}
           applicationContext={result?.applicationContext}
           workflowMode={mode}
           sectionDepth={c * 2}
+          projectName={projectName}
+          sectionDesignation={sectionDesignation}
+          I={toBase(I, "inertia", inertiaUnit)}
+          c={toBase(c, "length", lengthUnit)}
+          meshSegments={meshSegments}
+          material={selectedMaterial}
+          reportMeta={{
+            project: projectName,
+            engineer: engineerName || undefined,
+            revision: revisions[0]?.id ?? "A",
+          }}
           units={{
             length: lengthUnit,
             force: forceUnit,

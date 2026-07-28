@@ -1,8 +1,8 @@
 ---
 seoTitle: "Engineering Material Encyclopedia: Properties, Composition & Selection"
-seoDescription: "Look up graded material datasheets — mechanical, thermal, electrical, composition, corrosion, and alternatives — then push properties into PhyCalcPro calculators."
+seoDescription: "Look up graded material datasheets — mechanical, thermal, physical, applications, advantages, limitations, standards, and equivalents — compare grades, follow use-case recommendations, then push properties into PhyCalcPro calculators."
 guideHeadline: "How Engineers Select and Compare Materials"
-keywords: ["material properties", "Young's modulus", "yield strength", "material selection", "density", "thermal expansion", "material datasheet"]
+keywords: ["material properties", "Young's modulus", "yield strength", "material selection", "density", "thermal expansion", "material datasheet", "material comparison"]
 ---
 
 ### Material Database (`material-db`)
@@ -11,9 +11,9 @@ keywords: ["material properties", "Young's modulus", "yield strength", "material
 
 Every stress, deflection, and thermal calculation starts with material data. Engineers need elastic moduli to predict stiffness, yield and ultimate strengths to set allowable loads, density for weight budgets, and thermal expansion coefficients for fit-at-temperature checks. A centralized encyclopedia eliminates transcription errors and ensures every module in a project uses the same property set.
 
-PhyCalcPro's Material Database combines browse/screen of the graded catalog, per-grade datasheets (overview through alternatives at `/products/materials/database/[id]`), and one-click `?material=` handoff into calculators.
+PhyCalcPro's Material Database combines browse/screen of the graded catalog, full datasheets for every grade (Overview through Equivalent Materials at `/products/materials/database/[id]`), side-by-side comparison, curated use-case recommendations, and one-click `?material=` handoff into calculators.
 
-This guide covers how to navigate alloy families, open datasheets, compare candidates, and push selected properties into downstream solvers.
+This guide covers how to navigate alloy families, open datasheets, compare candidates, follow recommendations, and push selected properties into downstream solvers.
 
 ## Material families and when to use them
 
@@ -104,17 +104,25 @@ Most metals lose strength and stiffness above roughly 200 °C. Link to the Tempe
 
 Yes — enter custom \(E\), \(\sigma_y\), \(\sigma_u\), \(\rho\), \(\alpha\), and \(\nu\). Custom entries are carried through to every downstream solver that consumes material data.
 
+### How do I compare materials?
+
+Open the [Material encyclopedia](/products/materials/database), tick **Compare** on two to four grades, then open the comparison table — or share a URL such as `/products/materials/database/compare?ids=astm-a36,astm-a992,al-6061`.
+
+### What are use-case recommendations?
+
+On the encyclopedia browse page, choose a use case (Beam, Shaft, Marine, …). PhyCalcPro shows curated recommended grades with engineering reasons (for example Beam → ASTM A992 for W-shape strength/weight, stock, and weldability). Recommendations guide selection; they do not silently change calculator defaults.
+
 ## Use the PhyCalcPro calculator
 
-Open the [Material encyclopedia](/products/materials/database). Search or browse by alloy family; open a datasheet for full sections; select a material to auto-populate downstream calculators with consistent \(E\), \(G\), \(\sigma_y\), \(\rho\), and \(\alpha\`.
+Open the [Material encyclopedia](/products/materials/database). Search or browse by alloy family; follow use-case recommendations; compare candidates; open a datasheet for Overview through Equivalent Materials; select a material to auto-populate downstream calculators with consistent \(E\), \(G\), \(\sigma_y\), \(\rho\), and \(\alpha\`.
 
 **Purpose**
 
-Searchable encyclopedia for engineering material properties — elastic moduli, strength, density, thermal expansion, composition, and selection guidance — used as defaults across PhyCalcPro modules. Centralizes material selection for consistent handoff to solvers.
+Searchable encyclopedia for engineering material properties — elastic moduli, strength, density, thermal expansion, applications, advantages, limitations, standards, and equivalents — used as defaults across PhyCalcPro modules. Centralizes material selection for consistent handoff to solvers.
 
 **Physics & theory**
 
-Material properties govern every stress, deflection, and thermal calculation. Young's modulus \(E\) and shear modulus \(G\) define elastic stiffness; yield \(\sigma_y\) and ultimate \(\sigma_u\) set strength limits. Density \(\rho\) enters dynamic and weight calculations. Thermal expansion coefficient \(\alpha\) drives thermal strain \(\varepsilon_{\mathrm{th}} = \alpha \Delta T\). The database stores room-temperature baseline values with optional temperature derating hooks to the Temperature Properties module. Properties are indicative — certified design requires mill test reports or code-approved tabulated values.
+Material properties govern every stress, deflection, and thermal calculation. Young's modulus \(E\) and shear modulus \(G\) define elastic stiffness; yield \(\sigma_y\) and ultimate \(\sigma_u\) set strength limits. Density \(\rho\) enters dynamic and weight calculations. Thermal expansion coefficient \(\alpha\) drives thermal strain \(\varepsilon_{\mathrm{th}} = \alpha \Delta T\). Specific strength \(\sigma_y/\rho\) and specific stiffness \(E/\rho\) support weight-critical selection. The database stores room-temperature baseline values with optional temperature derating hooks to the Temperature Properties module. Properties are indicative — certified design requires mill test reports or code-approved tabulated values.
 
 **Governing equations**
 
@@ -137,10 +145,13 @@ Reference lookup: keyed access to material records by name or alloy designation.
 | Material name / alloy | e.g., Steel 4140, Al 6061-T6 |
 | Property requested | \(E\), \(G\), \(\sigma_y\), \(\rho\), etc. |
 | Temperature (optional) | For derated lookup via Temperature Properties |
+| Use case (optional) | Beam, shaft, marine, … for curated recommendations |
+| Compare ids (optional) | Up to four catalog ids for side-by-side tables |
 
 **Outputs**
 
 - Property values in selected units, source note, temperature derating factor if linked.
+- Datasheet sections: Overview, Mechanical, Thermal, Physical, Applications, Advantages, Limitations, Standards, Equivalent Materials (plus electrical/composition/cost/corrosion when published).
 
 **Design codes & checks**
 
@@ -153,7 +164,7 @@ Reference lookup: keyed access to material records by name or alloy designation.
 - Room-temperature defaults unless temperature module linked.
 - Not a substitute for certified material test certificates.
 - Cast vs wrought, grain direction, and heat treatment variants may differ.
-- Database completeness varies by alloy family.
+- Every catalog grade has a datasheet; composition depth is richest on flagship grades.
 
 **References**
 

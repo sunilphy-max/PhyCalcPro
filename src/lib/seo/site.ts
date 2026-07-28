@@ -28,6 +28,7 @@ type BuildPageMetadataOptions = {
   description?: string;
   path: string;
   robots?: Metadata["robots"];
+  keywords?: string | string[];
 };
 
 function resolveTitle(title: BuildPageMetadataOptions["title"]): string {
@@ -43,6 +44,7 @@ export function buildPageMetadata({
   description = defaultDescription,
   path,
   robots = { index: true, follow: true },
+  keywords,
 }: BuildPageMetadataOptions): Metadata {
   const canonicalPath = path === "/" ? "/" : path.replace(/\/+$/, "");
   const pageTitle = resolveTitle(title);
@@ -52,6 +54,7 @@ export function buildPageMetadata({
     metadataBase: new URL(SITE_URL),
     title,
     description,
+    ...(keywords ? { keywords } : {}),
     alternates: {
       canonical: url,
     },

@@ -3,6 +3,7 @@
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import ShaftDashboard from "./ShaftDashboard";
 import type { LoadCase, ShaftResult } from "@/lib/machine/shafts/types";
+import type { ShaftCatalogBearingPick } from "@/lib/machine/shafts/shaftBearingCatalog";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
@@ -21,6 +22,10 @@ type Props = {
   layout?: LayoutPreview;
   lengthUnit?: string;
   forceUnit?: string;
+  operatingRpm?: number;
+  shaftDiameterM?: number;
+  bearingCatalogPicks?: ShaftCatalogBearingPick[];
+  onBearingCatalogPick?: (positionM: number, designation: string | null) => void;
   workflowMode?: DesignWorkflowMode;
 };
 
@@ -30,6 +35,10 @@ export default function ShaftResults({
   layout,
   lengthUnit = "m",
   forceUnit = "N",
+  operatingRpm = 0,
+  shaftDiameterM,
+  bearingCatalogPicks = [],
+  onBearingCatalogPick,
   workflowMode,
 }: Props) {
   return (
@@ -48,6 +57,7 @@ export default function ShaftResults({
         result
           ? [
               { metric: "maxStress", value: result.maxStress },
+              { metric: "maxPrincipalStress", value: result.maxPrincipalStress },
               { metric: "maxDeflection", value: result.maxDeflection },
               { metric: "safetyFactor", value: result.safetyFactor },
               { metric: "criticalSpeed", value: result.criticalSpeed },
@@ -70,6 +80,10 @@ export default function ShaftResults({
           layout={layout}
           lengthUnit={lengthUnit}
           forceUnit={forceUnit}
+          operatingRpm={operatingRpm}
+          shaftDiameterM={shaftDiameterM ?? result.diameter ?? 0}
+          bearingCatalogPicks={bearingCatalogPicks}
+          onBearingCatalogPick={onBearingCatalogPick}
           workflowMode={workflowMode}
         />
       ) : null}

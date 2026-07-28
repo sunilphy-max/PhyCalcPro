@@ -65,8 +65,9 @@ function MaterialDatabasePageContent() {
           <div>
             <h3 className="text-lg font-semibold text-slate-950">Browse & screen</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Search the catalog on the right, open a datasheet for full properties, or screen by
-              required allowable stress in Design or Select mode.
+              Search the catalog on the right, open a datasheet, compare candidates, or follow
+              use-case recommendations. Screen by required allowable stress in Design or Select
+              mode.
             </p>
           </div>
 

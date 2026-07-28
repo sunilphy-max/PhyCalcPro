@@ -42,6 +42,9 @@ export type BearingSupport = {
   type: BearingSupportType;
 };
 
+/** Typed station for loading-diagram graphics (inferred when omitted). */
+export type ShaftLoadKind = "gear" | "pulley" | "torque" | "bending" | "force";
+
 export type LoadCase = {
   position: number;
   torque?: number;
@@ -49,6 +52,8 @@ export type LoadCase = {
   axialForce?: number;
   /** Transverse force in the lateral (Y) direction (N) */
   transverseForce?: number;
+  /** Optional diagram icon; inferred from components when omitted */
+  kind?: ShaftLoadKind;
 };
 
 export type StressFeatureType = "shoulder_fillet" | "keyway" | "retaining_ring" | "custom";
@@ -212,6 +217,8 @@ export type ShaftResult = {
   shearStress: number[];
   bendingStress: number[];
   vonMisesStress: number[];
+  /** Max principal stress σ₁ along shaft (Pa), Kt-adjusted */
+  principalStress: number[];
   deflection: number[];
   slope: number[];
   rotation: number[];
@@ -220,6 +227,8 @@ export type ShaftResult = {
   fatigueConcentrationFactor: number[];
 
   maxStress: number;
+  /** Peak Kt-adjusted max principal stress (Pa) */
+  maxPrincipalStress: number;
   maxShearStress: number;
   maxBendingStress: number;
   maxDeflection: number;

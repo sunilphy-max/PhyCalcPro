@@ -4,6 +4,7 @@ import {
   MATERIAL_PAGE_SECTIONS,
   type MaterialPageModel,
   type MaterialPageSectionId,
+  materialCompareHref,
   materialDatasheetHref,
 } from "@/lib/materials/materialPage";
 import { materialCategoryLabels } from "@/data/materials";
@@ -48,6 +49,16 @@ function PropRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function BulletList({ items }: { items: string[] }) {
+  return (
+    <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-300">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
 export default function MaterialDatasheetPage({ page }: Props) {
   const { material, sectionAvailability: avail } = page;
   const targets = modulesAcceptingCatalogMaterial();
@@ -65,6 +76,10 @@ export default function MaterialDatasheetPage({ page }: Props) {
       href: `/products/materials/corrosion?material=${encodeURIComponent(material.name)}`,
     },
   ];
+  const compareWithEquivalents =
+    page.alternatives.length > 0
+      ? materialCompareHref([material.id, ...page.alternatives.map((a) => a.id)].slice(0, 4))
+      : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
@@ -92,15 +107,9 @@ export default function MaterialDatasheetPage({ page }: Props) {
                   <p className="mt-1 text-sm text-slate-500">Also known as: {page.aliases.join(", ")}</p>
                 ) : null}
               </div>
-              {page.hasDatasheet ? (
-                <span className="rounded bg-sky-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800 dark:bg-sky-950 dark:text-sky-200">
-                  Full datasheet
-                </span>
-              ) : (
-                <span className="rounded bg-slate-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  Catalog properties
-                </span>
-              )}
+              <span className="rounded bg-sky-100 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+                Full datasheet
+              </span>
             </div>
 
             <nav className="mt-5 flex flex-wrap gap-1.5 border-t border-slate-100 pt-4 dark:border-slate-800">
@@ -120,7 +129,9 @@ export default function MaterialDatasheetPage({ page }: Props) {
             </nav>
 
             <Section id="overview" title="Overview" published={avail.overview}>
-              {page.summary ? <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{page.summary}</p> : null}
+              {page.summary ? (
+                <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">{page.summary}</p>
+              ) : null}
               {page.formSupply ? (
                 <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                   <span className="font-medium text-slate-800 dark:text-slate-200">Typical supply:</span>{" "}
@@ -135,7 +146,6 @@ export default function MaterialDatasheetPage({ page }: Props) {
                 <PropRow label="Shear modulus G" value={formatEngineeringValue(page.shearModulusPa / 1e9, "GPa", { digits: 1 })} />
                 <PropRow label="Yield / proof Re" value={formatEngineeringValue(material.yieldStress / 1e6, "MPa", { digits: 0 })} />
                 <PropRow label="Ultimate Rm" value={formatEngineeringValue(material.ultimateStrength / 1e6, "MPa", { digits: 0 })} />
-                <PropRow label="Density ρ" value={formatEngineeringValue(material.density, "kg/m³", { digits: 0 })} />
                 <PropRow label="Poisson's ratio ν" value={formatEngineeringValue(material.poisson, "", { digits: 3 })} />
                 {material.enduranceLimit != null ? (
                   <PropRow label="Endurance limit Se" value={formatEngineeringValue(material.enduranceLimit / 1e6, "MPa", { digits: 0 })} />
@@ -188,6 +198,84 @@ export default function MaterialDatasheetPage({ page }: Props) {
               </p>
             </Section>
 
+            <Section id="physical" title="Physical Properties" published>
+              <div className="grid gap-x-8 sm:grid-cols-2">
+                <PropRow label="Density ρ" value={formatEngineeringValue(material.density, "kg/m³", { digits: 0 })} />
+                <PropRow
+                  label="Specific strength Sy/ρ"
+                  value={formatEngineeringValue(material.yieldStress / material.density, "Pa·m³/kg", {
+                    useExponential: true,
+                    digits: 2,
+                  })}
+                />
+                <PropRow
+                  label="Specific stiffness E/ρ"
+                  value={formatEngineeringValue(material.E / material.density, "Pa·m³/kg", {
+                    useExponential: true,
+                    digits: 2,
+                  })}
+                />
+              </div>
+              {page.formSupply ? (
+                <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                  <span className="font-medium text-slate-800 dark:text-slate-200">Typical supply:</span>{" "}
+                  {page.formSupply}
+                </p>
+              ) : null}
+              {page.physicalNotes ? (
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{page.physicalNotes}</p>
+              ) : null}
+            </Section>
+
+            <Section id="applications" title="Applications" published={avail.applications}>
+              <BulletList items={page.applications} />
+            </Section>
+
+            <Section id="advantages" title="Advantages" published={avail.advantages}>
+              <BulletList items={page.advantages} />
+            </Section>
+
+            <Section id="limitations" title="Limitations" published={avail.limitations}>
+              <BulletList items={page.limitations} />
+            </Section>
+
+            <Section id="standards" title="Standards" published={avail.standards}>
+              <ul className="space-y-2 text-sm">
+                {page.standards.map((std) => (
+                  <li key={std.code} className="rounded-lg border border-slate-100 px-3 py-2 dark:border-slate-800">
+                    <span className="font-semibold text-slate-900 dark:text-white">{std.code}</span>
+                    {std.title ? <span className="text-slate-500"> — {std.title}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+
+            <Section id="equivalents" title="Equivalent Materials" published={avail.equivalents}>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {page.alternatives.map((alt) => (
+                  <li key={alt.id}>
+                    <Link
+                      href={materialDatasheetHref(alt.id)}
+                      className="block rounded-lg border border-slate-200 px-3 py-2 text-sm hover:border-blue-300 hover:bg-blue-50/50 dark:border-slate-700 dark:hover:border-blue-700 dark:hover:bg-blue-950/20"
+                    >
+                      <span className="font-semibold text-slate-900 dark:text-white">{alt.name}</span>
+                      <span className="mt-0.5 block text-xs text-slate-500">
+                        {materialCategoryLabels[alt.category]} · Re{" "}
+                        {Math.round(alt.yieldStress / 1e6)} MPa
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              {compareWithEquivalents ? (
+                <p className="mt-3 text-sm">
+                  <Link href={compareWithEquivalents} className="font-medium text-blue-600 hover:underline">
+                    Compare with these grades →
+                  </Link>
+                </p>
+              ) : null}
+            </Section>
+
             <Section id="electrical" title="Electrical Properties" published={avail.electrical}>
               <div className="grid gap-x-8 sm:grid-cols-2">
                 {page.electrical?.resistivity != null ? (
@@ -197,10 +285,7 @@ export default function MaterialDatasheetPage({ page }: Props) {
                   />
                 ) : null}
                 {page.electrical?.conductivityIacsPct != null ? (
-                  <PropRow
-                    label="Conductivity"
-                    value={`${page.electrical.conductivityIacsPct} % IACS`}
-                  />
+                  <PropRow label="Conductivity" value={`${page.electrical.conductivityIacsPct} % IACS`} />
                 ) : null}
               </div>
               {page.electrical?.notes ? (
@@ -234,25 +319,6 @@ export default function MaterialDatasheetPage({ page }: Props) {
               <p className="mt-2 text-xs text-slate-500">
                 Typical / limit values for reference selection only — verify against mill certs for certified work.
               </p>
-            </Section>
-
-            <Section id="applications" title="Applications" published={avail.applications}>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700 dark:text-slate-300">
-                {page.applications.map((app) => (
-                  <li key={app}>{app}</li>
-                ))}
-              </ul>
-            </Section>
-
-            <Section id="standards" title="Standards" published={avail.standards}>
-              <ul className="space-y-2 text-sm">
-                {page.standards.map((std) => (
-                  <li key={std.code} className="rounded-lg border border-slate-100 px-3 py-2 dark:border-slate-800">
-                    <span className="font-semibold text-slate-900 dark:text-white">{std.code}</span>
-                    {std.title ? <span className="text-slate-500"> — {std.title}</span> : null}
-                  </li>
-                ))}
-              </ul>
             </Section>
 
             <Section id="machinability" title="Machinability" published={avail.machinability}>
@@ -311,26 +377,6 @@ export default function MaterialDatasheetPage({ page }: Props) {
                 </Link>
                 .
               </p>
-            </Section>
-
-            <Section id="alternatives" title="Alternatives" published={avail.alternatives}>
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {page.alternatives.map((alt) => (
-                  <li key={alt.id}>
-                    <Link
-                      href={materialDatasheetHref(alt.id)}
-                      className="block rounded-lg border border-slate-200 px-3 py-2 text-sm hover:border-blue-300 hover:bg-blue-50/50 dark:border-slate-700 dark:hover:border-blue-700 dark:hover:bg-blue-950/20"
-                    >
-                      <span className="font-semibold text-slate-900 dark:text-white">{alt.name}</span>
-                      <span className="mt-0.5 block text-xs text-slate-500">
-                        {materialCategoryLabels[alt.category]} · Re{" "}
-                        {Math.round(alt.yieldStress / 1e6)} MPa
-                        {alt.hasDatasheet ? " · datasheet" : ""}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             </Section>
           </div>
         </div>

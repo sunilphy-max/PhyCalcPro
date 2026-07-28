@@ -8,6 +8,7 @@ import {
   type SupportKind,
   type SupportType,
 } from "@/lib/structural/beams/types";
+import { useState } from "react";
 import MaterialSelect from "@/components/materials/MaterialSelect";
 import ModuleUnitSelect from "@/components/shared/ModuleUnitSelect";
 import MeshControls from "@/components/shared/MeshControls";
@@ -21,6 +22,12 @@ import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import CalculatorUnitField from "@/components/calculator/CalculatorUnitField";
 import CalculatorFormSection from "@/components/calculator/CalculatorFormSection";
+import DesignWorkflowStepper, {
+  BEAM_DESIGN_STEPS,
+  type DesignWorkflowStep,
+  type DesignWorkflowStepId,
+} from "@/components/calculator/DesignWorkflowStepper";
+import { useModuleWorkspaceOptional } from "@/contexts/ModuleWorkspaceContext";
 import {
   calculatorDangerLinkClass,
   calculatorFieldLabelClass,
@@ -31,6 +38,9 @@ import {
   calculatorSelectClass,
   calculatorTextInputClass,
 } from "@/components/calculator/styles";
+import BeamLoadLibrary, {
+  type BeamLoadLibraryType,
+} from "@/components/structural/beams/BeamLoadLibrary";
 
 type Props = {
   projectName: string;
@@ -82,8 +92,10 @@ type Props = {
   removeLoad: (i: number) => void;
   addPointLoad: () => void;
   addUDL: () => void;
+  addPartialUDL: () => void;
   addMoment: () => void;
   addTriangular: () => void;
+  onLoadLibraryAdd: (type: BeamLoadLibraryType) => void;
 
   includeSelfWeight: boolean;
   setIncludeSelfWeight: (v: boolean) => void;
@@ -100,6 +112,9 @@ type Props = {
   setDesignMaxDeflection?: (value: number) => void;
   designMaxStress?: number;
   setDesignMaxStress?: (value: number) => void;
+
+  /** True once a solve has produced results (enables Results / Verification / Report steps). */
+  hasResult?: boolean;
 };
 
 function loadTitle(load: Load): string {
@@ -114,6 +129,9 @@ export default function BeamInputs(props: Props) {
   const selectedApplication = getBeamApplicationPreset(applicationId);
   const isDesignMode = props.workflowMode === "design";
   const showManualSection = !isDesignMode;
+  const hasResult = Boolean(props.hasResult);
+  const workspace = useModuleWorkspaceOptional();
+  const [activeDesignStepId, setActiveDesignStepId] = useState<DesignWorkflowStepId>("problem");
 
   const selectedMaterial =
     materials.find((m) => m.name === props.material) ?? materials[0];
@@ -121,13 +139,52 @@ export default function BeamInputs(props: Props) {
     ((selectedMaterial?.yieldStress ?? 250e6) * selectedApplication.allowableStressRatio) /
     (props.stressUnit === "MPa" ? 1e6 : props.stressUnit === "Pa" ? 1 : 1e6);
 
+  const steps: DesignWorkflowStep[] = BEAM_DESIGN_STEPS.map((step) => {
+    if (step.id === "problem") {
+      return { ...step, complete: Boolean(props.projectName.trim()) };
+    }
+    if (step.id === "geometry") {
+      return { ...step, complete: props.length > 0 && props.supports.length > 0 };
+    }
+    if (step.id === "material") {
+      return { ...step, complete: Boolean(props.material) };
+    }
+    if (step.id === "loads") {
+      return { ...step, complete: (props.loads?.length ?? 0) > 0 };
+    }
+    if (step.id === "results" || step.id === "verification" || step.id === "report") {
+      return { ...step, complete: hasResult, disabled: !hasResult };
+    }
+    return { ...step };
+  });
+
+  const handleStepSelect = (step: DesignWorkflowStep) => {
+    setActiveDesignStepId(step.id);
+    if (step.id === "results" || step.id === "verification") {
+      workspace?.setActiveWorkspaceTab("calculator");
+      const anchor =
+        step.id === "verification" ? "design-step-verification" : "design-step-results";
+      requestAnimationFrame(() => {
+        document.getElementById(anchor)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      return;
+    }
+    if (step.id === "report") {
+      workspace?.setActiveWorkspaceTab("report");
+      return;
+    }
+    if (step.id === "material") {
+      // Stay on calculator; Materials tab remains available for catalog browse.
+    }
+  };
+
   return (
     <CalculatorInputPanel
-      title="Beam analysis"
-      description="Continuous-beam FEM with draggable supports, multi-load cases, and catalog sections."
+      title="Beam design"
+      description="Define the problem, geometry, material, and loads — then validate, verify, and export a design-review report."
       footer={
         <div className="space-y-2">
-          <CalculatorCalculateButton onClick={props.onCalculate} label="Solve beam" designAware />
+          <CalculatorCalculateButton onClick={props.onCalculate} label="Run design check" designAware />
           <button
             type="button"
             onClick={props.saveProject}
@@ -139,7 +196,17 @@ export default function BeamInputs(props: Props) {
         </div>
       }
     >
-      <CalculatorFormSection title="Project">
+      <DesignWorkflowStepper
+        steps={steps}
+        activeStepId={activeDesignStepId}
+        onStepSelect={handleStepSelect}
+      />
+
+      <CalculatorFormSection
+        id="design-step-problem"
+        title="Problem"
+        description="Project label and design targets for this beam case."
+      >
         <label className={calculatorFieldLabelClass}>
           Project name
           <input
@@ -149,9 +216,47 @@ export default function BeamInputs(props: Props) {
             placeholder="Optional label for save/export"
           />
         </label>
+        <p className="text-xs text-slate-500">
+          Application preset and design-code defaults are set above. In Auto-design mode, set stress and
+          deflection targets with the geometry below.
+        </p>
+        {isDesignMode ? (
+          <div className={`${calculatorInputGridTightClass} mt-2`}>
+            <CalculatorUnitField
+              label="Design max deflection"
+              value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
+              onChange={(v) => props.setDesignMaxDeflection?.(v)}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey="length"
+                  value={props.lengthUnit}
+                  onChange={props.setLengthUnit}
+                />
+              }
+            />
+            <CalculatorUnitField
+              label="Design max stress"
+              value={props.designMaxStress ?? defaultDesignStress}
+              onChange={(v) => props.setDesignMaxStress?.(v)}
+              unit={
+                <ModuleUnitSelect
+                  moduleId="beams"
+                  fieldKey="stress"
+                  value={props.stressUnit}
+                  onChange={props.setStressUnit}
+                />
+              }
+            />
+          </div>
+        ) : null}
       </CalculatorFormSection>
 
-      <CalculatorFormSection title="Support & material">
+      <CalculatorFormSection
+        id="design-step-geometry"
+        title="Geometry"
+        description="Span, supports, and cross-section (catalog or manual I and c)."
+      >
         <label className={calculatorFieldLabelClass}>
           Support preset
           <select
@@ -222,38 +327,6 @@ export default function BeamInputs(props: Props) {
           </button>
         </div>
 
-        <MaterialSelect
-          profile="structural"
-          value={props.material}
-          onChange={props.setMaterial}
-        />
-        {selectedMaterial ? (
-          <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
-              E {(selectedMaterial.E / 1e9).toFixed(1)} GPa
-            </span>
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
-              Fy {((selectedMaterial.yieldStress ?? 0) / 1e6).toFixed(0)} MPa
-            </span>
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
-              ρ {selectedMaterial.density} kg/m³
-            </span>
-            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
-              α {((selectedMaterial.thermalExpansion ?? 0) * 1e6).toFixed(1)} µ/°C
-            </span>
-          </div>
-        ) : null}
-      </CalculatorFormSection>
-
-      {isDesignMode ? null : (
-        <RolledSectionPicker
-          designation={props.sectionDesignation}
-          onDesignationChange={props.setSectionDesignation}
-          onSectionApplied={props.onSectionApplied}
-        />
-      )}
-
-      <CalculatorFormSection title="Geometry">
         <CalculatorUnitField
           label="Span length"
           value={props.length}
@@ -267,6 +340,14 @@ export default function BeamInputs(props: Props) {
             />
           }
         />
+
+        {isDesignMode ? null : (
+          <RolledSectionPicker
+            designation={props.sectionDesignation}
+            onDesignationChange={props.setSectionDesignation}
+            onSectionApplied={props.onSectionApplied}
+          />
+        )}
 
         {showManualSection ? (
           <>
@@ -299,53 +380,56 @@ export default function BeamInputs(props: Props) {
           </>
         ) : null}
 
-        {isDesignMode ? (
-          <div className={`${calculatorInputGridTightClass} mt-2`}>
-            <CalculatorUnitField
-              label="Design max deflection"
-              value={props.designMaxDeflection ?? props.length / selectedApplication.deflectionLimitRatio}
-              onChange={(v) => props.setDesignMaxDeflection?.(v)}
-              unit={
-                <ModuleUnitSelect
-                  moduleId="beams"
-                  fieldKey="length"
-                  value={props.lengthUnit}
-                  onChange={props.setLengthUnit}
-                />
-              }
-            />
-            <CalculatorUnitField
-              label="Design max stress"
-              value={props.designMaxStress ?? defaultDesignStress}
-              onChange={(v) => props.setDesignMaxStress?.(v)}
-              unit={
-                <ModuleUnitSelect
-                  moduleId="beams"
-                  fieldKey="stress"
-                  value={props.stressUnit}
-                  onChange={props.setStressUnit}
-                />
-              }
-            />
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-300">Mesh refinement</p>
+          <p className="text-xs text-slate-500">Increase element count for smoother curves.</p>
+          <MeshControls elements={props.meshSegments} onChangeElements={props.setMeshSegments} refine />
+        </div>
+      </CalculatorFormSection>
+
+      <CalculatorFormSection
+        id="design-step-material"
+        title="Material"
+        description="Grade and elastic properties for stress and deflection checks. Use the Materials workspace tab to browse the catalog."
+      >
+        <MaterialSelect
+          profile="structural"
+          value={props.material}
+          onChange={props.setMaterial}
+        />
+        {selectedMaterial ? (
+          <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
+              E {(selectedMaterial.E / 1e9).toFixed(1)} GPa
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
+              Fy {((selectedMaterial.yieldStress ?? 0) / 1e6).toFixed(0)} MPa
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
+              ρ {selectedMaterial.density} kg/m³
+            </span>
+            <span className="rounded-md border border-slate-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-800">
+              α {((selectedMaterial.thermalExpansion ?? 0) * 1e6).toFixed(1)} µ/°C
+            </span>
           </div>
         ) : null}
       </CalculatorFormSection>
 
       <CalculatorFormSection
+        id="design-step-loads"
         title="Loads"
-        description="Point, UDL, triangular/variable, moment, and optional self-weight."
+        description="Add loads from the library or buttons. Drag onto the beam diagram to place."
       >
-        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-          <input
-            type="checkbox"
-            checked={props.includeSelfWeight}
-            onChange={(e) => props.setIncludeSelfWeight(e.target.checked)}
-          />
-          Include self-weight
-          {props.sectionArea != null && props.sectionArea > 0
-            ? ` (A = ${(props.sectionArea * 1e4).toFixed(2)} cm²)`
-            : " — select a catalog section for area"}
-        </label>
+        <BeamLoadLibrary
+          includeSelfWeight={props.includeSelfWeight}
+          onAdd={props.onLoadLibraryAdd}
+        />
+
+        {props.sectionArea != null && props.sectionArea > 0 ? (
+          <p className="text-xs text-slate-500">
+            Catalog area A = {(props.sectionArea * 1e4).toFixed(2)} cm² (used for self-weight).
+          </p>
+        ) : null}
 
         {(props.loads ?? []).map((load, i) => (
           <div key={load.id || i} className={calculatorLoadCardClass}>
@@ -493,7 +577,10 @@ export default function BeamInputs(props: Props) {
             + Point load
           </button>
           <button type="button" onClick={props.addUDL} className={calculatorSecondaryButtonClass}>
-            + UDL
+            + Full UDL
+          </button>
+          <button type="button" onClick={props.addPartialUDL} className={calculatorSecondaryButtonClass}>
+            + Partial UDL
           </button>
           <button type="button" onClick={props.addTriangular} className={calculatorSecondaryButtonClass}>
             + Triangular
@@ -529,10 +616,6 @@ export default function BeamInputs(props: Props) {
             </div>
           </label>
         </div>
-      </CalculatorFormSection>
-
-      <CalculatorFormSection title="Mesh refinement" description="Increase element count for smoother curves.">
-        <MeshControls elements={props.meshSegments} onChangeElements={props.setMeshSegments} refine />
       </CalculatorFormSection>
     </CalculatorInputPanel>
   );

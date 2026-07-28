@@ -63,3 +63,6 @@ A **Design Workspace** = calculator + knowledge + materials + interactive model 
 - **Workspace chrome:** enabled for all calculators via `CalculatorLayout` → `ModuleWorkspaceShell` (Knowledge, Materials, Report, AI, Teach; Model where registered).
 - **Materials:** centralized catalog + `materialEvents` bus; Materials DB deep-links every catalog-binding module; `?material=` works fleet-wide.
 - **Design Summary rail:** use `CalculatorLayout` `summary` prop (beams + bearings pattern).
+- **Design-step rail (EDP-1 UX):** Beam pilot — sticky Problem → Geometry → Material → Loads → Results → Verification → Report stepper (`DesignWorkflowStepper`); free jump, not a blocking wizard.
+- **Design-review PDF (EDP-6 pilot):** Beam curated sections via `buildBeamReportSections` (assumptions, equations, standards, intermediates, checks, materials, conclusion).
+- **Product-page knowledge (EDP-2):** Beam `/products/structural/beams` renders below-fold supporting content + FAQ JSON-LD from `docs/modules/beams.md`.

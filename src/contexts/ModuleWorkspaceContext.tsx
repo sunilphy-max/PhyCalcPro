@@ -36,6 +36,9 @@ type ModuleWorkspaceContextValue = {
   selectedMaterialName: string | null;
   setSelectedMaterialName: (name: string | null) => void;
   workspaceEnabled: boolean;
+  /** Active Design Workspace tab (Calculator / Knowledge / Report / …). */
+  activeWorkspaceTab: WorkspaceTabId;
+  setActiveWorkspaceTab: (tab: WorkspaceTabId) => void;
 };
 
 const ModuleWorkspaceContext = createContext<ModuleWorkspaceContextValue | null>(null);
@@ -57,6 +60,7 @@ export function ModuleWorkspaceProvider({
   const [revisions, setRevisions] = useState<ProjectRevision[]>([]);
   const [tabOverrides, setTabOverrides] = useState<TabOverrides>({});
   const [selectedMaterialName, setSelectedMaterialName] = useState<string | null>(null);
+  const [activeWorkspaceTab, setActiveWorkspaceTab] = useState<WorkspaceTabId>("calculator");
 
   const registerMaterialApply = useCallback((handler: MaterialApplyHandler | null) => {
     materialHandlerRef.current = handler;
@@ -106,6 +110,8 @@ export function ModuleWorkspaceProvider({
       selectedMaterialName,
       setSelectedMaterialName,
       workspaceEnabled,
+      activeWorkspaceTab,
+      setActiveWorkspaceTab,
     }),
     [
       moduleId,
@@ -117,6 +123,7 @@ export function ModuleWorkspaceProvider({
       setTabOverride,
       selectedMaterialName,
       workspaceEnabled,
+      activeWorkspaceTab,
     ]
   );
 

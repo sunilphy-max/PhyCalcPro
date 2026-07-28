@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { DesignWorkspaceContract, WorkspaceTabId } from "@/lib/workspace/designWorkspaceContract";
+import { useModuleWorkspaceOptional } from "@/contexts/ModuleWorkspaceContext";
 
 const TAB_LABELS: Record<WorkspaceTabId, string> = {
   calculator: "Calculator",
@@ -40,6 +41,7 @@ export default function WorkspaceChrome({
   defaultTab = "calculator",
   banner,
 }: Props) {
+  const workspace = useModuleWorkspaceOptional();
   const slots: TabSlot[] = (
     [
       { id: "calculator" as const, content: calculator, available: true },
@@ -52,9 +54,29 @@ export default function WorkspaceChrome({
     ] satisfies TabSlot[]
   ).filter((s) => s.available);
 
-  const [active, setActive] = useState<WorkspaceTabId>(
+  const slotIdsKey = slots.map((s) => s.id).join(",");
+  const contextTab = workspace?.activeWorkspaceTab;
+  const setContextTab = workspace?.setActiveWorkspaceTab;
+
+  const [localActive, setLocalActive] = useState<WorkspaceTabId>(
     slots.some((s) => s.id === defaultTab) ? defaultTab : "calculator"
   );
+
+  // Prefer context-controlled tab when available (design-step rail → Report).
+  const active =
+    contextTab && slotIdsKey.split(",").includes(contextTab) ? contextTab : localActive;
+
+  useEffect(() => {
+    const ids = slotIdsKey.split(",") as WorkspaceTabId[];
+    if (contextTab && !ids.includes(contextTab)) {
+      setContextTab?.("calculator");
+    }
+  }, [contextTab, slotIdsKey, setContextTab]);
+
+  const setActive = (tab: WorkspaceTabId) => {
+    setLocalActive(tab);
+    setContextTab?.(tab);
+  };
 
   const activeSlot = slots.find((s) => s.id === active) ?? slots[0];
 

@@ -1,4 +1,5 @@
 import { getCategoryById, getModuleByRoute } from "@/data/modules";
+import { getModuleDoc } from "@/lib/documentation/loadReference";
 import { buildPageMetadata, defaultDescription, SITE_NAME } from "./site";
 
 /**
@@ -11,15 +12,21 @@ function absoluteTitle(name: string) {
 
 export function moduleMetadata(route: string) {
   const mod = getModuleByRoute(route);
-  const name = mod ? `${mod.title} Calculator` : "Engineering Calculator";
-  const description = mod
-    ? `${mod.description}. Professional ${mod.title.toLowerCase()} with document-ready results, design-code checks, and engineering plots.`
-    : defaultDescription;
+  const doc = mod ? getModuleDoc(mod.id) : undefined;
+  const name =
+    doc?.frontmatter.seoTitle ??
+    (mod ? `${mod.title} Calculator` : "Engineering Calculator");
+  const description =
+    doc?.frontmatter.seoDescription ??
+    (mod
+      ? `${mod.description}. Professional ${mod.title.toLowerCase()} with document-ready results, design-code checks, and engineering plots.`
+      : defaultDescription);
 
   return buildPageMetadata({
     title: { absolute: absoluteTitle(name) },
     description,
     path: route,
+    keywords: doc?.frontmatter.keywords,
     robots: mod?.comingSoon ? { index: false, follow: true } : { index: true, follow: true },
   });
 }

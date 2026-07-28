@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { materialCategoryLabels, CUSTOM_MATERIAL, findMaterial } from "@/data/materials";
+import { materialCategoryLabels, CUSTOM_MATERIAL, findMaterial, findMaterialById } from "@/data/materials";
 import {
   getMaterialsForProfile,
   profileAllowsCustom,
   type MaterialProfile,
 } from "@/lib/materials/materialProfiles";
 import { materialDatasheetHref } from "@/lib/materials/materialPage";
+import { getUseCaseForProfile } from "@/data/materialUseCases";
 import { calculatorFieldLabelClass, calculatorSelectClass } from "@/components/calculator/styles";
 import { useEffect, useMemo } from "react";
 import { subscribeMaterialApply } from "@/lib/workspace/materialEvents";
@@ -34,6 +35,14 @@ export default function MaterialSelect({
   const materialsForProfile = useMemo(() => getMaterialsForProfile(profile), [profile]);
   const showCustom = allowCustom ?? profileAllowsCustom(profile);
   const selected = value && value !== CUSTOM_MATERIAL ? findMaterial(value) : undefined;
+  const recommended = useMemo(() => {
+    const useCase = getUseCaseForProfile(profile);
+    const topId = useCase?.recommendations[0]?.materialId;
+    if (!topId) return undefined;
+    const material = findMaterialById(topId);
+    if (!material) return undefined;
+    return { material, useCase, reasons: useCase.recommendations[0]?.reasons ?? [] };
+  }, [profile]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof materialsForProfile>();
@@ -93,6 +102,18 @@ export default function MaterialSelect({
             Browse all materials →
           </Link>
         </div>
+      ) : null}
+      {recommended && recommended.material.name !== value ? (
+        <p className="mt-2 text-xs text-slate-500">
+          Recommended for {recommended.useCase.label.toLowerCase()}:{" "}
+          <Link
+            href={materialDatasheetHref(recommended.material.id)}
+            className="font-medium text-blue-600 hover:underline"
+          >
+            {recommended.material.name}
+          </Link>
+          {recommended.reasons[0] ? ` — ${recommended.reasons[0]}` : null}
+        </p>
       ) : null}
     </div>
   );

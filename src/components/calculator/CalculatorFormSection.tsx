@@ -6,12 +6,20 @@ type Props = {
   description?: string;
   children: ReactNode;
   className?: string;
+  /** Anchor id for design-workflow step scrolling. */
+  id?: string;
 };
 
 /** Grouped input block inside CalculatorInputPanel. */
-export default function CalculatorFormSection({ title, description, children, className = "" }: Props) {
+export default function CalculatorFormSection({
+  title,
+  description,
+  children,
+  className = "",
+  id,
+}: Props) {
   return (
-    <section className={`${calculatorSectionClass} ${className}`.trim()}>
+    <section id={id} className={`${calculatorSectionClass} ${className}`.trim()}>
       <div className="flex items-start gap-2.5">
         <span className="mt-1.5 h-4 w-1 shrink-0 rounded-full bg-gradient-to-b from-cyan-500 to-sky-500" aria-hidden />
         <div className="min-w-0 flex-1">

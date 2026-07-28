@@ -13,6 +13,9 @@ export type PlotPickerTab = {
 type Props = {
   tabs: PlotPickerTab[];
   defaultTabId?: string;
+  /** Controlled active tab; pair with onTabChange */
+  activeTabId?: string;
+  onTabChange?: (id: string) => void;
   label?: string;
   /** `segmented` shows pill tabs; `select` uses a dropdown (compact sidebars). */
   variant?: "segmented" | "select";
@@ -21,11 +24,20 @@ type Props = {
 export default function EngineeringPlotPicker({
   tabs,
   defaultTabId,
+  activeTabId,
+  onTabChange,
   label = "Chart",
   variant = "select",
 }: Props) {
   const visibleTabs = tabs.filter((tab) => tab.content != null);
-  const [activeId, setActiveId] = useState(defaultTabId ?? visibleTabs[0]?.id ?? "");
+  const [internalId, setInternalId] = useState(
+    defaultTabId ?? visibleTabs[0]?.id ?? ""
+  );
+  const activeId = activeTabId ?? internalId;
+  const setActiveId = (id: string) => {
+    onTabChange?.(id);
+    if (activeTabId === undefined) setInternalId(id);
+  };
 
   const active =
     visibleTabs.find((tab) => tab.id === activeId) ?? visibleTabs[0] ?? null;

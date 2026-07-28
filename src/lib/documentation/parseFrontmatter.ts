@@ -140,3 +140,48 @@ export function extractFaqItems(markdown: string): FaqItem[] {
 export function stripLeadingModuleHeading(markdown: string): string {
   return markdown.replace(/^### .+?\n+/, "").trimStart();
 }
+
+/**
+ * Extract a ## section whose title contains `titleMatch` (case-insensitive).
+ * Stops at the next ## heading.
+ */
+export function extractMarkdownH2Section(markdown: string, titleMatch: string): string | null {
+  const needle = titleMatch.toLowerCase();
+  const lines = markdown.split(/\r?\n/);
+  let start = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^##\s+(.+)$/.exec(lines[i] ?? "");
+    if (!m) continue;
+    if (m[1].toLowerCase().includes(needle)) {
+      start = i + 1;
+      break;
+    }
+  }
+  if (start < 0) return null;
+  let end = lines.length;
+  for (let i = start; i < lines.length; i++) {
+    if (/^##\s+/.test(lines[i] ?? "")) {
+      end = i;
+      break;
+    }
+  }
+  return lines.slice(start, end).join("\n").trim() || null;
+}
+
+/**
+ * Extract a **Label** technical block until the next **Label** or ## heading.
+ */
+export function extractBoldLabeledSection(markdown: string, label: string): string | null {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const startRe = new RegExp(`\\*\\*${escaped}\\*\\*\\s*\\n+`, "i");
+  const startMatch = startRe.exec(markdown);
+  if (!startMatch || startMatch.index === undefined) return null;
+  const from = startMatch.index + startMatch[0].length;
+  const rest = markdown.slice(from);
+  const nextBold = rest.search(/\n\*\*[^*\n]+\*\*/);
+  const nextH2 = rest.search(/\n## /);
+  let end = rest.length;
+  if (nextBold >= 0) end = Math.min(end, nextBold);
+  if (nextH2 >= 0) end = Math.min(end, nextH2);
+  return rest.slice(0, end).trim() || null;
+}

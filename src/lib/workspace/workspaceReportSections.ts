@@ -30,6 +30,7 @@ export function buildWorkspaceReportSectionPresence(opts: {
     standards: Boolean(spec?.standards?.length),
     charts: Boolean(hasCharts),
     revision: Boolean(hasRevision || meta?.revision),
+    conclusion: Boolean(spec?.checks?.length),
   };
 }
 

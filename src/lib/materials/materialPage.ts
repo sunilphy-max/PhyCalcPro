@@ -21,27 +21,33 @@ export type MaterialPageSectionId =
   | "overview"
   | "mechanical"
   | "thermal"
+  | "physical"
+  | "applications"
+  | "advantages"
+  | "limitations"
+  | "standards"
+  | "equivalents"
   | "electrical"
   | "composition"
-  | "applications"
-  | "standards"
   | "machinability"
   | "cost"
-  | "corrosion"
-  | "alternatives";
+  | "corrosion";
 
 export const MATERIAL_PAGE_SECTIONS: Array<{ id: MaterialPageSectionId; label: string }> = [
   { id: "overview", label: "Overview" },
   { id: "mechanical", label: "Mechanical Properties" },
   { id: "thermal", label: "Thermal Properties" },
+  { id: "physical", label: "Physical Properties" },
+  { id: "applications", label: "Applications" },
+  { id: "advantages", label: "Advantages" },
+  { id: "limitations", label: "Limitations" },
+  { id: "standards", label: "Standards" },
+  { id: "equivalents", label: "Equivalent Materials" },
   { id: "electrical", label: "Electrical Properties" },
   { id: "composition", label: "Chemical Composition" },
-  { id: "applications", label: "Applications" },
-  { id: "standards", label: "Standards" },
   { id: "machinability", label: "Machinability" },
   { id: "cost", label: "Cost" },
   { id: "corrosion", label: "Corrosion" },
-  { id: "alternatives", label: "Alternatives" },
 ];
 
 export type MaterialPageAlternative = {
@@ -58,11 +64,14 @@ export type MaterialPageModel = {
   summary?: string;
   aliases: string[];
   formSupply?: string;
+  physicalNotes?: string;
   electrical?: MaterialDatasheetElectrical & {
     resistivity?: number;
   };
   composition: CompositionEntry[];
   applications: string[];
+  advantages: string[];
+  limitations: string[];
   standards: MaterialStandardRef[];
   machinabilityNotes?: string;
   machinabilityIndex?: number;
@@ -105,17 +114,20 @@ function sectionAvailability(model: Omit<MaterialPageModel, "sectionAvailability
     overview: Boolean(model.summary || model.aliases.length || model.formSupply),
     mechanical: true,
     thermal: thermalPublished,
+    physical: true,
+    applications: model.applications.length > 0,
+    advantages: model.advantages.length > 0,
+    limitations: model.limitations.length > 0,
+    standards: model.standards.length > 0,
+    equivalents: model.alternatives.length > 0,
     electrical: Boolean(model.electrical),
     composition: model.composition.length > 0,
-    applications: model.applications.length > 0,
-    standards: model.standards.length > 0,
     machinability: model.machinabilityIndex != null || Boolean(model.machinabilityNotes),
     cost: Boolean(model.costBand) || Boolean(model.costNotes),
     corrosion:
       Boolean(model.corrosionClass) ||
       Boolean(model.corrosionNotes) ||
       model.environments.length > 0,
-    alternatives: model.alternatives.length > 0,
   };
 }
 
@@ -148,9 +160,12 @@ export function getMaterialPage(id: string): MaterialPageModel | undefined {
     summary: sheet?.summary,
     aliases: sheet?.aliases ?? [],
     formSupply: sheet?.formSupply,
+    physicalNotes: sheet?.physicalNotes,
     electrical: resolveElectrical(material, sheet),
     composition: sheet?.composition ?? [],
     applications: sheet?.applications ?? [],
+    advantages: sheet?.advantages ?? [],
+    limitations: sheet?.limitations ?? [],
     standards: resolveStandards(material, sheet),
     machinabilityNotes: sheet?.machinabilityNotes,
     machinabilityIndex: material.machinabilityIndex,
@@ -181,4 +196,9 @@ export function listMaterialIds(): string[] {
 
 export function materialDatasheetHref(id: string): string {
   return `/products/materials/database/${encodeURIComponent(id)}`;
+}
+
+export function materialCompareHref(ids: string[]): string {
+  const clean = ids.map((id) => id.trim()).filter(Boolean).slice(0, 4);
+  return `/products/materials/database/compare?ids=${clean.map(encodeURIComponent).join(",")}`;
 }

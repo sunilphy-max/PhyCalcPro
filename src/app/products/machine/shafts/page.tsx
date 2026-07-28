@@ -32,7 +32,10 @@ import type { Din743MeanStressCase } from "@/lib/machine/shafts/din743/types";
 import type { Agma6001DutyClass, Agma6001InterfaceKind } from "@/lib/machine/shafts/agma6001/interfaceLoads";
 import { loadLocalProjects, saveLocalProject, type LocalProject } from "@/lib/localProjects";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
-import ShaftLayoutPreview from "@/components/shared/geometry/ShaftLayoutPreview";
+import ShaftLoadingDiagram from "@/components/machine/shafts/ShaftLoadingDiagram";
+import { createShaftStation } from "@/lib/machine/shafts/loadKind";
+import type { ShaftCatalogBearingPick } from "@/lib/machine/shafts/shaftBearingCatalog";
+import type { ShaftLoadKind } from "@/lib/machine/shafts/types";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
 import { handoffSpeedRpm } from "@/lib/design-workflows/handoffParamRegistry";
 import { usePowerTrainStepCompletion } from "@/contexts/PowerTrainAssemblyContext";
@@ -94,6 +97,19 @@ function ShaftsPageContent() {
   const [surfaceFinish, setSurfaceFinish] = useState<SurfaceFinish>("machined");
   const [alternatingTorqueFraction, setAlternatingTorqueFraction] = useState(0);
   const [useNotchSensitivity, setUseNotchSensitivity] = useState(true);
+  const [bearingCatalogPicks, setBearingCatalogPicks] = useState<ShaftCatalogBearingPick[]>([]);
+
+  const placeStation = (kind: ShaftLoadKind, x: number) => {
+    setLoads((current) => [...current, createShaftStation(kind, x, length)]);
+  };
+
+  const setBearingPick = (positionM: number, designation: string | null) => {
+    setBearingCatalogPicks((current) => {
+      const without = current.filter((p) => Math.abs(p.positionM - positionM) > 1e-6);
+      if (!designation) return without;
+      return [...without, { positionM, designation }];
+    });
+  };
 
   const [lengthUnit, setLengthUnit] = useState("m");
   const [modulusUnit, setModulusUnit] = useState("Pa");
@@ -469,7 +485,15 @@ function ShaftsPageContent() {
       }
       inputs={
         <div className="space-y-4">
-          <ShaftLayoutPreview length={length} diameter={diameter} loads={loads} lengthUnit={lengthUnit} />
+          <ShaftLoadingDiagram
+            length={length}
+            diameter={diameter}
+            loads={loads}
+            supports={supports}
+            lengthUnit={lengthUnit}
+            compact
+            onDropLoad={placeStation}
+          />
           <CrossCalcHandoffBanner
             moduleId="shafts"
             onApply={(params) => {
@@ -579,6 +603,10 @@ function ShaftsPageContent() {
           layout={{ length, diameter, loads, supports, lengthUnit }}
           lengthUnit={lengthUnit}
           forceUnit={forceUnit}
+          operatingRpm={operatingRpm}
+          shaftDiameterM={toBase(diameter, "length", lengthUnit)}
+          bearingCatalogPicks={bearingCatalogPicks}
+          onBearingCatalogPick={setBearingPick}
           workflowMode={workflowMode}
         />
       }

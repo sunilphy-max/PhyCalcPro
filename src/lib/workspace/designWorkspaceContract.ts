@@ -32,7 +32,8 @@ export type WorkspaceReportSectionId =
   | "materials"
   | "standards"
   | "charts"
-  | "revision";
+  | "revision"
+  | "conclusion";
 
 export const WORKSPACE_REPORT_SECTION_ORDER: WorkspaceReportSectionId[] = [
   "project",
@@ -45,6 +46,7 @@ export const WORKSPACE_REPORT_SECTION_ORDER: WorkspaceReportSectionId[] = [
   "standards",
   "charts",
   "revision",
+  "conclusion",
 ];
 
 export type WorkspaceAiContext = {
