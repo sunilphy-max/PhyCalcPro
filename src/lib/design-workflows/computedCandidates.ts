@@ -61,7 +61,7 @@ export function getComputedDesignSet(
   const catalogModule =
     allModules.find((item) => item.id === moduleId) ??
     (moduleId === "profiles"
-      ? { id: "profiles", title: "Cross-Sectional Area Properties", category: "materials" }
+      ? { id: "profiles", title: "Cross-Sectional Area Properties", category: "structural" }
       : undefined);
   if (!catalogModule) return undefined;
 

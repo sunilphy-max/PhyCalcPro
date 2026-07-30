@@ -88,7 +88,7 @@ export const categories: EngineeringCategory[] = [
     id: "structural",
     title: "Structural Engineering",
     description:
-      "Beams, frames, columns, plates, and structural analysis",
+      "Members, frames, plates/shells, sections, and structural connections",
 
     icon: Box,
     color: "from-blue-500 to-blue-600",
@@ -102,26 +102,8 @@ export const categories: EngineeringCategory[] = [
         category: "structural",
         icon: BarChart3,
         featured: true,
+        subGroup: "Members",
       },
-
-      {
-        id: "frames",
-        title: "Frame Analysis",
-        description: "2D frame structural analysis",
-        route: "/products/structural/frames",
-        category: "structural",
-        icon: Building2,
-      },
-
-      {
-        id: "trusses",
-        title: "Truss Analysis",
-        description: "Axial force analysis in truss systems",
-        route: "/products/structural/trusses",
-        category: "structural",
-        icon: Network,
-      },
-
       {
         id: "columns",
         title: "Column Buckling",
@@ -129,15 +111,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/structural/columns",
         category: "structural",
         icon: Columns3,
-      },
-
-      {
-        id: "plates",
-        title: "Plate Bending",
-        description: "Thin plate bending and stress analysis",
-        route: "/products/structural/plates",
-        category: "structural",
-        icon: LayoutGrid,
+        subGroup: "Members",
       },
       {
         id: "combined-loading",
@@ -146,6 +120,34 @@ export const categories: EngineeringCategory[] = [
         route: "/products/structural/combined-loading",
         category: "structural",
         icon: Combine,
+        subGroup: "Members",
+      },
+      {
+        id: "frames",
+        title: "Frame Analysis",
+        description: "2D frame structural analysis",
+        route: "/products/structural/frames",
+        category: "structural",
+        icon: Building2,
+        subGroup: "Systems",
+      },
+      {
+        id: "trusses",
+        title: "Truss Analysis",
+        description: "Axial force analysis in truss systems",
+        route: "/products/structural/trusses",
+        category: "structural",
+        icon: Network,
+        subGroup: "Systems",
+      },
+      {
+        id: "plates",
+        title: "Plate Bending",
+        description: "Thin plate bending and stress analysis",
+        route: "/products/structural/plates",
+        category: "structural",
+        icon: LayoutGrid,
+        subGroup: "Plates and shells",
       },
       {
         id: "circular-plates",
@@ -154,6 +156,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/structural/circular-plates",
         category: "structural",
         icon: CircleEllipsis,
+        subGroup: "Plates and shells",
       },
       {
         id: "shells",
@@ -163,6 +166,43 @@ export const categories: EngineeringCategory[] = [
         category: "structural",
         icon: Cylinder,
         tags: ["plates", "pressure", "axisymmetric"],
+        subGroup: "Plates and shells",
+      },
+      {
+        id: "sections",
+        title: "Section Properties",
+        description: "I, Z, centroid, inertia calculations",
+        route: "/products/materials/sections",
+        category: "structural",
+        icon: Scaling,
+        subGroup: "Sections",
+      },
+      {
+        id: "rolled-sections",
+        title: "Rolled Sections",
+        description: "W, S, C, I, U and L section property lookup",
+        route: "/products/materials/rolled-sections",
+        category: "structural",
+        icon: LayoutGrid,
+        subGroup: "Sections",
+      },
+      {
+        id: "profiles",
+        title: "Area Properties",
+        description: "Centroid, inertia and moduli for common profile shapes",
+        route: "/products/materials/profiles",
+        category: "structural",
+        icon: Ruler,
+        subGroup: "Sections",
+      },
+      {
+        id: "welds",
+        title: "Weld Group Analysis",
+        description: "Weld strength and stress distribution",
+        route: "/products/fasteners/welds",
+        category: "structural",
+        icon: Flame,
+        subGroup: "Connections",
       },
     ],
   },
@@ -187,6 +227,7 @@ export const categories: EngineeringCategory[] = [
         category: "power-transmission",
         icon: Link,
         featured: true,
+        subGroup: "Drives",
       },
       {
         id: "timing-belts",
@@ -195,6 +236,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/power-transmission/timing-belts",
         category: "power-transmission",
         icon: Cog,
+        subGroup: "Drives",
       },
       {
         id: "roller-chains",
@@ -203,6 +245,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/power-transmission/roller-chains",
         category: "power-transmission",
         icon: Link2,
+        subGroup: "Drives",
       },
       {
         id: "multi-pulley",
@@ -211,6 +254,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/power-transmission/multi-pulley",
         category: "power-transmission",
         icon: GitBranch,
+        subGroup: "Drives",
       },
     ],
   },
@@ -354,6 +398,7 @@ export const categories: EngineeringCategory[] = [
         icon: Gauge,
         featured: true,
         tags: ["suite", "selection"],
+        subGroup: "Selection and life",
       },
       {
         id: "bearing-life",
@@ -364,6 +409,7 @@ export const categories: EngineeringCategory[] = [
         icon: Clock,
         featured: true,
         tags: ["suite", "life", "ISO 281"],
+        subGroup: "Selection and life",
       },
       {
         id: "bearing-database",
@@ -373,6 +419,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: Database,
         tags: ["suite", "catalog"],
+        subGroup: "Catalog and duty",
       },
       {
         id: "bearing-loads",
@@ -382,15 +429,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: Activity,
         tags: ["suite", "loads"],
-      },
-      {
-        id: "bearing-arrangement",
-        title: "Bearing arrangement",
-        description: "Fixed-free and duplex O / X / T mounting guidance",
-        route: "/products/bearings/arrangement",
-        category: "bearings",
-        icon: Layers,
-        tags: ["suite"],
+        subGroup: "Catalog and duty",
       },
       {
         id: "bearing-speed",
@@ -400,6 +439,17 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: RotateCcw,
         tags: ["suite"],
+        subGroup: "Catalog and duty",
+      },
+      {
+        id: "bearing-arrangement",
+        title: "Bearing arrangement",
+        description: "Fixed-free and duplex O / X / T mounting guidance",
+        route: "/products/bearings/arrangement",
+        category: "bearings",
+        icon: Layers,
+        tags: ["suite"],
+        subGroup: "Practice",
       },
       {
         id: "bearing-lubrication",
@@ -409,6 +459,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: Droplets,
         tags: ["suite"],
+        subGroup: "Practice",
       },
       {
         id: "bearing-failure",
@@ -418,6 +469,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: AlertTriangle,
         tags: ["suite", "maintenance"],
+        subGroup: "Practice",
       },
       {
         id: "bearing-mounting",
@@ -427,6 +479,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: Wrench,
         tags: ["suite"],
+        subGroup: "Practice",
       },
       {
         id: "plain-bearings",
@@ -436,6 +489,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: Circle,
         tags: ["suite"],
+        subGroup: "Plain and housings",
       },
       {
         id: "housing",
@@ -445,6 +499,7 @@ export const categories: EngineeringCategory[] = [
         category: "bearings",
         icon: Building2,
         tags: ["power train", "workflow", "suite"],
+        subGroup: "Plain and housings",
       },
     ],
   },
@@ -494,8 +549,8 @@ export const categories: EngineeringCategory[] = [
   // =========================================================
   {
     id: "fasteners",
-    title: "Connections & Fasteners",
-    description: "Bolts, welds, rivets, keys, pins — ISO, DIN, ANSI, ASME context",
+    title: "Fasteners",
+    description: "Bolted and machine connections — ISO, DIN, ANSI, ASME context",
 
     icon: Wrench,
     color: "from-red-500 to-red-600",
@@ -509,17 +564,8 @@ export const categories: EngineeringCategory[] = [
         category: "fasteners",
         icon: Bolt,
         featured: true,
+        subGroup: "Threaded",
       },
-
-      {
-        id: "welds",
-        title: "Weld Group Analysis",
-        description: "Weld strength and stress distribution",
-        route: "/products/fasteners/welds",
-        category: "fasteners",
-        icon: Flame,
-      },
-
       {
         id: "rivets",
         title: "Rivet Analysis",
@@ -527,6 +573,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/fasteners/rivets",
         category: "fasteners",
         icon: GitBranch,
+        subGroup: "Formed joints",
       },
       {
         id: "keys-splines",
@@ -535,6 +582,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/fasteners/keys-splines",
         category: "fasteners",
         icon: Anchor,
+        subGroup: "Shaft connections",
       },
       {
         id: "shaft-hubs",
@@ -543,6 +591,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/fasteners/shaft-hubs",
         category: "fasteners",
         icon: Combine,
+        subGroup: "Shaft connections",
       },
       {
         id: "pins",
@@ -551,6 +600,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/fasteners/pins",
         category: "fasteners",
         icon: Bolt,
+        subGroup: "Shaft connections",
       },
     ],
   },
@@ -560,8 +610,8 @@ export const categories: EngineeringCategory[] = [
   // =========================================================
   {
     id: "materials",
-    title: "Materials & Sections",
-    description: "Material encyclopedia, properties, and cross-sections",
+    title: "Materials",
+    description: "Grades, properties, and material behavior",
 
     icon: Layers,
     color: "from-orange-500 to-orange-600",
@@ -574,31 +624,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/database",
         category: "materials",
         icon: Database,
-      },
-
-      {
-        id: "sections",
-        title: "Section Properties",
-        description: "I, Z, centroid, inertia calculations",
-        route: "/products/materials/sections",
-        category: "materials",
-        icon: Scaling,
-      },
-      {
-        id: "rolled-sections",
-        title: "Rolled Sections",
-        description: "W, S, C, I, U and L section property lookup",
-        route: "/products/materials/rolled-sections",
-        category: "materials",
-        icon: LayoutGrid,
-      },
-      {
-        id: "profiles",
-        title: "Area Properties",
-        description: "Centroid, inertia and moduli for common profile shapes",
-        route: "/products/materials/profiles",
-        category: "materials",
-        icon: Ruler,
+        subGroup: "Encyclopedia",
       },
       {
         id: "composites",
@@ -607,6 +633,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/composites",
         category: "materials",
         icon: Layers,
+        subGroup: "Behavior",
       },
       {
         id: "temperature-properties",
@@ -615,6 +642,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/temperature-properties",
         category: "materials",
         icon: Flame,
+        subGroup: "Behavior",
       },
       {
         id: "fatigue",
@@ -623,6 +651,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/fatigue",
         category: "materials",
         icon: Gauge,
+        subGroup: "Behavior",
       },
       {
         id: "corrosion",
@@ -631,6 +660,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/materials/corrosion",
         category: "materials",
         icon: Wrench,
+        subGroup: "Behavior",
       },
     ],
   },
@@ -654,6 +684,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/pressure/pipes",
         category: "pressure",
         icon: Workflow,
+        subGroup: "Piping and vessels",
       },
 
       {
@@ -663,6 +694,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/pressure/vessels",
         category: "pressure",
         icon: Circle,
+        subGroup: "Piping and vessels",
       },
       {
         id: "hydraulics",
@@ -671,6 +703,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/pressure/hydraulics",
         category: "pressure",
         icon: Waves,
+        subGroup: "Actuators and exchangers",
       },
       {
         id: "heat-exchangers",
@@ -679,6 +712,7 @@ export const categories: EngineeringCategory[] = [
         route: "/products/pressure/heat-exchangers",
         category: "pressure",
         icon: CircleDot,
+        subGroup: "Actuators and exchangers",
       },
     ],
   },

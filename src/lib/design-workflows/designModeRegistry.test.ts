@@ -53,6 +53,12 @@ describe("next-tier design field units", () => {
     expect(size).toBeLessThan(0.05); // meters, not mm digits
   });
 
+  it("keeps weld and section design solvers after structural taxonomy move", () => {
+    expect(runModuleDesignMode("welds", { shearForce: 10000, length: 0.1 })?.method).toMatch(/weld/i);
+    expect(runModuleDesignMode("sections", {})?.method).toBeTruthy();
+    expect(runModuleDesignMode("rolled-sections", {})?.method).toBeTruthy();
+  });
+
   it("combined-loading returns round diameter in meters with circular sectionShape", () => {
     const result = runModuleDesignMode("combined-loading", {
       axialLoad: 25000,

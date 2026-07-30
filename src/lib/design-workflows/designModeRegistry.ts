@@ -105,6 +105,17 @@ export function runModuleDesignMode(
     return designSpringModule(moduleId, userInputs);
   }
 
+  // Section geometry and weld design solvers stay with their domain handlers even when
+  // product taxonomy places them under Structural Engineering.
+  if (moduleId === "welds") return designFastenerModule(moduleId, userInputs);
+  if (
+    moduleId === "sections" ||
+    moduleId === "rolled-sections" ||
+    moduleId === "profiles"
+  ) {
+    return designMaterialsModule(moduleId, userInputs);
+  }
+
   const category = catalogModule.category;
   if (category === "structural") return designStructuralModule(moduleId, userInputs);
   if (category === "machine") return designMachineModule(moduleId, userInputs);

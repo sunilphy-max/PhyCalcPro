@@ -4,7 +4,12 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { categories, type EngineeringCategory } from "@/data/modules";
+import {
+  categories,
+  getCategoryById,
+  type EngineeringCategory,
+  type EngineeringModule,
+} from "@/data/modules";
 
 /** Concise labels for the horizontal category bar. */
 const CATEGORY_BAR_LABELS: Record<string, string> = {
@@ -28,26 +33,33 @@ function categoryBarLabel(cat: EngineeringCategory) {
   return CATEGORY_BAR_LABELS[cat.id] ?? cat.title;
 }
 
+/** Longest matching module route — taxonomy category may differ from URL path prefix. */
+function findModuleByPathname(pathname: string | null): EngineeringModule | undefined {
+  if (!pathname) return undefined;
+  const matches = categories
+    .flatMap((category) => category.modules)
+    .filter(
+      (module) => pathname === module.route || pathname.startsWith(`${module.route}/`)
+    );
+  if (matches.length === 0) return undefined;
+  return matches.sort((a, b) => b.route.length - a.route.length)[0];
+}
+
 export default function ProductsCategoryBar() {
   const pathname = usePathname();
 
-  const activeCategory = useMemo(
-    () =>
-      categories.find(
-        (category) =>
-          pathname === `/products/${category.id}` ||
-          pathname?.startsWith(`/products/${category.id}/`)
-      ),
-    [pathname]
-  );
+  const activeModule = useMemo(() => findModuleByPathname(pathname), [pathname]);
 
-  const activeModule = useMemo(
-    () =>
-      categories
-        .flatMap((category) => category.modules)
-        .find((module) => pathname?.startsWith(module.route)),
-    [pathname]
-  );
+  const activeCategory = useMemo(() => {
+    if (activeModule) {
+      return getCategoryById(activeModule.category);
+    }
+    return categories.find(
+      (category) =>
+        pathname === `/products/${category.id}` ||
+        pathname?.startsWith(`/products/${category.id}/`)
+    );
+  }, [pathname, activeModule]);
 
   const isModulePage = Boolean(activeModule);
   const isHub = pathname === "/products" || pathname === "/products/";
