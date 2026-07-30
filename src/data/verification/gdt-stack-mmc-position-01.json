@@ -1,0 +1,47 @@
+{
+  "id": "gdt-stack-mmc-position-01",
+  "moduleId": "gdt-stack",
+  "designCode": "INDICATIVE",
+  "description": "Position at MMC — worst-case bonus enlarges diametral zone",
+  "inputs": {
+    "features": [
+      {
+        "id": "hole1",
+        "nominal": 0.01,
+        "upperLimit": 0.0101,
+        "lowerLimit": 0.01,
+        "isInternal": true
+      }
+    ],
+    "frames": [
+      {
+        "id": "fcf1",
+        "characteristic": "position",
+        "zoneValue": 0.00005,
+        "isDiameterZone": true,
+        "materialCondition": "MMC",
+        "datumRefs": [{ "datumId": "A" }],
+        "featureOfSizeId": "hole1"
+      }
+    ],
+    "datums": [{ "id": "A", "type": "plane" }],
+    "contributors": [
+      {
+        "id": "c1",
+        "sense": 1,
+        "axis": "X",
+        "source": { "kind": "fcf", "fcfId": "fcf1" }
+      }
+    ],
+    "useWorstCaseBonus": true,
+    "monteCarloSamples": 0
+  },
+  "expected": {
+    "worstCase": 0.000075,
+    "rss": 0.000075,
+    "firstEffectiveTolerance": 0.000075,
+    "firstBonus": 0.00005
+  },
+  "tolerancePercent": 1,
+  "source": "ASME Y14.5 MMC bonus: Teff = (zone + |LMC−MMC|)/2 — PhyCalcPro regression"
+}

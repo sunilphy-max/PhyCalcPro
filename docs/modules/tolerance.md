@@ -94,21 +94,30 @@ A semi-empirical correction (typically 1.5) applied to RSS to account for non-no
 
 ### How does GD&T relate to tolerance stackup?
 
-GD&T defines tolerance zones geometrically. For stackup analysis, geometric tolerances must be converted to equivalent linear tolerances in the stack direction.
+GD&T defines tolerance zones geometrically. PhyCalcPro’s **GD&T stack** mode converts size dimensions and feature control frames (position, orientation, profile, runout, etc.) into stack contributors, including **MMC/LMC bonus** and **datum-feature shift**, then runs WC / RSS / Monte Carlo on the effective half-zones.
+
+## Drawing upload (PDF)
+
+1. Upload a PDF engineering drawing (≤10 MB; first 5 pages).
+2. Vision extract proposes dimensions, FCFs, datums, and a suggested stack order.
+3. **Review and edit** every callout — extraction is assistive only; never trust unverified OCR/vision values for release decisions.
+4. Apply the GD&T stack and compute with the verified solver (not the LLM).
+
+Requires `OPENAI_API_KEY` (optional `OPENAI_VISION_MODEL`, default `gpt-4o`). Without a key, upload still works for the UI path but parse returns unavailable — enter values manually.
 
 ## Use the PhyCalcPro calculator
 
-Open the [Tolerance Stackup calculator](/products/manufacturing/tolerance) to enter the array of tolerances, optional secondary direction, and Monte Carlo sample count. The tool returns worst-case total, RSS total, and Monte Carlo statistics with visualization.
+Open the [Tolerance Stackup calculator](/products/manufacturing/tolerance) for **Simple** bilateral arrays or **GD&T stack** mode (drawing upload / FCF chain). The tool returns worst-case, RSS, Monte Carlo statistics, and a contributor/bonus breakdown in GD&T mode.
 
 ---
 
 **Purpose**
 
-Analyze dimensional variation accumulation in assemblies using worst-case and statistical (RSS) methods, with optional Monte Carlo simulation.
+Analyze dimensional variation accumulation in assemblies using worst-case and statistical (RSS) methods, with optional Monte Carlo simulation and GD&T (MMC/LMC) stack analysis.
 
 **Physics & theory**
 
-Each dimension in a chain contributes uncertainty \( \pm t_i \). Worst-case assumes all tolerances at simultaneous extremes: \( T_{\text{WC}} = \sum |t_i| \). RSS assumes independent normal distributions: \( T_{\text{RSS}} = \sqrt{\sum t_i^2} \). Monte Carlo draws random deviations per dimension and sums to build the assembly distribution.
+Each dimension in a chain contributes uncertainty \( \pm t_i \). Worst-case assumes all tolerances at simultaneous extremes: \( T_{\text{WC}} = \sum |t_i| \). RSS assumes independent normal distributions: \( T_{\text{RSS}} = \sqrt{\sum t_i^2} \). Monte Carlo draws random deviations per dimension and sums to build the assembly distribution. For GD&T, effective zone \( T_{\text{eff}} = T_{\text{spec}} + T_{\text{bonus}} \) at MMC/LMC, with optional datum shift.
 
 **Governing equations**
 
@@ -126,33 +135,38 @@ T_{\text{RSS}} = \sqrt{\sum_{i=1}^{n} t_i^2}
 
 **Numerical method**
 
-Closed-form WC and RSS. Optional Monte Carlo with uniform or normal sampling over `monteCarloSamples` iterations. Separate X/Y stacks when 2D variation is provided.
+Closed-form WC and RSS. Optional Monte Carlo with uniform sampling over `monteCarloSamples` iterations. Separate X/Y/Z stacks when multi-axis contributors are provided. GD&T path uses `solveGdtStackEngine`.
 
 **Inputs**
 
 | Parameter | Description |
 |-----------|-------------|
-| `tolerances` | Array of plus/minus tolerances per dimension |
-| `tolerancesY` (optional) | Secondary stack direction |
+| `tolerances` | Array of plus/minus tolerances per dimension (simple mode) |
+| `tolerancesY` / `tolerancesZ` (optional) | Secondary stack directions |
+| GD&T extract | Features of size, FCFs, datums, stack contributors |
 | `monteCarloSamples` | Simulation count (0 = skip) |
-| Nominal stack direction | Additive chain definition |
+| PDF drawing | Optional upload for vision-assisted extract |
 
 **Outputs**
 
-- Worst-case total, RSS total, Monte Carlo mean and standard deviation (if run), per-direction stacks.
+- Worst-case total, RSS total, Monte Carlo mean and standard deviation (if run), per-direction stacks, GD&T contributor/bonus table.
 
 **Design codes & checks**
 
 - **Indicative:** Worst-case and RSS stack
 - **US:** ASME Y14.5 dimensioning and tolerancing
-- **ISO:** ISO 286 tolerance principles (related)
+- **ISO:** ISO 286 / ISO GPS principles (related)
 
 **Assumptions & limitations**
 
-- Linear stack chains; no geometric tolerance zone conversion from GD&T.
+- Linear stack chains projected from geometric zones (half-zone on stack axis).
+- Supported characteristics: position, perpendicularity, parallelism, profile, concentricity/coaxiality, circular/total runout, plus size.
+- MMC/LMC bonus and datum-feature shift included; composite frames and simultaneous requirements are out of v1.
+- Vision extract must be engineer-verified before trusting results.
 - RSS assumes normal, independent variations — not valid for skewed processes.
 - Monte Carlo quality depends on sample count and distribution assumptions.
-- No assembly shift or thermal expansion unless added as dimensions.
+- No thermal expansion unless added as dimensions.
+- Multi-drawing assemblies: upload the controlling stack sheet or one PDF (≤5 pages).
 
 **References**
 

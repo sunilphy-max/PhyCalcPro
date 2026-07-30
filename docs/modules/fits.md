@@ -81,10 +81,15 @@ Fit H7/g6 at nominal diameter 50 mm.
 
 ## Common mistakes and checks
 
-- **Confusing hole and shaft deviation conventions:** uppercase letters (H, G, K) are for holes; lowercase (h, g, k) for shafts.
+- **Confusing hole and shaft deviation conventions:** uppercase letters (H, G, F, K, N) are for holes; lowercase (h, g, f, k, n) for shafts.
 - **Using the wrong nominal diameter range:** ISO 286 tables change at diameter breakpoints (e.g., 30–50 mm, 50–80 mm).
 - **Ignoring surface finish effects:** rough surfaces reduce effective clearance in running fits and reduce interference in press fits.
 - **Forgetting thermal expansion:** a clearance fit at room temperature may become an interference fit at operating temperature.
+- **Trusting unverified drawing OCR:** always review extracted ISO callouts before calculating.
+
+## Drawing upload (PDF)
+
+Upload a PDF drawing on the Fits calculator to extract ISO callouts (e.g. `Ø20 H7/g6`) and limit dimensions. Review the extract, then **Apply fit callout** to fill nominal size and hole/shaft grades (or explicit deviations). Vision extract requires `OPENAI_API_KEY`; solvers still compute all clearance results.
 
 ## FAQ
 
@@ -110,7 +115,7 @@ Yes — if the shaft expands more than the hole (e.g., steel shaft in aluminum h
 
 ## Use the PhyCalcPro calculator
 
-Open the [Fits & Clearances calculator](/products/manufacturing/fits) to enter the nominal size, hole designation, and shaft designation (or explicit deviations). The tool returns hole and shaft limit dimensions, clearance range, and fit type classification.
+Open the [Fits & Clearances calculator](/products/manufacturing/fits) to enter the nominal size, hole designation, and shaft designation (or explicit deviations), or upload a PDF drawing to pre-fill ISO callouts. The tool returns hole and shaft limit dimensions, clearance range, and fit type classification.
 
 ---
 
@@ -161,7 +166,9 @@ Simplified ISO 286 IT multiplier: letter codes map to upper/lower deviations; cl
 **Assumptions & limitations**
 
 - Simplified deviation formulas — not full ISO 286 tables for all diameter/grade combinations.
-- Cylindrical fits only; flat fits and geometric tolerances separate.
+- Screening letters: H/G/F/K/N (holes) and h/g/f/k/n (shafts), IT grades typically 4–12.
+- Cylindrical fits only; GD&T stack analysis is on the Tolerance Stackup module.
+- Drawing PDF extract is assistive — verify callouts before release decisions.
 - Does not compute assembly force for interference (see Shaft Hub Fits module).
 - Temperature differential expansion not included.
 

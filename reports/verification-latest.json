@@ -1,7 +1,7 @@
 {
-  "ranAt": "2026-07-28T03:23:10.788Z",
-  "total": 86,
-  "passed": 86,
+  "ranAt": "2026-07-30T04:20:29.518Z",
+  "total": 89,
+  "passed": 89,
   "failed": 0,
   "skipped": 0,
   "results": [
@@ -756,6 +756,87 @@
           "field": "maxMoment",
           "expected": 210621.34891131203,
           "actual": 210621.34891131203,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "gdt-stack-datum-shift-01",
+      "moduleId": "gdt-stack",
+      "pass": true,
+      "fields": [
+        {
+          "field": "worstCase",
+          "expected": 0.00025,
+          "actual": 0.00025000000000000055,
+          "pass": true
+        },
+        {
+          "field": "rss",
+          "expected": 0.00020615528128878035,
+          "actual": 0.00020615528128088356,
+          "pass": true
+        },
+        {
+          "field": "count",
+          "expected": 2,
+          "actual": 2,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "gdt-stack-mmc-position-01",
+      "moduleId": "gdt-stack",
+      "pass": true,
+      "fields": [
+        {
+          "field": "worstCase",
+          "expected": 0.000075,
+          "actual": 0.0000749999999999997,
+          "pass": true
+        },
+        {
+          "field": "rss",
+          "expected": 0.000075,
+          "actual": 0.0000749999999999997,
+          "pass": true
+        },
+        {
+          "field": "firstEffectiveTolerance",
+          "expected": 0.000075,
+          "actual": 0.0000749999999999997,
+          "pass": true
+        },
+        {
+          "field": "firstBonus",
+          "expected": 0.00005,
+          "actual": 0.0000499999999999997,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "caseId": "gdt-stack-size-position-01",
+      "moduleId": "gdt-stack",
+      "pass": true,
+      "fields": [
+        {
+          "field": "worstCase",
+          "expected": 0.0001,
+          "actual": 0.00009999999999999969,
+          "pass": true
+        },
+        {
+          "field": "rss",
+          "expected": 0.00007071067811865475,
+          "actual": 0.00007071067811865454,
+          "pass": true
+        },
+        {
+          "field": "count",
+          "expected": 2,
+          "actual": 2,
           "pass": true
         }
       ]
@@ -1793,7 +1874,7 @@
         {
           "field": "fundamentalFrequency",
           "expected": 256.9198297468234,
-          "actual": 256.91982974682753,
+          "actual": 256.9198297468234,
           "pass": true
         }
       ]

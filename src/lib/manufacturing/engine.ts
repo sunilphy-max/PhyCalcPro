@@ -7,12 +7,17 @@ function iso286ToleranceUm(nominalMm: number, grade: number): number {
   return i * grade;
 }
 
+/** Simplified ISO 286 fundamental deviations (µm) for common hole/shaft letters. */
 function iso286DeviationUm(nominalMm: number, letter: string, grade: number): { upper: number; lower: number } {
   const t = iso286ToleranceUm(nominalMm, grade);
   const upperLetter = letter.toUpperCase();
+  // Hole-basis / shaft letters (screening approximations — not full ISO tables)
   if (upperLetter === "H") return { upper: 0, lower: -t };
   if (upperLetter === "G") return { upper: -t * 0.2, lower: -t * 1.2 };
+  if (upperLetter === "F") return { upper: -t * 0.4, lower: -t * 1.4 };
   if (upperLetter === "K") return { upper: t * 0.3, lower: -t * 0.7 };
+  if (upperLetter === "N") return { upper: t * 0.5, lower: -t * 0.5 };
+  // Shaft letters map via uppercase above (h→H, g→G, …) in this simplified model
   return { upper: 0, lower: -t };
 }
 

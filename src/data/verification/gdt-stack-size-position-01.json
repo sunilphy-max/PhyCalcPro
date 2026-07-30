@@ -1,0 +1,49 @@
+{
+  "id": "gdt-stack-size-position-01",
+  "moduleId": "gdt-stack",
+  "designCode": "INDICATIVE",
+  "description": "Size half-tol + RFS position half-zone WC/RSS",
+  "inputs": {
+    "features": [
+      {
+        "id": "len1",
+        "nominal": 0.02,
+        "upperLimit": 0.02005,
+        "lowerLimit": 0.01995,
+        "isInternal": false
+      }
+    ],
+    "frames": [
+      {
+        "id": "fcf1",
+        "characteristic": "position",
+        "zoneValue": 0.0001,
+        "materialCondition": "RFS",
+        "datumRefs": [{ "datumId": "A" }]
+      }
+    ],
+    "datums": [{ "id": "A", "type": "plane" }],
+    "contributors": [
+      {
+        "id": "c1",
+        "sense": 1,
+        "axis": "X",
+        "source": { "kind": "size", "featureOfSizeId": "len1" }
+      },
+      {
+        "id": "c2",
+        "sense": 1,
+        "axis": "X",
+        "source": { "kind": "fcf", "fcfId": "fcf1" }
+      }
+    ],
+    "monteCarloSamples": 0
+  },
+  "expected": {
+    "worstCase": 0.0001,
+    "rss": 0.00007071067811865475,
+    "count": 2
+  },
+  "tolerancePercent": 1,
+  "source": "Linear stack WC/RSS with size ±0.05 mm and position Ø0.1 mm RFS"
+}

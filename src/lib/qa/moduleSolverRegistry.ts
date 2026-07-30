@@ -7,6 +7,7 @@ import { getAdvancedSystemCalculator, type AdvancedCalculatorId } from "@/lib/ad
 import { solveCamToolpathsEngine } from "@/lib/manufacturing/camToolpaths/engine";
 import { solveCostEstimatorEngine } from "@/lib/manufacturing/costEstimator/engine";
 import { solveFitsEngine, solveToleranceEngine } from "@/lib/manufacturing/engine";
+import { gdtStackConfigFromFlat, solveGdtStackEngine } from "@/lib/manufacturing/gdt";
 import { solveImpactEngine } from "@/lib/dynamics/impact/engine";
 import { solveRotationEngine } from "@/lib/dynamics/rotation/engine";
 import { solveMotorEngine } from "@/lib/dynamics/motor/engine";
@@ -136,6 +137,26 @@ export const MODULE_SOLVER_REGISTRY: Record<string, ModuleSolverFn> = {
   impact: (i) => solveImpactEngine(i as never) as Record<string, unknown>,
   suspension: (i) => solveSuspensionEngine(i as never) as Record<string, unknown>,
   tolerance: (i) => solveToleranceEngine(i as never) as Record<string, unknown>,
+  "gdt-stack": (i) => {
+    const result = solveGdtStackEngine(gdtStackConfigFromFlat(i));
+    const flat: Record<string, unknown> = {
+      worstCase: result.worstCase,
+      rss: result.rss,
+      totalTolerance: result.totalTolerance,
+      count: result.count,
+    };
+    if (result.worstCaseY !== undefined) flat.worstCaseY = result.worstCaseY;
+    if (result.rssY !== undefined) flat.rssY = result.rssY;
+    if (result.worstCaseZ !== undefined) flat.worstCaseZ = result.worstCaseZ;
+    if (result.rssZ !== undefined) flat.rssZ = result.rssZ;
+    if (result.worstCase3d !== undefined) flat.worstCase3d = result.worstCase3d;
+    if (result.rss3d !== undefined) flat.rss3d = result.rss3d;
+    if (result.contributors[0]) {
+      flat.firstEffectiveTolerance = result.contributors[0].effectiveTolerance;
+      flat.firstBonus = result.contributors[0].bonus;
+    }
+    return flat;
+  },
   fits: (i) => solveFitsEngine(i as never) as Record<string, unknown>,
   "cost-estimator": (i) => solveCostEstimatorEngine(i as never) as Record<string, unknown>,
   "cam-toolpaths": (i) => solveCamToolpathsEngine(i as never) as Record<string, unknown>,

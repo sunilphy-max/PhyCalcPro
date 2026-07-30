@@ -98,7 +98,9 @@ export default function FitInputs({
                 >
                   <option value="H">H</option>
                   <option value="G">G</option>
+                  <option value="F">F</option>
                   <option value="K">K</option>
+                  <option value="N">N</option>
                 </select>
               </label>
               <label className="text-sm text-slate-600 block">
@@ -124,7 +126,9 @@ export default function FitInputs({
                 >
                   <option value="h">h</option>
                   <option value="g">g</option>
+                  <option value="f">f</option>
                   <option value="k">k</option>
+                  <option value="n">n</option>
                 </select>
               </label>
               <label className="text-sm text-slate-600 block">

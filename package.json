@@ -21,6 +21,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^1.0.3",
     "@sentry/nextjs": "^10.66.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.104.0",
@@ -29,6 +30,7 @@
     "jspdf": "^4.2.1",
     "lucide-react": "^1.14.0",
     "next": "16.2.3",
+    "pdfjs-dist": "^6.2.108",
     "plotly.js": "^3.5.0",
     "plotly.js-dist-min": "^3.5.1",
     "react": "19.2.4",

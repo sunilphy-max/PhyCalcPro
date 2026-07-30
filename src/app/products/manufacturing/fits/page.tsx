@@ -5,7 +5,7 @@ import { useRegisterApplyDesignCandidate } from "@/hooks/useRegisterApplyDesignC
 import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useCalculatorModule } from "@/hooks/useCalculatorModule";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import CalculatorLayout from "@/components/CalculatorLayout";
 
 import { useDesignWorkflow } from "@/contexts/DesignWorkflowContext";
@@ -13,8 +13,12 @@ import { runModuleDesignMode } from "@/lib/design-workflows/designModeRegistry";
 import type { ModuleUserInputs } from "@/lib/design-workflows/userInputs";
 import FitInputs from "@/components/manufacturing/FitInputs";
 import FitResults from "@/components/manufacturing/FitResults";
+import DrawingUploadPanel from "@/components/manufacturing/drawing/DrawingUploadPanel";
+import DrawingExtractReview from "@/components/manufacturing/drawing/DrawingExtractReview";
+import DrawingApplyBar from "@/components/manufacturing/drawing/DrawingApplyBar";
 import { toBase, fromBase } from "@/lib/units/conversions";
 import { solveFitsEngine } from "@/lib/manufacturing/engine";
+import type { DrawingExtract } from "@/lib/manufacturing/gdt/types";
 import type { FitResult } from "@/lib/manufacturing/types";
 
 export default function Page() {
@@ -38,6 +42,8 @@ export default function Page() {
   const [shaftLower, setShaftLower] = useState(-0.07);
   const [toleranceUnit, setToleranceUnit] = useState("mm");
   const [result, setResult] = useState<FitResult | null>(null);
+  const [extract, setExtract] = useState<DrawingExtract | null>(null);
+  const [extractWarnings, setExtractWarnings] = useState<string[]>([]);
 
   const runCheck = () => {
     const config = {
@@ -71,11 +77,13 @@ export default function Page() {
     );
   };
 
-
-  const designUserInputs = useMemo((): ModuleUserInputs => ({
+  const designUserInputs = useMemo(
+    (): ModuleUserInputs => ({
       minGap: holeLower,
       nominalGap: shaftUpper,
-    }), [holeLower, shaftUpper]);
+    }),
+    [holeLower, shaftUpper]
+  );
 
   useSyncDesignInputs("fits", designUserInputs);
 
@@ -99,38 +107,107 @@ export default function Page() {
     runCheck();
   };
 
+  const applyExtract = () => {
+    if (!extract) return;
+    const fit = extract.fitCallouts[0];
+    if (fit) {
+      setNominalSize(fromBase(fit.nominal, "length", nominalUnit));
+      if (fit.holeLetter && fit.holeGrade && fit.shaftLetter && fit.shaftGrade) {
+        setUseIsoLookup(true);
+        setIsoHoleLetter(fit.holeLetter.toUpperCase());
+        setIsoHoleGrade(fit.holeGrade);
+        setIsoShaftLetter(fit.shaftLetter.toLowerCase());
+        setIsoShaftGrade(fit.shaftGrade);
+      } else if (
+        fit.holeUpper !== undefined &&
+        fit.holeLower !== undefined &&
+        fit.shaftUpper !== undefined &&
+        fit.shaftLower !== undefined
+      ) {
+        setUseIsoLookup(false);
+        setHoleUpper(fromBase(fit.holeUpper, "length", toleranceUnit));
+        setHoleLower(fromBase(fit.holeLower, "length", toleranceUnit));
+        setShaftUpper(fromBase(fit.shaftUpper, "length", toleranceUnit));
+        setShaftLower(fromBase(fit.shaftLower, "length", toleranceUnit));
+      }
+    } else if (extract.dimensions[0]) {
+      const dim = extract.dimensions[0];
+      setNominalSize(fromBase(dim.nominal, "length", nominalUnit));
+      setUseIsoLookup(false);
+      setHoleUpper(fromBase(dim.upperDeviation, "length", toleranceUnit));
+      setHoleLower(fromBase(dim.lowerDeviation, "length", toleranceUnit));
+    }
+  };
+
   return (
     <CalculatorLayout
       moduleId="fits"
       title="Fits & Clearances Calculator"
       inputs={
-        <FitInputs
-          nominalSize={nominalSize}
-          setNominalSize={setNominalSize}
-          nominalUnit={nominalUnit}
-          setNominalUnit={setNominalUnit}
-          useIsoLookup={useIsoLookup}
-          setUseIsoLookup={setUseIsoLookup}
-          isoHoleLetter={isoHoleLetter}
-          setIsoHoleLetter={setIsoHoleLetter}
-          isoHoleGrade={isoHoleGrade}
-          setIsoHoleGrade={setIsoHoleGrade}
-          isoShaftLetter={isoShaftLetter}
-          setIsoShaftLetter={setIsoShaftLetter}
-          isoShaftGrade={isoShaftGrade}
-          setIsoShaftGrade={setIsoShaftGrade}
-          holeUpper={holeUpper}
-          setHoleUpper={setHoleUpper}
-          holeLower={holeLower}
-          setHoleLower={setHoleLower}
-          shaftUpper={shaftUpper}
-          setShaftUpper={setShaftUpper}
-          shaftLower={shaftLower}
-          setShaftLower={setShaftLower}
-          toleranceUnit={toleranceUnit}
-          setToleranceUnit={setToleranceUnit}
-          onCalculate={calculate}
-        />
+        <div className="space-y-4">
+          <DrawingUploadPanel
+            target="fits"
+            onExtracted={(next, meta) => {
+              setExtract(next);
+              setExtractWarnings(meta.warnings);
+            }}
+          />
+
+          {extractWarnings.length > 0 ? (
+            <ul className="list-disc space-y-1 pl-4 text-xs text-amber-700 dark:text-amber-400">
+              {extractWarnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          ) : null}
+
+          {extract ? (
+            <div className="space-y-3">
+              <DrawingExtractReview
+                extract={extract}
+                displayUnit={nominalUnit}
+                mode="fits"
+                onChange={setExtract}
+              />
+              <DrawingApplyBar
+                onApply={applyExtract}
+                onClear={() => {
+                  setExtract(null);
+                  setExtractWarnings([]);
+                }}
+                applyLabel="Apply fit callout"
+              />
+            </div>
+          ) : null}
+
+          <FitInputs
+            nominalSize={nominalSize}
+            setNominalSize={setNominalSize}
+            nominalUnit={nominalUnit}
+            setNominalUnit={setNominalUnit}
+            useIsoLookup={useIsoLookup}
+            setUseIsoLookup={setUseIsoLookup}
+            isoHoleLetter={isoHoleLetter}
+            setIsoHoleLetter={setIsoHoleLetter}
+            isoHoleGrade={isoHoleGrade}
+            setIsoHoleGrade={setIsoHoleGrade}
+            isoShaftLetter={isoShaftLetter}
+            setIsoShaftLetter={setIsoShaftLetter}
+            isoShaftGrade={isoShaftGrade}
+            setIsoShaftGrade={setIsoShaftGrade}
+            holeUpper={holeUpper}
+            setHoleUpper={setHoleUpper}
+            holeLower={holeLower}
+            setHoleLower={setHoleLower}
+            shaftUpper={shaftUpper}
+            setShaftUpper={setShaftUpper}
+            shaftLower={shaftLower}
+            setShaftLower={setShaftLower}
+            toleranceUnit={toleranceUnit}
+            setToleranceUnit={setToleranceUnit}
+            onCalculate={calculate}
+          />
+        </div>
       }
       results={<FitResults result={result} displayUnit={nominalUnit} />}
     />

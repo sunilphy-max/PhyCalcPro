@@ -1,0 +1,57 @@
+{
+  "id": "gdt-stack-datum-shift-01",
+  "moduleId": "gdt-stack",
+  "designCode": "INDICATIVE",
+  "description": "Position RFS plus datum feature shift at MMC",
+  "inputs": {
+    "features": [
+      {
+        "id": "datumHole",
+        "nominal": 0.01,
+        "upperLimit": 0.0102,
+        "lowerLimit": 0.01,
+        "isInternal": true
+      }
+    ],
+    "frames": [
+      {
+        "id": "fcf1",
+        "characteristic": "position",
+        "zoneValue": 0.0001,
+        "materialCondition": "RFS",
+        "datumRefs": [{ "datumId": "B", "materialCondition": "MMC" }]
+      }
+    ],
+    "datums": [
+      { "id": "A", "type": "plane" },
+      { "id": "B", "type": "axis" }
+    ],
+    "contributors": [
+      {
+        "id": "c1",
+        "sense": 1,
+        "axis": "X",
+        "source": { "kind": "fcf", "fcfId": "fcf1" }
+      },
+      {
+        "id": "c2",
+        "sense": 1,
+        "axis": "X",
+        "source": {
+          "kind": "datumShift",
+          "datumId": "B",
+          "featureOfSizeId": "datumHole"
+        }
+      }
+    ],
+    "useWorstCaseBonus": true,
+    "monteCarloSamples": 0
+  },
+  "expected": {
+    "worstCase": 0.00025,
+    "rss": 0.00020615528128878036,
+    "count": 2
+  },
+  "tolerancePercent": 1,
+  "source": "Datum shift max = size tol; position half-zone 0.05 mm + shift 0.2 mm"
+}

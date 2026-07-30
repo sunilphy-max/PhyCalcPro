@@ -1,6 +1,5 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";

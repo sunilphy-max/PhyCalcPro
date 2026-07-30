@@ -1,18 +1,22 @@
+"use client";
+
 import type { WithCalculationSpec } from "@/lib/standards/types";
 import CalculatorResultsShell from "@/components/calculator/CalculatorResultsShell";
 import { CalculatorMetricCard, CalculatorMetricGrid } from "@/components/calculator/results";
 import type { ToleranceResult } from "@/lib/manufacturing/types";
+import type { ContributorBreakdown } from "@/lib/manufacturing/gdt/types";
 
 type Props = {
   result: WithCalculationSpec<ToleranceResult> | null;
   displayUnit: string;
+  gdtBreakdown?: ContributorBreakdown[];
 };
 
 function metricValue(value: number | undefined) {
   return value === undefined ? undefined : value;
 }
 
-export default function ToleranceResults({ result, displayUnit }: Props) {
+export default function ToleranceResults({ result, displayUnit, gdtBreakdown }: Props) {
   return (
     <CalculatorResultsShell
       moduleId="tolerance"
@@ -32,13 +36,20 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
               { metric: "worstCaseZ", value: result.worstCaseZ ?? 0 },
               { metric: "worstCase3d", value: result.worstCase3d ?? 0 },
               { metric: "monteCarloMean", value: result.monteCarloMean ?? 0 },
+              ...(gdtBreakdown ?? []).map((row) => ({
+                metric: `contributor:${row.id}`,
+                value: row.effectiveTolerance,
+              })),
             ]
           : undefined
       }
     >
       {result ? (
         <>
-          <p className="text-sm text-slate-500">Computed from {result.count} X-axis tolerance elements.</p>
+          <p className="text-sm text-slate-500">
+            Computed from {result.count}{" "}
+            {gdtBreakdown?.length ? "GD&T stack contributors" : "X-axis tolerance elements"}.
+          </p>
           <CalculatorMetricGrid cols={2}>
             <CalculatorMetricCard
               label="Worst-case (X)"
@@ -117,6 +128,49 @@ export default function ToleranceResults({ result, displayUnit }: Props) {
                 tone="blue"
               />
             </CalculatorMetricGrid>
+          ) : null}
+
+          {gdtBreakdown && gdtBreakdown.length > 0 ? (
+            <div className="mt-4 space-y-2">
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                Contributor / bonus breakdown
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                  <thead>
+                    <tr className="border-b border-slate-200 dark:border-slate-700">
+                      <th className="py-1 pr-3 font-medium">Contributor</th>
+                      <th className="py-1 pr-3 font-medium">Kind</th>
+                      <th className="py-1 pr-3 font-medium">Axis</th>
+                      <th className="py-1 pr-3 font-medium">Specified</th>
+                      <th className="py-1 pr-3 font-medium">Bonus</th>
+                      <th className="py-1 font-medium">Effective</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gdtBreakdown.map((row) => (
+                      <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
+                        <td className="py-1.5 pr-3">{row.label ?? row.id}</td>
+                        <td className="py-1.5 pr-3">{row.characteristic ?? row.kind}</td>
+                        <td className="py-1.5 pr-3">
+                          {row.sense < 0 ? "−" : "+"}
+                          {row.axis}
+                        </td>
+                        <td className="py-1.5 pr-3 tabular-nums">
+                          {row.specifiedTolerance.toPrecision(4)} {displayUnit}
+                        </td>
+                        <td className="py-1.5 pr-3 tabular-nums">
+                          {row.bonus.toPrecision(4)} {displayUnit}
+                        </td>
+                        <td className="py-1.5 tabular-nums">
+                          {row.effectiveTolerance.toPrecision(4)} {displayUnit}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           ) : null}
         </>
       ) : null}
