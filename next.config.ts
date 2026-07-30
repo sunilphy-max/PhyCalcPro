@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Prefer /products over /products/ (Next also 308-redirects trailing slashes by default).
   trailingSlash: false,
+
   async redirects() {
     return [
       // Host canonicalization (www ↔ apex) must be done ONLY in Vercel Domains.

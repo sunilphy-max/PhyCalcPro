@@ -21,7 +21,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^1.0.3",
     "@sentry/nextjs": "^10.66.0",
     "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.104.0",
@@ -41,6 +40,7 @@
     "rehype-slug": "^6.0.0",
     "remark-gfm": "^4.0.1",
     "remark-math": "^6.0.0",
+    "server-only": "^0.0.1",
     "stripe": "^17.7.0",
     "three": "^0.185.1"
   },

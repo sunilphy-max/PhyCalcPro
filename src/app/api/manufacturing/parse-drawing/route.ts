@@ -41,7 +41,20 @@ export async function POST(request: Request) {
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const result = await parseDrawingPdf(buffer, target);
+  const pageImagesRaw = form.get("pageImages");
+  let pageImages: string[] = [];
+  if (typeof pageImagesRaw === "string" && pageImagesRaw.trim()) {
+    try {
+      const parsed = JSON.parse(pageImagesRaw) as unknown;
+      if (Array.isArray(parsed)) {
+        pageImages = parsed.filter((v): v is string => typeof v === "string").slice(0, 5);
+      }
+    } catch {
+      // ignore malformed pageImages
+    }
+  }
+
+  const result = await parseDrawingPdf(buffer, target, pageImages);
 
   return NextResponse.json({
     extract: result.extract,

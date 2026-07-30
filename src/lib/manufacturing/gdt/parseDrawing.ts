@@ -1,6 +1,7 @@
+import "server-only";
+
 import type { DrawingExtract } from "./types";
 import { emptyDrawingExtract, validateDrawingExtract } from "./schema";
-import { rasterizePdf } from "./rasterizePdf";
 
 export type ParseDrawingTarget = "tolerance" | "fits";
 
@@ -32,14 +33,17 @@ Rules:
 /**
  * Parse an engineering drawing PDF into structured GD&T / fit inputs via vision LLM.
  * Returns source "unavailable" when OPENAI_API_KEY is missing or the call fails.
+ * Optional `pageImages` (from browser rasterization) enable vision when server has no canvas.
  */
 export async function parseDrawingPdf(
   buffer: Buffer,
-  target: ParseDrawingTarget
+  target: ParseDrawingTarget,
+  pageImages: string[] = []
 ): Promise<ParseDrawingResult> {
   const warnings: string[] = [];
   let raster;
   try {
+    const { rasterizePdf } = await import("./rasterizePdf");
     raster = await rasterizePdf(buffer);
     warnings.push(...raster.warnings);
   } catch (err) {
@@ -75,19 +79,26 @@ export async function parseDrawingPdf(
   > = [
     {
       type: "text",
-      text: `Target module: ${target}.\nExtract GD&T and fit callouts from these drawing page images.\nEmbedded text (may be incomplete):\n${textContext}`,
+      text: `Target module: ${target}.\nExtract GD&T and fit callouts from these drawing pages.\nEmbedded text (may be incomplete):\n${textContext}`,
     },
   ];
 
-  for (const page of raster.pages) {
-    content.push({
-      type: "image_url",
-      image_url: { url: page.dataUrl, detail: "high" },
-    });
+  const images =
+    pageImages.length > 0
+      ? pageImages
+      : raster.pages.map((p) => p.dataUrl);
+
+  for (const url of images.slice(0, 5)) {
+    if (url.startsWith("data:image/")) {
+      content.push({
+        type: "image_url",
+        image_url: { url, detail: "high" },
+      });
+    }
   }
 
-  if (raster.pages.length === 0) {
-    warnings.push("No page images produced; attempting text-only extract.");
+  if (images.length === 0) {
+    warnings.push("No page images available; attempting text-only extract.");
   }
 
   try {

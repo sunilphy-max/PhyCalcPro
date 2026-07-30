@@ -37,9 +37,20 @@ export default function DrawingUploadPanel({ target, onExtracted, disabled }: Pr
 
       setBusy(true);
       try {
+        const { rasterizePdfInBrowser } = await import(
+          "@/lib/manufacturing/gdt/rasterizePdfClient"
+        );
+        const raster = await rasterizePdfInBrowser(file);
+
         const form = new FormData();
         form.set("file", file);
         form.set("target", target);
+        if (raster.pages.length > 0) {
+          form.set(
+            "pageImages",
+            JSON.stringify(raster.pages.map((p) => p.dataUrl))
+          );
+        }
         const res = await fetch("/api/manufacturing/parse-drawing", {
           method: "POST",
           body: form,
@@ -54,13 +65,14 @@ export default function DrawingUploadPanel({ target, onExtracted, disabled }: Pr
           setError(data.error ?? `Upload failed (${res.status})`);
           return;
         }
+        const warnings = [...(raster.warnings ?? []), ...(data.warnings ?? [])];
         onExtracted(data.extract ?? emptyDrawingExtract(), {
-          warnings: data.warnings ?? [],
+          warnings,
           source: data.source ?? "unavailable",
         });
         if (data.source === "unavailable") {
           setError(
-            (data.warnings && data.warnings[0]) ||
+            (warnings[0]) ||
               "Drawing parse unavailable — configure OPENAI_API_KEY or enter values manually."
           );
         }
