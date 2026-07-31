@@ -105,6 +105,42 @@ export function saveProject<TData extends object>(
   return nextProjects;
 }
 
+/** Update an existing study in place (edit previously completed work). */
+export function updateProject<TData extends object>(
+  namespace: string,
+  id: string,
+  name: string,
+  data: TData
+): LocalProject<TData>[] {
+  const storage = getStorage();
+  if (!storage) return [];
+
+  const projects = loadProjects<TData>(namespace);
+  const existing = projects.find((p) => p.id === id);
+  if (!existing) {
+    return saveProject(namespace, name, data);
+  }
+
+  const nextProject: LocalProject<TData> = {
+    ...data,
+    id,
+    name,
+    created_at: existing.created_at,
+  };
+  const nextProjects = [nextProject, ...projects.filter((p) => p.id !== id)].slice(
+    0,
+    MAX_PROJECTS
+  );
+
+  storage.setItem(getProjectsKey(namespace), JSON.stringify(nextProjects));
+
+  if (currentMode === "authenticated") {
+    void syncProjectToCloud(namespace, nextProject);
+  }
+
+  return nextProjects;
+}
+
 export function deleteProject(namespace: string, id: string): void {
   const storage = getStorage();
   if (!storage) return;

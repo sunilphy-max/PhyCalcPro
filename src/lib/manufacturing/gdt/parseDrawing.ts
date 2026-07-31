@@ -14,11 +14,12 @@ export type ParseDrawingResult = {
 
 const SYSTEM_PROMPT = `You are an expert mechanical engineer reading 2D engineering drawings (ASME Y14.5 / ISO GPS).
 Extract ONLY factual callouts visible on the drawing pages. Return JSON with keys:
+- metadata: { drawingNumber?, revision?, sheet?, title?, material?, scale?, units? }
 - datums: [{ id, type: "plane"|"axis"|"point", label? }]
 - features: [{ id, label?, nominal, upperLimit, lowerLimit, isInternal }]  // SI metres
-- frames: [{ id, characteristic, zoneValue, isDiameterZone?, materialCondition: "RFS"|"MMC"|"LMC", datumRefs: [{ datumId, materialCondition? }], featureOfSizeId?, label?, confidence? }]
+- frames: [{ id, characteristic, zoneValue, isDiameterZone?, materialCondition: "RFS"|"MMC"|"LMC", datumRefs: [{ datumId, materialCondition? }], featureOfSizeId?, label?, confidence?, location?: { sheet?, zone?, page? } }]
   characteristic one of: position, perpendicularity, parallelism, profile, concentricity, coaxiality, circularRunout, totalRunout, size
-- dimensions: [{ id, label?, nominal, upperDeviation, lowerDeviation, isInternal?, confidence? }] // SI metres
+- dimensions: [{ id, label?, nominal, upperDeviation, lowerDeviation, isInternal?, confidence?, location?: { sheet?, zone?, page? } }] // SI metres
 - fitCallouts: [{ id, label?, nominal, designation?, holeLetter?, holeGrade?, shaftLetter?, shaftGrade?, holeUpper?, holeLower?, shaftUpper?, shaftLower?, confidence? }]
 - suggestedContributors: [{ id, label?, sense: 1|-1, axis: "X"|"Y"|"Z", source: { kind: "size"|"fcf"|"datumShift", featureOfSizeId?, fcfId?, datumId? } }]
 - notes: string[]
@@ -27,6 +28,7 @@ Rules:
 - Convert all lengths to SI metres (e.g. 10 mm → 0.01).
 - Never invent stack-up results, clearances, or computed engineering answers.
 - Prefer empty arrays over guessing. Set confidence 0–1 when unsure.
+- Include location.sheet/zone/page when readable from the drawing for traceability.
 - For target "fits", prioritize fitCallouts and limit dimensions on mating diameters.
 - For target "tolerance", prioritize dimension chains, FCFs, datums, and suggestedContributors for a 1D stack.`;
 

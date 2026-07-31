@@ -16,6 +16,26 @@ export type GdtCharacteristic =
 
 export type StackAxis = "X" | "Y" | "Z";
 
+/** Title-block / sheet metadata for audit trail. */
+export type DrawingMetadata = {
+  drawingNumber?: string;
+  revision?: string;
+  sheet?: string;
+  title?: string;
+  material?: string;
+  scale?: string;
+  units?: string;
+};
+
+/** Location of an annotation on the source drawing (traceability). */
+export type AnnotationLocation = {
+  sheet?: string;
+  zone?: string;
+  page?: number;
+  /** Optional normalized bbox [x0,y0,x1,y1] in 0–1 page coords for highlight. */
+  bbox?: [number, number, number, number];
+};
+
 export type Datum = {
   id: string;
   type: DatumType;
@@ -50,6 +70,7 @@ export type FeatureControlFrame = {
   featureOfSizeId?: string;
   label?: string;
   confidence?: number;
+  location?: AnnotationLocation;
 };
 
 export type StackContributorSource =
@@ -135,10 +156,12 @@ export type DimensionCallout = {
   lowerDeviation: number;
   isInternal?: boolean;
   confidence?: number;
+  location?: AnnotationLocation;
 };
 
 /** Structured extract returned by the drawing parse API (inputs only). */
 export type DrawingExtract = {
+  metadata?: DrawingMetadata;
   datums: Datum[];
   features: FeatureOfSize[];
   frames: FeatureControlFrame[];

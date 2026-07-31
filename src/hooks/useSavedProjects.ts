@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import {
   loadLocalProjects,
   saveLocalProject,
+  updateLocalProject,
   type LocalProject,
 } from "@/lib/localProjects";
 
@@ -17,6 +18,7 @@ export function useSavedProjects<TData extends object>(
   defaultName: string
 ) {
   const [projectName, setProjectName] = useState(defaultName);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savedProjects, setSavedProjects] = useState<LocalProject<TData>[]>(() =>
     loadLocalProjects<TData>(namespace)
@@ -25,16 +27,24 @@ export function useSavedProjects<TData extends object>(
   const saveProject = useCallback(
     (data: TData) => {
       setSaving(true);
-      const projects = saveLocalProject<TData>(namespace, projectName, data);
+      const projects = activeProjectId
+        ? updateLocalProject<TData>(namespace, activeProjectId, projectName, data)
+        : saveLocalProject<TData>(namespace, projectName, data);
       setSavedProjects(projects);
+      const match = projects.find((p) =>
+        activeProjectId ? p.id === activeProjectId : p.name === projectName
+      );
+      if (match) setActiveProjectId(match.id);
       setSaving(false);
     },
-    [namespace, projectName]
+    [namespace, projectName, activeProjectId]
   );
 
   return {
     projectName,
     setProjectName,
+    activeProjectId,
+    setActiveProjectId,
     saving,
     savedProjects,
     saveProject,

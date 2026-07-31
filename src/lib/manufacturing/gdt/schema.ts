@@ -1,8 +1,10 @@
 import type {
+  AnnotationLocation,
   Datum,
   DatumReference,
   DimensionCallout,
   DrawingExtract,
+  DrawingMetadata,
   FeatureControlFrame,
   FeatureOfSize,
   FitCallout,
@@ -86,8 +88,45 @@ export function parseIsoFitDesignation(raw: string): {
   return {};
 }
 
+function parseLocation(raw: unknown): AnnotationLocation | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const row = raw as Record<string, unknown>;
+  const bboxRaw = row.bbox;
+  let bbox: AnnotationLocation["bbox"];
+  if (Array.isArray(bboxRaw) && bboxRaw.length === 4) {
+    const nums = bboxRaw.map((v) => asNumber(v, NaN));
+    if (nums.every((n) => Number.isFinite(n))) {
+      bbox = [nums[0]!, nums[1]!, nums[2]!, nums[3]!];
+    }
+  }
+  const loc: AnnotationLocation = {
+    sheet: row.sheet ? asString(row.sheet) : undefined,
+    zone: row.zone ? asString(row.zone) : undefined,
+    page: row.page !== undefined ? asNumber(row.page) : undefined,
+    bbox,
+  };
+  if (!loc.sheet && !loc.zone && loc.page === undefined && !loc.bbox) return undefined;
+  return loc;
+}
+
+function parseMetadata(raw: unknown): DrawingMetadata | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const row = raw as Record<string, unknown>;
+  const meta: DrawingMetadata = {
+    drawingNumber: row.drawingNumber ? asString(row.drawingNumber) : undefined,
+    revision: row.revision ? asString(row.revision) : undefined,
+    sheet: row.sheet ? asString(row.sheet) : undefined,
+    title: row.title ? asString(row.title) : undefined,
+    material: row.material ? asString(row.material) : undefined,
+    scale: row.scale ? asString(row.scale) : undefined,
+    units: row.units ? asString(row.units) : undefined,
+  };
+  return Object.values(meta).some(Boolean) ? meta : undefined;
+}
+
 export function emptyDrawingExtract(): DrawingExtract {
   return {
+    metadata: undefined,
     datums: [],
     features: [],
     frames: [],
@@ -149,6 +188,7 @@ export function validateDrawingExtract(raw: unknown): DrawingExtract {
           label: row.label ? asString(row.label) : undefined,
           confidence:
             typeof row.confidence === "number" ? row.confidence : undefined,
+          location: parseLocation(row.location),
         };
       })
     : [];
@@ -165,6 +205,7 @@ export function validateDrawingExtract(raw: unknown): DrawingExtract {
           isInternal: row.isInternal === undefined ? undefined : Boolean(row.isInternal),
           confidence:
             typeof row.confidence === "number" ? row.confidence : undefined,
+          location: parseLocation(row.location),
         };
       })
     : [];
@@ -241,6 +282,7 @@ export function validateDrawingExtract(raw: unknown): DrawingExtract {
     : [];
 
   return {
+    metadata: parseMetadata(obj.metadata),
     datums,
     features,
     frames,

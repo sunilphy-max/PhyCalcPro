@@ -133,7 +133,7 @@ export default function ToleranceResults({ result, displayUnit, gdtBreakdown }: 
           {gdtBreakdown && gdtBreakdown.length > 0 ? (
             <div className="mt-4 space-y-2">
               <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                Contributor / bonus breakdown
+                Contributor / bonus / sensitivity
               </h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left text-xs text-slate-700 dark:text-slate-300">
@@ -144,32 +144,44 @@ export default function ToleranceResults({ result, displayUnit, gdtBreakdown }: 
                       <th className="py-1 pr-3 font-medium">Axis</th>
                       <th className="py-1 pr-3 font-medium">Specified</th>
                       <th className="py-1 pr-3 font-medium">Bonus</th>
-                      <th className="py-1 font-medium">Effective</th>
+                      <th className="py-1 pr-3 font-medium">Effective</th>
+                      <th className="py-1 font-medium">% of WC</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {gdtBreakdown.map((row) => (
-                      <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
-                        <td className="py-1.5 pr-3">{row.label ?? row.id}</td>
-                        <td className="py-1.5 pr-3">{row.characteristic ?? row.kind}</td>
-                        <td className="py-1.5 pr-3">
-                          {row.sense < 0 ? "−" : "+"}
-                          {row.axis}
-                        </td>
-                        <td className="py-1.5 pr-3 tabular-nums">
-                          {row.specifiedTolerance.toPrecision(4)} {displayUnit}
-                        </td>
-                        <td className="py-1.5 pr-3 tabular-nums">
-                          {row.bonus.toPrecision(4)} {displayUnit}
-                        </td>
-                        <td className="py-1.5 tabular-nums">
-                          {row.effectiveTolerance.toPrecision(4)} {displayUnit}
-                        </td>
-                      </tr>
-                    ))}
+                    {gdtBreakdown.map((row) => {
+                      const pct =
+                        result.worstCase > 0
+                          ? (100 * Math.abs(row.effectiveTolerance)) / result.worstCase
+                          : 0;
+                      return (
+                        <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
+                          <td className="py-1.5 pr-3">{row.label ?? row.id}</td>
+                          <td className="py-1.5 pr-3">{row.characteristic ?? row.kind}</td>
+                          <td className="py-1.5 pr-3">
+                            {row.sense < 0 ? "−" : "+"}
+                            {row.axis}
+                          </td>
+                          <td className="py-1.5 pr-3 tabular-nums">
+                            {row.specifiedTolerance.toPrecision(4)} {displayUnit}
+                          </td>
+                          <td className="py-1.5 pr-3 tabular-nums">
+                            {row.bonus.toPrecision(4)} {displayUnit}
+                          </td>
+                          <td className="py-1.5 pr-3 tabular-nums">
+                            {row.effectiveTolerance.toPrecision(4)} {displayUnit}
+                          </td>
+                          <td className="py-1.5 tabular-nums">{pct.toFixed(1)}%</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+              <p className="text-xs text-slate-500">
+                Sensitivity = |effective| / worst-case (deterministic). Monte Carlo uses the sample
+                count set in inputs when &gt; 0.
+              </p>
             </div>
           ) : null}
         </>

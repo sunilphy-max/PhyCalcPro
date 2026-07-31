@@ -96,14 +96,21 @@ A semi-empirical correction (typically 1.5) applied to RSS to account for non-no
 
 GD&T defines tolerance zones geometrically. PhyCalcPro’s **GD&T stack** mode converts size dimensions and feature control frames (position, orientation, profile, runout, etc.) into stack contributors, including **MMC/LMC bonus** and **datum-feature shift**, then runs WC / RSS / Monte Carlo on the effective half-zones.
 
-## Drawing upload (PDF)
+## Drawing package (BOM + PDF / ZIP)
 
-1. Upload a PDF engineering drawing (≤10 MB; first 5 pages).
-2. Vision extract proposes dimensions, FCFs, datums, and a suggested stack order.
-3. **Review and edit** every callout — extraction is assistive only; never trust unverified OCR/vision values for release decisions.
-4. Apply the GD&T stack and compute with the verified solver (not the LLM).
+**Mission:** reduce time to stack-up from drawings while keeping calculation deterministic and auditable.
 
-Requires `OPENAI_API_KEY` (optional `OPENAI_VISION_MODEL`, default `gpt-4o`). Without a key, upload still works for the UI path but parse returns unavailable — enter values manually.
+1. Upload a **single PDF**, or a **ZIP** with required `BOM.xlsx` (see `/templates/PhyCalcPro-BOM-template.csv`) plus assembly/part PDFs.
+2. BOM defines Level / Parent / Part Number / Revision / Drawing File — the assembly tree and package validation (missing PDF, orphans, duplicate PNs).
+3. Extract each drawing (dims, FCFs, datums, title-block metadata). Vision extract is assistive — **review before use**.
+4. **Manual stack builder:** select contributors in order from the active part; confirm the chain; then solve WC/RSS/Monte Carlo with the verified engine.
+5. AI does **not** auto-build the official chain or invent clearances — you own the topology; solvers own the numbers.
+
+Requires `OPENAI_API_KEY` for vision extract (optional `OPENAI_VISION_MODEL`). Simple bilateral mode remains available without drawings.
+
+### Save / retrieve studies
+
+Use **Save study** / **Update study** with a study name. When signed in, studies persist in account-backed browser storage (and sync to workspaces when configured). Guests keep studies for the session only. Saved payload includes BOM structure, extracts, manual chain, confirmation flag, and results — **not** original PDF files (re-upload the ZIP only if you need to re-extract).
 
 ## Use the PhyCalcPro calculator
 

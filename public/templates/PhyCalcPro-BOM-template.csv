@@ -1,0 +1,6 @@
+Level,Parent Part,Part Number,Revision,Drawing,Qty,Description
+0,,ASM-1000,B,Assembly.pdf,1,Main Assembly
+1,ASM-1000,SHA-100,A,Shaft.pdf,1,Shaft
+1,ASM-1000,HOU-210,C,Housing.pdf,1,Housing
+1,ASM-1000,BEA-6205,A,Bearing.pdf,2,Bearing
+2,HOU-210,SPC-015,A,Spacer.pdf,2,Spacer
