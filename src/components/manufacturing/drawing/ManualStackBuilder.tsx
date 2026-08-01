@@ -18,9 +18,12 @@ type Props = {
   partNumber: string | null;
   drawingFile: string | null;
   extract: DrawingExtract | null;
+  /** When provided, use these instead of single-part extract candidates. */
+  externalCandidates?: StackPickCandidate[];
   picks: ManualStackPick[];
   displayUnit: string;
   chainConfirmed: boolean;
+  contextLabel?: string;
   onPicksChange: (picks: ManualStackPick[]) => void;
   onConfirmChange: (confirmed: boolean) => void;
   onSolve: () => void;
@@ -30,9 +33,11 @@ export default function ManualStackBuilder({
   partNumber,
   drawingFile,
   extract,
+  externalCandidates,
   picks,
   displayUnit,
   chainConfirmed,
+  contextLabel,
   onPicksChange,
   onConfirmChange,
   onSolve,
@@ -42,16 +47,24 @@ export default function ManualStackBuilder({
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
   const candidates: StackPickCandidate[] = useMemo(() => {
+    if (externalCandidates) return externalCandidates;
     if (!partNumber || !drawingFile || !extract) return [];
     return listPickCandidates(partNumber, drawingFile, extract);
-  }, [partNumber, drawingFile, extract]);
+  }, [externalCandidates, partNumber, drawingFile, extract]);
 
   const addSelected = () => {
-    if (!selectedKey || !partNumber) return;
+    if (!selectedKey) return;
+    const cand = candidates.find((c) => c.key === selectedKey);
+    if (!cand) return;
     onConfirmChange(false);
     onPicksChange([
       ...picks,
-      { candidateKey: selectedKey, partNumber, sense, axis },
+      {
+        candidateKey: selectedKey,
+        partNumber: cand.partNumber,
+        sense,
+        axis,
+      },
     ]);
   };
 
@@ -60,6 +73,8 @@ export default function ManualStackBuilder({
     onPicksChange(picks.filter((_, i) => i !== index));
   };
 
+  const canPick = Boolean(externalCandidates?.length || (partNumber && extract));
+
   return (
     <div className="space-y-4">
       <div>
@@ -67,16 +82,16 @@ export default function ManualStackBuilder({
           Manual stack builder
         </h3>
         <p className="mt-1 text-xs text-slate-500">
-          Select annotations from the active part, add them in chain order, confirm, then solve.
-          AI does not invent the chain — you do.
+          {contextLabel
+            ? `Building: ${contextLabel}. `
+            : ""}
+          Select annotations, add in chain order, confirm, then solve. AI does not invent the chain.
         </p>
       </div>
 
-      {!partNumber ? (
-        <p className="text-xs text-slate-500">Select a part in the assembly tree.</p>
-      ) : !extract ? (
+      {!canPick ? (
         <p className="text-xs text-slate-500">
-          Extract this drawing first (or wait for package extract to finish).
+          Select a stack and extract component drawings under the BOM context first.
         </p>
       ) : (
         <>
@@ -116,7 +131,7 @@ export default function ManualStackBuilder({
 
           <div className="max-h-40 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2 dark:border-slate-700">
             {candidates.length === 0 ? (
-              <p className="text-xs text-slate-500">No dimensions/FCFs on this extract.</p>
+              <p className="text-xs text-slate-500">No dimensions/FCFs available for this context.</p>
             ) : (
               candidates.map((c) => (
                 <label
@@ -133,7 +148,7 @@ export default function ManualStackBuilder({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="font-medium text-slate-800 dark:text-slate-100">
-                      {c.label}
+                      {c.partNumber}: {c.label}
                     </span>
                     <span className="mt-0.5 block text-slate-500">
                       {c.kind}
@@ -166,7 +181,7 @@ export default function ManualStackBuilder({
               >
                 <span>
                   {i + 1}. {p.sense > 0 ? "+" : "−"}
-                  {p.axis} · {p.partNumber} · {p.candidateKey.split(":").slice(2).join(":")}
+                  {p.axis} · {p.partNumber} · {p.candidateKey.split(":").slice(1).join(":")}
                 </span>
                 <button
                   type="button"

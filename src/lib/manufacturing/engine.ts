@@ -15,8 +15,14 @@ function iso286DeviationUm(nominalMm: number, letter: string, grade: number): { 
   if (upperLetter === "H") return { upper: 0, lower: -t };
   if (upperLetter === "G") return { upper: -t * 0.2, lower: -t * 1.2 };
   if (upperLetter === "F") return { upper: -t * 0.4, lower: -t * 1.4 };
+  if (upperLetter === "E") return { upper: -t * 0.6, lower: -t * 1.6 };
+  if (upperLetter === "D") return { upper: -t * 0.8, lower: -t * 1.8 };
+  if (upperLetter === "JS") return { upper: t / 2, lower: -t / 2 };
   if (upperLetter === "K") return { upper: t * 0.3, lower: -t * 0.7 };
+  if (upperLetter === "M") return { upper: t * 0.4, lower: -t * 0.6 };
   if (upperLetter === "N") return { upper: t * 0.5, lower: -t * 0.5 };
+  if (upperLetter === "P") return { upper: t * 0.7, lower: -t * 0.3 };
+  if (upperLetter === "S") return { upper: t * 1.0, lower: 0 };
   // Shaft letters map via uppercase above (h→H, g→G, …) in this simplified model
   return { upper: 0, lower: -t };
 }

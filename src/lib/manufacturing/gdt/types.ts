@@ -71,6 +71,14 @@ export type FeatureControlFrame = {
   label?: string;
   confidence?: number;
   location?: AnnotationLocation;
+  /** Composite frame segment (ASME): upper = pattern location, lower = feature-to-feature. */
+  compositeSegment?: "upper" | "lower";
+  /** Simultaneous requirement group id when frames must be evaluated together. */
+  simultaneousGroup?: string;
+  /** Pattern instance count (drawing convention); informational for stack unless expanded. */
+  patternCount?: number;
+  /** Projected tolerance zone length (SI metres), when specified on drawing. */
+  projectedZoneLength?: number;
 };
 
 export type StackContributorSource =
@@ -88,6 +96,17 @@ export type StackContributor = {
   projectionFactor?: number;
 };
 
+/** Per-contributor process model for Monte Carlo (optional). */
+export type ContributorDistribution = "uniform" | "normal" | "triangular";
+
+export type ContributorProcessStats = {
+  distribution?: ContributorDistribution;
+  /** Process capability; σ ≈ tolWidth / (6·Cpk) when set. */
+  cpk?: number;
+  /** Explicit process standard deviation (SI). Overrides Cpk when set. */
+  processSigma?: number;
+};
+
 export type GdtStackConfig = {
   features: FeatureOfSize[];
   frames: FeatureControlFrame[];
@@ -101,6 +120,13 @@ export type GdtStackConfig = {
    */
   useWorstCaseBonus?: boolean;
   monteCarloSamples?: number;
+  /** Default MC distribution when contributor stats omit one. */
+  defaultDistribution?: ContributorDistribution;
+  /** Optional process stats keyed by contributor id. */
+  contributorStats?: Record<string, ContributorProcessStats>;
+  /** Functional requirement band (SI metres) for yield calc. */
+  requirementMinSi?: number;
+  requirementMaxSi?: number;
 };
 
 export type ContributorBreakdown = {
@@ -113,6 +139,13 @@ export type ContributorBreakdown = {
   effectiveTolerance: number;
   kind: "size" | "fcf" | "datumShift";
   characteristic?: GdtCharacteristic;
+};
+
+export type ContributorSensitivity = {
+  id: string;
+  label?: string;
+  pctOfWc: number;
+  rssLeverage: number;
 };
 
 export type GdtStackResult = {
@@ -129,6 +162,11 @@ export type GdtStackResult = {
   rss3d?: number;
   monteCarloMean?: number;
   monteCarloStdDev?: number;
+  /** 95th percentile of MC assembly magnitude (SI). */
+  monteCarloPercentile95?: number;
+  /** Fraction of MC samples inside [requirementMin, requirementMax] when set. */
+  monteCarloYield?: number;
+  sensitivity?: ContributorSensitivity[];
 };
 
 /** ISO fit callout extracted from a drawing (e.g. Ø20 H7/g6). */

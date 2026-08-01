@@ -9,6 +9,8 @@ export type {
   FitCallout,
   GdtStackConfig,
   GdtStackResult,
+  ContributorProcessStats,
+  ContributorDistribution,
 } from "./types";
 export { geometricBonus, materialBoundaries, sizeToleranceWidth, worstCaseBonusSize } from "./bonus";
 export { gdtStackConfigFromFlat, solveGdtStackEngine } from "./engine";

@@ -98,23 +98,25 @@ GD&T defines tolerance zones geometrically. PhyCalcPro’s **GD&T stack** mode c
 
 ## Drawing package (BOM + PDF / ZIP)
 
-**Mission:** reduce time to stack-up from drawings while keeping calculation deterministic and auditable.
+**Mission:** best-in-class drawing-package variation analysis — hierarchical stacks from component drawings up through sub-assembly and assembly — while keeping calculation deterministic and auditable.
 
-1. Upload a **single PDF**, or a **ZIP** with required `BOM.xlsx` (see `/templates/PhyCalcPro-BOM-template.csv`) plus assembly/part PDFs.
+1. Upload a **ZIP** with required `BOM.xlsx` / CSV (see `/templates/PhyCalcPro-BOM-template.csv`) plus assembly/part PDFs (or a single PDF for quick trials).
 2. BOM defines Level / Parent / Part Number / Revision / Drawing File — the assembly tree and package validation (missing PDF, orphans, duplicate PNs).
-3. Extract each drawing (dims, FCFs, datums, title-block metadata). Vision extract is assistive — **review before use**.
-4. **Manual stack builder:** select contributors in order from the active part; confirm the chain; then solve WC/RSS/Monte Carlo with the verified engine.
-5. AI does **not** auto-build the official chain or invent clearances — you own the topology; solvers own the numbers.
+3. **Extract all (components first):** read every component drawing into the annotation library, then SA/assembly sheets. Vision extract is assistive — **review quality scores before use**.
+4. **Stack program:** create named stacks at **sub-assembly** and **assembly/top** levels. Contributors come from **component** (and SA) annotations under the BOM context node.
+5. Confirm each chain; solve WC/RSS/Monte Carlo (P95, yield vs requirement, sensitivity). Optional SA rollup into assembly stacks.
+6. **Assist tab:** propose stacks from notes (suggestions only), explain FCFs/drivers, what-if allocation packages, export DR packet (markdown/JSON).
+7. AI does **not** invent clearances or official pass/fail — you own topology; solvers own numbers.
 
 Requires `OPENAI_API_KEY` for vision extract (optional `OPENAI_VISION_MODEL`). Simple bilateral mode remains available without drawings.
 
 ### Save / retrieve studies
 
-Use **Save study** / **Update study** with a study name. When signed in, studies persist in account-backed browser storage (and sync to workspaces when configured). Guests keep studies for the session only. Saved payload includes BOM structure, extracts, manual chain, confirmation flag, and results — **not** original PDF files (re-upload the ZIP only if you need to re-extract).
+Use **Save study** / **Update study** with a study name. When signed in, studies persist in account-backed browser storage (and sync to workspaces when configured). Guests keep studies for the session only. Saved payload includes BOM structure, extracts, multi-stack program, confirmation flags, and results — **not** original PDF files (re-upload the ZIP only if you need to re-extract).
 
 ## Use the PhyCalcPro calculator
 
-Open the [Tolerance Stackup calculator](/products/manufacturing/tolerance) for **Simple** bilateral arrays or **GD&T stack** mode (drawing upload / FCF chain). The tool returns worst-case, RSS, Monte Carlo statistics, and a contributor/bonus breakdown in GD&T mode.
+Open the [Tolerance Stackup calculator](/products/manufacturing/tolerance) for **drawing package** (recommended), **Simple** bilateral arrays, or **GD&T** single-drawing mode. Package mode returns a multi-stack program dashboard, WC/RSS/MC (P95/yield), contributor sensitivity, and DR packet export.
 
 ---
 
@@ -168,7 +170,7 @@ Closed-form WC and RSS. Optional Monte Carlo with uniform sampling over `monteCa
 
 - Linear stack chains projected from geometric zones (half-zone on stack axis).
 - Supported characteristics: position, perpendicularity, parallelism, profile, concentricity/coaxiality, circular/total runout, plus size.
-- MMC/LMC bonus and datum-feature shift included; composite frames and simultaneous requirements are out of v1.
+- MMC/LMC bonus and datum-feature shift included; composite/simultaneous/pattern fields are captured on extracts for audit (stack uses zone values as modeled).
 - Vision extract must be engineer-verified before trusting results.
 - RSS assumes normal, independent variations — not valid for skewed processes.
 - Monte Carlo quality depends on sample count and distribution assumptions.

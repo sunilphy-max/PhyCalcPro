@@ -10,6 +10,8 @@ export { runPlainBearingCopilotSession, PLAIN_BEARING_COPILOT_EXAMPLES } from ".
 export type { PlainBearingCopilotApplyPayload, PlainBearingCopilotSession } from "./plainBearingCopilot";
 export { runHousingCopilotSession, HOUSING_COPILOT_EXAMPLES } from "./housingCopilot";
 export type { HousingCopilotApplyPayload, HousingCopilotSession } from "./housingCopilot";
+export { runToleranceCopilot } from "./toleranceCopilot";
+export type { ToleranceCopilotAction } from "./toleranceCopilot";
 export type { CopilotBrief, CopilotParams, DesignPlan, DesignSession } from "./types";
 export { parseBrief, deriveParams } from "./paramParser";
 export { matchStartModule } from "./moduleMatch";

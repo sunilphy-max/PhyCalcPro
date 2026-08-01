@@ -20,6 +20,9 @@ import DrawingApplyBar from "@/components/manufacturing/drawing/DrawingApplyBar"
 import PackageUploadPanel from "@/components/manufacturing/drawing/PackageUploadPanel";
 import BomTreeNavigator from "@/components/manufacturing/drawing/BomTreeNavigator";
 import ManualStackBuilder from "@/components/manufacturing/drawing/ManualStackBuilder";
+import AnnotationLibraryPanel from "@/components/manufacturing/drawing/AnnotationLibraryPanel";
+import StackProgramBoard from "@/components/manufacturing/drawing/StackProgramBoard";
+import ToleranceAssistPanel from "@/components/manufacturing/drawing/ToleranceAssistPanel";
 import ToleranceWelcome from "@/components/manufacturing/drawing/ToleranceWelcome";
 import ToleranceWorkflowSteps from "@/components/manufacturing/drawing/ToleranceWorkflowSteps";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
@@ -42,10 +45,28 @@ import {
 import type { ContributorBreakdown, DrawingExtract, GdtStackConfig } from "@/lib/manufacturing/gdt/types";
 import type { ToleranceResult } from "@/lib/manufacturing/types";
 import type { WithCalculationSpec } from "@/lib/standards/types";
-import type { DrawingPackage, ManualStackPick } from "@/lib/manufacturing/package";
-import { buildAssemblyTree, buildStackFromManualPicks } from "@/lib/manufacturing/package";
+import type {
+  AnnotationEntry,
+  DrawingPackage,
+  ManualStackPick,
+  NamedStack,
+  ProposedStack,
+  StackLevel,
+} from "@/lib/manufacturing/package";
+import {
+  applyContributorScales,
+  buildAndSolveNamedStack,
+  buildAssemblyTree,
+  contributorPartNumbersForContext,
+  createNamedStack,
+  listPickCandidatesForParts,
+  stackDashboardRows,
+} from "@/lib/manufacturing/package";
 import { rasterizePdfInBrowser } from "@/lib/manufacturing/gdt/rasterizePdfClient";
-import type { ToleranceProjectData } from "@/lib/manufacturing/toleranceProject";
+import {
+  normalizeToleranceProject,
+  type ToleranceProjectData,
+} from "@/lib/manufacturing/toleranceProject";
 import type { LocalProject } from "@/lib/localProjects";
 import { canPersistAcrossSessions } from "@/lib/persistence/clientStorage";
 
@@ -55,7 +76,6 @@ async function extractPdfBytes(
   bytes: Uint8Array,
   fileName: string
 ): Promise<{ extract: DrawingExtract; warnings: string[]; source: string }> {
-  // Copy into a fresh ArrayBuffer-backed view — required for File/BlobPart under TS 5.x
   const part = new Uint8Array(bytes.byteLength);
   part.set(bytes);
   const file = new File([part], fileName, { type: "application/pdf" });
@@ -106,6 +126,9 @@ export default function Page() {
   const [extract, setExtract] = useState<DrawingExtract | null>(null);
   const [extractWarnings, setExtractWarnings] = useState<string[]>([]);
   const [gdtConfig, setGdtConfig] = useState<GdtStackConfig | null>(null);
+  const [lastGdtResult, setLastGdtResult] = useState<
+    ReturnType<typeof solveGdtStackEngine> | null
+  >(null);
 
   const [pkg, setPkg] = useState<DrawingPackage | null>(null);
   const [selectedPn, setSelectedPn] = useState<string | null>(null);
@@ -114,14 +137,63 @@ export default function Page() {
   const [extractStatus, setExtractStatus] = useState<
     Record<string, "pending" | "done" | "error" | "idle">
   >({});
-  const [manualPicks, setManualPicks] = useState<ManualStackPick[]>([]);
-  const [chainConfirmed, setChainConfirmed] = useState(false);
+  const [stacks, setStacks] = useState<NamedStack[]>([]);
+  const [activeStackId, setActiveStackId] = useState<string | null>(null);
   const [extractBusy, setExtractBusy] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [workspacePanel, setWorkspacePanel] = useState<"structure" | "build">("structure");
+  const [workspacePanel, setWorkspacePanel] = useState<"structure" | "build" | "assist">(
+    "structure"
+  );
+
+  const activeStack = useMemo(
+    () => stacks.find((s) => s.id === activeStackId) ?? null,
+    [stacks, activeStackId]
+  );
+
+  const dashboard = useMemo(() => stackDashboardRows(stacks), [stacks]);
+
+  const drawingFileByPn = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const row of pkg?.bomRows ?? []) {
+      map[row.partNumber] = row.drawingFile;
+    }
+    return map;
+  }, [pkg]);
+
+  const allowedPartNumbers = useMemo(() => {
+    if (!pkg || !activeStack) return null;
+    return contributorPartNumbersForContext(pkg.tree, activeStack.contextPartNumber);
+  }, [pkg, activeStack]);
+
+  const stackCandidates = useMemo(() => {
+    if (!allowedPartNumbers) return [];
+    return listPickCandidatesForParts(allowedPartNumbers, extractsByPart, drawingFileByPn);
+  }, [allowedPartNumbers, extractsByPart, drawingFileByPn]);
+
+  const patchActiveStack = useCallback((patch: Partial<NamedStack>) => {
+    setActiveStackId((id) => {
+      if (!id) return id;
+      setStacks((prev) =>
+        prev.map((s) =>
+          s.id === id
+            ? {
+                ...s,
+                ...patch,
+                status:
+                  patch.picks || patch.chainConfirmed === false
+                    ? "draft"
+                    : patch.status ?? s.status,
+              }
+            : s
+        )
+      );
+      return id;
+    });
+  }, []);
 
   const mapGdtResult = useCallback(
     (raw: ReturnType<typeof solveGdtStackEngine>) => {
+      setLastGdtResult(raw);
       const mappedBreakdown = raw.contributors.map((row) => ({
         ...row,
         specifiedTolerance: fromBase(row.specifiedTolerance, "length", toleranceUnit),
@@ -159,6 +231,11 @@ export default function Page() {
             raw.monteCarloStdDev !== undefined
               ? fromBase(raw.monteCarloStdDev, "length", toleranceUnit)
               : undefined,
+          monteCarloPercentile95:
+            raw.monteCarloPercentile95 !== undefined
+              ? fromBase(raw.monteCarloPercentile95, "length", toleranceUnit)
+              : undefined,
+          monteCarloYield: raw.monteCarloYield,
         })
       );
     },
@@ -209,6 +286,7 @@ export default function Page() {
     };
     const raw = solveToleranceEngine(config);
     setGdtBreakdown(undefined);
+    setLastGdtResult(null);
     setResult(mapResultFromSimple(raw));
   };
 
@@ -242,10 +320,22 @@ export default function Page() {
 
   const calculate = () => {
     if (inputMode === "package") {
-      if (!chainConfirmed || manualPicks.length === 0) return;
-      const config = buildStackFromManualPicks(manualPicks, extractsByPart, {
-        monteCarloSamples: monteCarloSamples > 0 ? monteCarloSamples : 0,
-      });
+      if (!activeStack || !activeStack.chainConfirmed || activeStack.picks.length === 0) return;
+      const { config, result: raw, status } = buildAndSolveNamedStack(
+        activeStack,
+        extractsByPart,
+        {
+          monteCarloSamples: monteCarloSamples > 0 ? monteCarloSamples : 0,
+          allStacks: stacks,
+        }
+      );
+      setStacks((prev) =>
+        prev.map((s) =>
+          s.id === activeStack.id
+            ? { ...s, status, resultSnapshot: raw, chainConfirmed: true }
+            : s
+        )
+      );
       runGdt(config);
       return;
     }
@@ -316,7 +406,12 @@ export default function Page() {
       return;
     }
     setExtractBusy(true);
-    for (const row of pkg.bomRows) {
+    // Components first, then SA / assembly / top (hierarchical stack rule)
+    const ordered = [...pkg.bomRows].sort((a, b) => {
+      const rank = (level: number) => (level >= 2 ? 0 : level === 1 ? 1 : 2);
+      return rank(a.level) - rank(b.level);
+    });
+    for (const row of ordered) {
       const entry = pkg.drawings.find(
         (d) => d.fileName.toLowerCase() === row.drawingFile.toLowerCase()
       );
@@ -337,8 +432,9 @@ export default function Page() {
     selectedPn && extractsByPart[selectedPn] ? extractsByPart[selectedPn]! : null;
 
   const buildSavePayload = useCallback((): ToleranceProjectData => {
+    const manualPicks: ManualStackPick[] = activeStack?.picks ?? [];
     return {
-      version: 1,
+      version: 2,
       inputMode,
       toleranceUnit,
       monteCarloSamples,
@@ -355,7 +451,9 @@ export default function Page() {
       selectedPn,
       selectedDrawing,
       manualPicks,
-      chainConfirmed,
+      chainConfirmed: activeStack?.chainConfirmed ?? false,
+      stacks,
+      activeStackId,
       resultSnapshot: result
         ? {
             tolerances: result.tolerances,
@@ -371,6 +469,8 @@ export default function Page() {
             rss3d: result.rss3d,
             monteCarloMean: result.monteCarloMean,
             monteCarloStdDev: result.monteCarloStdDev,
+            monteCarloPercentile95: result.monteCarloPercentile95,
+            monteCarloYield: result.monteCarloYield,
           }
         : null,
       gdtBreakdown,
@@ -388,8 +488,9 @@ export default function Page() {
     extractsByPart,
     selectedPn,
     selectedDrawing,
-    manualPicks,
-    chainConfirmed,
+    stacks,
+    activeStackId,
+    activeStack,
     result,
     gdtBreakdown,
   ]);
@@ -407,94 +508,99 @@ export default function Page() {
   };
 
   const loadProject = (project: LocalProject<ToleranceProjectData>) => {
+    const data = normalizeToleranceProject(project);
     setActiveProjectId(project.id);
     setProjectName(project.name);
-    setInputMode(project.inputMode ?? "package");
-    setToleranceUnit(project.toleranceUnit ?? "mm");
-    setMonteCarloSamples(project.monteCarloSamples ?? 1000);
-    setTolerances(project.tolerances ?? [0.05, 0.02, 0.01]);
-    setTolerancesY(project.tolerancesY ?? []);
-    setTolerancesZ(project.tolerancesZ ?? []);
-    setExtract(project.extract ?? null);
-    setGdtConfig(project.gdtConfig ?? null);
-    setExtractsByPart(project.extractsByPart ?? {});
-    setManualPicks(project.manualPicks ?? []);
-    setChainConfirmed(Boolean(project.chainConfirmed));
-    setSelectedPn(project.selectedPn ?? null);
-    setSelectedDrawing(project.selectedDrawing ?? null);
-    setGdtBreakdown(project.gdtBreakdown);
+    setInputMode(data.inputMode ?? "package");
+    setToleranceUnit(data.toleranceUnit ?? "mm");
+    setMonteCarloSamples(data.monteCarloSamples ?? 1000);
+    setTolerances(data.tolerances ?? [0.05, 0.02, 0.01]);
+    setTolerancesY(data.tolerancesY ?? []);
+    setTolerancesZ(data.tolerancesZ ?? []);
+    setExtract(data.extract ?? null);
+    setGdtConfig(data.gdtConfig ?? null);
+    setExtractsByPart(data.extractsByPart ?? {});
+    setStacks(data.stacks ?? []);
+    setActiveStackId(data.activeStackId ?? data.stacks?.[0]?.id ?? null);
+    setSelectedPn(data.selectedPn ?? null);
+    setSelectedDrawing(data.selectedDrawing ?? null);
+    setGdtBreakdown(data.gdtBreakdown);
     setExtractWarnings([]);
 
     const status: Record<string, "pending" | "done" | "error" | "idle"> = {};
-    for (const pn of Object.keys(project.extractsByPart ?? {})) {
+    for (const pn of Object.keys(data.extractsByPart ?? {})) {
       status[pn] = "done";
     }
     setExtractStatus(status);
 
-    if (project.bomRows?.length) {
-      const tree = project.tree?.length ? project.tree : buildAssemblyTree(project.bomRows);
-      const drawings = project.bomRows.map((row) => ({
+    if (data.bomRows?.length) {
+      const tree = data.tree?.length ? data.tree : buildAssemblyTree(data.bomRows);
+      const drawings = data.bomRows.map((row) => ({
         fileName: row.drawingFile,
         path: row.drawingFile,
         bytes: new Uint8Array(),
       }));
       setPkg({
-        bomRows: project.bomRows,
+        bomRows: data.bomRows,
         tree,
         drawings,
         issues: [
-          ...(project.packageIssues ?? []),
+          ...(data.packageIssues ?? []),
           {
             severity: "warning",
             code: "pdf_not_persisted",
             message:
-              "PDF files are not stored with the study. Extracts and stack chain were restored — re-upload the ZIP only if you need to re-extract drawings.",
+              "PDF files are not stored with the study. Extracts and stack chains were restored — re-upload the ZIP only if you need to re-extract drawings.",
           },
         ],
-        hasBom: project.hasBom,
+        hasBom: data.hasBom,
       });
     } else {
       setPkg(null);
     }
 
-    if (project.resultSnapshot) {
-      setResult(wrapResult(project.resultSnapshot));
+    if (data.resultSnapshot) {
+      setResult(wrapResult(data.resultSnapshot));
     } else {
       setResult(null);
     }
 
-    // Re-solve from restored chain so results match current solver
-    if (
-      (project.inputMode === "package" || project.inputMode === "gdt") &&
-      project.manualPicks?.length &&
-      project.chainConfirmed
-    ) {
-      const config = buildStackFromManualPicks(
-        project.manualPicks,
-        project.extractsByPart ?? {},
-        { monteCarloSamples: project.monteCarloSamples ?? 0 }
+    const stackToSolve =
+      (data.activeStackId && data.stacks?.find((s) => s.id === data.activeStackId)) ||
+      data.stacks?.find((s) => s.chainConfirmed && s.picks.length > 0);
+
+    if (stackToSolve?.chainConfirmed && stackToSolve.picks.length) {
+      const { config, result: raw, status: st } = buildAndSolveNamedStack(
+        stackToSolve,
+        data.extractsByPart ?? {},
+        {
+          monteCarloSamples: data.monteCarloSamples ?? 0,
+          allStacks: data.stacks,
+        }
       );
-      const raw = solveGdtStackEngine({
-        ...config,
-        monteCarloSamples: (project.monteCarloSamples ?? 0) > 0 ? project.monteCarloSamples : 0,
-      });
+      setStacks((prev) =>
+        prev.map((s) =>
+          s.id === stackToSolve.id ? { ...s, status: st, resultSnapshot: raw } : s
+        )
+      );
       setGdtConfig(config);
       mapGdtResult(raw);
-    } else if (project.gdtConfig) {
-      runGdt(project.gdtConfig);
+    } else if (data.gdtConfig) {
+      runGdt(data.gdtConfig);
     }
 
     setSaveMessage(`Loaded “${project.name}”. Edit and Save to update.`);
-    setWorkspacePanel(project.manualPicks?.length ? "build" : "structure");
+    setWorkspacePanel(stackToSolve?.picks.length ? "build" : "structure");
   };
 
   const packageReady = Boolean(pkg);
   const showWelcome = inputMode === "package" && !packageReady;
+  const hasConfirmedStack = stacks.some((s) => s.chainConfirmed && s.picks.length > 0);
   const workflowActive: "upload" | "structure" | "build" | "results" = !packageReady
     ? "upload"
     : result
       ? "results"
-      : workspacePanel === "build" || manualPicks.length > 0
+      : workspacePanel === "build" || workspacePanel === "assist" || hasConfirmedStack
         ? "build"
         : "structure";
 
@@ -502,15 +608,67 @@ export default function Page() {
     setPkg(next);
     setExtractsByPart({});
     setExtractStatus({});
-    setManualPicks([]);
-    setChainConfirmed(false);
+    setStacks([]);
+    setActiveStackId(null);
     setSelectedPn(next.tree[0]?.partNumber ?? null);
     setSelectedDrawing(next.tree[0]?.drawingFile ?? null);
     setExtract(null);
     setResult(null);
     setGdtBreakdown(undefined);
+    setLastGdtResult(null);
     setWorkspacePanel("structure");
     setInputMode("package");
+  };
+
+  const createStack = (name: string, level: StackLevel) => {
+    if (!pkg || !selectedPn) return;
+    const stack = createNamedStack({
+      name,
+      contextPartNumber: selectedPn,
+      tree: pkg.tree,
+      level,
+    });
+    setStacks((prev) => [...prev, stack]);
+    setActiveStackId(stack.id);
+    setWorkspacePanel("build");
+  };
+
+  const acceptProposal = (proposal: ProposedStack) => {
+    if (!pkg) return;
+    const stack = createNamedStack({
+      name: proposal.name,
+      contextPartNumber: proposal.contextPartNumber,
+      tree: pkg.tree,
+      level: proposal.level,
+    });
+    stack.picks = proposal.suggestedPicks;
+    stack.notes = proposal.reason;
+    setStacks((prev) => [...prev, stack]);
+    setActiveStackId(stack.id);
+    setSelectedPn(proposal.contextPartNumber);
+    setWorkspacePanel("build");
+  };
+
+  const addAnnotationToStack = (entry: AnnotationEntry) => {
+    if (!activeStack) return;
+    if (entry.kind !== "dimension" && entry.kind !== "fcf") return;
+    const pick: ManualStackPick = {
+      candidateKey: entry.key,
+      partNumber: entry.partNumber,
+      sense: 1,
+      axis: "X",
+    };
+    patchActiveStack({
+      picks: [...activeStack.picks, pick],
+      chainConfirmed: false,
+      status: "draft",
+    });
+  };
+
+  const applyAllocation = (scales: Record<string, number>) => {
+    if (!gdtConfig) return;
+    const next = applyContributorScales(gdtConfig, scales);
+    runGdt(next);
   };
 
   return (
@@ -548,7 +706,7 @@ export default function Page() {
               <ToleranceWorkflowSteps
                 active={workflowActive}
                 hasPackage={packageReady}
-                hasChain={manualPicks.length > 0 && chainConfirmed}
+                hasChain={hasConfirmedStack}
                 hasResults={Boolean(result)}
               />
 
@@ -577,28 +735,26 @@ export default function Page() {
               ) : null}
 
               <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-                <button
-                  type="button"
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                    workspacePanel === "structure"
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-50"
-                      : "text-slate-600 dark:text-slate-300"
-                  }`}
-                  onClick={() => setWorkspacePanel("structure")}
-                >
-                  Structure
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                    workspacePanel === "build"
-                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-50"
-                      : "text-slate-600 dark:text-slate-300"
-                  }`}
-                  onClick={() => setWorkspacePanel("build")}
-                >
-                  Build chain
-                </button>
+                {(
+                  [
+                    ["structure", "Structure"],
+                    ["build", "Build stacks"],
+                    ["assist", "Assist"],
+                  ] as const
+                ).map(([id, label]) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                      workspacePanel === id
+                        ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-50"
+                        : "text-slate-600 dark:text-slate-300"
+                    }`}
+                    onClick={() => setWorkspacePanel(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
 
               {workspacePanel === "structure" ? (
@@ -629,7 +785,7 @@ export default function Page() {
                       disabled={extractBusy || !pkg.hasBom}
                       onClick={() => void extractAllDrawings()}
                     >
-                      Extract all
+                      Extract all (components first)
                     </button>
                     <button
                       type="button"
@@ -637,7 +793,7 @@ export default function Page() {
                       style={{ width: "auto" }}
                       onClick={() => setWorkspacePanel("build")}
                     >
-                      Continue to build chain →
+                      Continue to build stacks →
                     </button>
                   </div>
                   {extractWarnings.length > 0 ? (
@@ -647,43 +803,60 @@ export default function Page() {
                       ))}
                     </ul>
                   ) : null}
-                  {selectedExtract?.metadata ? (
-                    <p className="text-xs text-slate-500">
-                      {[
-                        selectedExtract.metadata.drawingNumber,
-                        selectedExtract.metadata.revision
-                          ? `Rev ${selectedExtract.metadata.revision}`
-                          : null,
-                        selectedExtract.metadata.title,
-                      ]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </p>
-                  ) : null}
+                  <AnnotationLibraryPanel
+                    tree={pkg.tree}
+                    extractsByPart={extractsByPart}
+                    displayUnit={toleranceUnit}
+                  />
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {selectedExtract?.metadata ? (
-                    <p className="text-xs text-slate-500">
-                      Active part: {selectedPn}
-                      {selectedExtract.metadata.title
-                        ? ` — ${selectedExtract.metadata.title}`
-                        : ""}
-                    </p>
-                  ) : (
-                    <p className="text-xs text-slate-500">
-                      Tip: extract a part under Structure, then add its dimensions here.
-                    </p>
-                  )}
+              ) : null}
+
+              {workspacePanel === "build" ? (
+                <div className="space-y-4">
+                  <StackProgramBoard
+                    stacks={stacks}
+                    dashboard={dashboard}
+                    activeStackId={activeStackId}
+                    contextPartNumber={selectedPn}
+                    displayUnit={toleranceUnit}
+                    onSelect={setActiveStackId}
+                    onCreate={createStack}
+                    onUpdateActive={patchActiveStack}
+                    onDeleteActive={() => {
+                      if (!activeStackId) return;
+                      setStacks((prev) => prev.filter((s) => s.id !== activeStackId));
+                      setActiveStackId(null);
+                    }}
+                  />
+                  <AnnotationLibraryPanel
+                    tree={pkg.tree}
+                    extractsByPart={extractsByPart}
+                    displayUnit={toleranceUnit}
+                    allowedPartNumbers={allowedPartNumbers}
+                    onAddToStack={activeStack ? addAnnotationToStack : undefined}
+                  />
                   <ManualStackBuilder
                     partNumber={selectedPn}
                     drawingFile={selectedDrawing}
                     extract={selectedExtract}
-                    picks={manualPicks}
+                    externalCandidates={stackCandidates}
+                    picks={activeStack?.picks ?? []}
                     displayUnit={toleranceUnit}
-                    chainConfirmed={chainConfirmed}
-                    onPicksChange={setManualPicks}
-                    onConfirmChange={setChainConfirmed}
+                    chainConfirmed={activeStack?.chainConfirmed ?? false}
+                    contextLabel={
+                      activeStack
+                        ? `${activeStack.name} (${activeStack.level} @ ${activeStack.contextPartNumber})`
+                        : undefined
+                    }
+                    onPicksChange={(picks) =>
+                      patchActiveStack({ picks, chainConfirmed: false, status: "draft" })
+                    }
+                    onConfirmChange={(confirmed) =>
+                      patchActiveStack({
+                        chainConfirmed: confirmed,
+                        status: confirmed ? "confirmed" : "draft",
+                      })
+                    }
                     onSolve={calculate}
                   />
                   <div className="grid grid-cols-2 gap-2">
@@ -707,7 +880,23 @@ export default function Page() {
                     />
                   </div>
                 </div>
-              )}
+              ) : null}
+
+              {workspacePanel === "assist" ? (
+                <ToleranceAssistPanel
+                  studyName={projectName}
+                  tree={pkg.tree}
+                  bomRows={pkg.bomRows}
+                  extractsByPart={extractsByPart}
+                  stacks={stacks}
+                  activeExtract={selectedExtract}
+                  lastResult={lastGdtResult}
+                  gdtConfig={gdtConfig}
+                  displayUnit={toleranceUnit}
+                  onAcceptProposal={acceptProposal}
+                  onApplyAllocation={applyAllocation}
+                />
+              ) : null}
 
               <button
                 type="button"
@@ -715,7 +904,8 @@ export default function Page() {
                 onClick={() => {
                   setPkg(null);
                   setResult(null);
-                  setManualPicks([]);
+                  setStacks([]);
+                  setActiveStackId(null);
                   setInputMode("package");
                 }}
               >

@@ -6,13 +6,15 @@ export type StackPickCandidate = {
   key: string;
   partNumber: string;
   drawingFile: string;
-  kind: "dimension" | "fcf";
+  kind: "dimension" | "fcf" | "datumShift";
   featureId: string;
   label: string;
   sheet?: string;
   zone?: string;
   /** Half-tolerance or zone/2 in SI for preview. */
   previewTolSi: number;
+  /** For datumShift: linked feature of size id. */
+  linkedFeatureId?: string;
 };
 
 export type ManualStackPick = {
@@ -54,6 +56,43 @@ export function listPickCandidates(
       zone: frame.location?.zone,
       previewTolSi: frame.zoneValue / 2,
     });
+  }
+  // Datum-shift candidates when FCF refs a datum at MMC/LMC with a FOS
+  for (const frame of extract.frames) {
+    for (const ref of frame.datumRefs) {
+      if (!ref.materialCondition || ref.materialCondition === "RFS") continue;
+      const fosId = frame.featureOfSizeId;
+      if (!fosId) continue;
+      const fos = extract.features.find((f) => f.id === fosId);
+      if (!fos) continue;
+      out.push({
+        key: `${partNumber}:datumShift:${ref.datumId}:${fosId}`,
+        partNumber,
+        drawingFile,
+        kind: "datumShift",
+        featureId: ref.datumId,
+        linkedFeatureId: fosId,
+        label: `Datum ${ref.datumId} shift @${ref.materialCondition}`,
+        sheet: frame.location?.sheet,
+        zone: frame.location?.zone,
+        previewTolSi: Math.abs(fos.upperLimit - fos.lowerLimit) / 2,
+      });
+    }
+  }
+  return out;
+}
+
+/** List candidates across many parts (annotation library / BOM-filtered). */
+export function listPickCandidatesForParts(
+  partNumbers: string[],
+  extractsByPart: Record<string, DrawingExtract>,
+  drawingFileByPn: Record<string, string>
+): StackPickCandidate[] {
+  const out: StackPickCandidate[] = [];
+  for (const pn of partNumbers) {
+    const extract = extractsByPart[pn];
+    if (!extract) continue;
+    out.push(...listPickCandidates(pn, drawingFileByPn[pn] ?? "", extract));
   }
   return out;
 }
@@ -142,6 +181,41 @@ export function buildStackFromManualPicks(
         sense: pick.sense,
         axis: pick.axis,
         source: { kind: "fcf", fcfId },
+      });
+    } else if (pick.candidateKey.includes(":datumShift:")) {
+      const rest = pick.candidateKey.split(":datumShift:")[1]!;
+      const [datumId, fosRaw] = rest.split(":");
+      if (!datumId || !fosRaw) continue;
+      const fos = extract.features.find((f) => f.id === fosRaw);
+      if (!fos) continue;
+      const fosId = `${pick.partNumber}__${fos.id}`;
+      if (!seenFeature.has(fosId)) {
+        seenFeature.add(fosId);
+        features.push({
+          ...fos,
+          id: fosId,
+          label: `${pick.partNumber}: ${fos.label ?? fos.id}`,
+        });
+      }
+      for (const frame of extract.frames) {
+        const fcfId = `${pick.partNumber}__${frame.id}`;
+        if (!seenFrame.has(fcfId)) {
+          seenFrame.add(fcfId);
+          frames.push({
+            ...frame,
+            id: fcfId,
+            featureOfSizeId: frame.featureOfSizeId
+              ? `${pick.partNumber}__${frame.featureOfSizeId}`
+              : undefined,
+          });
+        }
+      }
+      contributors.push({
+        id: `manual-${i + 1}`,
+        label: `${pick.partNumber}: Datum ${datumId} shift`,
+        sense: pick.sense,
+        axis: pick.axis,
+        source: { kind: "datumShift", datumId, featureOfSizeId: fosId },
       });
     }
   }

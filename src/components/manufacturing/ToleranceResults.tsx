@@ -127,6 +127,22 @@ export default function ToleranceResults({ result, displayUnit, gdtBreakdown }: 
                 unit={displayUnit}
                 tone="blue"
               />
+              {result.monteCarloPercentile95 !== undefined ? (
+                <CalculatorMetricCard
+                  label="Monte Carlo P95"
+                  numericValue={metricValue(result.monteCarloPercentile95)}
+                  unit={displayUnit}
+                  tone="orange"
+                />
+              ) : null}
+              {result.monteCarloYield !== undefined ? (
+                <CalculatorMetricCard
+                  label="MC yield vs requirement"
+                  numericValue={result.monteCarloYield * 100}
+                  unit="%"
+                  tone="green"
+                />
+              ) : null}
             </CalculatorMetricGrid>
           ) : null}
 

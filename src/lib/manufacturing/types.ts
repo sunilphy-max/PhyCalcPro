@@ -44,4 +44,7 @@ export type ToleranceResult = {
   rss3d?: number;
   monteCarloMean?: number;
   monteCarloStdDev?: number;
+  monteCarloPercentile95?: number;
+  /** 0–1 fraction within requirement when provided. */
+  monteCarloYield?: number;
 };
