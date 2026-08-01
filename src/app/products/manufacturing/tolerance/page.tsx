@@ -55,7 +55,10 @@ async function extractPdfBytes(
   bytes: Uint8Array,
   fileName: string
 ): Promise<{ extract: DrawingExtract; warnings: string[]; source: string }> {
-  const file = new File([bytes], fileName, { type: "application/pdf" });
+  // Copy into a fresh ArrayBuffer-backed view — required for File/BlobPart under TS 5.x
+  const part = new Uint8Array(bytes.byteLength);
+  part.set(bytes);
+  const file = new File([part], fileName, { type: "application/pdf" });
   const raster = await rasterizePdfInBrowser(file);
   const form = new FormData();
   form.set("file", file);
