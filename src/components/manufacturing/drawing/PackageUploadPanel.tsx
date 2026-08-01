@@ -14,13 +14,16 @@ import {
 type Props = {
   onPackage: (pkg: DrawingPackage) => void;
   disabled?: boolean;
+  /** Compact variant after a package is already loaded */
+  compact?: boolean;
 };
 
-export default function PackageUploadPanel({ onPackage, disabled }: Props) {
+export default function PackageUploadPanel({ onPackage, disabled, compact }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -33,9 +36,7 @@ export default function PackageUploadPanel({ onPackage, disabled }: Props) {
           const pkg = await unpackDrawingZip(file);
           onPackage(pkg);
           const fatal = pkg.issues.filter((i) => i.severity === "error");
-          if (fatal.length) {
-            setError(fatal[0]!.message);
-          }
+          if (fatal.length) setError(fatal[0]!.message);
         } else if (lower.endsWith(".pdf") || file.type === "application/pdf") {
           const bytes = new Uint8Array(await file.arrayBuffer());
           onPackage(singlePdfPackage(file, bytes));
@@ -51,17 +52,54 @@ export default function PackageUploadPanel({ onPackage, disabled }: Props) {
     [onPackage]
   );
 
-  return (
-    <div className="space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 p-4 dark:border-slate-600 dark:bg-slate-900/40">
-      <div>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          Drawing package
-        </h3>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-          Single PDF, or ZIP with required <code className="text-[11px]">BOM.xlsx</code> + part/assembly
-          PDFs. BOM defines hierarchy — stacks stay auditable.
-        </p>
+  if (compact) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".pdf,.zip,application/pdf,application/zip"
+          className="hidden"
+          disabled={disabled || busy}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void handleFile(file);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          className={calculatorSecondaryButtonClass}
+          disabled={disabled || busy}
+          onClick={() => inputRef.current?.click()}
+        >
+          {busy ? "Reading…" : "Replace package"}
+        </button>
+        {fileName ? <span className="truncate text-xs text-slate-500">{fileName}</span> : null}
+        {error ? <span className="text-xs text-amber-700">{error}</span> : null}
       </div>
+    );
+  }
+
+  return (
+    <div
+      className={`rounded-2xl border-2 border-dashed px-5 py-8 text-center transition ${
+        dragOver
+          ? "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-950/30"
+          : "border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900/40"
+      }`}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) void handleFile(file);
+      }}
+    >
       <input
         ref={inputRef}
         type="file"
@@ -74,25 +112,22 @@ export default function PackageUploadPanel({ onPackage, disabled }: Props) {
           e.target.value = "";
         }}
       />
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className={calculatorPrimaryButtonClass}
-          disabled={disabled || busy}
-          onClick={() => inputRef.current?.click()}
-        >
-          {busy ? "Reading package…" : "Upload PDF or ZIP"}
-        </button>
-        <a
-          className={calculatorSecondaryButtonClass}
-          href="/templates/PhyCalcPro-BOM-template.csv"
-          download
-        >
-          BOM template
-        </a>
-      </div>
-      {fileName ? <p className="truncate text-xs text-slate-600">{fileName}</p> : null}
-      {error ? <p className="text-xs text-amber-700 dark:text-amber-400">{error}</p> : null}
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+        Drop your drawing package here
+      </p>
+      <p className="mx-auto mt-1 max-w-sm text-xs text-slate-500">
+        ZIP with required BOM.xlsx + PDFs, or a single PDF. Max 10 MB per drawing.
+      </p>
+      <button
+        type="button"
+        className={`${calculatorPrimaryButtonClass} mx-auto mt-4 !w-auto px-6`}
+        disabled={disabled || busy}
+        onClick={() => inputRef.current?.click()}
+      >
+        {busy ? "Reading package…" : "Choose PDF or ZIP"}
+      </button>
+      {fileName ? <p className="mt-3 truncate text-xs text-slate-600">{fileName}</p> : null}
+      {error ? <p className="mt-2 text-xs text-amber-700 dark:text-amber-400">{error}</p> : null}
     </div>
   );
 }

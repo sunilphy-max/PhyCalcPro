@@ -20,6 +20,8 @@ import DrawingApplyBar from "@/components/manufacturing/drawing/DrawingApplyBar"
 import PackageUploadPanel from "@/components/manufacturing/drawing/PackageUploadPanel";
 import BomTreeNavigator from "@/components/manufacturing/drawing/BomTreeNavigator";
 import ManualStackBuilder from "@/components/manufacturing/drawing/ManualStackBuilder";
+import ToleranceWelcome from "@/components/manufacturing/drawing/ToleranceWelcome";
+import ToleranceWorkflowSteps from "@/components/manufacturing/drawing/ToleranceWorkflowSteps";
 import CalculatorInputPanel from "@/components/calculator/CalculatorInputPanel";
 import CalculatorCalculateButton from "@/components/calculator/CalculatorCalculateButton";
 import UnitSelector from "@/components/shared/UnitSelector";
@@ -113,6 +115,7 @@ export default function Page() {
   const [chainConfirmed, setChainConfirmed] = useState(false);
   const [extractBusy, setExtractBusy] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [workspacePanel, setWorkspacePanel] = useState<"structure" | "build">("structure");
 
   const mapGdtResult = useCallback(
     (raw: ReturnType<typeof solveGdtStackEngine>) => {
@@ -479,12 +482,39 @@ export default function Page() {
     }
 
     setSaveMessage(`Loaded “${project.name}”. Edit and Save to update.`);
+    setWorkspacePanel(project.manualPicks?.length ? "build" : "structure");
+  };
+
+  const packageReady = Boolean(pkg);
+  const showWelcome = inputMode === "package" && !packageReady;
+  const workflowActive: "upload" | "structure" | "build" | "results" = !packageReady
+    ? "upload"
+    : result
+      ? "results"
+      : workspacePanel === "build" || manualPicks.length > 0
+        ? "build"
+        : "structure";
+
+  const onPackageLoaded = (next: DrawingPackage) => {
+    setPkg(next);
+    setExtractsByPart({});
+    setExtractStatus({});
+    setManualPicks([]);
+    setChainConfirmed(false);
+    setSelectedPn(next.tree[0]?.partNumber ?? null);
+    setSelectedDrawing(next.tree[0]?.drawingFile ?? null);
+    setExtract(null);
+    setResult(null);
+    setGdtBreakdown(undefined);
+    setWorkspacePanel("structure");
+    setInputMode("package");
   };
 
   return (
     <CalculatorLayout
       moduleId="tolerance"
       title="Tolerance Stackup Calculator"
+      hasResults={Boolean(result)}
       footer={
         <SavedProjectsFooter
           projects={savedProjects}
@@ -495,64 +525,81 @@ export default function Page() {
       }
       inputs={
         <div className="space-y-4">
-          <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900/50">
-            <label className="block space-y-1 text-sm text-slate-600">
-              Study name
-              <input
-                className={calculatorTextInputClass}
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="e.g. Gearbox endplay Rev C"
-              />
-            </label>
-            <button
-              type="button"
-              className={calculatorPrimaryButtonClass}
-              disabled={saving || !projectName.trim()}
-              onClick={handleSave}
-            >
-              {saving ? "Saving…" : activeProjectId ? "Update study" : "Save study"}
-            </button>
-            <p className="text-[11px] text-slate-500">
-              Saves inputs, extracts, confirmed chain, and results. PDF binaries are not stored.
-              {canPersistAcrossSessions()
-                ? " Signed in — studies persist in your account storage."
-                : " Sign in to keep studies across sessions."}
-            </p>
-            {saveMessage ? (
-              <p className="text-xs text-emerald-700 dark:text-emerald-400">{saveMessage}</p>
-            ) : null}
-          </div>
+          {showWelcome ? (
+            <ToleranceWelcome
+              projectName={projectName}
+              setProjectName={setProjectName}
+              savedCount={savedProjects.length}
+              onPackage={onPackageLoaded}
+              onChooseSimple={() => setInputMode("simple")}
+              onShowSaved={() => {
+                document
+                  .querySelector("[data-tolerance-saved]")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            />
+          ) : null}
 
-          <label className="block space-y-1 text-sm text-slate-600">
-            Input mode
-            <select
-              className={calculatorSelectClass}
-              value={inputMode}
-              onChange={(e) => setInputMode(e.target.value as InputMode)}
-            >
-              <option value="package">Drawing package (BOM + PDF/ZIP)</option>
-              <option value="simple">Simple (bilateral)</option>
-              <option value="gdt">GD&T (single drawing assist)</option>
-            </select>
-          </label>
-
-          {inputMode === "package" ? (
+          {!showWelcome && inputMode === "package" && pkg ? (
             <>
-              <PackageUploadPanel
-                onPackage={(next) => {
-                  setPkg(next);
-                  setExtractsByPart({});
-                  setExtractStatus({});
-                  setManualPicks([]);
-                  setChainConfirmed(false);
-                  setSelectedPn(next.tree[0]?.partNumber ?? null);
-                  setSelectedDrawing(next.tree[0]?.drawingFile ?? null);
-                  setExtract(null);
-                }}
+              <ToleranceWorkflowSteps
+                active={workflowActive}
+                hasPackage={packageReady}
+                hasChain={manualPicks.length > 0 && chainConfirmed}
+                hasResults={Boolean(result)}
               />
-              {pkg ? (
-                <>
+
+              <div className="flex flex-wrap items-end gap-2">
+                <label className="min-w-[10rem] flex-1 space-y-1 text-sm text-slate-600">
+                  Study name
+                  <input
+                    className={calculatorTextInputClass}
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className={calculatorPrimaryButtonClass}
+                  style={{ width: "auto" }}
+                  disabled={saving || !projectName.trim()}
+                  onClick={handleSave}
+                >
+                  {saving ? "Saving…" : activeProjectId ? "Update" : "Save"}
+                </button>
+                <PackageUploadPanel compact onPackage={onPackageLoaded} />
+              </div>
+              {saveMessage ? (
+                <p className="text-xs text-emerald-700 dark:text-emerald-400">{saveMessage}</p>
+              ) : null}
+
+              <div className="flex gap-1 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+                <button
+                  type="button"
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    workspacePanel === "structure"
+                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-50"
+                      : "text-slate-600 dark:text-slate-300"
+                  }`}
+                  onClick={() => setWorkspacePanel("structure")}
+                >
+                  Structure
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                    workspacePanel === "build"
+                      ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-slate-50"
+                      : "text-slate-600 dark:text-slate-300"
+                  }`}
+                  onClick={() => setWorkspacePanel("build")}
+                >
+                  Build chain
+                </button>
+              </div>
+
+              {workspacePanel === "structure" ? (
+                <div className="space-y-3">
                   <BomTreeNavigator
                     tree={pkg.tree}
                     selectedPartNumber={selectedPn}
@@ -571,7 +618,7 @@ export default function Page() {
                       disabled={extractBusy || !selectedPn}
                       onClick={() => void extractSelectedDrawing()}
                     >
-                      {extractBusy ? "Extracting…" : "Extract selected drawing"}
+                      {extractBusy ? "Extracting…" : "Extract selected"}
                     </button>
                     <button
                       type="button"
@@ -579,7 +626,15 @@ export default function Page() {
                       disabled={extractBusy || !pkg.hasBom}
                       onClick={() => void extractAllDrawings()}
                     >
-                      Extract all (BOM)
+                      Extract all
+                    </button>
+                    <button
+                      type="button"
+                      className={calculatorPrimaryButtonClass}
+                      style={{ width: "auto" }}
+                      onClick={() => setWorkspacePanel("build")}
+                    >
+                      Continue to build chain →
                     </button>
                   </div>
                   {extractWarnings.length > 0 ? (
@@ -602,6 +657,21 @@ export default function Page() {
                         .join(" · ")}
                     </p>
                   ) : null}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {selectedExtract?.metadata ? (
+                    <p className="text-xs text-slate-500">
+                      Active part: {selectedPn}
+                      {selectedExtract.metadata.title
+                        ? ` — ${selectedExtract.metadata.title}`
+                        : ""}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-500">
+                      Tip: extract a part under Structure, then add its dimensions here.
+                    </p>
+                  )}
                   <ManualStackBuilder
                     partNumber={selectedPn}
                     drawingFile={selectedDrawing}
@@ -613,6 +683,157 @@ export default function Page() {
                     onConfirmChange={setChainConfirmed}
                     onSolve={calculate}
                   />
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="space-y-1 text-xs text-slate-600">
+                      Monte Carlo samples
+                      <input
+                        type="number"
+                        min={0}
+                        max={100000}
+                        step={100}
+                        value={monteCarloSamples}
+                        onChange={(e) => setMonteCarloSamples(Number(e.target.value))}
+                        className={calculatorNumberInputClass}
+                      />
+                    </label>
+                    <UnitSelector
+                      dimension="length"
+                      value={toleranceUnit}
+                      onChange={setToleranceUnit}
+                      label="Units"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                className="text-xs text-slate-500 underline-offset-2 hover:underline"
+                onClick={() => {
+                  setPkg(null);
+                  setResult(null);
+                  setManualPicks([]);
+                  setInputMode("package");
+                }}
+              >
+                Start over
+              </button>
+            </>
+          ) : null}
+
+          {inputMode === "simple" || inputMode === "gdt" ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  className="text-xs text-cyan-700 hover:underline dark:text-cyan-400"
+                  onClick={() => {
+                    setInputMode("package");
+                    setPkg(null);
+                  }}
+                >
+                  ← Back to drawing package
+                </button>
+                <select
+                  className={calculatorSelectClass}
+                  value={inputMode}
+                  onChange={(e) => setInputMode(e.target.value as InputMode)}
+                >
+                  <option value="simple">Simple (bilateral)</option>
+                  <option value="gdt">GD&T (single drawing)</option>
+                </select>
+              </div>
+
+              <div className="flex flex-wrap items-end gap-2">
+                <label className="min-w-[10rem] flex-1 space-y-1 text-sm text-slate-600">
+                  Study name
+                  <input
+                    className={calculatorTextInputClass}
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className={calculatorPrimaryButtonClass}
+                  style={{ width: "auto" }}
+                  disabled={saving || !projectName.trim()}
+                  onClick={handleSave}
+                >
+                  {saving ? "Saving…" : activeProjectId ? "Update" : "Save"}
+                </button>
+              </div>
+
+              {(inputMode === "gdt" || inputMode === "simple") && (
+                <>
+                  <DrawingUploadPanel
+                    target="tolerance"
+                    onExtracted={(next, meta) => {
+                      setExtract(next);
+                      setExtractWarnings(meta.warnings);
+                    }}
+                  />
+                  {extractWarnings.length > 0 ? (
+                    <ul className="list-disc space-y-1 pl-4 text-xs text-amber-700">
+                      {extractWarnings.map((w) => (
+                        <li key={w}>{w}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {extract ? (
+                    <div className="space-y-3">
+                      <DrawingExtractReview
+                        extract={extract}
+                        displayUnit={toleranceUnit}
+                        mode="tolerance"
+                        onChange={setExtract}
+                      />
+                      <DrawingApplyBar
+                        onApply={applyExtract}
+                        onClear={() => {
+                          setExtract(null);
+                          setExtractWarnings([]);
+                          setGdtConfig(null);
+                        }}
+                        applyLabel="Apply GD&T stack"
+                      />
+                    </div>
+                  ) : null}
+                </>
+              )}
+
+              {inputMode === "simple" ? (
+                <ToleranceInputs
+                  tolerances={tolerances}
+                  setTolerances={setTolerances}
+                  tolerancesY={tolerancesY}
+                  setTolerancesY={setTolerancesY}
+                  tolerancesZ={tolerancesZ}
+                  setTolerancesZ={setTolerancesZ}
+                  toleranceUnit={toleranceUnit}
+                  setToleranceUnit={setToleranceUnit}
+                  monteCarloSamples={monteCarloSamples}
+                  setMonteCarloSamples={setMonteCarloSamples}
+                  onCalculate={calculate}
+                />
+              ) : null}
+
+              {inputMode === "gdt" ? (
+                <CalculatorInputPanel
+                  title="GD&T stackup"
+                  description={
+                    gdtConfig
+                      ? `${gdtConfig.contributors.length} contributors ready.`
+                      : "Upload a PDF and apply the extract."
+                  }
+                  footer={
+                    <CalculatorCalculateButton
+                      onClick={calculate}
+                      label="Compute GD&T stackup"
+                      designAware
+                    />
+                  }
+                >
                   <label className="block space-y-1 text-sm text-slate-600">
                     Monte Carlo samples (0 = skip)
                     <input
@@ -631,101 +852,12 @@ export default function Page() {
                     onChange={setToleranceUnit}
                     label="Display units"
                   />
-                </>
+                </CalculatorInputPanel>
               ) : null}
-            </>
+            </div>
           ) : null}
 
-          {inputMode === "gdt" || inputMode === "simple" ? (
-            <>
-              <DrawingUploadPanel
-                target="tolerance"
-                onExtracted={(next, meta) => {
-                  setExtract(next);
-                  setExtractWarnings(meta.warnings);
-                }}
-              />
-              {extractWarnings.length > 0 ? (
-                <ul className="list-disc space-y-1 pl-4 text-xs text-amber-700">
-                  {extractWarnings.map((w) => (
-                    <li key={w}>{w}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {extract ? (
-                <div className="space-y-3">
-                  <DrawingExtractReview
-                    extract={extract}
-                    displayUnit={toleranceUnit}
-                    mode="tolerance"
-                    onChange={setExtract}
-                  />
-                  <DrawingApplyBar
-                    onApply={applyExtract}
-                    onClear={() => {
-                      setExtract(null);
-                      setExtractWarnings([]);
-                      setGdtConfig(null);
-                    }}
-                    applyLabel="Apply GD&T stack"
-                  />
-                </div>
-              ) : null}
-            </>
-          ) : null}
-
-          {inputMode === "simple" ? (
-            <ToleranceInputs
-              tolerances={tolerances}
-              setTolerances={setTolerances}
-              tolerancesY={tolerancesY}
-              setTolerancesY={setTolerancesY}
-              tolerancesZ={tolerancesZ}
-              setTolerancesZ={setTolerancesZ}
-              toleranceUnit={toleranceUnit}
-              setToleranceUnit={setToleranceUnit}
-              monteCarloSamples={monteCarloSamples}
-              setMonteCarloSamples={setMonteCarloSamples}
-              onCalculate={calculate}
-            />
-          ) : null}
-
-          {inputMode === "gdt" ? (
-            <CalculatorInputPanel
-              title="GD&T stackup"
-              description={
-                gdtConfig
-                  ? `${gdtConfig.contributors.length} contributors ready.`
-                  : "Upload a PDF and apply the extract, or use Drawing package mode for BOM stacks."
-              }
-              footer={
-                <CalculatorCalculateButton
-                  onClick={calculate}
-                  label="Compute GD&T stackup"
-                  designAware
-                />
-              }
-            >
-              <label className="block space-y-1 text-sm text-slate-600">
-                Monte Carlo samples (0 = skip)
-                <input
-                  type="number"
-                  min={0}
-                  max={100000}
-                  step={100}
-                  value={monteCarloSamples}
-                  onChange={(e) => setMonteCarloSamples(Number(e.target.value))}
-                  className={calculatorNumberInputClass}
-                />
-              </label>
-              <UnitSelector
-                dimension="length"
-                value={toleranceUnit}
-                onChange={setToleranceUnit}
-                label="Display units"
-              />
-            </CalculatorInputPanel>
-          ) : null}
+          <div data-tolerance-saved />
         </div>
       }
       results={
