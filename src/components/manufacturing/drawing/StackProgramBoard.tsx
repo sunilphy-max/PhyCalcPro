@@ -19,10 +19,13 @@ type Props = {
   stacks: NamedStack[];
   dashboard: StackDashboardRow[];
   activeStackId: string | null;
+  /** Active branch from visual picker (click-selected). */
   contextPartNumber: string | null;
+  contextNodeType?: string | null;
   displayUnit: string;
   onSelect: (id: string) => void;
-  onCreate: (name: string, level: StackLevel) => void;
+  /** Create stack on the visually selected branch — no manual PN entry. */
+  onCreateOnBranch: (level: StackLevel) => void;
   onUpdateActive: (patch: Partial<NamedStack>) => void;
   onDeleteActive: () => void;
 };
@@ -41,9 +44,10 @@ export default function StackProgramBoard({
   dashboard,
   activeStackId,
   contextPartNumber,
+  contextNodeType,
   displayUnit,
   onSelect,
-  onCreate,
+  onCreateOnBranch,
   onUpdateActive,
   onDeleteActive,
 }: Props) {
@@ -54,6 +58,13 @@ export default function StackProgramBoard({
     other: dashboard.filter((d) => d.level === "component"),
   };
 
+  const suggestedLevel: StackLevel =
+    contextNodeType === "toplevel"
+      ? "toplevel"
+      : contextNodeType === "assembly"
+        ? "assembly"
+        : "subassembly";
+
   return (
     <div className="space-y-3">
       <div>
@@ -61,9 +72,27 @@ export default function StackProgramBoard({
           Stack program
         </h3>
         <p className="mt-1 text-xs text-slate-500">
-          Named stacks at sub-assembly and assembly levels. Contributors come from component
-          drawings under the context BOM node.
+          Pick a branch in the drawing hierarchy, then create a stack on that branch. Contributors
+          come from component drawings under it.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs dark:border-slate-600 dark:bg-slate-800/40">
+        {contextPartNumber ? (
+          <>
+            <span className="text-slate-500">Active branch: </span>
+            <span className="font-semibold text-slate-900 dark:text-slate-50">
+              {contextPartNumber}
+            </span>
+            {contextNodeType ? (
+              <span className="ml-1 uppercase text-slate-400">({contextNodeType})</span>
+            ) : null}
+          </>
+        ) : (
+          <span className="text-slate-500">
+            Click a branch card in the hierarchy above to choose where the stack lives.
+          </span>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -72,33 +101,31 @@ export default function StackProgramBoard({
           className={calculatorPrimaryButtonClass}
           style={{ width: "auto" }}
           disabled={!contextPartNumber}
-          onClick={() =>
-            onCreate(
-              `SA stack @ ${contextPartNumber}`,
-              "subassembly"
-            )
-          }
+          onClick={() => onCreateOnBranch(suggestedLevel)}
         >
-          + SA stack
+          Create stack on branch
         </button>
         <button
           type="button"
           className={calculatorSecondaryButtonClass}
           disabled={!contextPartNumber}
-          onClick={() =>
-            onCreate(
-              `Assembly stack @ ${contextPartNumber}`,
-              "assembly"
-            )
-          }
+          onClick={() => onCreateOnBranch("subassembly")}
         >
-          + Assembly stack
+          As SA stack
+        </button>
+        <button
+          type="button"
+          className={calculatorSecondaryButtonClass}
+          disabled={!contextPartNumber}
+          onClick={() => onCreateOnBranch("assembly")}
+        >
+          As assembly stack
         </button>
       </div>
 
       {dashboard.length === 0 ? (
         <p className="text-xs text-slate-500">
-          Select a BOM node, create a stack, then add contributors from the annotation library.
+          No stacks yet. Select a branch, then create a stack on it.
         </p>
       ) : (
         <div className="space-y-2">

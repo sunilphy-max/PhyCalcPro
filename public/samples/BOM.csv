@@ -1,0 +1,8 @@
+Level,Parent Part,Part Number,Revision,Drawing,Qty,Description
+0,,ASM-DEMO-1000,A,ASM-DEMO-1000.pdf,1,Demo Main Assembly
+1,ASM-DEMO-1000,SA-SEAL-3100,A,SA-SEAL-3100.pdf,1,Seal Cartridge Subassembly
+1,ASM-DEMO-1000,HOU-210,A,HOU-210.pdf,1,Housing
+1,ASM-DEMO-1000,SHA-100,A,SHA-100.pdf,1,Shaft
+2,SA-SEAL-3100,SLV-015,A,SLV-015.pdf,1,Sleeve
+2,SA-SEAL-3100,SPC-020,A,SPC-020.pdf,1,Spacer
+2,SA-SEAL-3100,RET-030,A,RET-030.pdf,1,Retainer

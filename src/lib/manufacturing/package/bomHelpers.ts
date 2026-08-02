@@ -60,3 +60,60 @@ export function stackLevelForNodeType(nodeType: BomNodeType): "subassembly" | "a
   if (nodeType === "subassembly") return "subassembly";
   return "component";
 }
+
+/** Flatten tree into level buckets (0 = top, 1 = L1, …) preserving left-to-right BOM order. */
+export function groupAssemblyByLevel(tree: AssemblyNode[]): Map<number, AssemblyNode[]> {
+  const byLevel = new Map<number, AssemblyNode[]>();
+  const walk = (nodes: AssemblyNode[]) => {
+    for (const node of nodes) {
+      const list = byLevel.get(node.level) ?? [];
+      list.push(node);
+      byLevel.set(node.level, list);
+      if (node.children.length) walk(node.children);
+    }
+  };
+  walk(tree);
+  return byLevel;
+}
+
+/** Self + all descendants — drawings to extract when a branch is selected. */
+export function branchScopePartNumbers(node: AssemblyNode): string[] {
+  return [node.partNumber, ...collectDescendants(node).map((n) => n.partNumber)];
+}
+
+/** Union of scopes for every selected branch root. */
+export function unionBranchScopes(
+  tree: AssemblyNode[],
+  selectedBranches: string[]
+): string[] {
+  const set = new Set<string>();
+  for (const pn of selectedBranches) {
+    const node = findAssemblyNode(tree, pn);
+    if (!node) {
+      set.add(pn);
+      continue;
+    }
+    for (const id of branchScopePartNumbers(node)) set.add(id);
+  }
+  return [...set];
+}
+
+/** Parent part number for connector drawing (null for roots). */
+export function parentPartNumberOf(
+  tree: AssemblyNode[],
+  partNumber: string
+): string | null {
+  const search = (
+    nodes: AssemblyNode[],
+    parent: string | null
+  ): string | null | undefined => {
+    for (const n of nodes) {
+      if (n.partNumber === partNumber) return parent;
+      const nested = search(n.children, n.partNumber);
+      if (nested !== undefined) return nested;
+    }
+    return undefined;
+  };
+  const found = search(tree, null);
+  return found === undefined ? null : found;
+}

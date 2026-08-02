@@ -16,6 +16,10 @@ export {
   componentPartNumbersUnder,
   contributorPartNumbersForContext,
   stackLevelForNodeType,
+  groupAssemblyByLevel,
+  branchScopePartNumbers,
+  unionBranchScopes,
+  parentPartNumberOf,
 } from "./bomHelpers";
 export {
   buildAnnotationLibrary,

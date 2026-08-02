@@ -34,6 +34,8 @@ export type ToleranceProjectData = {
   extractsByPart: Record<string, DrawingExtract>;
   selectedPn: string | null;
   selectedDrawing: string | null;
+  /** Click-selected BOM branch roots (drawing hierarchy). */
+  selectedBranches?: string[];
   /** @deprecated v1 single chain — migrated into stacks[0] on load when stacks empty */
   manualPicks: ManualStackPick[];
   chainConfirmed: boolean;

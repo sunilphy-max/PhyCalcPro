@@ -18,7 +18,7 @@ import DrawingUploadPanel from "@/components/manufacturing/drawing/DrawingUpload
 import DrawingExtractReview from "@/components/manufacturing/drawing/DrawingExtractReview";
 import DrawingApplyBar from "@/components/manufacturing/drawing/DrawingApplyBar";
 import PackageUploadPanel from "@/components/manufacturing/drawing/PackageUploadPanel";
-import BomTreeNavigator from "@/components/manufacturing/drawing/BomTreeNavigator";
+import AssemblyBranchPicker from "@/components/manufacturing/drawing/AssemblyBranchPicker";
 import ManualStackBuilder from "@/components/manufacturing/drawing/ManualStackBuilder";
 import AnnotationLibraryPanel from "@/components/manufacturing/drawing/AnnotationLibraryPanel";
 import StackProgramBoard from "@/components/manufacturing/drawing/StackProgramBoard";
@@ -59,8 +59,10 @@ import {
   buildAssemblyTree,
   contributorPartNumbersForContext,
   createNamedStack,
+  findAssemblyNode,
   listPickCandidatesForParts,
   stackDashboardRows,
+  unionBranchScopes,
 } from "@/lib/manufacturing/package";
 import { rasterizePdfInBrowser } from "@/lib/manufacturing/gdt/rasterizePdfClient";
 import {
@@ -139,6 +141,8 @@ export default function Page() {
   >({});
   const [stacks, setStacks] = useState<NamedStack[]>([]);
   const [activeStackId, setActiveStackId] = useState<string | null>(null);
+  /** Click-selected branch roots in the visual hierarchy. */
+  const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [extractBusy, setExtractBusy] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [workspacePanel, setWorkspacePanel] = useState<"structure" | "build" | "assist">(
@@ -368,64 +372,65 @@ export default function Page() {
     runGdt(config);
   };
 
-  const extractSelectedDrawing = async () => {
-    if (!pkg || !selectedPn || !selectedDrawing) return;
-    const entry = pkg.drawings.find(
-      (d) => d.fileName.toLowerCase() === selectedDrawing.toLowerCase()
-    );
-    if (!entry) return;
-    if (entry.bytes.byteLength === 0) {
-      setExtractWarnings([
-        "PDF binary is not in this saved study. Re-upload the drawing package ZIP to extract again, or use the restored extract if present.",
-      ]);
-      return;
-    }
-    setExtractBusy(true);
-    setExtractStatus((s) => ({ ...s, [selectedPn]: "pending" }));
-    try {
-      const { extract: next, warnings } = await extractPdfBytes(entry.bytes, entry.fileName);
-      setExtractsByPart((prev) => ({ ...prev, [selectedPn]: next }));
-      setExtract(next);
-      setExtractWarnings(warnings);
-      setExtractStatus((s) => ({ ...s, [selectedPn]: "done" }));
-    } catch (err) {
-      setExtractStatus((s) => ({ ...s, [selectedPn]: "error" }));
-      setExtractWarnings([err instanceof Error ? err.message : "Extract failed"]);
-    } finally {
-      setExtractBusy(false);
-    }
-  };
-
-  const extractAllDrawings = async () => {
-    if (!pkg) return;
+  const extractPartNumbers = async (partNumbers: string[]) => {
+    if (!pkg || partNumbers.length === 0) return;
     const hasBytes = pkg.drawings.some((d) => d.bytes.byteLength > 0);
     if (!hasBytes) {
       setExtractWarnings([
-        "PDF binaries are not stored with saved studies. Re-upload the ZIP to run extract-all.",
+        "PDF binaries are not stored with saved studies. Re-upload the ZIP to extract drawings.",
       ]);
       return;
     }
     setExtractBusy(true);
-    // Components first, then SA / assembly / top (hierarchical stack rule)
-    const ordered = [...pkg.bomRows].sort((a, b) => {
-      const rank = (level: number) => (level >= 2 ? 0 : level === 1 ? 1 : 2);
-      return rank(a.level) - rank(b.level);
-    });
-    for (const row of ordered) {
+    // Components first within the requested set
+    const rows = pkg.bomRows
+      .filter((r) => partNumbers.includes(r.partNumber))
+      .sort((a, b) => {
+        const rank = (level: number) => (level >= 2 ? 0 : level === 1 ? 1 : 2);
+        return rank(a.level) - rank(b.level);
+      });
+    const warnings: string[] = [];
+    for (const row of rows) {
       const entry = pkg.drawings.find(
         (d) => d.fileName.toLowerCase() === row.drawingFile.toLowerCase()
       );
       if (!entry || entry.bytes.byteLength === 0) continue;
       setExtractStatus((s) => ({ ...s, [row.partNumber]: "pending" }));
       try {
-        const { extract: next } = await extractPdfBytes(entry.bytes, entry.fileName);
+        const { extract: next, warnings: w } = await extractPdfBytes(entry.bytes, entry.fileName);
         setExtractsByPart((prev) => ({ ...prev, [row.partNumber]: next }));
         setExtractStatus((s) => ({ ...s, [row.partNumber]: "done" }));
-      } catch {
+        if (row.partNumber === selectedPn) setExtract(next);
+        warnings.push(...w);
+      } catch (err) {
         setExtractStatus((s) => ({ ...s, [row.partNumber]: "error" }));
+        warnings.push(
+          `${row.partNumber}: ${err instanceof Error ? err.message : "Extract failed"}`
+        );
       }
     }
+    setExtractWarnings(warnings);
     setExtractBusy(false);
+  };
+
+  const extractSelectedBranches = async () => {
+    if (!pkg) return;
+    const scope =
+      selectedBranches.length > 0
+        ? unionBranchScopes(pkg.tree, selectedBranches)
+        : selectedPn
+          ? unionBranchScopes(pkg.tree, [selectedPn])
+          : [];
+    if (scope.length === 0) {
+      setExtractWarnings(["Select one or more branches in the drawing hierarchy first."]);
+      return;
+    }
+    await extractPartNumbers(scope);
+  };
+
+  const extractAllDrawings = async () => {
+    if (!pkg) return;
+    await extractPartNumbers(pkg.bomRows.map((r) => r.partNumber));
   };
 
   const selectedExtract =
@@ -450,6 +455,7 @@ export default function Page() {
       extractsByPart,
       selectedPn,
       selectedDrawing,
+      selectedBranches,
       manualPicks,
       chainConfirmed: activeStack?.chainConfirmed ?? false,
       stacks,
@@ -488,6 +494,7 @@ export default function Page() {
     extractsByPart,
     selectedPn,
     selectedDrawing,
+    selectedBranches,
     stacks,
     activeStackId,
     activeStack,
@@ -524,6 +531,10 @@ export default function Page() {
     setActiveStackId(data.activeStackId ?? data.stacks?.[0]?.id ?? null);
     setSelectedPn(data.selectedPn ?? null);
     setSelectedDrawing(data.selectedDrawing ?? null);
+    setSelectedBranches(
+      data.selectedBranches ??
+        (data.selectedPn ? [data.selectedPn] : [])
+    );
     setGdtBreakdown(data.gdtBreakdown);
     setExtractWarnings([]);
 
@@ -610,8 +621,10 @@ export default function Page() {
     setExtractStatus({});
     setStacks([]);
     setActiveStackId(null);
-    setSelectedPn(next.tree[0]?.partNumber ?? null);
-    setSelectedDrawing(next.tree[0]?.drawingFile ?? null);
+    const root = next.tree[0] ?? null;
+    setSelectedPn(root?.partNumber ?? null);
+    setSelectedDrawing(root?.drawingFile ?? null);
+    setSelectedBranches(root ? [root.partNumber] : []);
     setExtract(null);
     setResult(null);
     setGdtBreakdown(undefined);
@@ -620,18 +633,56 @@ export default function Page() {
     setInputMode("package");
   };
 
-  const createStack = (name: string, level: StackLevel) => {
+  const focusBranch = (pn: string, drawing: string) => {
+    setSelectedPn(pn);
+    setSelectedDrawing(drawing);
+    setExtract(extractsByPart[pn] ?? null);
+  };
+
+  const toggleBranch = (pn: string, drawing: string) => {
+    setSelectedBranches((prev) => {
+      if (prev.includes(pn)) return prev.filter((x) => x !== pn);
+      return [...prev, pn];
+    });
+    focusBranch(pn, drawing);
+  };
+
+  const selectAllAssemblies = () => {
+    if (!pkg) return;
+    const pns: string[] = [];
+    const walk = (nodes: typeof pkg.tree) => {
+      for (const n of nodes) {
+        if (n.nodeType !== "component") pns.push(n.partNumber);
+        walk(n.children);
+      }
+    };
+    walk(pkg.tree);
+    setSelectedBranches(pns);
+    const first = pns[0];
+    if (first) {
+      const node = findAssemblyNode(pkg.tree, first);
+      if (node) focusBranch(node.partNumber, node.drawingFile);
+    }
+  };
+
+  const createStackOnBranch = (level: StackLevel) => {
     if (!pkg || !selectedPn) return;
+    const node = findAssemblyNode(pkg.tree, selectedPn);
     const stack = createNamedStack({
-      name,
+      name: `${node?.description || selectedPn} stack`,
       contextPartNumber: selectedPn,
       tree: pkg.tree,
       level,
     });
     setStacks((prev) => [...prev, stack]);
     setActiveStackId(stack.id);
+    if (!selectedBranches.includes(selectedPn)) {
+      setSelectedBranches((prev) => [...prev, selectedPn]);
+    }
     setWorkspacePanel("build");
   };
+
+  const activeBranchNode = pkg && selectedPn ? findAssemblyNode(pkg.tree, selectedPn) : null;
 
   const acceptProposal = (proposal: ProposedStack) => {
     if (!pkg) return;
@@ -759,25 +810,32 @@ export default function Page() {
 
               {workspacePanel === "structure" ? (
                 <div className="space-y-3">
-                  <BomTreeNavigator
+                  <AssemblyBranchPicker
                     tree={pkg.tree}
-                    selectedPartNumber={selectedPn}
+                    selectedBranches={selectedBranches}
+                    activePartNumber={selectedPn}
                     issues={pkg.issues}
                     extractStatus={extractStatus}
-                    onSelect={(pn, drawing) => {
-                      setSelectedPn(pn);
-                      setSelectedDrawing(drawing);
-                      setExtract(extractsByPart[pn] ?? null);
-                    }}
+                    onToggleBranch={toggleBranch}
+                    onFocus={focusBranch}
+                    onSelectAllAssemblies={selectAllAssemblies}
+                    onClearSelection={() => setSelectedBranches([])}
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      className={calculatorSecondaryButtonClass}
-                      disabled={extractBusy || !selectedPn}
-                      onClick={() => void extractSelectedDrawing()}
+                      className={calculatorPrimaryButtonClass}
+                      style={{ width: "auto" }}
+                      disabled={extractBusy || selectedBranches.length === 0}
+                      onClick={() => void extractSelectedBranches()}
                     >
-                      {extractBusy ? "Extracting…" : "Extract selected"}
+                      {extractBusy
+                        ? "Extracting…"
+                        : `Extract selected branches (${
+                            selectedBranches.length
+                              ? unionBranchScopes(pkg.tree, selectedBranches).length
+                              : 0
+                          } drawings)`}
                     </button>
                     <button
                       type="button"
@@ -785,12 +843,12 @@ export default function Page() {
                       disabled={extractBusy || !pkg.hasBom}
                       onClick={() => void extractAllDrawings()}
                     >
-                      Extract all (components first)
+                      Extract all
                     </button>
                     <button
                       type="button"
-                      className={calculatorPrimaryButtonClass}
-                      style={{ width: "auto" }}
+                      className={calculatorSecondaryButtonClass}
+                      disabled={selectedBranches.length === 0 && !selectedPn}
                       onClick={() => setWorkspacePanel("build")}
                     >
                       Continue to build stacks →
@@ -807,20 +865,35 @@ export default function Page() {
                     tree={pkg.tree}
                     extractsByPart={extractsByPart}
                     displayUnit={toleranceUnit}
+                    allowedPartNumbers={
+                      selectedBranches.length
+                        ? unionBranchScopes(pkg.tree, selectedBranches)
+                        : null
+                    }
                   />
                 </div>
               ) : null}
 
               {workspacePanel === "build" ? (
                 <div className="space-y-4">
+                  <AssemblyBranchPicker
+                    compact
+                    tree={pkg.tree}
+                    selectedBranches={selectedBranches}
+                    activePartNumber={selectedPn}
+                    extractStatus={extractStatus}
+                    onToggleBranch={toggleBranch}
+                    onFocus={focusBranch}
+                  />
                   <StackProgramBoard
                     stacks={stacks}
                     dashboard={dashboard}
                     activeStackId={activeStackId}
                     contextPartNumber={selectedPn}
+                    contextNodeType={activeBranchNode?.nodeType ?? null}
                     displayUnit={toleranceUnit}
                     onSelect={setActiveStackId}
-                    onCreate={createStack}
+                    onCreateOnBranch={createStackOnBranch}
                     onUpdateActive={patchActiveStack}
                     onDeleteActive={() => {
                       if (!activeStackId) return;
@@ -906,6 +979,7 @@ export default function Page() {
                   setResult(null);
                   setStacks([]);
                   setActiveStackId(null);
+                  setSelectedBranches([]);
                   setInputMode("package");
                 }}
               >

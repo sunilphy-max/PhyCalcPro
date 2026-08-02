@@ -7,7 +7,11 @@ import { buildAssemblyTree } from "./validatePackage";
 import { createNamedStack, buildAndSolveNamedStack, stackDashboardRows } from "./stackRegistry";
 import { proposeStacksFromPackage } from "./proposeStacks";
 import { buildDrPacketMarkdown } from "./drPacket";
-import { contributorPartNumbersForContext } from "./bomHelpers";
+import {
+  contributorPartNumbersForContext,
+  groupAssemblyByLevel,
+  unionBranchScopes,
+} from "./bomHelpers";
 import { solveGdtStackEngine } from "@/lib/manufacturing/gdt/engine";
 
 const sampleExtract = (): DrawingExtract => ({
@@ -85,6 +89,12 @@ describe("annotation library + BOM helpers", () => {
     const q = scorePartExtract("C1", extracts.C1!);
     expect(q.ready).toBe(true);
     expect(contributorPartNumbersForContext(tree, "SA1")).toContain("C1");
+    const byLevel = groupAssemblyByLevel(tree);
+    expect(byLevel.get(0)?.map((n) => n.partNumber)).toEqual(["TOP"]);
+    expect(byLevel.get(2)?.map((n) => n.partNumber)).toEqual(["C1"]);
+    expect(unionBranchScopes(tree, ["SA1"])).toEqual(
+      expect.arrayContaining(["SA1", "C1"])
+    );
   });
 });
 
