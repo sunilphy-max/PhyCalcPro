@@ -90,7 +90,6 @@ async function tryPdfJsText(buffer: Buffer): Promise<{
   const doc = await getDocument({
     data,
     useSystemFonts: true,
-    isEvalSupported: false,
     useWorkerFetch: false,
     useWasm: false,
   }).promise;

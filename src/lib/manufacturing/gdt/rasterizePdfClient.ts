@@ -33,10 +33,9 @@ export async function rasterizePdfInBrowser(file: File): Promise<{
     const data = new Uint8Array(await file.arrayBuffer());
     const doc = await pdfjs.getDocument({
       data,
-      isEvalSupported: false,
-      // Main thread avoids worker contexts that lack DOMMatrix in some browsers/bundlers.
-      disableWorker: true,
-    } as never).promise;
+      // Main-thread parse avoids worker contexts that lack DOMMatrix in some bundlers.
+      useWorkerFetch: false,
+    }).promise;
     const limit = Math.min(doc.numPages, MAX_PAGES);
     if (doc.numPages > MAX_PAGES) {
       warnings.push(`Only the first ${MAX_PAGES} of ${doc.numPages} pages were rasterized.`);

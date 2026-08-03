@@ -4,12 +4,6 @@
  * and to avoid "DOMMatrix is not defined" crashes. Not a full geometry engine.
  */
 
-type GlobalWithDom = typeof globalThis & {
-  DOMMatrix?: unknown;
-  Path2D?: unknown;
-  ImageData?: unknown;
-};
-
 class DomMatrixStub {
   a = 1;
   b = 0;
@@ -130,7 +124,8 @@ class ImageDataStub {
 
 /** Idempotent — safe to call from client or server before importing pdfjs-dist. */
 export function ensurePdfJsDomPolyfills(): void {
-  const g = globalThis as GlobalWithDom;
+  // Avoid assigning through `typeof globalThis` — DOM lib types reject stub constructors.
+  const g = globalThis as unknown as Record<string, unknown>;
   if (typeof g.DOMMatrix === "undefined") {
     g.DOMMatrix = DomMatrixStub;
   }
