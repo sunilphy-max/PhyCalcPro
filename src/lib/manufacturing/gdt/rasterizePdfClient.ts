@@ -5,6 +5,8 @@
  * Used so the parse API can receive page images on Vercel without @napi-rs/canvas.
  */
 
+import { ensurePdfJsDomPolyfills } from "./domMatrixPolyfill";
+
 const MAX_PAGES = 5;
 const RENDER_SCALE = 1.25;
 
@@ -19,6 +21,8 @@ export async function rasterizePdfInBrowser(file: File): Promise<{
 }> {
   const warnings: string[] = [];
   try {
+    ensurePdfJsDomPolyfills();
+
     const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
     // Worker from the same package; Next/Turbopack serves it as a static asset URL.
     pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -27,7 +31,12 @@ export async function rasterizePdfInBrowser(file: File): Promise<{
     ).toString();
 
     const data = new Uint8Array(await file.arrayBuffer());
-    const doc = await pdfjs.getDocument({ data }).promise;
+    const doc = await pdfjs.getDocument({
+      data,
+      isEvalSupported: false,
+      // Main thread avoids worker contexts that lack DOMMatrix in some browsers/bundlers.
+      disableWorker: true,
+    } as never).promise;
     const limit = Math.min(doc.numPages, MAX_PAGES);
     if (doc.numPages > MAX_PAGES) {
       warnings.push(`Only the first ${MAX_PAGES} of ${doc.numPages} pages were rasterized.`);

@@ -43,19 +43,37 @@ export async function parseDrawingPdf(
   pageImages: string[] = []
 ): Promise<ParseDrawingResult> {
   const warnings: string[] = [];
+  // Polyfill before any pdfjs import in this request (API route / Node).
+  try {
+    const { ensurePdfJsDomPolyfills } = await import("./domMatrixPolyfill");
+    ensurePdfJsDomPolyfills();
+  } catch {
+    // ignore
+  }
+
   let raster;
   try {
     const { rasterizePdf } = await import("./rasterizePdf");
     raster = await rasterizePdf(buffer);
     warnings.push(...raster.warnings);
   } catch (err) {
-    return {
-      extract: emptyDrawingExtract(),
-      warnings: [
-        err instanceof Error ? err.message : "PDF rasterization failed",
-      ],
-      source: "unavailable",
-    };
+    const msg = err instanceof Error ? err.message : "PDF rasterization failed";
+    // Continue with client page images only when text extract fails (e.g. DOMMatrix).
+    if (pageImages.length > 0) {
+      warnings.push(`PDF text extract skipped: ${msg}`);
+      raster = {
+        pages: [],
+        textByPage: [],
+        pageCount: pageImages.length,
+        warnings: [],
+      };
+    } else {
+      return {
+        extract: emptyDrawingExtract(),
+        warnings: [msg],
+        source: "unavailable",
+      };
+    }
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
