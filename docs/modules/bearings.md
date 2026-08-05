@@ -16,7 +16,7 @@ PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/desi
 - **Design** (`?intent=design`) — System → Duty → Size → Verify → Report
 - **Service** (`?intent=service`) — Identify → Duty → Evaluate → Diagnose → Actions
 
-Absorbed legacy tools (life, loads, speed, lubrication, mounting, arrangement) deep-link into Designer panels. Catalog database, failure guide, plain bearings, and housings remain sibling modules.
+Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrangement`, `/selection`) permanently redirect into Designer panels. Catalog database, failure guide, plain bearings, and housings remain sibling modules.
 
 ## Bearing types and when to use them
 

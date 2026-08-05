@@ -181,39 +181,13 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       "Professional screening — confirm final selection with OEM tools for critical duty.",
     ],
   }),
-  "bearing-life": withCodeChecks("bearing-life", "Bearing Life", [
-    genericIndicativeCheck("life_l10", "Basic rating life L10", "life"),
-    genericIndicativeCheck("life_lnm", "Modified rating life Lnm", "life"),
-  ], {
-    standardsByCode: { ISO: [{ body: "ISO", document: "281" }] },
-    validationStatus: "beta",
-    indicativeMethod: "ISO 281 L10 / Lnm focused calculator",
-  }),
   "bearing-database": withCodeChecks("bearing-database", "Bearing Database", [
     genericIndicativeCheck("catalog_lookup", "Catalog designation lookup", "other"),
   ], {
     indicativeMethod: "Multi-OEM representative catalog browse and handoff",
   }),
-  "bearing-loads": withCodeChecks("bearing-loads", "Equivalent Load", [
-    genericIndicativeCheck("equivalent_load", "Dynamic equivalent load P", "other"),
-  ], {
-    standardsByCode: { ISO: [{ body: "ISO", document: "281", clause: "Equivalent load" }] },
-    indicativeMethod: "ISO 281 equivalent dynamic load with X, Y, e reasoning",
-  }),
-  "bearing-arrangement": withCodeChecks("bearing-arrangement", "Bearing Arrangement", [
-    genericIndicativeCheck("arrangement_guide", "Mounting arrangement guidance", "other"),
-  ]),
-  "bearing-speed": withCodeChecks("bearing-speed", "Bearing Speed", [
-    genericIndicativeCheck("speed_limit", "Limiting speed margin", "safety_factor"),
-  ]),
-  "bearing-lubrication": withCodeChecks("bearing-lubrication", "Bearing Lubrication", [
-    genericIndicativeCheck("kappa", "Viscosity ratio κ", "other"),
-  ]),
   "bearing-failure": withCodeChecks("bearing-failure", "Bearing Failure", [
     genericIndicativeCheck("failure_guide", "Failure mode guidance", "other"),
-  ]),
-  "bearing-mounting": withCodeChecks("bearing-mounting", "Bearing Mounting", [
-    genericIndicativeCheck("fits", "Shaft/housing fit screening", "other"),
   ]),
   shafts: withCodeChecks("shafts", "Shaft Design", [
     genericIndicativeCheck("von_mises", "Combined stress utilization", "utilization"),

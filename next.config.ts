@@ -27,35 +27,36 @@ const nextConfig: NextConfig = {
         destination: "/products/bearings/designer",
         permanent: true,
       },
+      // Absorbed into Bearing System Designer — bookmarks / SEO land on the right panel.
       {
         source: "/products/bearings/life",
         destination: "/products/bearings/designer?intent=design&panel=verify",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/products/bearings/loads",
         destination: "/products/bearings/designer?intent=design&panel=duty",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/products/bearings/speed",
         destination: "/products/bearings/designer?intent=design&panel=verify",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/products/bearings/lubrication",
         destination: "/products/bearings/designer?intent=design&panel=verify",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/products/bearings/mounting",
         destination: "/products/bearings/designer?intent=design&panel=system",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/products/bearings/arrangement",
         destination: "/products/bearings/designer?intent=design&panel=system",
-        permanent: false,
+        permanent: true,
       },
       {
         source: "/products/machine/plain-bearings",

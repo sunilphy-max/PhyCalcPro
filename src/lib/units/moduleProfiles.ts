@@ -126,19 +126,6 @@ export const moduleUnitProfiles: Record<string, ModuleUnitProfile> = {
     speed: { dimension: "frequency", defaultUnit: "rpm", units: ["rpm", "Hz", "rad/s"], label: "Speed" },
     life: { dimension: "time", defaultUnit: "hr", units: ["hr", "s", "min", "year"], label: "Life" },
   },
-  "bearing-life": {
-    force: { dimension: "force", defaultUnit: "kN", units: ["N", "kN", "lbf"], label: "Force" },
-    load: { dimension: "force", defaultUnit: "kN", units: ["N", "kN", "lbf"], label: "Load" },
-  },
-  "bearing-loads": {
-    force: { dimension: "force", defaultUnit: "kN", units: ["N", "kN", "lbf"], label: "Force" },
-  },
-  "bearing-speed": {
-    length: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Diameter" },
-  },
-  "bearing-lubrication": {
-    force: { dimension: "force", defaultUnit: "kN", units: ["N", "kN", "lbf"], label: "Force" },
-  },
   housing: {
     boreDiameter: { dimension: "length", defaultUnit: "mm", units: ["mm", "m", "in"], label: "Bore" },
     radialLoad: { dimension: "force", defaultUnit: "N", units: ["N", "kN", "lbf"], label: "Radial load" },

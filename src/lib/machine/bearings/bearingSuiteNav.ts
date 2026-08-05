@@ -179,7 +179,7 @@ export function suiteNavItemForPath(pathname: string): BearingSuiteNavItem | und
     (item) => pathname === item.href || pathname.startsWith(item.href + "/")
   );
   if (exact) return exact;
-  if (pathname.startsWith("/products/bearings/designer") || pathname.startsWith("/products/bearings/selection")) {
+  if (pathname.startsWith("/products/bearings/designer")) {
     return BEARING_SUITE_NAV.find((item) => item.id === "designer");
   }
   if (pathname === "/products/bearings" || pathname === "/products/bearings/") {
