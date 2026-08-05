@@ -32,7 +32,7 @@ import type {
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import BearingTypePicker from "@/components/machine/bearings/BearingTypePicker";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
-import BearingInputTabs, { type BearingInputTabId } from "@/components/machine/bearings/BearingInputTabs";
+import BearingDesignerSpine from "@/components/machine/bearings/BearingDesignerSpine";
 import BearingMountingSystem, { type BearingMountingSystemId } from "@/components/machine/bearings/BearingMountingSystem";
 import BearingArrangementGuide from "@/components/machine/bearings/BearingArrangementGuide";
 import BearingCatalogDetail from "@/components/machine/bearings/BearingCatalogDetail";
@@ -40,7 +40,13 @@ import BearingSystemWizard, {
   BearingSystemWizardButton,
   type BearingSystemWizardValues,
 } from "@/components/machine/bearings/BearingSystemWizard";
+import BearingSystemStationsPanel from "@/components/machine/bearings/BearingSystemStationsPanel";
+import BearingMethodLadder from "@/components/machine/bearings/BearingMethodLadder";
 import type { BearingConfig } from "@/lib/machine/bearings/types";
+import type {
+  BearingDesignerIntent,
+  BearingDesignerStageId,
+} from "@/lib/machine/bearings/bearingProject";
 import {
   bearingCatalog,
   findBearing,
@@ -170,6 +176,10 @@ type Props = {
   saving?: boolean;
   projectName?: string;
   setProjectName?: (name: string) => void;
+  /** System Designer persona intent */
+  designerIntent?: BearingDesignerIntent;
+  designerStage?: BearingDesignerStageId;
+  onDesignerStageChange?: (stage: BearingDesignerStageId) => void;
 };
 
 function calculateLabelForMode(mode?: DesignWorkflowMode): string {
@@ -287,6 +297,9 @@ export default function BearingInputs({
   saving = false,
   projectName,
   setProjectName,
+  designerIntent = "design",
+  designerStage,
+  onDesignerStageChange,
 }: Props) {
   const [ratingsPanelOpen, setRatingsPanelOpen] = useState(ratingsOverrideEnabled);
   const [wizardOpen, setWizardOpen] = useState(false);
@@ -343,11 +356,44 @@ export default function BearingInputs({
 
   const spectrumDurationTotal = loadSpectrumSteps.reduce((sum, step) => sum + step.durationPercent, 0);
 
-  const renderTab = (tab: BearingInputTabId) => {
-    switch (tab) {
-      case "application":
+  const renderStage = (stage: BearingDesignerStageId) => {
+    switch (stage) {
+      case "system":
         return (
           <div className="space-y-4">
+            {onMountingSystemChange ? (
+              <BearingSystemStationsPanel
+                mountingSystem={mountingSystem}
+                onMountingSystemChange={onMountingSystemChange}
+                arrangement={arrangement}
+                onArrangementChange={setArrangement}
+                designation={designation}
+                floatingDesignation={floatingDesignation}
+                bearingType={bearingType}
+                stationRadialLoadsN={stationRadialLoadsN}
+                stationSlopesMrad={stationSlopesMrad}
+                onSwapStations={onSwapStations}
+                hasShaftHandoff={Boolean(stationRadialLoadsN && stationRadialLoadsN.length >= 2)}
+              />
+            ) : null}
+
+            {designerIntent === "service" ? (
+              <CalculatorFormSection
+                title="Identify bearing"
+                description="Enter the installed designation to evaluate life, static safety, and failure risk."
+              >
+                <label className={calculatorFieldLabelClass}>
+                  Designation
+                  <input
+                    className={`${calculatorTextInputClass} mt-1`}
+                    value={designation}
+                    onChange={(e) => setDesignation(e.target.value)}
+                    placeholder="e.g. 6205"
+                  />
+                </label>
+              </CalculatorFormSection>
+            ) : null}
+
             <CalculatorFormSection
               title="Shaft mounting system"
               description="Locating + floating pairs (MITCalc / SKF shaft design step 2)."
@@ -408,10 +454,64 @@ export default function BearingInputs({
                 ))}
               </CalculatorSelectField>
             </CalculatorFormSection>
+
+            <BearingArrangementGuide
+              arrangement={arrangement}
+              onChange={setArrangement}
+              bearingType={bearingType}
+            />
+
+            {(arrangement === "back_to_back" ||
+              arrangement === "face_to_face" ||
+              arrangement === "tandem" ||
+              mountingSystem === "duplex_angular") &&
+            setPreloadClass ? (
+              <CalculatorFormSection
+                title="Duplex preload"
+                description="Preload class feeds Ka/Kr/Km stiffness and thermal preload shift in results."
+              >
+                <CalculatorSelectField
+                  label="Preload class"
+                  value={preloadClass}
+                  onChange={(value) => setPreloadClass(value as BearingPreloadClass)}
+                >
+                  <option value="none">None (clearance)</option>
+                  <option value="light">Light (~2% of C)</option>
+                  <option value="medium">Medium (~5% of C)</option>
+                  <option value="heavy">Heavy (~10% of C)</option>
+                </CalculatorSelectField>
+              </CalculatorFormSection>
+            ) : null}
+
+            {(mountingSystem === "locating_dg_floating_nu" ||
+              mountingSystem === "locating_ac_floating_nu") &&
+            setBearingSpanMm ? (
+              <CalculatorFormSection
+                title="Thermal float (locating + floating)"
+                description="Floating station must accommodate shaft–housing differential growth."
+              >
+                <div className={calculatorInputGridClass}>
+                  <CalculatorUnitField
+                    label="Bearing span L"
+                    value={bearingSpanMm}
+                    onChange={setBearingSpanMm}
+                    min={0}
+                    unit={<span className="text-sm text-slate-500">mm</span>}
+                  />
+                  <CalculatorUnitField
+                    label="Available float"
+                    value={availableFloatMm}
+                    onChange={setAvailableFloatMm ?? (() => undefined)}
+                    min={0}
+                    unit={<span className="text-sm text-slate-500">mm</span>}
+                  />
+                </div>
+              </CalculatorFormSection>
+            ) : null}
           </div>
         );
 
-      case "loads":
+      case "duty":
         return (
           <div className="space-y-4">
             <CalculatorFormSection
@@ -554,13 +654,8 @@ export default function BearingInputs({
                 </div>
               ) : null}
             </CalculatorFormSection>
-          </div>
-        );
 
-      case "operating":
-        return (
-          <div className="space-y-4">
-            <CalculatorFormSection title="Speed & life target" description="Required rating life and reliability factor a₁.">
+            <CalculatorFormSection title="Speed & life target" description="Required rating life for sizing and utilization.">
               <div className={calculatorInputGridClass}>
                 <CalculatorUnitField
                   label="Speed n"
@@ -610,100 +705,23 @@ export default function BearingInputs({
                 </div>
               </div>
             </CalculatorFormSection>
+          </div>
+        );
 
-            <BearingArrangementGuide
-              arrangement={arrangement}
-              onChange={setArrangement}
-              bearingType={bearingType}
-            />
+      case "verify":
+        return (
+          <div className="space-y-4">
+            <BearingMethodLadder lifeMethod={lifeMethod} onChange={setLifeMethod} />
 
-            {(arrangement === "back_to_back" ||
-              arrangement === "face_to_face" ||
-              arrangement === "tandem" ||
-              mountingSystem === "duplex_angular") &&
-            setPreloadClass ? (
-              <CalculatorFormSection
-                title="Duplex arrangement engineering"
-                description="Preload, Ka/Kr/Km stiffness, axial displacement δa = Fa/Ka, thermal preload shift, and O vs X vs T rigidity comparison."
-              >
-                <CalculatorSelectField
-                  label="Preload class"
-                  value={preloadClass}
-                  onChange={(value) => setPreloadClass(value as BearingPreloadClass)}
-                >
-                  <option value="none">None (clearance)</option>
-                  <option value="light">Light (~2% of C)</option>
-                  <option value="medium">Medium (~5% of C)</option>
-                  <option value="heavy">Heavy (~10% of C)</option>
-                </CalculatorSelectField>
-              </CalculatorFormSection>
+            {designerIntent === "service" ? (
+              <p className="rounded-xl border border-cyan-200/80 bg-cyan-50/60 px-3 py-2 text-xs text-cyan-950 dark:border-cyan-900/40 dark:bg-cyan-950/30 dark:text-cyan-100">
+                After Calculate, open the Diagnose results tab for failure modes, interchange
+                candidates, grease life, and defect frequencies.
+              </p>
             ) : null}
 
-            {(mountingSystem === "locating_dg_floating_nu" ||
-              mountingSystem === "locating_ac_floating_nu") &&
-            setBearingSpanMm ? (
-              <CalculatorFormSection
-                title="Thermal expansion (locating + floating)"
-                description="Floating NU must accommodate shaft–housing differential growth over the bearing span."
-              >
-                {stationRadialLoadsN && stationRadialLoadsN.length >= 2 ? (
-                  <div className="mb-2 space-y-2">
-                    <p className="rounded-lg border border-emerald-200/70 bg-emerald-50/60 px-2.5 py-1.5 text-[11px] text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-100">
-                      Shaft FBD reactions applied: Fr₀ = {(stationRadialLoadsN[0]! / 1000).toFixed(2)}{" "}
-                      kN (locating), Fr₁ = {(stationRadialLoadsN[1]! / 1000).toFixed(2)} kN (floating).
-                    </p>
-                    {handoffAxialWarning ? (
-                      <p className="rounded-lg border border-amber-200/70 bg-amber-50/60 px-2.5 py-1.5 text-[11px] text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
-                        Axial Fa not from planar FEM — enter thrust manually for locating bearing check.
-                      </p>
-                    ) : null}
-                    {onSwapStations ? (
-                      <button
-                        type="button"
-                        onClick={onSwapStations}
-                        className="rounded-md border border-violet-300/80 bg-violet-50 px-2.5 py-1 text-[11px] font-semibold text-violet-900 hover:bg-violet-100 dark:border-violet-800/60 dark:bg-violet-950/40 dark:text-violet-100"
-                      >
-                        Swap locate ↔ float
-                      </button>
-                    ) : null}
-                  </div>
-                ) : (
-                  <p className="mb-2 text-[11px] text-slate-500">
-                    Without shaft handoff, radial load is split Fr/2 per station. Run Shaft Analysis to
-                    import true support reactions.
-                  </p>
-                )}
-                <div className={calculatorInputGridClass}>
-                  <CalculatorUnitField
-                    label="Bearing span L"
-                    value={bearingSpanMm}
-                    onChange={setBearingSpanMm}
-                    min={0}
-                    unit={<span className="text-sm text-slate-500">mm</span>}
-                  />
-                  <CalculatorUnitField
-                    label="Available float"
-                    value={availableFloatMm}
-                    onChange={setAvailableFloatMm ?? (() => undefined)}
-                    min={0}
-                    unit={<span className="text-sm text-slate-500">mm</span>}
-                  />
-                </div>
-              </CalculatorFormSection>
-            ) : null}
-
-            <CalculatorFormSection title="Mounting & reliability">
+            <CalculatorFormSection title="Clearance & reliability">
               <div className={calculatorInputGridClass}>
-                <CalculatorSelectField
-                  label="Mounting arrangement (detail)"
-                  value={arrangement}
-                  onChange={(value) => setArrangement(value as BearingArrangement)}
-                >
-                  <option value="single">Single bearing</option>
-                  <option value="back_to_back">Back-to-back (O)</option>
-                  <option value="face_to_face">Face-to-face (X)</option>
-                  <option value="tandem">Tandem (T)</option>
-                </CalculatorSelectField>
                 <CalculatorSelectField
                   label="Internal clearance (ISO)"
                   value={clearanceOverride || selected?.clearance || "CN"}
@@ -900,7 +918,7 @@ export default function BearingInputs({
           </div>
         );
 
-      case "selection":
+      case "size":
         return (
           <div className="space-y-4">
             <CalculatorFormSection
@@ -1138,13 +1156,64 @@ export default function BearingInputs({
             </CalculatorFormSection>
           </div>
         );
+
+      case "report":
+        return (
+          <div className="space-y-4">
+            <CalculatorFormSection
+              title={designerIntent === "service" ? "Actions" : "Report & calculate"}
+              description={
+                designerIntent === "service"
+                  ? "Run the evaluation, then use Diagnose / Report results for corrective actions."
+                  : "Run the system design, review the decision strip, and export the report."
+              }
+            >
+              {setProjectName ? (
+                <label className={calculatorFieldLabelClass}>
+                  Project name
+                  <input
+                    className={`${calculatorTextInputClass} mt-1`}
+                    value={projectName ?? ""}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Bearing project"
+                  />
+                </label>
+              ) : null}
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-slate-600 dark:text-slate-300">
+                <li>
+                  Topology:{" "}
+                  {mountingSystem === "single"
+                    ? "single"
+                    : mountingSystem === "duplex_angular"
+                      ? "duplex"
+                      : "locating + floating"}
+                </li>
+                <li>
+                  Duty: Fr / Fa with{useVariableLoad ? " spectrum" : " steady loads"} @ {speed} rpm
+                </li>
+                <li>
+                  {designerIntent === "service" ? "Evaluate" : "Size"}: {designation || "auto-design"}
+                  {floatingDesignation ? ` + float ${floatingDesignation}` : ""}
+                </li>
+                <li>Life method: {lifeMethod}</li>
+              </ul>
+              <p className="mt-3 text-xs text-slate-500">
+                Use Calculate below. Results open with a Pass / Marginal / Fail decision strip.
+              </p>
+            </CalculatorFormSection>
+          </div>
+        );
     }
   };
 
   return (
     <CalculatorInputPanel
-      title="Rolling bearing calculator"
-      description="SKF rating life (ISO 281:2007), ISO 76 static check, and multi-manufacturer catalog selection."
+      title={
+        designerIntent === "service"
+          ? "Bearing System Designer — Service"
+          : "Bearing System Designer"
+      }
+      description="Application system workflow: System → Duty → Size → Verify → Report. ISO 281 / ISO 76 screening."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton
@@ -1246,19 +1315,22 @@ export default function BearingInputs({
             />
           </label>
           <p className="text-xs text-slate-500">
-            Need κ, duplex, spectrum, or overrides? Switch to Expert. Or open{" "}
-            <a href="/products/bearings/life" className="text-cyan-700 underline dark:text-cyan-400">
-              Life
-            </a>{" "}
-            /{" "}
+            Need κ, duplex, spectrum, or overrides? Switch to Expert. Or open the{" "}
             <a href="/products/bearings/database" className="text-cyan-700 underline dark:text-cyan-400">
-              Database
+              catalog database
             </a>
             .
           </p>
         </div>
       ) : (
-        <BearingInputTabs>{renderTab}</BearingInputTabs>
+        <BearingDesignerSpine
+          intent={designerIntent}
+          stage={designerStage}
+          onStageChange={onDesignerStageChange}
+          defaultStage={designerIntent === "service" ? "system" : "system"}
+        >
+          {renderStage}
+        </BearingDesignerSpine>
       )}
 
       {wizardOpen && onSystemWizardApply && systemWizardSizingConfig ? (

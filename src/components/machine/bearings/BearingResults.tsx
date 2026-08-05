@@ -34,7 +34,6 @@ import {
 } from "@/components/calculator/results";
 import { chartModuleQuality } from "@/lib/calculator/qualityOverrides";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
-import BearingStatusBanner from "@/components/machine/bearings/BearingStatusBanner";
 import BearingResultsMetrics from "@/components/machine/bearings/BearingResultsMetrics";
 import BearingRecommendations from "@/components/machine/bearings/BearingRecommendations";
 import BearingCompareTable, {
@@ -50,15 +49,24 @@ import CalculatorResultsViewTabs, {
 import { buildBearingCsvRows, buildBearingReportSections } from "@/lib/machine/bearings/reportSections";
 import BearingConstructionCard from "@/components/machine/bearings/BearingConstructionCard";
 import BearingDecisionDashboard from "@/components/machine/bearings/BearingDecisionDashboard";
+import BearingDecisionStrip from "@/components/machine/bearings/BearingDecisionStrip";
+import BearingVerifyAccordion, {
+  type VerifySection,
+} from "@/components/machine/bearings/BearingVerifyAccordion";
 import BearingReactionDiagram from "@/components/machine/bearings/BearingReactionDiagram";
+import BearingInterchangeCard from "@/components/machine/bearings/BearingInterchangeCard";
 import { findBearing } from "@/data/catalogs/bearingCatalog";
 import { resolveRatingsProvenance } from "@/data/bearings/constructionDefaults";
 import {
+  buildBearingDecisionDashboard,
   buildOperatingEnvelope,
   reliabilityLifeCurve,
   reliabilityPercentFromA1,
+  type DashboardTone,
 } from "@/lib/machine/bearings/bearingDecisionDashboard";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
+import type { BearingDesignerIntent } from "@/lib/machine/bearings/bearingProject";
+import { METHOD_LADDER } from "@/lib/machine/bearings/bearingProject";
 
 type Props = {
   result: WithCalculationSpec<BearingResult> | null;
@@ -66,6 +74,7 @@ type Props = {
   speedRpm: number;
   arrangement?: "single" | "back_to_back" | "face_to_face" | "tandem";
   workflowMode?: DesignWorkflowMode;
+  designerIntent?: BearingDesignerIntent;
   diagnosis?: BearingDiagnosis | null;
   crossManufacturerRecommendation?: CrossManufacturerRecommendation | null;
   compareRows?: BearingCompareRow[];
@@ -75,12 +84,27 @@ type Props = {
   onSelectDesignation?: (designation: string) => void;
 };
 
+function toneFromSf(sf: number | undefined, warnAt = 1.2, failAt = 1): DashboardTone {
+  if (sf == null || !(sf > 0) || !Number.isFinite(sf)) return "neutral";
+  if (sf < failAt) return "critical";
+  if (sf < warnAt) return "warning";
+  return "safe";
+}
+
+function toneFromUtil(util: number | undefined, warnAt = 0.85, failAt = 1): DashboardTone {
+  if (util == null || !(util >= 0) || !Number.isFinite(util)) return "neutral";
+  if (util >= failAt) return "critical";
+  if (util >= warnAt) return "warning";
+  return "safe";
+}
+
 export default function BearingResults({
   result,
   loadUnit,
   speedRpm,
   arrangement = "single",
   workflowMode,
+  designerIntent = "design",
   diagnosis,
   crossManufacturerRecommendation = null,
   compareRows = [],
@@ -270,6 +294,94 @@ export default function BearingResults({
     ];
   }, [catalogEntry?.catalogFactors, loadUnit, result, speedRpm]);
 
+  const verifySections = useMemo((): VerifySection[] => {
+    if (!result) return [];
+    const dash = buildBearingDecisionDashboard(result);
+    const lifeMetric = dash.metrics.find((m) => m.id === "life");
+    const staticMetric = dash.metrics.find((m) => m.id === "static");
+    const speedMetric = dash.metrics.find((m) => m.id === "speed");
+    const methodStep = METHOD_LADDER.find((s) => s.id === result.lifeMethod);
+
+    return [
+      {
+        id: "life",
+        title: "Life & load ratings",
+        tone: lifeMetric?.tone ?? toneFromUtil(result.lifeUtilization),
+        summary: lifeMetric?.value ?? `Lnm ${formatDisplayNumber(result.modifiedLife)} h`,
+        content: (
+          <div className="space-y-3">
+            <BearingLifeFactorsCard result={result} />
+            <p className="text-[11px] text-slate-500">
+              Method: {methodStep?.label ?? result.lifeMethod}.{" "}
+              {methodStep?.description}
+            </p>
+          </div>
+        ),
+      },
+      {
+        id: "static",
+        title: "Static safety",
+        tone: staticMetric?.tone ?? toneFromSf(result.staticSafetyFactor),
+        summary:
+          staticMetric?.value ??
+          `s₀ = ${formatDisplayNumber(result.staticSafetyFactor ?? 0)}`,
+        content: <BearingPairedStationsCard result={result} loadUnit={loadUnit} />,
+      },
+      {
+        id: "speed-lube",
+        title: "Speed & lubrication",
+        tone: speedMetric?.tone ?? "neutral",
+        summary: speedMetric?.value ?? "Speed margin and grease / κ screens",
+        content: (
+          <div className="space-y-3">
+            <BearingRelubricationCard result={result} />
+            <BearingAuxSpeedEnergyCard result={result} />
+            <BearingThermalCard result={result} />
+          </div>
+        ),
+      },
+      {
+        id: "arrangement",
+        title: "Arrangement",
+        tone: result.arrangementAnalysis?.status === "critical"
+          ? "critical"
+          : result.arrangementAnalysis?.status === "warning"
+            ? "warning"
+            : "safe",
+        summary: result.arrangementAnalysis?.note ?? "Single or duplex arrangement checks",
+        content: (
+          <div className="space-y-3">
+            <BearingDuplexStiffnessCard result={result} />
+            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
+          </div>
+        ),
+      },
+      {
+        id: "provenance",
+        title: "Catalog provenance",
+        tone: ratingsProvenance === "user_override" || ratingsProvenance === "estimated"
+          ? "warning"
+          : "safe",
+        summary: `Ratings: ${String(ratingsProvenance).replace(/_/g, " ")}`,
+        content: (
+          <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
+            {result.bearingType ? (
+              <BearingConstructionCard
+                entry={catalogEntry}
+                bearingType={result.bearingType}
+                ratingsProvenance={ratingsProvenance}
+              />
+            ) : null}
+            <p>
+              Confirm critical duty with OEM datasheets / Product Select. This catalog is
+              representative screening — not full vendor assortment.
+            </p>
+          </div>
+        ),
+      },
+    ];
+  }, [catalogEntry, loadUnit, ratingsProvenance, result]);
+
   const viewTabs = useMemo(() => {
     if (!result) return [];
 
@@ -285,43 +397,80 @@ export default function BearingResults({
         icon: LayoutDashboard,
         content: (
           <div className="space-y-4">
-            {workflowMode !== "diagnose" && crossManufacturerRecommendation?.primary ? (
-              <BearingRecommendations
-                result={result}
-                recommendation={crossManufacturerRecommendation}
-                compareRows={compareRows}
-                onSelect={onSelectDesignation}
-              />
-            ) : null}
-            {compareRows.length >= 2 ? <BearingCompareTable rows={compareRows} /> : null}
-            {mountedBom ? <MountedBomPanel bom={mountedBom} compact /> : null}
-            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
-            {result.bearingType ? (
-              <BearingConstructionCard
-                entry={catalogEntry}
-                bearingType={result.bearingType}
-                ratingsProvenance={ratingsProvenance}
-              />
-            ) : null}
-            {result.geometry ? (
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
-                <p>
-                  Geometry preview: d={result.geometry.boreMm} · D={result.geometry.outerDiameterMm} · B=
-                  {result.geometry.widthMm} mm
-                </p>
-                {result.bearingType ? (
-                  <div className="mt-2">
-                    <BearingReferenceVisual
-                      bearingType={result.bearingType}
-                      sealType={catalogEntry?.sealType ?? "open"}
-                      arrangement={arrangement}
-                      compact
-                    />
-                  </div>
-                ) : null}
+            {result.pairedStations && result.pairedStations.length > 0 ? (
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+                <table className="min-w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-800/80">
+                      <th className="px-3 py-2 font-semibold">Station</th>
+                      <th className="px-3 py-2 font-semibold">P</th>
+                      <th className="px-3 py-2 font-semibold">Lnm</th>
+                      <th className="px-3 py-2 font-semibold">s₀</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.pairedStations.map((st) => (
+                      <tr
+                        key={st.index}
+                        className="border-b border-slate-100 last:border-0 dark:border-slate-800"
+                      >
+                        <td className="px-3 py-2 font-medium">
+                          {st.label ?? `Station ${st.index + 1}`}
+                          {st.designation ? ` · ${st.designation}` : ""}
+                        </td>
+                        <td className="px-3 py-2 tabular-nums">
+                          {formatDisplayNumber(fromBase(st.equivalentLoad, "force", loadUnit))}{" "}
+                          {loadUnit}
+                        </td>
+                        <td className="px-3 py-2 tabular-nums">
+                          {formatDisplayNumber(st.modifiedLifeHours)} h
+                        </td>
+                        <td className="px-3 py-2 tabular-nums">
+                          {st.staticEquivalentLoad > 0 && st.dynamicRatingN
+                            ? formatDisplayNumber(
+                                (catalogEntry?.staticRatingN ?? result.staticLoadRatingN) /
+                                  Math.max(st.staticEquivalentLoad, 1e-9)
+                              )
+                            : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : null}
-            <BearingAuxSpeedEnergyCard result={result} />
+
+            <BearingVerifyAccordion result={result} sections={verifySections} />
+
+            {designerIntent === "design" &&
+            workflowMode !== "diagnose" &&
+            crossManufacturerRecommendation?.primary ? (
+              <details className="rounded-xl border border-slate-200 dark:border-slate-700">
+                <summary className="cursor-pointer px-3 py-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                  Catalog candidates
+                </summary>
+                <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-700">
+                  <BearingRecommendations
+                    result={result}
+                    recommendation={crossManufacturerRecommendation}
+                    compareRows={compareRows}
+                    onSelect={onSelectDesignation}
+                  />
+                  {compareRows.length >= 2 ? <BearingCompareTable rows={compareRows} /> : null}
+                </div>
+              </details>
+            ) : null}
+
+            {mountedBom ? (
+              <details className="rounded-xl border border-slate-200 dark:border-slate-700">
+                <summary className="cursor-pointer px-3 py-2 text-sm font-semibold">
+                  Mounted BOM
+                </summary>
+                <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-700">
+                  <MountedBomPanel bom={mountedBom} compact />
+                </div>
+              </details>
+            ) : null}
           </div>
         ),
       },
@@ -441,13 +590,23 @@ export default function BearingResults({
       },
     ];
 
-    if (workflowMode === "diagnose" && diagnosis) {
+    if ((designerIntent === "service" || workflowMode === "diagnose") && diagnosis) {
       tabs.splice(1, 0, {
         id: "diagnose",
         label: "Diagnose",
         icon: Stethoscope,
         content: (
-          <BearingDiagnosisPanel diagnosis={diagnosis} onSelectReplacement={onSelectDesignation} />
+          <div className="space-y-4">
+            <BearingDiagnosisPanel diagnosis={diagnosis} onSelectReplacement={onSelectDesignation} />
+            {result.designation ? (
+              <BearingInterchangeCard
+                designation={result.designation}
+                onSelectDesignation={onSelectDesignation}
+              />
+            ) : null}
+            <BearingDefectFrequenciesCard result={result} />
+            <BearingRelubricationCard result={result} />
+          </div>
         ),
       });
     }
@@ -458,6 +617,7 @@ export default function BearingResults({
     catalogEntry,
     compareRows,
     crossManufacturerRecommendation,
+    designerIntent,
     diagnosis,
     inputRows,
     loadUnit,
@@ -466,6 +626,7 @@ export default function BearingResults({
     plotTabs,
     ratingsProvenance,
     result,
+    verifySections,
     workflowMode,
   ]);
 
@@ -474,34 +635,41 @@ export default function BearingResults({
       moduleId="bearings"
       fileName="bearing"
       calculationSpec={result?.calculationSpec}
-      title="Bearing calculation report"
-      description="ISO 281/76 bearing life report with inputs, equations, safety checks, and charts."
+      title="Bearing system report"
+      description="ISO 281/76 system design report with decision strip, verify checks, and charts."
       empty={!result}
-      emptyMessage="Enter loads, speed, life target, and catalog bearing, then calculate."
+      emptyMessage="Complete System → Duty → Size, then Calculate."
       heading="Bearing results"
       tableVariant="compact"
       qualityOverrides={chartModuleQuality()}
       inputRows={inputRows}
       reportSections={reportSections}
       reportMeta={{
-        project: result?.designation ?? "Bearing selection",
+        project: result?.designation ?? "Bearing System Designer",
         notes: crossManufacturerRecommendation?.advisor?.narrative,
       }}
       csvRows={reportCsvRows}
     >
       {result ? (
         <div className="space-y-4">
-          <BearingDecisionDashboard result={result} />
+          <BearingDecisionStrip result={result} intent={designerIntent} />
           <BearingResultsMetrics
             result={result}
             loadUnit={loadUnit}
             catalogEntry={catalogEntry}
             ratingsProvenance={ratingsProvenance}
           />
-          <BearingStatusBanner result={result} />
+          <details className="rounded-xl border border-slate-200 dark:border-slate-700">
+            <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+              Full decision dashboard
+            </summary>
+            <div className="border-t border-slate-200 px-3 py-3 dark:border-slate-700">
+              <BearingDecisionDashboard result={result} />
+            </div>
+          </details>
           <CalculatorResultsViewTabs
             tabs={viewTabs}
-            defaultTab="overview"
+            defaultTab={designerIntent === "service" && diagnosis ? "diagnose" : "overview"}
             ariaLabel="Bearing results views"
           />
         </div>

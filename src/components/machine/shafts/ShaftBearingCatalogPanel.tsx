@@ -74,7 +74,7 @@ export default function ShaftBearingCatalogPanel({
           </p>
         </div>
         <Link
-          href="/products/bearings/selection"
+          href="/products/bearings/designer"
           className="text-xs font-medium text-blue-600 hover:underline"
         >
           Open bearings module

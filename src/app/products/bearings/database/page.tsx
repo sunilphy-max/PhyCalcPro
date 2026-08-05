@@ -178,19 +178,19 @@ export default function BearingDatabasePage() {
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
-                    href={`/products/bearings/life?designation=${encodeURIComponent(selected.designation)}`}
+                    href={`/products/bearings/designer?intent=service&designation=${encodeURIComponent(selected.designation)}&panel=duty`}
                     className="rounded-lg bg-cyan-600 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-cyan-700"
                   >
                     Use in life calculator
                   </Link>
                   <Link
-                    href={`/products/bearings/selection?designation=${encodeURIComponent(selected.designation)}&type=${selected.type}`}
+                    href={`/products/bearings/designer?intent=design&designation=${encodeURIComponent(selected.designation)}&type=${selected.type}`}
                     className="rounded-lg border border-slate-200 px-3 py-2 text-center text-xs font-semibold dark:border-slate-600"
                   >
                     Use in selection
                   </Link>
                   <Link
-                    href={`/products/bearings/speed?designation=${encodeURIComponent(selected.designation)}`}
+                    href={`/products/bearings/designer?intent=design&designation=${encodeURIComponent(selected.designation)}&panel=verify`}
                     className="rounded-lg border border-slate-200 px-3 py-2 text-center text-xs font-semibold dark:border-slate-600"
                   >
                     Check speed limits

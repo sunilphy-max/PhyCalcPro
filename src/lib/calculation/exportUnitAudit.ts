@@ -35,7 +35,7 @@ const exportMigratedRoutes = new Set([
   "/products/dynamics/impact",
   "/products/dynamics/suspension",
   "/products/machine/gears",
-  "/products/bearings/selection",
+  "/products/bearings/designer",
   "/products/machine/cams",
   "/products/machine/flywheels",
   "/products/fasteners/bolts",

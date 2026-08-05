@@ -19,8 +19,43 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/products/machine/bearings",
-        destination: "/products/bearings/selection",
+        destination: "/products/bearings/designer",
         permanent: true,
+      },
+      {
+        source: "/products/bearings/selection",
+        destination: "/products/bearings/designer",
+        permanent: true,
+      },
+      {
+        source: "/products/bearings/life",
+        destination: "/products/bearings/designer?intent=design&panel=verify",
+        permanent: false,
+      },
+      {
+        source: "/products/bearings/loads",
+        destination: "/products/bearings/designer?intent=design&panel=duty",
+        permanent: false,
+      },
+      {
+        source: "/products/bearings/speed",
+        destination: "/products/bearings/designer?intent=design&panel=verify",
+        permanent: false,
+      },
+      {
+        source: "/products/bearings/lubrication",
+        destination: "/products/bearings/designer?intent=design&panel=verify",
+        permanent: false,
+      },
+      {
+        source: "/products/bearings/mounting",
+        destination: "/products/bearings/designer?intent=design&panel=system",
+        permanent: false,
+      },
+      {
+        source: "/products/bearings/arrangement",
+        destination: "/products/bearings/designer?intent=design&panel=system",
+        permanent: false,
       },
       {
         source: "/products/machine/plain-bearings",

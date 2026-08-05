@@ -4,9 +4,10 @@ import { buildPageMetadata } from "@/lib/seo/site";
 export const metadata = buildPageMetadata({
   title: { absolute: "Bearing Engineering Suite — PhyCalcPro" },
   description:
-    "Bearing life calculator, ISO 281 L10, catalog database, equivalent load, arrangement, lubrication, mounting, and failure analysis — one engineering suite.",
+    "Bearing Application System Designer — ISO 281 L10, stations, catalog sizing, lubrication, fits, and service diagnosis in one workspace.",
   path: "/products/bearings",
   keywords: [
+    "bearing system designer",
     "bearing life calculator",
     "ISO 281",
     "L10 life",

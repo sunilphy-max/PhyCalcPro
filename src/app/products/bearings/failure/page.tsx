@@ -68,16 +68,15 @@ export default function BearingFailurePage() {
 
         <p className="text-sm text-slate-500">
           Related:{" "}
-          <Link href="/products/bearings/lubrication" className="text-cyan-700 underline dark:text-cyan-400">
-            Lubrication
+          <Link
+            href="/products/bearings/designer?intent=service&panel=verify"
+            className="text-cyan-700 underline dark:text-cyan-400"
+          >
+            System Designer (Service)
           </Link>
           {" · "}
-          <Link href="/products/bearings/life" className="text-cyan-700 underline dark:text-cyan-400">
-            Life
-          </Link>
-          {" · "}
-          <Link href="/products/bearings/mounting" className="text-cyan-700 underline dark:text-cyan-400">
-            Mounting
+          <Link href="/products/bearings/database" className="text-cyan-700 underline dark:text-cyan-400">
+            Database
           </Link>
         </p>
       </div>

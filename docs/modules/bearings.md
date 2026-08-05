@@ -1,17 +1,22 @@
 ---
-seoTitle: "Bearing Selection Guide: How Engineers Select Bearings"
-seoDescription: "How engineers select rolling bearings: types, equivalent load, ISO 281 L10 life, dynamic rating C, lubrication factors, worked example, and calculator."
+seoTitle: "Bearing System Designer Guide: How Engineers Select Bearings"
+seoDescription: "Application System Designer for rolling bearings: stations, duty, ISO 281 L10, catalog size, lubrication, fits, and service diagnosis."
 guideHeadline: "How Engineers Select Bearings"
-keywords: ["bearing selection", "L10 life", "ISO 281", "dynamic load rating", "equivalent bearing load", "bearing lubrication"]
+keywords: ["bearing system designer", "bearing selection", "L10 life", "ISO 281", "dynamic load rating", "equivalent bearing load", "bearing lubrication"]
 ---
 
-### Bearing Selection Guide (`bearings`)
+### Bearing System Designer Guide (`bearings`)
 
 ## How engineers select bearings
 
 Rolling-element bearing selection is a load–life–speed–fit problem. Engineers size bearings so that the **basic or modified rating life** meets the duty, static safety is adequate at peak load, speed stays below catalog limits, and the arrangement (locating / floating, O / X / T) matches thermal growth and stiffness needs.
 
-This guide is for machine designers, reliability engineers, and students who need a practical selection workflow—not a full OEM catalog dump. Use it to understand ISO 281 / ISO 76 screening, then open the PhyCalcPro calculator to rank catalog designations.
+PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/designer`) is the primary workspace. It supports two URL-addressable intents on one project object:
+
+- **Design** (`?intent=design`) — System → Duty → Size → Verify → Report
+- **Service** (`?intent=service`) — Identify → Duty → Evaluate → Diagnose → Actions
+
+Absorbed legacy tools (life, loads, speed, lubrication, mounting, arrangement) deep-link into Designer panels. Catalog database, failure guide, plain bearings, and housings remain sibling modules.
 
 ## Bearing types and when to use them
 
@@ -28,16 +33,17 @@ This guide is for machine designers, reliability engineers, and students who nee
 
 **Selection tip:** Start from the load vector (Fr, Fa), speed, and whether shafts need locating+floating or rigid duplex pairs. Space limits and sealing (open / ZZ / 2RS) often decide series before life does.
 
-## Engineering workflow
+## Engineering workflow (System Designer)
 
-1. **Define duty** — Fr, Fa (or thrust), speed \(n\), required life \(L_{10h}\), temperature, contamination, and reliability (90–99%).
-2. **Choose arrangement** — single, locating+floating, or duplex O / X / T with preload class.
-3. **Compute equivalent loads** — dynamic \(P\) and static \(P_0\) from Fr, Fa and type factors.
-4. **Required capacity** — from target life, back-calculate needed dynamic rating \(C\); check static \(C_0/P_0\).
-5. **Catalog screen** — filter bore, type, series, sealing; rank by life utilization, static SF, and speed margin.
-6. **Lubrication & factors** — oil/grease, ISO VG, \(\kappa\), contamination \(e_C\), optional modified life \(a_{\mathrm{ISO}}\).
-7. **Fits & mounting** — shaft/housing fits, clearance (C2–C4), thermal float for locating+floating.
-8. **Verify** — min load (skidding), limiting speed, grease life / relubrication, defect frequencies if condition monitoring is planned.
+1. **System** — Choose dynamic topology: single station, locating+floating, or duplex O / X / T. Optional shaft handoff for station reactions.
+2. **Duty** — Fr, Fa (or spectrum), speed \(n\), required life \(L_{10h}\).
+3. **Size** — Catalog filters and designation (or auto-design ranking).
+4. **Verify** — Method ladder (ISO 281 → ISO 16281 screen → stress-life screen → OEM/FEA), lubrication \(\kappa\) / \(e_C\), clearance, misalignment, speed / min load.
+5. **Report** — Decision strip (Pass / Marginal / Fail), station table, export.
+
+**Service intent** starts from an installed designation, emphasizes diagnosis, interchange, grease life, and defect frequencies.
+
+**Method ladder:** climb only as far as the decision needs. ISO 16281 and stress-life paths are **screening** — not full FEA, GBLM, or Bearinx.
 
 ## Key quantities and formulas
 
@@ -87,7 +93,7 @@ C \approx 66\,\mathrm{kN}
 3. Screen catalog deep-groove bearings with bore matching the shaft, \(C \gtrsim 66\,\mathrm{kN}\), check \(C_0/P_0\), limiting speed, and grease life.
 4. Apply modified life if \(\kappa\) and \(e_C\) are known; a low \(\kappa\) can cut \(L_{nm}\) well below basic \(L_{10h}\).
 
-**Try it:** [Life tool](/products/bearings/life?type=deep_groove) · [Selection](/products/bearings/selection?type=deep_groove)
+**Try it:** [System Designer](/products/bearings/designer?intent=design&type=deep_groove)
 
 **Interpretation:** Meeting basic \(L_{10h}\) on paper is not enough if lubricant film or contamination is poor—always review \(a_{\mathrm{ISO}}\) factors.
 
@@ -100,7 +106,7 @@ C \approx 66\,\mathrm{kN}
 3. Verify limiting / reference speed for grease, min load against skidding, and relubrication interval if open.
 4. Prefer sealed deep-groove with adequate C3 clearance when thermal growth is expected.
 
-**Try it:** [Life calculator](/products/bearings/life?type=deep_groove) · [Speed tool](/products/bearings/speed)
+**Try it:** [Service check](/products/bearings/designer?intent=service&type=deep_groove&example=motor)
 
 ### 3. Angular contact / ballscrew (duplex)
 
@@ -111,7 +117,7 @@ C \approx 66\,\mathrm{kN}
 3. Confirm preload class vs thermal growth; face-to-face (X) if misalignment dominates.
 4. Hand off designation into Selection Expert mode for κ, contamination, and fits.
 
-**Try it:** [Selection (angular)](/products/bearings/selection?type=angular_contact) · [Arrangement guide](/products/bearings/arrangement)
+**Try it:** [Designer (angular)](/products/bearings/designer?intent=design&type=angular_contact)
 
 ## Standards scope (ISO 281 / 76 / 492 / ABMA)
 
@@ -165,7 +171,7 @@ Yes. The shaft module can publish bearing reactions and slopes; the bearings cal
 
 ## Use the PhyCalcPro calculator
 
-Open the [Bearing Engineering Suite hub](/products/bearings) or jump straight to [Selection](/products/bearings/selection). Focused tools: [Life (ISO 281)](/products/bearings/life), [Database](/products/bearings/database), [Equivalent load](/products/bearings/loads), [Arrangement](/products/bearings/arrangement), [Speed](/products/bearings/speed), [Lubrication](/products/bearings/lubrication), [Failure](/products/bearings/failure), [Mounting](/products/bearings/mounting). Enter Fr, Fa, speed, and life target; pick application profile and manufacturer filters; run **Auto-design** to rank designations, or **Validate** a known part number. Review Lnm factors, static SF, speed margin, and arrangement stiffness before freezing the BOM.
+Open the [Bearing Engineering Suite hub](/products/bearings) or the [System Designer](/products/bearings/designer). Use **Design a system** or **Check / diagnose**. Sibling tools: [Database](/products/bearings/database), [Failure guide](/products/bearings/failure), [Plain](/products/bearings/plain), [Housings](/products/bearings/housing). Enter stations and duty; run Calculate; review the decision strip, Verify accordion, and (in Service) Diagnose before freezing the BOM.
 
 **Purpose**
 
