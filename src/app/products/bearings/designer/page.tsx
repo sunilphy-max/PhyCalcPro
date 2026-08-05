@@ -5,7 +5,15 @@ import { useSyncDesignInputs } from "@/hooks/useSyncDesignInputs";
 import { useRollingBearingPresetSync } from "@/hooks/useBearingPresetSync";
 import { useStandardCalculation } from "@/hooks/useStandardCalculation";
 import { applyUnitMap } from "@/lib/units/applyUnitMap";
-import { useState, useMemo, useCallback, useDeferredValue, useEffect, Suspense } from "react";
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  Suspense,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import CalculatorLayout from "@/components/CalculatorLayout";
 import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
@@ -23,6 +31,17 @@ import BearingMountingSystem, {
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import BearingDesignSummaryPanel from "@/components/machine/bearings/BearingDesignSummaryPanel";
 import BearingIntentToggle from "@/components/machine/bearings/BearingIntentToggle";
+import BearingDesignationSearchBar from "@/components/machine/bearings/BearingDesignationSearchBar";
+import { parseWorkflowModeParam } from "@/lib/machine/bearings/bearingProductSelect";
+import {
+  answersFromParamGetter,
+  consumeAssistantApply,
+  defaultAssistantAnswers,
+  getBearingAssistant,
+  parseAssistantId,
+  toAssistantApplyPayload,
+  type BearingAssistantApplyPayload,
+} from "@/lib/machine/bearings/bearingApplicationAssistants";
 import SavedProjectsFooter from "@/components/shared/SavedProjectsFooter";
 import CrossCalcHandoffBanner from "@/components/design-workflows/CrossCalcHandoffBanner";
 import { publishHandoff } from "@/lib/design-workflows/crossCalcHandoff";
@@ -68,6 +87,7 @@ import type { BearingSystemWizardValues } from "@/components/machine/bearings/Be
 import type { BearingConfig } from "@/lib/machine/bearings/types";
 import { resolveRatingsProvenance } from "@/data/bearings/constructionDefaults";
 import {
+  defaultStageForIntent,
   parseDesignerIntent,
   parseDesignerStage,
   type BearingDesignerIntent,
@@ -176,15 +196,16 @@ function buildRatingsOverride(
 
 
 function BearingDesignerPage() {
-  const { mode: workflowMode } = useDesignWorkflow();
+  const { mode: workflowMode, setMode: setWorkflowMode } = useDesignWorkflow();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [designerIntent, setDesignerIntent] = useState<BearingDesignerIntent>(() =>
     parseDesignerIntent(searchParams.get("intent"))
   );
-  const [designerStage, setDesignerStage] = useState<BearingDesignerStageId>(() =>
-    parseDesignerStage(searchParams.get("panel")) ?? "system"
-  );
+  const [designerStage, setDesignerStage] = useState<BearingDesignerStageId>(() => {
+    const intent = parseDesignerIntent(searchParams.get("intent"));
+    return parseDesignerStage(searchParams.get("panel")) ?? defaultStageForIntent(intent);
+  });
   const [radialLoad, setRadialLoad] = useState(500);
   const [radialUnit, setRadialUnit] = useState("N");
   const [axialLoad, setAxialLoad] = useState(100);
@@ -232,10 +253,14 @@ function BearingDesignerPage() {
   const [useThermalEquilibrium, setUseThermalEquilibrium] = useState(true);
 
   useEffect(() => {
-    setDesignerIntent(parseDesignerIntent(searchParams.get("intent")));
+    const intent = parseDesignerIntent(searchParams.get("intent"));
+    setDesignerIntent(intent);
     const panel = parseDesignerStage(searchParams.get("panel"));
-    if (panel) setDesignerStage(panel);
-  }, [searchParams]);
+    setDesignerStage(panel ?? defaultStageForIntent(intent));
+    const modeParam = parseWorkflowModeParam(searchParams.get("mode"));
+    if (modeParam) setWorkflowMode(modeParam);
+    else if (intent === "service") setWorkflowMode("diagnose");
+  }, [searchParams, setWorkflowMode]);
 
   useEffect(() => {
     const typeParam = searchParams.get("type");
@@ -1001,7 +1026,8 @@ function BearingDesignerPage() {
   );
 
   const applyCopilot = useCallback(
-    (payload: BearingCopilotApplyPayload) => {
+    (payload: BearingAssistantApplyPayload | BearingCopilotApplyPayload) => {
+      const assistantPayload = payload as BearingAssistantApplyPayload;
       const nextRadial =
         payload.radialLoad != null ? fromBase(payload.radialLoad, "force", radialUnit) : radialLoad;
       const nextAxial =
@@ -1032,7 +1058,12 @@ function BearingDesignerPage() {
       if (payload.applicationProfile) setApplicationProfile(nextProfile);
       if (payload.arrangement) {
         setArrangement(nextArrangement);
-        if (nextArrangement !== "single") setMountingSystem("duplex_angular");
+        if (nextArrangement !== "single" && !assistantPayload.mountingSystem) {
+          setMountingSystem("duplex_angular");
+        }
+      }
+      if (assistantPayload.mountingSystem) {
+        setMountingSystem(assistantPayload.mountingSystem);
       }
       if (payload.lubricantType) setLubricantType(nextLube);
       if (payload.isoVgGrade != null) setIsoVgGrade(nextVg);
@@ -1042,7 +1073,9 @@ function BearingDesignerPage() {
 
       if (payload.resetCatalogFilters) {
         setSeriesFilter("all");
-        setSealFilter("all");
+        setSealFilter(assistantPayload.sealFilter ?? "all");
+      } else if (assistantPayload.sealFilter) {
+        setSealFilter(assistantPayload.sealFilter);
       }
 
       const resolvedDesignation =
@@ -1121,6 +1154,32 @@ function BearingDesignerPage() {
     ]
   );
 
+  const assistantAppliedKey = useRef<string | null>(null);
+
+  useEffect(() => {
+    const assistantId = parseAssistantId(searchParams.get("assistant"));
+    if (!assistantId) return;
+    const applyKey = searchParams.toString();
+    if (assistantAppliedKey.current === applyKey) return;
+
+    const assistant = getBearingAssistant(assistantId);
+    if (!assistant) return;
+
+    const fromSession = consumeAssistantApply();
+    const fromQuery = answersFromParamGetter(
+      (key) => searchParams.get(key),
+      assistant.fields.map((f) => f.id)
+    );
+    const answers = {
+      ...defaultAssistantAnswers(assistant),
+      ...fromQuery,
+    };
+    const payload = fromSession ?? toAssistantApplyPayload(assistantId, answers);
+    assistantAppliedKey.current = applyKey;
+    applyCopilot(payload);
+    setUiComplexity("expert");
+  }, [searchParams, applyCopilot]);
+
   const effectiveWorkflowMode =
     designerIntent === "service" ? "diagnose" : workflowMode;
 
@@ -1153,10 +1212,24 @@ function BearingDesignerPage() {
             <BearingIntentToggle intent={designerIntent} onChange={syncIntentToUrl} />
             <p className="text-[11px] text-slate-500">
               {designerIntent === "service"
-                ? "Service path: identify → evaluate → diagnose → actions"
-                : "Design path: system → duty → size → verify → report"}
+                ? "Service: identify → duty → evaluate → diagnose → actions"
+                : "SKF-aligned: requirements → type & arrangement → size → lube & interfaces → decision"}
             </p>
           </div>
+          <BearingDesignationSearchBar
+            designation={designation}
+            onSelect={(d) => {
+              const entry = findBearing(d);
+              if (entry) {
+                setDesignation(entry.designation);
+                setBearingType(entry.type);
+                setManufacturer(entry.manufacturer);
+              } else {
+                setDesignation(d);
+              }
+            }}
+            onLoaded={() => syncStageToUrl("size")}
+          />
           <BearingCopilotPanel onApply={applyCopilot} />
           <CrossCalcHandoffBanner
             moduleId="bearings"

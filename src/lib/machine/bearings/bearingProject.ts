@@ -82,45 +82,147 @@ export type DesignerStageDef = {
   serviceLabel: string;
   designDescription: string;
   serviceDescription: string;
+  /** SKF selection-process step numbers this stage covers (design intent). */
+  skfSteps: number[];
 };
 
+/**
+ * Stage definitions aligned with SKF bearing selection process:
+ * 1 Requirements → 2 Type & arrangement → 3 Size → 4–8 Lube/speed/interfaces/execution/mounting.
+ * @see https://www.skf.com/us/products/rolling-bearings/principles-of-rolling-bearing-selection/bearing-selection-process
+ */
 export const DESIGNER_STAGES: DesignerStageDef[] = [
   {
-    id: "system",
-    designLabel: "System",
-    serviceLabel: "Identify",
-    designDescription: "Stations, arrangement, and bearing family",
-    serviceDescription: "Designation and mounting topology",
+    id: "duty",
+    designLabel: "Requirements",
+    serviceLabel: "Duty",
+    designDescription: "Performance targets and operating conditions (SKF step 1)",
+    serviceDescription: "Operating loads, speed, and life target",
+    skfSteps: [1],
   },
   {
-    id: "duty",
-    designLabel: "Duty",
-    serviceLabel: "Duty",
-    designDescription: "Loads, speed, life target, and environment",
-    serviceDescription: "Operating loads, speed, and lubricant conditions",
+    id: "system",
+    designLabel: "Type & arrangement",
+    serviceLabel: "Identify",
+    designDescription: "Bearing family, stations, and locating layout (SKF step 2)",
+    serviceDescription: "Installed designation and mounting topology",
+    skfSteps: [2],
   },
   {
     id: "size",
-    designLabel: "Size",
+    designLabel: "Bearing size",
     serviceLabel: "Evaluate",
-    designDescription: "Catalog filters and designation ranking",
+    designDescription: "Catalog filters and capacity ranking (SKF step 3)",
     serviceDescription: "Confirm ratings and catalog match",
+    skfSteps: [3],
   },
   {
     id: "verify",
-    designLabel: "Verify",
+    designLabel: "Lube & interfaces",
     serviceLabel: "Diagnose",
-    designDescription: "Life method, fits, misalignment, and advanced checks",
-    serviceDescription: "Failure modes, interchange, and CM frequencies",
+    designDescription:
+      "Lubrication, temperature/speed, fits, clearance, sealing (SKF steps 4–8)",
+    serviceDescription: "Failure modes, interchange, grease life, CM frequencies",
+    skfSteps: [4, 5, 6, 7, 8],
   },
   {
     id: "report",
-    designLabel: "Report",
+    designLabel: "Decision",
     serviceLabel: "Actions",
-    designDescription: "Calculate, save, and export the design decision",
+    designDescription: "Pass/fail verdict, save, and export",
     serviceDescription: "Corrective actions and project export",
+    skfSteps: [],
   },
 ];
+
+/** Design follows SKF order: requirements before type/arrangement. */
+export const DESIGN_STAGE_ORDER: BearingDesignerStageId[] = [
+  "duty",
+  "system",
+  "size",
+  "verify",
+  "report",
+];
+
+/** Service starts from the installed bearing, then duty and checks. */
+export const SERVICE_STAGE_ORDER: BearingDesignerStageId[] = [
+  "system",
+  "duty",
+  "size",
+  "verify",
+  "report",
+];
+
+/** Hub / docs — full SKF eight-step map into Designer panels. */
+export const SKF_SELECTION_PROCESS_STEPS: {
+  step: number;
+  title: string;
+  summary: string;
+  panel: BearingDesignerStageId;
+  href: string;
+}[] = [
+  {
+    step: 1,
+    title: "Performance & operating conditions",
+    summary: "Life, load, speed, temperature, cleanliness, and space limits",
+    panel: "duty",
+    href: "/products/bearings/designer?intent=design&panel=duty",
+  },
+  {
+    step: 2,
+    title: "Bearing type and arrangement",
+    summary: "Family, locating/floating or duplex O / X / T",
+    panel: "system",
+    href: "/products/bearings/designer?intent=design&panel=system",
+  },
+  {
+    step: 3,
+    title: "Bearing size",
+    summary: "Dynamic / static capacity and catalog designation",
+    panel: "size",
+    href: "/products/bearings/designer?intent=design&panel=size",
+  },
+  {
+    step: 4,
+    title: "Lubrication",
+    summary: "Oil/grease, viscosity ratio κ, contamination eC",
+    panel: "verify",
+    href: "/products/bearings/designer?intent=design&panel=verify",
+  },
+  {
+    step: 5,
+    title: "Operating temperature and speed",
+    summary: "Thermal equilibrium, limiting and reference speed",
+    panel: "verify",
+    href: "/products/bearings/designer?intent=design&panel=verify",
+  },
+  {
+    step: 6,
+    title: "Bearing interfaces",
+    summary: "Shaft and housing fits, operating clearance",
+    panel: "verify",
+    href: "/products/bearings/designer?intent=design&panel=verify",
+  },
+  {
+    step: 7,
+    title: "Bearing execution",
+    summary: "Clearance class, precision, cage / rolling-element material",
+    panel: "verify",
+    href: "/products/bearings/designer?intent=design&panel=verify",
+  },
+  {
+    step: 8,
+    title: "Sealing, mounting and dismounting",
+    summary: "Seal type, mounting practice, maintenance path",
+    panel: "verify",
+    href: "/products/bearings/designer?intent=design&panel=verify",
+  },
+];
+
+export function stagesForIntent(intent: BearingDesignerIntent): DesignerStageDef[] {
+  const order = intent === "service" ? SERVICE_STAGE_ORDER : DESIGN_STAGE_ORDER;
+  return order.map((id) => DESIGNER_STAGES.find((s) => s.id === id)!);
+}
 
 export function parseDesignerIntent(value: string | null | undefined): BearingDesignerIntent {
   return value === "service" ? "service" : "design";
@@ -136,12 +238,14 @@ export function parseDesignerStage(value: string | null | undefined): BearingDes
   ) {
     return value;
   }
-  /** Legacy focused-tool deep links */
-  if (value === "life" || value === "loads" || value === "lubrication" || value === "speed") {
+  /** Aliases + legacy deep links */
+  if (value === "requirements" || value === "loads") return "duty";
+  if (value === "type" || value === "arrangement" || value === "mounting") return "system";
+  if (value === "life" || value === "lubrication" || value === "speed" || value === "interfaces") {
     return "verify";
   }
-  if (value === "arrangement" || value === "mounting") return "system";
   if (value === "failure" || value === "diagnose") return "verify";
+  if (value === "decision") return "report";
   return null;
 }
 
@@ -154,7 +258,7 @@ export function stageDescription(stage: DesignerStageDef, intent: BearingDesigne
 }
 
 export function defaultStageForIntent(intent: BearingDesignerIntent): BearingDesignerStageId {
-  return "system";
+  return intent === "service" ? "system" : "duty";
 }
 
 /** Map mounting system id → dynamic station list. */

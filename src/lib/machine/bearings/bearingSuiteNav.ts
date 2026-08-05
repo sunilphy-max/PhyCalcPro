@@ -2,6 +2,8 @@
  * Bearing Engineering Suite — navigation centered on System Designer.
  */
 
+import { bearingAssistantExamples } from "./bearingApplicationAssistants";
+
 export type BearingSuiteNavItem = {
   id: string;
   label: string;
@@ -13,10 +15,16 @@ export type BearingSuiteNavItem = {
 
 export const BEARING_SUITE_NAV: BearingSuiteNavItem[] = [
   {
+    id: "start",
+    label: "Start",
+    href: "/products/bearings",
+    description: "Product Select–style start: Auto-design, Validate, Compare, Diagnose",
+  },
+  {
     id: "designer",
-    label: "System Designer",
+    label: "Calculator",
     href: "/products/bearings/designer",
-    description: "Application system design and service check",
+    description: "Single bearing / system calculator",
     moduleId: "bearings",
   },
   {
@@ -126,26 +134,8 @@ export const BEARING_FAMILY_CARDS: BearingFamilyCard[] = [
   },
 ];
 
-export const BEARING_SUITE_EXAMPLES = [
-  {
-    id: "conveyor",
-    title: "Conveyor roller selection",
-    href: "/products/bearings/designer?intent=design&type=deep_groove&example=conveyor",
-    blurb: "Screen a deep-groove pair for continuous radial duty.",
-  },
-  {
-    id: "motor",
-    title: "Electric motor L10 life",
-    href: "/products/bearings/designer?intent=service&designation=6205&example=motor&panel=duty",
-    blurb: "Service check: ISO 281 life hours for a 6205-class motor bearing.",
-  },
-  {
-    id: "ballscrew",
-    title: "Angular contact for ballscrew",
-    href: "/products/bearings/designer?intent=design&type=angular_contact&example=ballscrew",
-    blurb: "Duplex angular-contact sizing for axial-dominant duty.",
-  },
-] as const;
+/** Worked examples — backed by selection assistants. */
+export const BEARING_SUITE_EXAMPLES = bearingAssistantExamples();
 
 export const BEARING_SUITE_STANDARDS = [
   {
@@ -175,15 +165,9 @@ export const BEARING_SUITE_STANDARDS = [
 ] as const;
 
 export function suiteNavItemForPath(pathname: string): BearingSuiteNavItem | undefined {
-  const exact = BEARING_SUITE_NAV.find(
+  // Prefer longest href so /products/bearings does not steal /products/bearings/designer.
+  const ranked = [...BEARING_SUITE_NAV].sort((a, b) => b.href.length - a.href.length);
+  return ranked.find(
     (item) => pathname === item.href || pathname.startsWith(item.href + "/")
   );
-  if (exact) return exact;
-  if (pathname.startsWith("/products/bearings/designer")) {
-    return BEARING_SUITE_NAV.find((item) => item.id === "designer");
-  }
-  if (pathname === "/products/bearings" || pathname === "/products/bearings/") {
-    return undefined;
-  }
-  return undefined;
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { BEARING_SUITE_NAV } from "@/lib/machine/bearings/bearingSuiteNav";
+import { BEARING_SUITE_NAV, suiteNavItemForPath } from "@/lib/machine/bearings/bearingSuiteNav";
 
 type Props = {
   children: ReactNode;
@@ -16,13 +16,11 @@ type Props = {
  */
 export default function BearingSuiteChrome({ children, subtitle }: Props) {
   const pathname = usePathname() ?? "";
-  const active = BEARING_SUITE_NAV.find(
-    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
-  );
+  const active = suiteNavItemForPath(pathname);
   const line =
     subtitle ??
     active?.description ??
-    "Selection, life, catalog, loads, lubrication, and mounting — one engineering suite.";
+    "Product Select–style bearing suite — start modes, then single-bearing / system calculator.";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-transparent">
@@ -51,8 +49,7 @@ export default function BearingSuiteChrome({ children, subtitle }: Props) {
             className="mt-3 -mx-1 flex gap-1 overflow-x-auto pb-1"
           >
             {BEARING_SUITE_NAV.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = active?.id === item.id;
               return (
                 <Link
                   key={item.id}

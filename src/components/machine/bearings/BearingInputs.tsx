@@ -1213,7 +1213,7 @@ export default function BearingInputs({
           ? "Bearing System Designer — Service"
           : "Bearing System Designer"
       }
-      description="Application system workflow: System → Duty → Size → Verify → Report. ISO 281 / ISO 76 screening."
+      description="SKF-aligned selection: Requirements → Type & arrangement → Size → Lube & interfaces → Decision. ISO 281 / ISO 76 screening."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton
@@ -1327,7 +1327,6 @@ export default function BearingInputs({
           intent={designerIntent}
           stage={designerStage}
           onStageChange={onDesignerStageChange}
-          defaultStage={designerIntent === "service" ? "system" : "system"}
         >
           {renderStage}
         </BearingDesignerSpine>

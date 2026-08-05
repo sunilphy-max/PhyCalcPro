@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -13,9 +13,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
-  DESIGNER_STAGES,
+  defaultStageForIntent,
   stageDescription,
   stageLabel,
+  stagesForIntent,
   type BearingDesignerIntent,
   type BearingDesignerStageId,
 } from "@/lib/machine/bearings/bearingProject";
@@ -40,14 +41,19 @@ type Props = {
 export default function BearingDesignerSpine({
   intent,
   children,
-  defaultStage = "system",
+  defaultStage,
   stage: controlledStage,
   onStageChange,
 }: Props) {
-  const [internalStage, setInternalStage] = useState<BearingDesignerStageId>(defaultStage);
+  const stages = useMemo(() => stagesForIntent(intent), [intent]);
+  const fallbackStage = defaultStage ?? defaultStageForIntent(intent);
+  const [internalStage, setInternalStage] = useState<BearingDesignerStageId>(fallbackStage);
   const activeStage = controlledStage ?? internalStage;
-  const activeIndex = DESIGNER_STAGES.findIndex((s) => s.id === activeStage);
-  const activeDef = DESIGNER_STAGES[activeIndex] ?? DESIGNER_STAGES[0]!;
+  const activeIndex = Math.max(
+    0,
+    stages.findIndex((s) => s.id === activeStage)
+  );
+  const activeDef = stages[activeIndex] ?? stages[0]!;
 
   const goTo = (next: BearingDesignerStageId) => {
     if (onStageChange) onStageChange(next);
@@ -55,21 +61,27 @@ export default function BearingDesignerSpine({
   };
 
   const goPrev = () => {
-    if (activeIndex > 0) goTo(DESIGNER_STAGES[activeIndex - 1]!.id);
+    if (activeIndex > 0) goTo(stages[activeIndex - 1]!.id);
   };
   const goNext = () => {
-    if (activeIndex < DESIGNER_STAGES.length - 1) goTo(DESIGNER_STAGES[activeIndex + 1]!.id);
+    if (activeIndex < stages.length - 1) goTo(stages[activeIndex + 1]!.id);
   };
 
   return (
     <div className="space-y-5">
-      <nav aria-label="Bearing designer steps">
+      <nav aria-label="Bearing selection process steps">
         <ol className="bearing-input-step-rail grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {DESIGNER_STAGES.map((step, index) => {
+          {stages.map((step, index) => {
             const active = step.id === activeStage;
             const complete = index < activeIndex;
             const Icon = STAGE_ICONS[step.id];
             const label = stageLabel(step, intent);
+            const skfHint =
+              intent === "design" && step.skfSteps.length > 0
+                ? step.skfSteps.length === 1
+                  ? `SKF ${step.skfSteps[0]}`
+                  : `SKF ${step.skfSteps[0]}–${step.skfSteps[step.skfSteps.length - 1]}`
+                : null;
             return (
               <li key={step.id}>
                 <button
@@ -100,8 +112,15 @@ export default function BearingDesignerSpine({
                     )}
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-xs font-semibold text-slate-900 dark:text-white">
-                      {index + 1}. {label}
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      <span className="block text-xs font-semibold text-slate-900 dark:text-white">
+                        {index + 1}. {label}
+                      </span>
+                      {skfHint ? (
+                        <span className="rounded bg-slate-200/80 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          {skfHint}
+                        </span>
+                      ) : null}
                     </span>
                     <span className="mt-0.5 block text-[11px] leading-4 text-slate-500 dark:text-slate-400">
                       {stageDescription(step, intent)}
@@ -134,7 +153,7 @@ export default function BearingDesignerSpine({
           <button
             type="button"
             onClick={goNext}
-            disabled={activeIndex >= DESIGNER_STAGES.length - 1}
+            disabled={activeIndex >= stages.length - 1}
             className="inline-flex items-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 px-2.5 py-1.5 text-xs font-semibold text-cyan-900 disabled:opacity-40 dark:border-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-100"
           >
             Next

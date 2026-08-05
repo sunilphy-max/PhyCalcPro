@@ -11,10 +11,18 @@ keywords: ["bearing system designer", "bearing selection", "L10 life", "ISO 281"
 
 Rolling-element bearing selection is a load–life–speed–fit problem. Engineers size bearings so that the **basic or modified rating life** meets the duty, static safety is adequate at peak load, speed stays below catalog limits, and the arrangement (locating / floating, O / X / T) matches thermal growth and stiffness needs.
 
-PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/designer`) is the primary workspace. It supports two URL-addressable intents on one project object:
+PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/designer`) is the primary workspace. The **Design** intent follows the [SKF bearing selection process](https://www.skf.com/us/products/rolling-bearings/principles-of-rolling-bearing-selection/bearing-selection-process) order:
 
-- **Design** (`?intent=design`) — System → Duty → Size → Verify → Report
-- **Service** (`?intent=service`) — Identify → Duty → Evaluate → Diagnose → Actions
+| SKF step | Designer stage |
+|----------|----------------|
+| 1 Performance & operating conditions | Requirements |
+| 2 Bearing type and arrangement | Type & arrangement |
+| 3 Bearing size | Bearing size |
+| 4–8 Lubrication, temperature/speed, interfaces, execution, sealing/mounting | Lube & interfaces |
+| — | Decision (report) |
+
+- **Design** (`?intent=design`) — Requirements → Type & arrangement → Size → Lube & interfaces → Decision  
+- **Service** (`?intent=service`) — Identify → Duty → Evaluate → Diagnose → Actions  
 
 Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrangement`, `/selection`) permanently redirect into Designer panels. Catalog database, failure guide, plain bearings, and housings remain sibling modules.
 
@@ -35,11 +43,11 @@ Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrange
 
 ## Engineering workflow (System Designer)
 
-1. **System** — Choose dynamic topology: single station, locating+floating, or duplex O / X / T. Optional shaft handoff for station reactions.
-2. **Duty** — Fr, Fa (or spectrum), speed \(n\), required life \(L_{10h}\).
-3. **Size** — Catalog filters and designation (or auto-design ranking).
-4. **Verify** — Method ladder (ISO 281 → ISO 16281 screen → stress-life screen → OEM/FEA), lubrication \(\kappa\) / \(e_C\), clearance, misalignment, speed / min load.
-5. **Report** — Decision strip (Pass / Marginal / Fail), station table, export.
+1. **Requirements (SKF 1)** — Fr, Fa (or spectrum), speed \(n\), required life \(L_{10h}\), temperature and cleanliness targets.
+2. **Type & arrangement (SKF 2)** — Single, locating+floating, or duplex O / X / T; optional shaft handoff.
+3. **Bearing size (SKF 3)** — Catalog filters and designation (or auto-design ranking).
+4. **Lube & interfaces (SKF 4–8)** — Method ladder, lubrication \(\kappa\) / \(e_C\), clearance, fits, sealing, misalignment, speed / min load.
+5. **Decision** — Pass / Marginal / Fail strip, station table, export.
 
 **Service intent** starts from an installed designation, emphasizes diagnosis, interchange, grease life, and defect frequencies.
 

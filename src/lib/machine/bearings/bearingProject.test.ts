@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  DESIGN_STAGE_ORDER,
+  defaultStageForIntent,
   mountingFromTopology,
   parseDesignerIntent,
   parseDesignerStage,
+  stagesForIntent,
   stationsFromMountingSystem,
   topologyFromMounting,
 } from "./bearingProject";
@@ -12,9 +15,19 @@ describe("bearingProject", () => {
     expect(parseDesignerIntent("service")).toBe("service");
     expect(parseDesignerIntent(null)).toBe("design");
     expect(parseDesignerStage("duty")).toBe("duty");
+    expect(parseDesignerStage("requirements")).toBe("duty");
+    expect(parseDesignerStage("loads")).toBe("duty");
     expect(parseDesignerStage("life")).toBe("verify");
     expect(parseDesignerStage("arrangement")).toBe("system");
     expect(parseDesignerStage("failure")).toBe("verify");
+  });
+
+  it("orders design stages like SKF selection (requirements first)", () => {
+    expect(DESIGN_STAGE_ORDER[0]).toBe("duty");
+    expect(stagesForIntent("design").map((s) => s.id)).toEqual(DESIGN_STAGE_ORDER);
+    expect(defaultStageForIntent("design")).toBe("duty");
+    expect(defaultStageForIntent("service")).toBe("system");
+    expect(stagesForIntent("service")[0]?.id).toBe("system");
   });
 
   it("builds dynamic station lists from topology", () => {

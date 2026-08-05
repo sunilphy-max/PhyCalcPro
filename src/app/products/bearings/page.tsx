@@ -2,17 +2,17 @@ import BearingSuiteLanding from "@/components/machine/bearings-shared/BearingSui
 import { buildPageMetadata } from "@/lib/seo/site";
 
 export const metadata = buildPageMetadata({
-  title: { absolute: "Bearing Engineering Suite — PhyCalcPro" },
+  title: { absolute: "Bearing Product Select — PhyCalcPro" },
   description:
-    "Bearing Application System Designer — ISO 281 L10, stations, catalog sizing, lubrication, fits, and service diagnosis in one workspace.",
+    "Select and evaluate rolling bearings: Auto-design, Validate, Compare, or Diagnose — ISO 281 / ISO 76 screening aligned with the SKF selection process.",
   path: "/products/bearings",
   keywords: [
-    "bearing system designer",
-    "bearing life calculator",
+    "bearing product select",
+    "bearing calculator",
+    "bearing auto-design",
     "ISO 281",
     "L10 life",
     "bearing selection",
-    "equivalent dynamic load",
     "SKF bearing",
   ],
 });
