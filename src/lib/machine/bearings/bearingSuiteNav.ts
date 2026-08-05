@@ -28,6 +28,13 @@ export const BEARING_SUITE_NAV: BearingSuiteNavItem[] = [
     moduleId: "bearings",
   },
   {
+    id: "assistant",
+    label: "Assistants",
+    href: "/products/bearings/assistant",
+    description: "Machine-guided selection: motor, pump, fan, gearbox, conveyor, ballscrew",
+    moduleId: "bearing-assistant",
+  },
+  {
     id: "database",
     label: "Database",
     href: "/products/bearings/database",

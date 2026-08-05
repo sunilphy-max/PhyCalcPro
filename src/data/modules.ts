@@ -399,6 +399,16 @@ export const categories: EngineeringCategory[] = [
         subGroup: "System designer",
       },
       {
+        id: "bearing-assistant",
+        title: "Bearing selection assistants",
+        description: "Machine-guided presets: motor, pump, fan, gearbox, conveyor, ballscrew",
+        route: "/products/bearings/assistant",
+        category: "bearings",
+        icon: Gauge,
+        tags: ["suite", "assistant", "selection"],
+        subGroup: "System designer",
+      },
+      {
         id: "bearing-database",
         title: "Bearing database",
         description: "Search multi-OEM catalog designations and ratings",
