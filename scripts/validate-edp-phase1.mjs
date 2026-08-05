@@ -28,7 +28,7 @@ const F1 = [
   },
   {
     id: "bearings",
-    page: "src/app/products/bearings/selection/page.tsx",
+    page: "src/app/products/bearings/designer/page.tsx",
     results: "src/components/machine/bearings/BearingResults.tsx",
   },
 ];
