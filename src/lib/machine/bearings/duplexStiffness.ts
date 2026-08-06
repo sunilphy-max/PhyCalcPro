@@ -1,5 +1,5 @@
 /**
- * Duplex angular-contact / tapered preload and stiffness screening (MITCalc / SKF style).
+ * Duplex angular-contact / tapered preload and stiffness screening (PhyCalc).
  *
  * O (back-to-back): high moment stiffness, good for overhanging loads / spindles.
  * X (face-to-face): lower moment stiffness, better misalignment tolerance.

@@ -1,5 +1,5 @@
 /**
- * Paired / duplex bearing load distribution and system life (ISO 281 / MITCalc-style).
+ * Paired / duplex bearing load distribution and system life (ISO 281 / PhyCalc).
  */
 
 import type { BearingArrangement, BearingConfig, BearingType } from "./types";
@@ -49,7 +49,7 @@ export function splitPairedLoads(
 }
 
 /**
- * Locating + floating shaft support (MITCalc / SKF step 2).
+ * Locating + floating shaft support (PhyCalc selection process — type & arrangement).
  * Locating takes all axial + its radial share; floating takes radial only.
  * Optional stationRadialLoadsN from shaft FEM overrides equal Fr/2 split.
  */
@@ -161,7 +161,7 @@ export function systemLifeFromStations(stations: StationLife[]): {
     if (s.modifiedLifeHours < minModified) minModified = s.modifiedLifeHours;
   });
 
-  // ISO / SKF: e ≈ 10/9 ball, 9/8 roller — use 10/9 as default for mixed systems
+  // ISO practice: e ≈ 10/9 ball, 9/8 roller — use 10/9 as default for mixed systems
   const e = 10 / 9;
   const sum = stations.reduce((acc, s) => {
     const L = Math.max(s.modifiedLifeHours, 1e-9);

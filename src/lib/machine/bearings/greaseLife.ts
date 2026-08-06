@@ -1,5 +1,5 @@
 /**
- * Grease life L10h vs relubrication interval tf (SKF-style screening).
+ * Grease life L10h vs relubrication interval tf (PhyCalc screening).
  * Sealed-for-life → grease life; open / replenishable → relubrication interval.
  */
 
@@ -102,7 +102,7 @@ export function calculateGreaseService(input: GreaseServiceInput): GreaseService
   const note =
     mode === "grease_life"
       ? `Sealed grease life L₁₀h ≈ ${greaseLifeHours.toLocaleString()} h (screening). Relub interval N/A — replace bearing at end of grease life.`
-      : `Relubricate every ≈ ${relubHours.toLocaleString()} h; estimated grease fatigue life ≈ ${greaseLifeHours.toLocaleString()} h if not replenished (SKF-style screening).`;
+      : `Relubricate every ≈ ${relubHours.toLocaleString()} h; estimated grease fatigue life ≈ ${greaseLifeHours.toLocaleString()} h if not replenished (PhyCalc screening).`;
 
   return {
     mode,

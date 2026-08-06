@@ -1,5 +1,5 @@
 /**
- * Adjusted reference speed n_θ (SKF-style screening).
+ * Adjusted reference speed n_θ (PhyCalc screening).
  * Starts from catalog n_ref (or 0.8·n_lim) and applies load / lubricant / sealing factors.
  */
 
@@ -86,7 +86,7 @@ export function calculateAdjustedReferenceSpeed(
   const note =
     nRefBase <= 0
       ? "No catalog reference/limiting speed — adjusted n_θ unavailable."
-      : `Adjusted reference speed n_θ ≈ ${Math.round(nAdj).toLocaleString()} rpm (screening from n_ref, P/C, κ/VG, grease/oil, seal). Not a full SKF Product Select thermal model.`;
+      : `Adjusted reference speed n_θ ≈ ${Math.round(nAdj).toLocaleString()} rpm (screening from n_ref, P/C, κ/VG, grease/oil, seal). Screening thermal model only.`;
 
   return {
     nRefBaseRpm: nRefBase,

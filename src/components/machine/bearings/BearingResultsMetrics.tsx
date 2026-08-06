@@ -42,13 +42,13 @@ export default function BearingResultsMetrics({
 }: Props) {
   const f = result.modifiedLifeFactors;
   const aIsoBase = f.aIso;
-  const aSkfEffective = result.aIso;
-  const showBaseAiso = Math.abs(aIsoBase - aSkfEffective) > 1e-6;
+  const aIsoEffective = result.aIso;
+  const showBaseAiso = Math.abs(aIsoBase - aIsoEffective) > 1e-6;
   const lubeOk = hasLubricationFactors(result);
 
   return (
     <>
-      <CalculatorMetricGrid cols={4} section="ISO 281 / SKF rating life">
+      <CalculatorMetricGrid cols={4} section="ISO 281 rating life">
         <CalculatorMetricCard label="Catalog designation" value={result.designation ?? "—"} tone="blue" />
         <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
         <CalculatorMetricCard
@@ -58,7 +58,7 @@ export default function BearingResultsMetrics({
               ? "ISO 16281 screen"
               : result.lifeMethod === "stress_life_screen"
                 ? "Stress-life screen"
-                : "ISO 281 / aSKF"
+                : "ISO 281 / aISO"
           }
         />
         <CalculatorMetricCard
@@ -87,8 +87,8 @@ export default function BearingResultsMetrics({
           tone="blue"
         />
         <CalculatorMetricCard
-          label="aSKF (≡ aISO)"
-          numericValue={aSkfEffective}
+          label="aISO"
+          numericValue={aIsoEffective}
           unit="—"
           tone="blue"
         />
@@ -108,7 +108,7 @@ export default function BearingResultsMetrics({
         ) : null}
         {result.advancedLifeFactors && result.advancedLifeFactors.aStress !== 1 ? (
           <CalculatorMetricCard
-            label="a_stress (not GBLM)"
+            label="a_stress (PhyCalc screen)"
             numericValue={result.advancedLifeFactors.aStress}
             unit="—"
           />

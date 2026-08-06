@@ -1,7 +1,6 @@
 /**
  * Transparent stress-life screening — contact-pressure + film inspired modifier.
- *
- * NOT SKF GBLM / AFC. PhyCalcPro screening curve fit only.
+ * PhyCalcPro screening curve fit only — not a full elastic FEA life model.
  */
 
 import { isRollerBearingType } from "@/data/catalogs/bearing/types";
@@ -81,6 +80,6 @@ export function calculateStressLifeFactor(input: StressLifeScreenInput): StressL
     contactPressureProxyMpa: pProxy,
     pressureRatio,
     note:
-      "Stress-life screening (PhyCalcPro) — contact-pressure / film inspired modifier. Not SKF GBLM or AFC.",
+      "Stress-life screening (PhyCalcPro) — contact-pressure / film inspired modifier. Screening only — not full elastic FEA.",
   };
 }

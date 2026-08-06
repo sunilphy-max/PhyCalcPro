@@ -1,5 +1,5 @@
 /**
- * Shaft/housing fit recommendation and operating clearance (ISO 286 / SKF tables, screening).
+ * Shaft/housing fit recommendation and operating clearance (ISO 286 / catalog tables, screening).
  */
 
 import type { BearingClearance, BearingMountingRole } from "@/data/catalogs/bearingCatalog";

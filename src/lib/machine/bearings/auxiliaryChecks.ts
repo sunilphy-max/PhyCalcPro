@@ -1,12 +1,12 @@
 /**
- * Minimum load and friction torque screening (SKF-inspired Mrr / Msl).
- * Transparent screening — not the full SKF four-component model.
+ * Minimum load and friction torque screening (PhyCalcPro Mrr / Msl).
+ * Transparent screening — not a full multi-component OEM friction model.
  */
 
 import { isRollerBearingType } from "@/data/catalogs/bearing/types";
 import type { BearingType } from "./types";
 
-/** Minimum radial load to avoid skidding (N) — SKF indicative for ball bearings. */
+/** Minimum radial load to avoid skidding (N) — indicative for ball bearings. */
 export function minimumRadialLoadN(params: {
   dynamicRatingN: number;
   speedRpm: number;
@@ -33,11 +33,11 @@ export type FrictionEstimate = {
   slidingTorqueNm: number;
   /** Grease churning factor applied (1 = none). */
   greaseChurnFactor: number;
-  model: "skf_mrr_msl_screening";
+  model: "phycalc_mrr_msl_screening";
 };
 
 /**
- * SKF-inspired screening: M ≈ Mrr + Msl
+ * PhyCalcPro screening: M ≈ Mrr + Msl
  * Mrr ≈ f1 · (P)^β · dm · G  (load-dependent rolling)
  * Msl ≈ seal drag + (optional) grease fill churning at low n·dm
  */
@@ -71,7 +71,7 @@ export function estimateFriction(params: {
     Msl += sealDrag;
   }
 
-  // Grease churning at low n·dm (SKF-inspired fill factor)
+  // Grease churning at low n·dm (screening fill factor)
   let greaseChurnFactor = 1;
   if (params.lubricantType === "grease") {
     const ndm = params.speedRpm * dmMm;
@@ -96,6 +96,6 @@ export function estimateFriction(params: {
     rollingTorqueNm: Mrr * greaseChurnFactor,
     slidingTorqueNm: Msl * greaseChurnFactor,
     greaseChurnFactor,
-    model: "skf_mrr_msl_screening",
+    model: "phycalc_mrr_msl_screening",
   };
 }

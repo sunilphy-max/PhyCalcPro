@@ -230,9 +230,9 @@ export const BEARINGS_GOLD_SEEDS: Array<
     },
   },
   {
-    id: "gold-6205-vendor-skf-pending",
-    source: "Paste SKF Product Select Lnm / P / s0 / aSKF into expect and set status active",
-    kind: "vendor_skf",
+    id: "gold-6205-external-a-pending",
+    source: "Paste independent reference Lnm / P / s0 / aISO into expect and set status active",
+    kind: "external_reference_a",
     status: "pending_vendor_gold",
     inputs: {
       radialLoad: 3000,
@@ -248,9 +248,9 @@ export const BEARINGS_GOLD_SEEDS: Array<
     expect: { modifiedLife: 0 },
   },
   {
-    id: "gold-30208-vendor-mitcalc-pending",
-    source: "Paste MITCalc Lnm / P / s0 into expect and set status active",
-    kind: "vendor_mitcalc",
+    id: "gold-30208-external-b-pending",
+    source: "Paste independent reference Lnm / P / s0 into expect and set status active",
+    kind: "external_reference_b",
     status: "pending_vendor_gold",
     inputs: {
       radialLoad: 6000,

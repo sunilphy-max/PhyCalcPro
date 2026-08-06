@@ -19,7 +19,7 @@ export type CatalogFilterOptions = {
   series?: string | "all";
   sealType?: BearingSealType | "all";
   mountingRole?: BearingMountingRole | "all";
-  /** Metric ISO vs inch / ABMA (MITCalc Module II class). */
+  /** Metric ISO vs inch / ABMA catalog class. */
   unitSystem?: BearingUnitSystem | "all";
 };
 

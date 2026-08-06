@@ -1,5 +1,5 @@
 /**
- * Machine-specific selection assistants (Product Select–style).
+ * Machine-specific selection assistants (PhyCalc).
  * Maps short forms → Designer deep links + apply payload.
  */
 
@@ -76,7 +76,7 @@ export const BEARING_APPLICATION_ASSISTANTS: BearingApplicationAssistant[] = [
   {
     id: "motor",
     label: "Electric motor",
-    blurb: "DE locating + NDE floating deep-groove / cylindrical pair — SKF-style motor path.",
+    blurb: "DE locating + NDE floating deep-groove / cylindrical pair — PhyCalc motor path.",
     outcome: "Size DE/NDE bearings from shaft, speed, and duty",
     panel: "system",
     fields: [

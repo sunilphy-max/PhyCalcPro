@@ -32,7 +32,7 @@ describe("application preset registry", () => {
     const plain = getPresetsForModule("plain-bearings");
     const housing = getPresetsForModule("housing");
     expect(rolling.some((p) => p.id === "iso281_general")).toBe(true);
-    expect(rolling.some((p) => p.id === "skf_modified_life")).toBe(true);
+    expect(rolling.some((p) => p.id === "iso281_modified_life")).toBe(true);
     expect(rolling.every((p) => !p.id.includes("tapered_gearbox"))).toBe(true);
     expect(rolling.length).toBeGreaterThanOrEqual(5);
     expect(plain.some((p) => p.id === "hydrodynamic_iso_screening")).toBe(true);

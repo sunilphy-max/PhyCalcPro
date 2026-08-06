@@ -27,7 +27,7 @@ describe("industry parity physics", () => {
       dynamicRatingN: 14000,
       lubricantType: "grease",
     });
-    expect(open.model).toBe("skf_mrr_msl_screening");
+    expect(open.model).toBe("phycalc_mrr_msl_screening");
     expect(open.rollingTorqueNm).toBeGreaterThan(0);
     expect(sealedGrease.frictionTorqueNm).toBeGreaterThan(open.frictionTorqueNm);
     expect(sealedGrease.greaseChurnFactor).toBeGreaterThan(1);

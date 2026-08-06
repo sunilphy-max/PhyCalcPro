@@ -1,5 +1,5 @@
 /**
- * Grease / oil relubrication interval screening (SKF-style).
+ * Grease / oil relubrication interval screening (PhyCalc).
  * tf based on speed factor A = n·dm, temperature, load ratio, contamination.
  */
 
@@ -31,7 +31,7 @@ export type RelubricationResult = {
 };
 
 function baseIntervalHours(ndm: number, roller: boolean): number {
-  // SKF grease life diagram screening (hours)
+  // Grease life diagram screening (hours)
   const scale = roller ? 0.7 : 1;
   if (ndm <= 20000) return 45000 * scale;
   if (ndm <= 100000) return 45000 * scale * Math.pow(20000 / ndm, 1.4);
@@ -41,7 +41,7 @@ function baseIntervalHours(ndm: number, roller: boolean): number {
 
 function temperatureFactor(tempC: number): number {
   if (tempC <= 70) return 1;
-  // Halve interval every +15 °C above 70 °C (SKF rule of thumb)
+  // Halve interval every +15 °C above 70 °C (rule of thumb)
   return Math.pow(0.5, (tempC - 70) / 15);
 }
 
@@ -113,7 +113,7 @@ export function calculateRelubricationInterval(input: RelubricationInput): Relub
         ? `Oil service interval ≈ ${tf.toLocaleString()} h (screening). Verify filtration and oil analysis.`
         : sealed
           ? `Sealed grease life ≈ ${tf.toLocaleString()} h — typically non-relubricatable; replace bearing at end of life.`
-          : `Relubricate every ≈ ${tf.toLocaleString()} h (SKF-style screening from n·dm, temp, P/C, cleanliness).`;
+          : `Relubricate every ≈ ${tf.toLocaleString()} h (PhyCalc screening from n·dm, temp, P/C, cleanliness).`;
 
   return {
     intervalHours: tf,

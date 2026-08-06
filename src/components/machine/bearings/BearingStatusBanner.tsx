@@ -49,7 +49,7 @@ export default function BearingStatusBanner({ result }: Props) {
       value: formatDisplayNumber(result.a1),
     },
     {
-      label: "aSKF",
+      label: "aISO",
       value: formatDisplayNumber(result.aIso),
     },
     {

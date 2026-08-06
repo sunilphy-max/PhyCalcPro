@@ -14,7 +14,7 @@ type Props = {
   className?: string;
 };
 
-/** Enhanced indicative bearing cross-section (SKF / MITCalc style). */
+/** Enhanced indicative bearing cross-section (PhyCalc). */
 export default function BearingCrossSectionSvg({
   type,
   sealType = "open",

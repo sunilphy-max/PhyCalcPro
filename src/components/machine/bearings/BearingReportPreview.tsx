@@ -12,7 +12,7 @@ const REPORT_SECTIONS = [
   "Design summary (PASS / MARGINAL / FAIL + key margins)",
   "Input summary (loads, speed, life target, lubrication, arrangement)",
   "Catalog designation and geometry",
-  "ISO 281 / SKF factors — L₁₀, Lnm, a₁, aSKF, κ, eC, ν / ν₁, Pu/P",
+  "ISO 281 factors — L₁₀, Lnm, a₁, aISO, κ, eC, ν / ν₁, Pu/P",
   "Arrangement analysis (preload, Ka/Kr/Km, δa, thermal, O/X/T) when duplex",
   "Engineering advisor recommendation narrative",
   "Paired stations and Weibull system life when applicable",

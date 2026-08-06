@@ -37,7 +37,7 @@ describe("bearing catalog datasheet expansion", () => {
     expect(bearingsOfType("needle_roller").length).toBeGreaterThanOrEqual(15);
   });
 
-  it("includes a dedicated inch catalog (MITCalc Module II class)", () => {
+  it("includes a dedicated inch ABMA catalog", () => {
     const inch = bearingsOfUnitSystem("inch");
     expect(inch.length).toBeGreaterThanOrEqual(10);
     expect(inch.some((e) => e.series === "R")).toBe(true);

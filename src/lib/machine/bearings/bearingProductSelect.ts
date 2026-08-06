@@ -1,5 +1,5 @@
 /**
- * Bearing hub entry — Product Select–style start modes.
+ * Bearing hub entry — PhyCalc start modes.
  * Maps to DesignWorkflowMode + Designer intent/panel deep links.
  */
 
@@ -75,7 +75,7 @@ export const BEARING_QUICK_PATHS: BearingQuickPath[] = [
   {
     id: "single",
     label: "Single rolling bearing",
-    description: "Search by designation or size from requirements — like Product Select",
+    description: "Search by designation or size from requirements",
     href: "/products/bearings/designer?intent=design&mode=check&panel=size",
   },
   {

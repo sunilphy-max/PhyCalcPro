@@ -1,6 +1,6 @@
 import type { EquationReference } from "../types";
 
-/** ISO 281 / SKF rating life governing equations for calculation basis / PDF. */
+/** ISO 281 modified rating life governing equations for calculation basis / PDF. */
 export const bearingsEquations: EquationReference[] = [
   {
     id: "eq-l10",
@@ -11,8 +11,8 @@ export const bearingsEquations: EquationReference[] = [
   {
     id: "eq-lnm",
     label: "Modified rating life Lnm",
-    expression: "L_{nm} = a_1 \\cdot a_{\\mathrm{SKF}} \\cdot (C/P)^p \\cdot 10^6/(60n)",
-    description: "aSKF ≡ ISO 281 aISO from κ, eC, Pu/P",
+    expression: "L_{nm} = a_1 \\cdot a_{\\mathrm{ISO}} \\cdot (C/P)^p \\cdot 10^6/(60n)",
+    description: "aISO from κ, eC, Pu/P (ISO 281:2007)",
   },
   {
     id: "eq-kappa",

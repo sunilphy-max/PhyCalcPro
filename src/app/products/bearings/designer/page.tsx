@@ -1213,7 +1213,7 @@ function BearingDesignerPage() {
             <p className="text-[11px] text-slate-500">
               {designerIntent === "service"
                 ? "Service: identify → duty → evaluate → diagnose → actions"
-                : "SKF-aligned: requirements → type & arrangement → size → lube & interfaces → decision"}
+                : "PhyCalc: requirements → type & arrangement → size → lube & interfaces → decision"}
             </p>
           </div>
           <BearingDesignationSearchBar

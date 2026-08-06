@@ -13,7 +13,7 @@ type Props = {
 };
 
 /**
- * Product Select–style designation search at the top of the calculator.
+ * Designation search at the top of the calculator.
  */
 export default function BearingDesignationSearchBar({ designation, onSelect, onLoaded }: Props) {
   const [query, setQuery] = useState(designation);
@@ -48,7 +48,7 @@ export default function BearingDesignationSearchBar({ designation, onSelect, onL
         Single bearing search
       </p>
       <p className="mt-0.5 text-xs text-slate-500">
-        Enter a designation (e.g. 6205, 22220 E) — same starting move as Product Select catalog search.
+        Enter a designation (e.g. 6205, 22220 E) to jump straight into the catalog.
       </p>
       <div className="relative mt-3">
         <label className="sr-only" htmlFor="bearing-designation-search">

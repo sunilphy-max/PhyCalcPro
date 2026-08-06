@@ -1,8 +1,8 @@
 /**
  * Engineering Advisor — contextual explanations for bearing recommendations.
  *
- * Deterministic, duty-aware prose (not an LLM). Differentiator vs MITCalc / OEM tools:
- * explains *why* a designation was preferred, not only metrics.
+ * Deterministic, duty-aware prose (not an LLM). Explains *why* a designation was
+ * preferred, not only metrics.
  */
 
 import type { BearingCatalogEntry, BearingSealType } from "@/data/catalogs/bearingCatalog";

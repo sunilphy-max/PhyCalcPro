@@ -543,14 +543,14 @@
       ]
     },
     {
-      "id": "gold-6205-vendor-skf-pending",
+      "id": "gold-6205-external-a-pending",
       "pass": true,
       "skipped": true,
       "reason": "pending_vendor_gold",
       "fields": []
     },
     {
-      "id": "gold-30208-vendor-mitcalc-pending",
+      "id": "gold-30208-external-b-pending",
       "pass": true,
       "skipped": true,
       "reason": "pending_vendor_gold",

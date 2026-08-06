@@ -66,7 +66,7 @@ function determineGoverningMode(params: {
     issues.push({ label: "Minimum load (skidding risk)", severity: 2 });
   }
   if (params.lifeUtil > 1) {
-    issues.push({ label: "SKF rating life Lnm", severity: params.lifeUtil });
+    issues.push({ label: "Modified rating life Lnm", severity: params.lifeUtil });
   }
   if (params.dynamicUtil > 1) {
     issues.push({ label: "Dynamic load P/C", severity: params.dynamicUtil });
@@ -498,7 +498,7 @@ export function solveBearingDesign(config: BearingConfig): BearingResult {
   const speedMargin =
     limitingSpeedRpm != null && limitingSpeedRpm > 0 ? limitingSpeedRpm / speed : null;
 
-  // Gate pass/fail on modified life Lnm (ISO 281 / SKF), not basic L10 alone.
+  // Gate pass/fail on modified life Lnm (ISO 281), not basic L10 alone.
   // (Finalized after thermal equilibrium adjustment below.)
   const meanDiameterMm = meanDiameterMmEarly;
 

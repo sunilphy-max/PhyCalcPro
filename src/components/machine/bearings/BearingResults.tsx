@@ -188,7 +188,7 @@ export default function BearingResults({
             xLabel="Equivalent load P"
             xUnit={loadUnit}
             unitLabel="h"
-            series={[{ y: modifiedLives, label: "Modified life Lnm (aSKF)" }]}
+            series={[{ y: modifiedLives, label: "Modified life Lnm (aISO)" }]}
             probeX={p0Display}
             showPeak={false}
           />
@@ -373,7 +373,7 @@ export default function BearingResults({
               />
             ) : null}
             <p>
-              Confirm critical duty with OEM datasheets / Product Select. This catalog is
+              Confirm critical duty with OEM datasheets. This catalog is
               representative screening — not full vendor assortment.
             </p>
           </div>
@@ -564,7 +564,7 @@ export default function BearingResults({
             <BearingDefectFrequenciesCard result={result} />
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Ratings provenance: {ratingsProvenance.replace("_", " ")}. Confirm critical duty with OEM
-              Product Select / datasheets — this catalog is representative screening.
+              datasheets — this catalog is representative screening.
             </p>
           </div>
         ),

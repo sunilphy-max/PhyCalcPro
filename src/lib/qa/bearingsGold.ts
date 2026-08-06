@@ -1,6 +1,6 @@
 /**
  * Bearing gold / screening-reference benchmark harness.
- * Vendor ±5% cases use status "pending_vendor_gold" until SKF/MITCalc values are pasted.
+ * External ±5% reference cases use status "pending_vendor_gold" until values are pasted.
  */
 
 import { readFileSync, readdirSync, existsSync } from "fs";
@@ -11,8 +11,8 @@ import type { BearingConfig, BearingResult } from "@/lib/machine/bearings/types"
 export type BearingsGoldCase = {
   id: string;
   source: string;
-  /** screening_reference | vendor_skf | vendor_mitcalc */
-  kind: "screening_reference" | "vendor_skf" | "vendor_mitcalc";
+  /** screening_reference | external_reference_a | external_reference_b */
+  kind: "screening_reference" | "external_reference_a" | "external_reference_b";
   status: "active" | "pending_vendor_gold";
   tolerancePct: number;
   inputs: Record<string, unknown>;

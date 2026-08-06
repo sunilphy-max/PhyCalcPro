@@ -18,7 +18,7 @@ export const BEARING_SUITE_NAV: BearingSuiteNavItem[] = [
     id: "start",
     label: "Start",
     href: "/products/bearings",
-    description: "Product Select–style start: Auto-design, Validate, Compare, Diagnose",
+    description: "PhyCalc start: Auto-design, Validate, Compare, Diagnose",
   },
   {
     id: "designer",

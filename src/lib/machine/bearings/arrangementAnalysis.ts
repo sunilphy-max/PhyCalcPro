@@ -8,7 +8,7 @@
  * - thermal growth → preload shift
  * - rigidity comparison across O / X / T
  *
- * Screening-grade (MITCalc / SKF catalogue practice) — not Hertzian OEM tables.
+ * Screening-grade (PhyCalc / catalog practice) — not Hertzian OEM tables.
  */
 
 import type { BearingArrangement, BearingPreloadClass } from "./types";

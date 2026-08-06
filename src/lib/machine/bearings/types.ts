@@ -42,7 +42,7 @@ export type LubricationClass = "poor" | "average" | "good";
 
 export type LubricantType = "oil" | "grease" | "none";
 
-/** Paired / duplex mounting (MITCalc-style layout). */
+/** Paired / duplex mounting (PhyCalc layout). */
 export type BearingArrangement = "single" | "back_to_back" | "face_to_face" | "tandem";
 
 export type BearingPreloadClass = "none" | "light" | "medium" | "heavy";
@@ -194,7 +194,7 @@ export type EnergyCo2Check = {
  * Life calculation method.
  * - iso281: basic ISO 281 L₁₀ / Lnm (a₁·aISO)
  * - iso16281_screen: ISO 16281-inspired P adjustment (clearance, misalignment, distribution)
- * - stress_life_screen: transparent contact/film stress-life modifier (not SKF GBLM/AFC)
+ * - stress_life_screen: transparent contact/film stress-life modifier (PhyCalc screening)
  */
 export type BearingLifeMethod = "iso281" | "iso16281_screen" | "stress_life_screen";
 
@@ -350,7 +350,7 @@ export type BearingResult = {
   dynamicUtilization: number;
   staticSafetyFactor: number;
   speedMargin: number | null;
-  /** n_ref / n when catalog reference speed is available (SKF lubrication screening). */
+  /** n_ref / n when catalog reference speed is available (lubrication screening). */
   referenceSpeedMargin: number | null;
   lifeUtilization: number;
   safetyFactor: number;

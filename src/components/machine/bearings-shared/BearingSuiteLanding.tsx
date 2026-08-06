@@ -20,7 +20,7 @@ import {
   BEARING_SUITE_EXAMPLES,
   BEARING_SUITE_STANDARDS,
 } from "@/lib/machine/bearings/bearingSuiteNav";
-import { SKF_SELECTION_PROCESS_STEPS } from "@/lib/machine/bearings/bearingProject";
+import { PHYCALC_SELECTION_PROCESS_STEPS } from "@/lib/machine/bearings/bearingProject";
 import {
   BEARING_QUICK_PATHS,
   BEARING_START_MODE_CARDS,
@@ -74,8 +74,7 @@ const ACCENT: Record<
 };
 
 /**
- * Product Select–style start page for the Bearing suite.
- * Inspired by SKF Product select start → single-bearing calculator flow.
+ * Start page for the PhyCalcPro Bearing suite.
  */
 export default function BearingSuiteLanding() {
   return (
@@ -83,14 +82,15 @@ export default function BearingSuiteLanding() {
       <div className="space-y-12 px-4 py-8 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400">
-            Bearing Product Select
+            PhyCalc Bearing Select
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
             Select and evaluate rolling bearings
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
             Start with the right workflow — Auto-design, Validate, Compare, or Diagnose — then size
-            or check bearings with ISO 281 / ISO 76 screening. Confirm critical duty with OEM tools.
+            or check bearings with ISO 281 / ISO 76 screening. Confirm critical duty with OEM
+            datasheets when needed.
           </p>
         </header>
 
@@ -150,9 +150,8 @@ export default function BearingSuiteLanding() {
               Selection assistants
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Machine-guided paths — like Product Select&apos;s bearing selection assistant for
-              motors. Answer a few questions, then open the calculator with duty and arrangement
-              filled in.
+              Machine-guided paths for motors, gearboxes, and fans. Answer a few questions, then open
+              the calculator with duty and arrangement filled in.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -193,7 +192,7 @@ export default function BearingSuiteLanding() {
             What do you want to calculate?
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Jump straight into a calculator surface — similar to Product Select product areas.
+            Jump straight into a calculator surface for life, static, speed, or arrangement checks.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {BEARING_QUICK_PATHS.map((path) => (
@@ -209,30 +208,22 @@ export default function BearingSuiteLanding() {
           </div>
         </section>
 
-        <section aria-labelledby="bearing-skf-process">
+        <section aria-labelledby="bearing-phycalc-process">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
               <h2
-                id="bearing-skf-process"
+                id="bearing-phycalc-process"
                 className="text-lg font-semibold text-slate-950 dark:text-white"
               >
-                Selection process
+                PhyCalc selection process
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Eight SKF steps — opened inside Designer after you pick a mode.
+                Eight steps — opened inside Designer after you pick a mode.
               </p>
             </div>
-            <a
-              href="https://www.skf.com/us/products/rolling-bearings/principles-of-rolling-bearing-selection/bearing-selection-process"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-medium text-cyan-700 hover:underline dark:text-cyan-400"
-            >
-              SKF process guide →
-            </a>
           </div>
           <ol className="mt-4 flex gap-2 overflow-x-auto pb-1">
-            {SKF_SELECTION_PROCESS_STEPS.map((step) => (
+            {PHYCALC_SELECTION_PROCESS_STEPS.map((step) => (
               <li key={step.step} className="min-w-[9.5rem] flex-1">
                 <Link
                   href={`${step.href}&mode=check`}

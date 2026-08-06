@@ -1,5 +1,5 @@
 /**
- * Bearing series templates — SKF-baseline geometry and ratings expanded per manufacturer.
+ * Bearing series templates — ISO baseline geometry and ratings expanded per manufacturer.
  * Datasheet Pu is attached via withDatasheetPu; inch / toroidal / thrust-roller / needle
  * depth live in seriesDataExtended.ts.
  */

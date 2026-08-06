@@ -22,7 +22,7 @@ describe("bearingProject", () => {
     expect(parseDesignerStage("failure")).toBe("verify");
   });
 
-  it("orders design stages like SKF selection (requirements first)", () => {
+  it("orders design stages like PhyCalc selection (requirements first)", () => {
     expect(DESIGN_STAGE_ORDER[0]).toBe("duty");
     expect(stagesForIntent("design").map((s) => s.id)).toEqual(DESIGN_STAGE_ORDER);
     expect(defaultStageForIntent("design")).toBe("duty");

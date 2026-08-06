@@ -56,7 +56,7 @@ export type CalculationSpec = {
   assumptions: string[];
   limitations: string[];
   checks: EngineeringCheck[];
-  /** MITCalc-style intermediate factor rows for export reports */
+  /** Intermediate factor rows for export reports (worksheet-style) */
   worksheetSteps?: WorksheetStep[];
   engineVersion: string;
   computedAt: string;

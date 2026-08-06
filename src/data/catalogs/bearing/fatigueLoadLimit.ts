@@ -1,13 +1,13 @@
 /**
  * Datasheet fatigue load limit Pu helpers.
- * Prefer explicit catalog Pu; fall back to C₀-based SKF-style screening ratios.
+ * Prefer explicit catalog Pu; fall back to C₀-based PhyCalc screening ratios.
  */
 
 import type { CatalogBearingType } from "./types";
 import { isRollerBearingType } from "./types";
 
 /**
- * Typical SKF-catalog Pu screening when datasheet Pu is not listed.
+ * Typical catalog Pu screening ratios when datasheet Pu is not listed.
  * Uses static rating C₀ (preferred) or dynamic C as fallback.
  * Ball: ≈ 0.04·C₀ · Roller radial: ≈ 0.10·C₀ · Spherical/toroidal: ≈ 0.12·C₀
  */

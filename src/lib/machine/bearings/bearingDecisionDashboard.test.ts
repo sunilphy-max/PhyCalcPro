@@ -81,7 +81,7 @@ describe("bearingDecisionDashboard", () => {
         lifeUtilization: 2.5,
         lifeSafetyFactor: 0.4,
         designStatus: "critical",
-        governingFailureMode: "SKF rating life Lnm",
+        governingFailureMode: "Modified rating life Lnm",
         modifiedLifeFactors: {
           kappa: 0.3,
           nuCst: 10,

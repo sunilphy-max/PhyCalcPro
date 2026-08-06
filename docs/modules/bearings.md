@@ -11,10 +11,10 @@ keywords: ["bearing system designer", "bearing selection", "L10 life", "ISO 281"
 
 Rolling-element bearing selection is a load–life–speed–fit problem. Engineers size bearings so that the **basic or modified rating life** meets the duty, static safety is adequate at peak load, speed stays below catalog limits, and the arrangement (locating / floating, O / X / T) matches thermal growth and stiffness needs.
 
-PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/designer`) is the primary workspace. The **Design** intent follows the [SKF bearing selection process](https://www.skf.com/us/products/rolling-bearings/principles-of-rolling-bearing-selection/bearing-selection-process) order:
+PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/designer`) is the primary workspace. The **Design** intent follows the **PhyCalc selection process**:
 
-| SKF step | Designer stage |
-|----------|----------------|
+| PhyCalc step | Designer stage |
+|--------------|----------------|
 | 1 Performance & operating conditions | Requirements |
 | 2 Bearing type and arrangement | Type & arrangement |
 | 3 Bearing size | Bearing size |
@@ -43,15 +43,15 @@ Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrange
 
 ## Engineering workflow (System Designer)
 
-1. **Requirements (SKF 1)** — Fr, Fa (or spectrum), speed \(n\), required life \(L_{10h}\), temperature and cleanliness targets.
-2. **Type & arrangement (SKF 2)** — Single, locating+floating, or duplex O / X / T; optional shaft handoff.
-3. **Bearing size (SKF 3)** — Catalog filters and designation (or auto-design ranking).
-4. **Lube & interfaces (SKF 4–8)** — Method ladder, lubrication \(\kappa\) / \(e_C\), clearance, fits, sealing, misalignment, speed / min load.
+1. **Requirements (PhyCalc 1)** — Fr, Fa (or spectrum), speed \(n\), required life \(L_{10h}\), temperature and cleanliness targets.
+2. **Type & arrangement (PhyCalc 2)** — Single, locating+floating, or duplex O / X / T; optional shaft handoff.
+3. **Bearing size (PhyCalc 3)** — Catalog filters and designation (or auto-design ranking).
+4. **Lube & interfaces (PhyCalc 4–8)** — Method ladder, lubrication \(\kappa\) / \(e_C\), clearance, fits, sealing, misalignment, speed / min load.
 5. **Decision** — Pass / Marginal / Fail strip, station table, export.
 
 **Service intent** starts from an installed designation, emphasizes diagnosis, interchange, grease life, and defect frequencies.
 
-**Method ladder:** climb only as far as the decision needs. ISO 16281 and stress-life paths are **screening** — not full FEA, GBLM, or Bearinx.
+**Method ladder:** climb only as far as the decision needs. ISO 16281 and stress-life paths are **screening** — not full elastic FEA.
 
 ## Key quantities and formulas
 
@@ -70,7 +70,7 @@ Modified rating life (ISO 281 screening):
 L_{nm} = a_1 \, a_{\mathrm{ISO}} \, \left(\frac{C}{P}\right)^p \frac{10^6}{60 n}
 \]
 
-Reliability factor \(a_1\) scales life for reliability other than 90%. The life modification factor \(a_{\mathrm{ISO}}\) (often called \(a_{\mathrm{SKF}}\) in catalog practice) depends on viscosity ratio \(\kappa = \nu/\nu_1\), contamination \(e_C\), and fatigue load limit \(P_u\).
+Reliability factor \(a_1\) scales life for reliability other than 90%. The life modification factor \(a_{\mathrm{ISO}}\) depends on viscosity ratio \(\kappa = \nu/\nu_1\), contamination \(e_C\), and fatigue load limit \(P_u\).
 
 Static safety (ISO 76):
 
@@ -130,7 +130,7 @@ C \approx 66\,\mathrm{kN}
 ## Standards scope (ISO 281 / 76 / 492 / ABMA)
 
 ### ISO 281 — Dynamic load ratings and rating life
-Defines basic and modified rating life, equivalent dynamic load \(P\), reliability factor \(a_1\), and life modification \(a_{\mathrm{ISO}}\) from \(\kappa\), \(e_C\), and \(P_u\). PhyCalcPro’s Life and Selection tools use this screening form. **Limits:** not a substitute for full elastic FEA (ISO 16281) or vendor GBLM.
+Defines basic and modified rating life, equivalent dynamic load \(P\), reliability factor \(a_1\), and life modification \(a_{\mathrm{ISO}}\) from \(\kappa\), \(e_C\), and \(P_u\). PhyCalcPro’s Life and Selection tools use this screening form. **Limits:** not a substitute for full elastic FEA or complete ISO 16281 system analysis.
 
 ### ISO 76 — Static load ratings
 Defines basic static load rating \(C_0\), equivalent static load \(P_0\), and safety factor \(s_0 = C_0/P_0\). Use for peak / shock / start-up checks even when life is adequate.
@@ -149,7 +149,7 @@ ABMA standards cover inch designations, load ratings conventions, and US customa
 - Forgetting **minimum load** (skidding risk at high speed / light load).
 - Locating both ends rigidly without thermal **float** clearance.
 - Trusting representative catalog C / C₀ without checking the OEM datasheet for the exact designation.
-- Treating ISO 16281 or stress-life screens as full FEA / vendor GBLM.
+- Treating ISO 16281 or stress-life screens as full elastic FEA.
 
 ## FAQ
 
@@ -193,13 +193,13 @@ Basic rating life L₁₀ is the life in revolutions (or hours at speed n) excee
 L_{10h} = \frac{a_1 \cdot 10^6}{60 n} \left(\frac{C}{P}\right)^p, \quad p = 3 \text{ (ball)}, \; 10/3 \text{ (roller)}
 \]
 
-Modified rating life (ISO 281:2007 / SKF):
+Modified rating life (ISO 281:2007):
 
 \[
-L_{nm} = a_1 \cdot a_{\mathrm{SKF}} \cdot (C/P)^p \cdot 10^6 / (60n), \quad a_{\mathrm{SKF}} \equiv a_{\mathrm{ISO}}
+L_{nm} = a_1 \cdot a_{\mathrm{ISO}} \cdot (C/P)^p \cdot 10^6 / (60n)
 \]
 
-where **aSKF** (ISO 281 **aISO**) is computed from viscosity ratio \(\kappa = \nu/\nu_1\), contamination factor eC (\(\eta_c\)), and fatigue load limit Pu (catalog datasheet Pu when available; otherwise estimated as 0.025C for ball, 0.03C for roller).
+where **aISO** is computed from viscosity ratio \(\kappa = \nu/\nu_1\), contamination factor eC (\(\eta_c\)), and fatigue load limit Pu (catalog datasheet Pu when available; otherwise estimated as 0.025C for ball, 0.03C for roller).
 
 **Life model ceiling (screening, opt-in):**
 
@@ -207,7 +207,7 @@ where **aSKF** (ISO 281 **aISO**) is computed from viscosity ratio \(\kappa = \n
 |--------|----------|
 | ISO 281 (default) | Lnm = a₁ · aISO · (C/P)^p; optional misalignment life derate a_mis |
 | ISO 16281 screen | Adjusts P to P_adj = P · f_clearance · f_misalign · f_distrib (not full ISO 16281:2025 FEA) |
-| Stress-life screen | Lnm uses a₁ · aISO · a_stress · … — transparent PhyCalcPro curve; **not SKF GBLM / AFC** |
+| Stress-life screen | Lnm uses a₁ · aISO · a_stress · … — transparent PhyCalcPro curve; screening only |
 | Hybrid / full ceramic | ISO 20056-inspired C / speed / life factors on rolling elements |
 
 Shaft FEM handoff can publish bearing slopes (rad) as misalignment (mrad) for the ceiling path.
@@ -276,8 +276,8 @@ Closed-form ISO 281 / ISO 76 screening over a filtered catalog. Auto-design rank
 - Constant load and speed unless variable spectrum is enabled
 - Pu from catalog with explicit datasheet vs C₀-ratio provenance; user override available
 - Representative catalog — not full vendor databases
-- Friction is screening Mrr/Msl — not full SKF four-component model
-- ISO 16281 and stress-life paths are **screening** only — not vendor GBLM, AFC, Bearinx, or full ISO 16281:2025
+- Friction is screening Mrr/Msl — not a full multi-component thermal friction model
+- ISO 16281 and stress-life paths are **screening** only — not full elastic FEA or complete ISO 16281:2025
 - Housing SKUs are screening-class — not full OEM mounted-product databases
 - Temperature derating on C above 120 °C (screening factor)
 

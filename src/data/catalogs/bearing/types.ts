@@ -110,7 +110,7 @@ export type BearingCatalogEntry = {
   costIndex?: number;
   /**
    * Fatigue load limit Pu (N) from datasheet when available.
-   * Critical for aSKF / aISO at high P/C — prefer this over C-ratio estimates.
+   * Critical for aISO at high P/C — prefer this over C-ratio estimates.
    */
   fatigueLoadLimitN?: number;
   /** True when Pu came from an explicit datasheet value (not a ratio estimate). */
@@ -164,7 +164,7 @@ export const BEARING_MANUFACTURERS: readonly BearingManufacturer[] = [
 
 export const BEARING_MANUFACTURER_LABELS: Record<BearingManufacturer, string> = {
   SKF: "SKF",
-  FAG: "FAG (Schaeffler)",
+  FAG: "FAG",
   NSK: "NSK",
   TIMKEN: "Timken",
   NTN: "NTN",

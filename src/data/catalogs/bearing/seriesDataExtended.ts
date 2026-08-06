@@ -467,7 +467,7 @@ export const NEEDLE_EXTENDED: SeriesTemplate[] = [
 ];
 
 /**
- * Inch catalog (MITCalc Module II class) — Timken R-series + cone/cup tapered,
+ * Inch ABMA catalog — Timken R-series + cone/cup tapered,
  * plus common inch deep-groove sizes.
  */
 export const INCH_CATALOG: SeriesTemplate[] = [

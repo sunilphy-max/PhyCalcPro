@@ -333,7 +333,7 @@ export function runBearingCopilotSession(text: string): BearingCopilotSession {
 
   const inputs = toUserInputs(params, loads, trimmed, lifeHours, bore.boreMm);
   const notes: string[] = [
-    "Bearing copilot uses ISO 281 required C, static C₀, and catalog speed limits — same engine as SKF Product Select screening.",
+    "Bearing copilot uses ISO 281 required C, static C₀, and catalog speed limits — PhyCalc screening engine.",
     `Lubrication applied as oil ISO VG ${BEARING_COPILOT_LUBE_DEFAULTS.isoVgGrade} at ${operatingTempC} °C (normal cleanliness) so Apply matches sizing.`,
   ];
 

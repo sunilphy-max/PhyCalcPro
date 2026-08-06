@@ -99,7 +99,7 @@ export function buildBearingReportSections(
 
   sections.push({
     id: "domain_factors",
-    title: "ISO 281 / SKF life factors",
+    title: "ISO 281 life factors",
     rows: [
       {
         parameter: "Basic rating life L₁₀",
@@ -111,11 +111,11 @@ export function buildBearingReportSections(
         parameter: "Modified rating life Lnm",
         value: formatDisplayNumber(result.modifiedLife),
         unit: "h",
-        notes: "a₁ · aSKF · (C/P)^p",
+        notes: "a₁ · aISO · (C/P)^p",
       },
       { parameter: "Reliability factor a₁", value: formatDisplayNumber(result.a1) },
       {
-        parameter: "aSKF (≡ aISO)",
+        parameter: "aISO",
         value: formatDisplayNumber(result.aIso),
         notes: "Effective life modification",
       },

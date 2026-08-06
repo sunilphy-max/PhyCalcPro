@@ -65,13 +65,13 @@ export const METHOD_LADDER: BearingMethodLadderStep[] = [
   {
     id: "stress_life_screen",
     label: "Stress-life screen",
-    description: "Transparent PhyCalcPro stress modifier — not vendor GBLM / AFC.",
+    description: "Transparent PhyCalcPro stress modifier — screening only.",
     tier: "screen",
   },
   {
     id: "oem_fea",
     label: "OEM / FEA handoff",
-    description: "SKF Product Select, SimPro, Bearinx, or elastic analysis for release drawings.",
+    description: "Confirm critical duty with OEM datasheets or elastic FEA for release drawings.",
     tier: "handoff",
   },
 ];
@@ -82,48 +82,47 @@ export type DesignerStageDef = {
   serviceLabel: string;
   designDescription: string;
   serviceDescription: string;
-  /** SKF selection-process step numbers this stage covers (design intent). */
-  skfSteps: number[];
+  /** PhyCalc selection-process step numbers this stage covers (design intent). */
+  processSteps: number[];
 };
 
 /**
- * Stage definitions aligned with SKF bearing selection process:
+ * Stage definitions for the PhyCalcPro bearing selection process:
  * 1 Requirements → 2 Type & arrangement → 3 Size → 4–8 Lube/speed/interfaces/execution/mounting.
- * @see https://www.skf.com/us/products/rolling-bearings/principles-of-rolling-bearing-selection/bearing-selection-process
  */
 export const DESIGNER_STAGES: DesignerStageDef[] = [
   {
     id: "duty",
     designLabel: "Requirements",
     serviceLabel: "Duty",
-    designDescription: "Performance targets and operating conditions (SKF step 1)",
+    designDescription: "Performance targets and operating conditions (step 1)",
     serviceDescription: "Operating loads, speed, and life target",
-    skfSteps: [1],
+    processSteps: [1],
   },
   {
     id: "system",
     designLabel: "Type & arrangement",
     serviceLabel: "Identify",
-    designDescription: "Bearing family, stations, and locating layout (SKF step 2)",
+    designDescription: "Bearing family, stations, and locating layout (step 2)",
     serviceDescription: "Installed designation and mounting topology",
-    skfSteps: [2],
+    processSteps: [2],
   },
   {
     id: "size",
     designLabel: "Bearing size",
     serviceLabel: "Evaluate",
-    designDescription: "Catalog filters and capacity ranking (SKF step 3)",
+    designDescription: "Catalog filters and capacity ranking (step 3)",
     serviceDescription: "Confirm ratings and catalog match",
-    skfSteps: [3],
+    processSteps: [3],
   },
   {
     id: "verify",
     designLabel: "Lube & interfaces",
     serviceLabel: "Diagnose",
     designDescription:
-      "Lubrication, temperature/speed, fits, clearance, sealing (SKF steps 4–8)",
+      "Lubrication, temperature/speed, fits, clearance, sealing (steps 4–8)",
     serviceDescription: "Failure modes, interchange, grease life, CM frequencies",
-    skfSteps: [4, 5, 6, 7, 8],
+    processSteps: [4, 5, 6, 7, 8],
   },
   {
     id: "report",
@@ -131,11 +130,11 @@ export const DESIGNER_STAGES: DesignerStageDef[] = [
     serviceLabel: "Actions",
     designDescription: "Pass/fail verdict, save, and export",
     serviceDescription: "Corrective actions and project export",
-    skfSteps: [],
+    processSteps: [],
   },
 ];
 
-/** Design follows SKF order: requirements before type/arrangement. */
+/** Design follows PhyCalc order: requirements before type/arrangement. */
 export const DESIGN_STAGE_ORDER: BearingDesignerStageId[] = [
   "duty",
   "system",
@@ -153,8 +152,8 @@ export const SERVICE_STAGE_ORDER: BearingDesignerStageId[] = [
   "report",
 ];
 
-/** Hub / docs — full SKF eight-step map into Designer panels. */
-export const SKF_SELECTION_PROCESS_STEPS: {
+/** Hub / docs — full PhyCalc eight-step map into Designer panels. */
+export const PHYCALC_SELECTION_PROCESS_STEPS: {
   step: number;
   title: string;
   summary: string;

@@ -1,6 +1,6 @@
 /**
  * ISO 281:2007 modified rating life — κ, ν₁, contamination eC, fatigue limit Pu, aISO.
- * Reference: ISO 281, SKF rating life methodology (screening implementation).
+ * Reference: ISO 281 modified rating life (PhyCalc screening implementation).
  */
 
 import { isRollerBearingType } from "@/data/catalogs/bearing/types";

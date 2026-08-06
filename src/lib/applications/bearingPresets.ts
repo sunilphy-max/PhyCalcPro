@@ -19,7 +19,7 @@ export type BearingPresetDefaults = {
   /** Target static safety s₀ for screening. */
   targetStaticSafetyFactor?: number;
   /**
-   * When true, prefer oil + contamination path so aSKF / κ / ηc are active
+   * When true, prefer oil + contamination path so aISO / κ / ηc are active
    * (does not change bearing type).
    */
   preferModifiedLife?: boolean;
@@ -31,7 +31,7 @@ export type BearingPresetDefaults = {
 
 const K = {
   iso281: { loadFactor: 1, serviceFactor: 1.1, targetSafetyFactor: 1.5 } as const,
-  skfModified: { loadFactor: 1, serviceFactor: 1.15, targetSafetyFactor: 1.5 } as const,
+  isoModified: { loadFactor: 1, serviceFactor: 1.15, targetSafetyFactor: 1.5 } as const,
   highReliability: { loadFactor: 1, serviceFactor: 1.2, targetSafetyFactor: 1.6 } as const,
   heavyDuty: { loadFactor: 1.35, serviceFactor: 1.4, targetSafetyFactor: 1.8 } as const,
   highSpeed: { loadFactor: 1, serviceFactor: 1.05, targetSafetyFactor: 1.4 } as const,
@@ -54,17 +54,17 @@ export const rollingBearingApplicationPresets: ModuleApplicationPreset[] = [
     knobs: K.iso281,
   },
   {
-    id: "skf_modified_life",
-    label: "SKF / ISO 281 modified life",
+    id: "iso281_modified_life",
+    label: "ISO 281 modified life",
     description:
-      "SKF rating life Lnm with a₁, aSKF (κ, ηc, Pu/P) and lubrication correction. Any bearing type.",
+      "PhyCalcPro modified rating life Lnm with a₁, aISO (κ, ηc, Pu/P) and lubrication correction. Any bearing type.",
     designCodes: ["ISO", "EU", "INDICATIVE"],
-    standards: ["ISO 281:2007", "SKF Rolling Bearings Catalogue"],
+    standards: ["ISO 281:2007"],
     calculationNotes: [
-      "Lnm = a₁ · aSKF · (C/P)^p.",
-      "Requires lubricant VG, temperature, and contamination class for full aSKF.",
+      "Lnm = a₁ · aISO · (C/P)^p.",
+      "Requires lubricant VG, temperature, and contamination class for full aISO.",
     ],
-    knobs: K.skfModified,
+    knobs: K.isoModified,
   },
   {
     id: "iso281_high_reliability",
@@ -129,20 +129,20 @@ export const rollingBearingApplicationPresets: ModuleApplicationPreset[] = [
       "Adjusts equivalent load P with f_clearance · f_misalign · f_distrib.",
       "Not a substitute for full ISO 16281:2025 internal load distribution.",
     ],
-    knobs: K.skfModified,
+    knobs: K.isoModified,
   },
   {
     id: "stress_life_screen",
     label: "Stress-life screening",
     description:
-      "Transparent contact-pressure / film life modifier. Not SKF GBLM or AFC.",
+      "Transparent contact-pressure / film life modifier. PhyCalcPro screening only.",
     designCodes: ["ISO", "EU", "INDICATIVE"],
     standards: ["ISO 281", "PhyCalcPro stress-life screening"],
     calculationNotes: [
       "Lnm uses a₁ · aISO · a_stress · (C/P)^p.",
-      "Explicitly not vendor GBLM / AFC.",
+      "Screening only — not a substitute for full elastic FEA.",
     ],
-    knobs: K.skfModified,
+    knobs: K.isoModified,
   },
 ];
 
@@ -212,7 +212,7 @@ export const bearingHousingApplicationPresets: ModuleApplicationPreset[] = [
     description:
       "ISO / catalog housing bolt and body screening. Choose foot, flange, or split mount in the form.",
     designCodes: ALL_DESIGN_CODES,
-    standards: ["SKF housing catalog", "ISO 3228 context"],
+    standards: ["OEM housing catalog practice", "ISO 3228 context"],
     calculationNotes: ["Does not select pillow-block vs flange geometry."],
     knobs: { loadFactor: 1, targetSafetyFactor: 2, serviceFactor: 1.2 },
   },
@@ -221,7 +221,7 @@ export const bearingHousingApplicationPresets: ModuleApplicationPreset[] = [
     label: "Compact envelope margins",
     description: "Slightly higher load factor when housing space is tight. Mount style is free.",
     designCodes: ALL_DESIGN_CODES,
-    standards: ["SKF FNL / FY series context"],
+    standards: ["Compact flange / foot housing practice"],
     knobs: { loadFactor: 1.1, targetSafetyFactor: 2, serviceFactor: 1.15 },
   },
   {
@@ -245,7 +245,7 @@ export const bearingHousingApplicationPresets: ModuleApplicationPreset[] = [
     label: "Maintainability screening",
     description: "Service-oriented SF for process-plant housings. Mount geometry stays user-selected.",
     designCodes: ALL_DESIGN_CODES,
-    standards: ["SKF SNL split plummer", "Process plant maintenance guides"],
+    standards: ["Split plummer block practice", "Process plant maintenance guides"],
     knobs: { loadFactor: 1.15, targetSafetyFactor: 1.8, serviceFactor: 1.2 },
   },
 ];
@@ -266,7 +266,7 @@ export const BEARING_PRESET_DEFAULTS: Record<string, BearingPresetDefaults> = {
     targetStaticSafetyFactor: 1,
     preferModifiedLife: false,
   },
-  skf_modified_life: {
+  iso281_modified_life: {
     reliability: 90,
     lubricationClass: "good",
     shockFactor: 1,

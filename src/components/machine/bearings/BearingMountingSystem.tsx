@@ -25,7 +25,7 @@ const SYSTEMS: {
   {
     id: "locating_dg_floating_nu",
     label: "Locating + floating (DG + NU)",
-    description: "Deep groove locates shaft axially; NU cylindrical roller floats (MITCalc classic).",
+    description: "Deep groove locates shaft axially; NU cylindrical roller floats (classic locating–floating).",
     locating: { type: "deep_groove", role: "locating" },
     floating: { type: "cylindrical_roller", role: "non_locating" },
   },

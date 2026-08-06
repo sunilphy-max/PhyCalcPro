@@ -396,7 +396,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Shaft mounting system"
-              description="Locating + floating pairs (MITCalc / SKF shaft design step 2)."
+              description="Locating + floating pairs (PhyCalc selection process step 2)."
             >
               {onMountingSystemChange ? (
                 <>
@@ -416,7 +416,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Bearing type"
-              description="Select the rolling bearing family — SKF bearing selection step 2."
+              description="Select the rolling bearing family — PhyCalc selection process step 2."
             >
               <BearingTypePicker
                 value={bearingType}
@@ -433,7 +433,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Application profile"
-              description="Optional catalog filter only — does not change ISO 281 / SKF calculation method. Calculation standard comes from the application preset."
+              description="Optional catalog manufacturer filter only — does not change the ISO 281 calculation method. Calculation standard comes from the application preset."
             >
               <CalculatorSelectField
                 label="Application profile"
@@ -753,7 +753,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Lubrication & environment"
-              description="Modified life Lnm = a₁ · aSKF · (C/P)^p. aSKF ≡ ISO 281 aISO from viscosity ratio κ, contamination eC (ηc), and Pu/P."
+              description="Modified life Lnm = a₁ · aISO · (C/P)^p. aISO from viscosity ratio κ, contamination eC (ηc), and Pu/P."
             >
               <div className={calculatorInputGridClass}>
                 <CalculatorSelectField
@@ -761,7 +761,7 @@ export default function BearingInputs({
                   value={lubricantType}
                   onChange={(value) => setLubricantType(value as LubricantType)}
                 >
-                  <option value="none">Basic L₁₀ only (aSKF = 1)</option>
+                  <option value="none">Basic L₁₀ only (aISO = 1)</option>
                   <option value="oil">Oil (ISO VG)</option>
                   <option value="grease">Grease (base oil VG)</option>
                 </CalculatorSelectField>
@@ -854,7 +854,7 @@ export default function BearingInputs({
                       className="mt-0.5"
                     />
                     <label htmlFor="thermal-eq" className="leading-relaxed text-slate-600 dark:text-slate-300">
-                      Use thermal equilibrium for life (friction power → ΔT → ν → κ / aSKF). Uncheck to
+                      Use thermal equilibrium for life (friction power → ΔT → ν → κ / aISO). Uncheck to
                       force the temperature entered above.
                     </label>
                   </div>
@@ -864,7 +864,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Life model ceiling"
-              description="Optional screening methods above ISO 281. Advanced paths are labeled screening — not vendor GBLM / Bearinx."
+              description="Optional screening methods above ISO 281. Advanced paths are labeled screening — not a substitute for full elastic FEA."
             >
               <div className={calculatorInputGridClass}>
                 <CalculatorSelectField
@@ -872,9 +872,9 @@ export default function BearingInputs({
                   value={lifeMethod}
                   onChange={(value) => setLifeMethod(value as BearingLifeMethod)}
                 >
-                  <option value="iso281">ISO 281 / aSKF (default)</option>
+                  <option value="iso281">ISO 281 / aISO (default)</option>
                   <option value="iso16281_screen">ISO 16281 screen (P adj.)</option>
-                  <option value="stress_life_screen">Stress-life screen (not GBLM)</option>
+                  <option value="stress_life_screen">Stress-life screen (PhyCalc)</option>
                 </CalculatorSelectField>
                 <CalculatorSelectField
                   label="Rolling elements"
@@ -910,8 +910,8 @@ export default function BearingInputs({
               ) : null}
               {lifeMethod === "stress_life_screen" ? (
                 <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
-                  Stress-life screening uses a transparent contact-pressure / film modifier. This is
-                  not SKF GBLM or AFC.
+                  Stress-life screening uses a transparent contact-pressure / film modifier. Screening
+                  only — not a substitute for full elastic FEA.
                 </p>
               ) : null}
             </CalculatorFormSection>
@@ -1213,7 +1213,7 @@ export default function BearingInputs({
           ? "Bearing System Designer — Service"
           : "Bearing System Designer"
       }
-      description="SKF-aligned selection: Requirements → Type & arrangement → Size → Lube & interfaces → Decision. ISO 281 / ISO 76 screening."
+      description="PhyCalc selection: Requirements → Type & arrangement → Size → Lube & interfaces → Decision. ISO 281 / ISO 76 screening."
       footer={
         <div className="space-y-2">
           <CalculatorCalculateButton

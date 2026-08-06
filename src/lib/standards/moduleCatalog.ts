@@ -174,11 +174,11 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
     indicativeMethod: "ISO 281 basic/modified life and ISO 76 static screening with catalog ratings",
     assumptions: [
       "Catalog C/C0/Pu and aISO factors follow ISO 281 / ISO 76 screening forms.",
-      "Vendor Product Select / MITCalc ±5% gold cases remain pending until pasted into the gold harness.",
+      "External ±5% reference gold cases remain pending until pasted into the gold harness.",
     ],
     limitations: [
-      "Not a substitute for SKF GBLM, Bearinx elastic FEA, or full ISO 16281.",
-      "Professional screening — confirm final selection with OEM tools for critical duty.",
+      "Not a substitute for full elastic FEA or complete ISO 16281 system analysis.",
+      "Professional screening — confirm final selection with OEM datasheets for critical duty.",
     ],
   }),
   "bearing-database": withCodeChecks("bearing-database", "Bearing Database", [

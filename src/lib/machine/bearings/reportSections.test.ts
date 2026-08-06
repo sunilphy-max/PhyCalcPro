@@ -41,6 +41,6 @@ describe("buildBearingReportSections", () => {
     expect(ids).toContain("domain_factors");
     expect(ids).toContain("recommendation");
     const iso = sections.find((s) => s.id === "domain_factors");
-    expect(iso?.rows?.some((r) => String(r.parameter).includes("aSKF"))).toBe(true);
+    expect(iso?.rows?.some((r) => String(r.parameter).includes("aISO"))).toBe(true);
   });
 });

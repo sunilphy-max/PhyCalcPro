@@ -2,12 +2,11 @@ import BearingSuiteLanding from "@/components/machine/bearings-shared/BearingSui
 import { buildPageMetadata } from "@/lib/seo/site";
 
 export const metadata = buildPageMetadata({
-  title: { absolute: "Bearing Product Select — PhyCalcPro" },
+  title: { absolute: "Bearing Selection — PhyCalcPro" },
   description:
-    "Select and evaluate rolling bearings: Auto-design, Validate, Compare, or Diagnose — ISO 281 / ISO 76 screening aligned with the SKF selection process.",
+    "Select and evaluate rolling bearings: Auto-design, Validate, Compare, or Diagnose — ISO 281 / ISO 76 screening with the PhyCalc selection process.",
   path: "/products/bearings",
   keywords: [
-    "bearing product select",
     "bearing calculator",
     "bearing auto-design",
     "ISO 281",

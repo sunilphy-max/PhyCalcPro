@@ -76,11 +76,11 @@ export default function BearingDesignerSpine({
             const complete = index < activeIndex;
             const Icon = STAGE_ICONS[step.id];
             const label = stageLabel(step, intent);
-            const skfHint =
-              intent === "design" && step.skfSteps.length > 0
-                ? step.skfSteps.length === 1
-                  ? `SKF ${step.skfSteps[0]}`
-                  : `SKF ${step.skfSteps[0]}–${step.skfSteps[step.skfSteps.length - 1]}`
+            const processHint =
+              intent === "design" && step.processSteps.length > 0
+                ? step.processSteps.length === 1
+                  ? `Step ${step.processSteps[0]}`
+                  : `Steps ${step.processSteps[0]}–${step.processSteps[step.processSteps.length - 1]}`
                 : null;
             return (
               <li key={step.id}>
@@ -116,9 +116,9 @@ export default function BearingDesignerSpine({
                       <span className="block text-xs font-semibold text-slate-900 dark:text-white">
                         {index + 1}. {label}
                       </span>
-                      {skfHint ? (
+                      {processHint ? (
                         <span className="rounded bg-slate-200/80 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {skfHint}
+                          {processHint}
                         </span>
                       ) : null}
                     </span>

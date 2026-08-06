@@ -25,7 +25,7 @@ export default function BearingAssistantsIndexPage() {
             Select for an application
           </h1>
           <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            Product Select–style machine paths. Each assistant pre-fills duty, profile, and
+            PhyCalc machine paths. Each assistant pre-fills duty, profile, and
             arrangement in the Bearing System Designer.
           </p>
         </header>

@@ -80,7 +80,7 @@ describe("stressLifeScreen", () => {
       puOverP: 1,
     });
     expect(poor.aStress).toBeLessThan(good.aStress);
-    expect(poor.note.toLowerCase()).toContain("not skf gblm");
+    expect(poor.note.toLowerCase()).toContain("screening only");
   });
 });
 
@@ -137,7 +137,7 @@ describe("life model ceiling integration", () => {
     const stress = solveBearingDesign({ ...heavy, lifeMethod: "stress_life_screen" });
     expect(stress.advancedLifeFactors?.aStress).toBeLessThan(1.2);
     expect(stress.modifiedLife).toBeLessThanOrEqual(iso281.modifiedLife * 1.01);
-    expect(stress.advancedLifeFactors?.note.toLowerCase()).toContain("not skf gblm");
+    expect(stress.advancedLifeFactors?.note.toLowerCase()).toContain("screening only");
   });
 
   it("hybrid ceramic increases Lnm vs steel baseline", () => {

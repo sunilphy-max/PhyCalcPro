@@ -8,29 +8,29 @@ type Props = {
 };
 
 const METHOD_LABEL: Record<BearingLifeMethod, string> = {
-  iso281: "ISO 281 / aSKF",
+  iso281: "ISO 281 / aISO",
   iso16281_screen: "ISO 16281 screen",
-  stress_life_screen: "Stress-life screen (not GBLM)",
+  stress_life_screen: "Stress-life screen",
 };
 
 /**
- * First-class ISO 281 / SKF life-factor breakdown for experienced engineers:
- * L₁₀, Lnm, a₁, aSKF (≡ aISO), κ, eC (ηc), ν / ν₁, Pu/P.
+ * ISO 281 life-factor breakdown for experienced engineers:
+ * L₁₀, Lnm, a₁, aISO, κ, eC (ηc), ν / ν₁, Pu/P.
  */
 export default function BearingLifeFactorsCard({ result }: Props) {
   const f = result.modifiedLifeFactors;
   const adv = result.advancedLifeFactors;
   const method = result.lifeMethod ?? "iso281";
   const aIsoBase = f.aIso;
-  const aSkfEffective = result.aIso;
-  const showBaseAiso = Math.abs(aIsoBase - aSkfEffective) > 1e-6;
+  const aIsoEffective = result.aIso;
+  const showBaseAiso = Math.abs(aIsoBase - aIsoEffective) > 1e-6;
   const hasLube = f.nu1Cst > 0 || aIsoBase !== 1;
 
   const rows = [
     {
       label: "Life method",
       value: METHOD_LABEL[method],
-      note: "Lnm = a₁ · aSKF · (C/P)^p",
+      note: "Lnm = a₁ · aISO · (C/P)^p",
     },
     {
       label: "Modified rating life Lnm",
@@ -40,7 +40,7 @@ export default function BearingLifeFactorsCard({ result }: Props) {
           ? "a₁ · aISO · a_stress · a_adv · (C/P)^p"
           : method === "iso16281_screen"
             ? "a₁ · aISO · (C/P_adj)^p"
-            : "a₁ · aSKF · (C/P)^p  (SKF rating life)",
+            : "a₁ · aISO · (C/P)^p  (ISO 281 modified life)",
     },
     {
       label: "Basic rating life L₁₀",
@@ -53,8 +53,8 @@ export default function BearingLifeFactorsCard({ result }: Props) {
       note: "ISO 281 Table 12",
     },
     {
-      label: "aSKF (≡ aISO)",
-      value: formatDisplayNumber(aSkfEffective),
+      label: "aISO",
+      value: formatDisplayNumber(aIsoEffective),
       note: showBaseAiso ? "Effective (includes a_advanced)" : "ISO 281 life modification",
     },
     ...(showBaseAiso
@@ -116,7 +116,7 @@ export default function BearingLifeFactorsCard({ result }: Props) {
           {
             label: "a_stress",
             value: formatDisplayNumber(adv.aStress),
-            note: "Not SKF GBLM / AFC",
+            note: "PhyCalcPro stress-life screen",
           },
           {
             label: "a_mis",
@@ -156,11 +156,11 @@ export default function BearingLifeFactorsCard({ result }: Props) {
   return (
     <div className="rounded-xl border border-slate-200/80 bg-white/90 p-3 dark:border-slate-700/60 dark:bg-slate-950/40">
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        ISO 281 / SKF factors — Lnm · a₁ · aSKF · κ · eC
+        ISO 281 factors — Lnm · a₁ · aISO · κ · eC
       </p>
       <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-        aSKF is the ISO 281 life modification factor aISO. Screening implementation of catalog
-        diagrams — not vendor GBLM / AFC software.
+        aISO is the ISO 281 life modification factor from κ, eC, and Pu/P. PhyCalcPro screening
+        implementation for catalog sizing.
       </p>
       {adv?.note ? (
         <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">{adv.note}</p>

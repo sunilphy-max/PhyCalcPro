@@ -31,7 +31,7 @@ export default function BearingPairedStationsCard({ result, loadUnit }: Props) {
         Bearing pair analysis · {arrangementLabel}
       </p>
       <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-        System life uses Weibull combination of stations (ISO / SKF). First-failure (min) is also
+        System life uses Weibull combination of stations (ISO 281). First-failure (min) is also
         reported when available.
       </p>
       {result.weibullSystemLifeHours != null ? (
