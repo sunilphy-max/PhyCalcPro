@@ -328,27 +328,6 @@ export default function BearingInputs({
 
   const seriesOptions = useMemo(() => uniqueSeries(typePool), [typePool]);
 
-  const catalogOptions = useMemo(
-    () =>
-      filterCatalog(bearingCatalog, {
-        manufacturer,
-        applicationProfile,
-        type: bearingType,
-        series: seriesFilter,
-        sealType: sealFilter,
-        unitSystem: unitSystemFilter,
-      }).filter((entry) => (maxOuterMm === "" ? true : entry.outerDiameterMm <= maxOuterMm)),
-    [
-      manufacturer,
-      applicationProfile,
-      bearingType,
-      seriesFilter,
-      sealFilter,
-      unitSystemFilter,
-      maxOuterMm,
-    ]
-  );
-
   const selected = findBearing(designation);
   const profileHint =
     applicationProfile !== "all" ? APPLICATION_PROFILE_META[applicationProfile].description : null;
@@ -932,22 +911,18 @@ export default function BearingInputs({
             </CalculatorFormSection>
 
             <CalculatorFormSection title="Catalog designation">
-              <CalculatorSelectField
-                label="Bearing designation"
-                value={designation}
-                onChange={(value) => setDesignation(value)}
-              >
-                {catalogOptions.map((entry) => (
-                  <option key={entry.designation} value={entry.designation}>
-                    {entry.designation} —{" "}
-                    {entry.unitSystem === "inch" && entry.boreIn != null
-                      ? `d ${entry.boreIn.toFixed(3)} in, D ${entry.outerDiameterIn?.toFixed(3)} in`
-                      : `d ${entry.boreMm} mm, D ${entry.outerDiameterMm} mm`}
-                    , C {(entry.dynamicRatingN / 1000).toFixed(1)} kN
-                    {entry.sealType !== "open" ? ` · ${SEAL_TYPE_LABELS[entry.sealType]}` : ""}
-                  </option>
-                ))}
-              </CalculatorSelectField>
+              <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-900/50">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                  Selected designation
+                </p>
+                <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">
+                  {designation || "—"}
+                </p>
+                <p className="mt-1 text-[11px] text-slate-500">
+                  Change via the designation search above the stage rail (or Database). Filters below
+                  narrow auto-design ranking.
+                </p>
+              </div>
 
               {selected ? <BearingCatalogDetail entry={selected} /> : null}
 
@@ -1263,22 +1238,17 @@ export default function BearingInputs({
             <CalculatorUnitField label="Speed" value={speed} onChange={setSpeed} min={0} unit="rpm" />
             <CalculatorUnitField label="Required L10h" value={lifeHours} onChange={setLifeHours} min={0} unit="h" />
           </div>
-          <label className={calculatorFieldLabelClass}>
-            Designation
-            <input
-              className={`${calculatorTextInputClass} mt-1`}
-              value={designation}
-              onChange={(e) => setDesignation(e.target.value)}
-              placeholder="e.g. 6205"
-            />
-          </label>
-          <p className="text-xs text-slate-500">
-            Need κ, duplex, spectrum, or overrides? Switch to Expert. Or open the{" "}
-            <a href="/products/bearings/database" className="text-cyan-700 underline dark:text-cyan-400">
-              catalog database
-            </a>
-            .
-          </p>
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-900/50">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+              Designation
+            </p>
+            <p className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-white">
+              {designation || "—"}
+            </p>
+            <p className="mt-1 text-[11px] text-slate-500">
+              Use the designation search above. Need κ, duplex, or spectrum? Switch to Expert.
+            </p>
+          </div>
         </div>
       ) : (
         <BearingDesignerSpine

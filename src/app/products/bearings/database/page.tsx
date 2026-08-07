@@ -12,6 +12,7 @@ import {
 } from "@/data/catalogs/bearingCatalog";
 import { constructionForType, provenanceLabel } from "@/data/bearings/constructionDefaults";
 import { filterCatalog } from "@/data/catalogs/bearing/application";
+import { designerHref } from "@/lib/machine/bearings/bearingProject";
 
 const MANUFACTURERS: Array<BearingManufacturer | "all"> = [
   "all",
@@ -178,22 +179,24 @@ export default function BearingDatabasePage() {
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
-                    href={`/products/bearings/designer?intent=design&mode=check&designation=${encodeURIComponent(selected.designation)}&panel=size`}
+                    href={designerHref({
+                      job: "validate",
+                      panel: "size",
+                      extra: { designation: selected.designation },
+                    })}
                     className="rounded-lg bg-cyan-600 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-cyan-700"
                   >
                     Open in Designer
                   </Link>
                   <Link
-                    href={`/products/bearings/designer?intent=service&mode=diagnose&designation=${encodeURIComponent(selected.designation)}&panel=system`}
+                    href={designerHref({
+                      job: "diagnose",
+                      panel: "system",
+                      extra: { designation: selected.designation },
+                    })}
                     className="rounded-lg border border-slate-200 px-3 py-2 text-center text-xs font-semibold dark:border-slate-600"
                   >
                     Open Diagnose
-                  </Link>
-                  <Link
-                    href={`/products/bearings/designer?intent=design&mode=check&designation=${encodeURIComponent(selected.designation)}&panel=verify`}
-                    className="rounded-lg border border-slate-200 px-3 py-2 text-center text-xs font-semibold dark:border-slate-600"
-                  >
-                    Check speed &amp; lube
                   </Link>
                 </div>
               </div>

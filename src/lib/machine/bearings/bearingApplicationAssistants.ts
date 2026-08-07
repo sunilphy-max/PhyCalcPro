@@ -4,7 +4,10 @@
  */
 
 import type { BearingCopilotApplyPayload } from "@/lib/copilot/bearingCopilot";
-import type { BearingMountingSystemId } from "@/lib/machine/bearings/bearingProject";
+import {
+  designerHref,
+  type BearingMountingSystemId,
+} from "@/lib/machine/bearings/bearingProject";
 import type { BearingSealType } from "@/lib/machine/bearings/types";
 
 export type BearingAssistantId =
@@ -724,14 +727,16 @@ export function assistantToDesignerHref(
   const assistant = getBearingAssistant(id);
   if (!assistant) return "/products/bearings/designer";
   const merged = { ...defaultAssistantAnswers(assistant), ...(answers ?? {}) };
-  const params = new URLSearchParams();
-  params.set("intent", "design");
-  params.set("mode", "design");
-  params.set("panel", assistant.panel);
-  params.set("assistant", id);
   const answerParams = answersToQueryParams(merged);
-  answerParams.forEach((v, k) => params.set(k, v));
-  return `/products/bearings/designer?${params.toString()}`;
+  const extra: Record<string, string> = { assistant: id };
+  answerParams.forEach((v, k) => {
+    extra[k] = v;
+  });
+  return designerHref({
+    job: "autoDesign",
+    panel: assistant.panel,
+    extra,
+  });
 }
 
 export type BearingAssistantHubCard = {

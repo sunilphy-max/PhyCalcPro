@@ -11,7 +11,14 @@ keywords: ["bearing system designer", "bearing selection", "L10 life", "ISO 281"
 
 Rolling-element bearing selection is a load–life–speed–fit problem. Engineers size bearings so that the **basic or modified rating life** meets the duty, static safety is adequate at peak load, speed stays below catalog limits, and the arrangement (locating / floating, O / X / T) matches thermal growth and stiffness needs.
 
-PhyCalcPro’s **Bearing System Designer** (`/products/bearings/designer`) is the primary rolling-bearing workspace. The **Design** intent follows the Designer stages:
+PhyCalcPro’s **Bearing System Designer** (`/products/bearings/designer`) is the primary rolling-bearing workspace. The hub picks one **job**; Assistants prefill; Copilot advises mid-session.
+
+| Job (`?job=`) | Stage order | Starts at |
+|---------------|-------------|-----------|
+| `autoDesign` | Requirements → Type → Size → Lube → Decision | Requirements |
+| `validate` | same (design order) | Bearing size |
+| `compare` | same (design order) | Bearing size |
+| `diagnose` | Identify → Duty → Evaluate → Diagnose → Actions | Identify |
 
 | Designer stage | What you set |
 |----------------|--------------|
@@ -19,12 +26,9 @@ PhyCalcPro’s **Bearing System Designer** (`/products/bearings/designer`) is th
 | Type & arrangement | Topology, family, O / X / T |
 | Bearing size | Catalog filters and designation |
 | Lube & interfaces | Method ladder, κ / eC, clearance, fits, speed |
-| Decision | Pass / Marginal / Fail, export |
+| Decision | Pass / Marginal / Fail (Decision Strip), export |
 
-- **Design** (`?intent=design`) — Requirements → Type & arrangement → Size → Lube & interfaces → Decision  
-- **Service** (`?intent=service`) — Identify → Duty → Evaluate → Diagnose → Actions  
-
-Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrangement`, `/selection`) permanently redirect into Designer panels. Sibling suite tools: [Assistants](/products/bearings/assistant), [Database](/products/bearings/database), [Failure guide](/products/bearings/failure), [Plain](/products/bearings/plain), and [Housings](/products/bearings/housing).
+Legacy `intent` / `mode` / `panel` query params remain aliases. Sibling suite tools: [Assistants](/products/bearings/assistant), [Database](/products/bearings/database), [Failure guide](/products/bearings/failure), [Plain](/products/bearings/plain), and [Housings](/products/bearings/housing).
 
 ## Bearing types and when to use them
 

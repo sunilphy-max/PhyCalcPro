@@ -14,6 +14,12 @@ export type BearingMountingSystemId =
 
 export type BearingDesignerIntent = "design" | "service";
 
+/**
+ * Single product job — replaces dual `intent` + `mode` vocabulary for entry routing.
+ * Legacy URL params (`intent`, `mode`) still parse via helpers below.
+ */
+export type BearingJob = "autoDesign" | "validate" | "compare" | "diagnose";
+
 export type BearingDesignerStageId =
   | "system"
   | "duty"
@@ -152,75 +158,87 @@ export const SERVICE_STAGE_ORDER: BearingDesignerStageId[] = [
   "report",
 ];
 
-/** Hub / docs — full PhyCalc eight-step map into Designer panels. */
-export const PHYCALC_SELECTION_PROCESS_STEPS: {
-  step: number;
-  title: string;
-  summary: string;
-  panel: BearingDesignerStageId;
-  href: string;
-}[] = [
-  {
-    step: 1,
-    title: "Performance & operating conditions",
-    summary: "Life, load, speed, temperature, cleanliness, and space limits",
-    panel: "duty",
-    href: "/products/bearings/designer?intent=design&panel=duty",
-  },
-  {
-    step: 2,
-    title: "Bearing type and arrangement",
-    summary: "Family, locating/floating or duplex O / X / T",
-    panel: "system",
-    href: "/products/bearings/designer?intent=design&panel=system",
-  },
-  {
-    step: 3,
-    title: "Bearing size",
-    summary: "Dynamic / static capacity and catalog designation",
-    panel: "size",
-    href: "/products/bearings/designer?intent=design&panel=size",
-  },
-  {
-    step: 4,
-    title: "Lubrication",
-    summary: "Oil/grease, viscosity ratio κ, contamination eC",
-    panel: "verify",
-    href: "/products/bearings/designer?intent=design&panel=verify",
-  },
-  {
-    step: 5,
-    title: "Operating temperature and speed",
-    summary: "Thermal equilibrium, limiting and reference speed",
-    panel: "verify",
-    href: "/products/bearings/designer?intent=design&panel=verify",
-  },
-  {
-    step: 6,
-    title: "Bearing interfaces",
-    summary: "Shaft and housing fits, operating clearance",
-    panel: "verify",
-    href: "/products/bearings/designer?intent=design&panel=verify",
-  },
-  {
-    step: 7,
-    title: "Bearing execution",
-    summary: "Clearance class, precision, cage / rolling-element material",
-    panel: "verify",
-    href: "/products/bearings/designer?intent=design&panel=verify",
-  },
-  {
-    step: 8,
-    title: "Sealing, mounting and dismounting",
-    summary: "Seal type, mounting practice, maintenance path",
-    panel: "verify",
-    href: "/products/bearings/designer?intent=design&panel=verify",
-  },
-];
+/** Job → Designer intent (stage order). */
+export function intentFromJob(job: BearingJob): BearingDesignerIntent {
+  return job === "diagnose" ? "service" : "design";
+}
+
+/** Job → cross-product DesignWorkflowMode id (`design` | `check` | `select` | `diagnose`). */
+export function workflowModeFromJob(job: BearingJob): "design" | "check" | "select" | "diagnose" {
+  if (job === "autoDesign") return "design";
+  if (job === "validate") return "check";
+  if (job === "compare") return "select";
+  return "diagnose";
+}
+
+export function defaultStageForJob(job: BearingJob): BearingDesignerStageId {
+  if (job === "diagnose") return "system";
+  if (job === "validate" || job === "compare") return "size";
+  return "duty";
+}
+
+export function parseBearingJob(value: string | null | undefined): BearingJob | null {
+  if (!value) return null;
+  const v = value.toLowerCase().replace(/[_-]/g, "");
+  if (v === "autodesign" || v === "design") return "autoDesign";
+  if (v === "validate" || v === "check") return "validate";
+  if (v === "compare" || v === "select") return "compare";
+  if (v === "diagnose" || v === "service") return "diagnose";
+  return null;
+}
+
+/**
+ * Resolve job from URL. Prefer `job=`; fall back to legacy `mode` + `intent`.
+ */
+export function resolveBearingJob(params: {
+  job?: string | null;
+  mode?: string | null;
+  intent?: string | null;
+}): BearingJob {
+  const fromJob = parseBearingJob(params.job ?? null);
+  if (fromJob) return fromJob;
+  const mode = (params.mode ?? "").toLowerCase();
+  if (mode === "design" || mode === "autodesign" || mode === "auto-design") return "autoDesign";
+  if (mode === "check" || mode === "validate") return "validate";
+  if (mode === "select" || mode === "compare") return "compare";
+  if (mode === "diagnose" || mode === "service") return "diagnose";
+  if (params.intent === "service") return "diagnose";
+  return "autoDesign";
+}
+
+export type DesignerHrefOptions = {
+  job: BearingJob;
+  panel?: BearingDesignerStageId;
+  /** Extra query keys (designation, type, assistant, …). */
+  extra?: Record<string, string | undefined | null>;
+};
+
+/** Canonical Designer deep link — writes job + legacy intent/mode/panel for compatibility. */
+export function designerHref(opts: DesignerHrefOptions): string {
+  const job = opts.job;
+  const intent = intentFromJob(job);
+  const mode = workflowModeFromJob(job);
+  const panel = opts.panel ?? defaultStageForJob(job);
+  const params = new URLSearchParams();
+  params.set("job", job);
+  params.set("intent", intent);
+  params.set("mode", mode);
+  params.set("panel", panel);
+  if (opts.extra) {
+    for (const [key, value] of Object.entries(opts.extra)) {
+      if (value != null && value !== "") params.set(key, value);
+    }
+  }
+  return `/products/bearings/designer?${params.toString()}`;
+}
 
 export function stagesForIntent(intent: BearingDesignerIntent): DesignerStageDef[] {
   const order = intent === "service" ? SERVICE_STAGE_ORDER : DESIGN_STAGE_ORDER;
   return order.map((id) => DESIGNER_STAGES.find((s) => s.id === id)!);
+}
+
+export function stagesForJob(job: BearingJob): DesignerStageDef[] {
+  return stagesForIntent(intentFromJob(job));
 }
 
 export function parseDesignerIntent(value: string | null | undefined): BearingDesignerIntent {
@@ -258,6 +276,26 @@ export function stageDescription(stage: DesignerStageDef, intent: BearingDesigne
 
 export function defaultStageForIntent(intent: BearingDesignerIntent): BearingDesignerStageId {
   return intent === "service" ? "system" : "duty";
+}
+
+/** Map UI mounting preset → engine topology + locating/floating families. */
+export function toEngineMountingFields(mountingSystem: BearingMountingSystemId): {
+  mountingSystem: SystemTopologyPreset;
+  locatingBearingType?: BearingType;
+  floatingBearingType?: BearingType;
+} {
+  if (mountingSystem === "single") {
+    return { mountingSystem: "single" };
+  }
+  if (mountingSystem === "duplex_angular") {
+    return { mountingSystem: "duplex" };
+  }
+  return {
+    mountingSystem: "locating_floating",
+    locatingBearingType:
+      mountingSystem === "locating_ac_floating_nu" ? "angular_contact" : "deep_groove",
+    floatingBearingType: "cylindrical_roller",
+  };
 }
 
 /** Map mounting system id → dynamic station list. */

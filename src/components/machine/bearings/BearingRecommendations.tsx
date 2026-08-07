@@ -5,6 +5,7 @@ import { Lightbulb, Sparkles } from "lucide-react";
 import type { BearingResult } from "@/lib/machine/bearings/types";
 import type { CrossManufacturerRecommendation } from "@/lib/machine/bearings/catalogAlternatives";
 import { costBandFromIndex } from "@/lib/machine/bearings/recommendationAdvisor";
+import { lifeSafetyFactor } from "@/lib/machine/bearings/bearingDecisionDashboard";
 import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import { BEARING_MANUFACTURER_LABELS } from "@/data/catalogs/bearingCatalog";
 import { sealLabelForOem } from "@/data/catalogs/bearing/manufacturerDesignations";
@@ -19,9 +20,8 @@ type Props = {
 };
 
 function lifeSfFromResult(r: BearingResult): number | undefined {
-  if (r.lifeSafetyFactor != null && r.lifeSafetyFactor > 0) return r.lifeSafetyFactor;
-  if (r.lifeUtilization > 0 && Number.isFinite(r.lifeUtilization)) return 1 / r.lifeUtilization;
-  return undefined;
+  const sf = lifeSafetyFactor(r);
+  return sf > 0 ? sf : undefined;
 }
 
 function MetricsStrip({

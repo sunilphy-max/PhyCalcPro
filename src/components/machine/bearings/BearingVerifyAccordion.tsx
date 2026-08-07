@@ -1,12 +1,8 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
-import type { BearingResult } from "@/lib/machine/bearings/types";
-import {
-  buildBearingDecisionDashboard,
-  type DashboardTone,
-} from "@/lib/machine/bearings/bearingDecisionDashboard";
+import type { DashboardTone } from "@/lib/machine/bearings/bearingDecisionDashboard";
 
 export type VerifySection = {
   id: string;
@@ -17,7 +13,6 @@ export type VerifySection = {
 };
 
 type Props = {
-  result: BearingResult;
   sections: VerifySection[];
 };
 
@@ -37,8 +32,7 @@ function defaultOpenIds(sections: VerifySection[]): Set<string> {
   return open;
 }
 
-export default function BearingVerifyAccordion({ result, sections }: Props) {
-  const dash = useMemo(() => buildBearingDecisionDashboard(result), [result]);
+export default function BearingVerifyAccordion({ sections }: Props) {
   const [openIds, setOpenIds] = useState<Set<string>>(() => defaultOpenIds(sections));
 
   const toggle = (id: string) => {
@@ -53,9 +47,9 @@ export default function BearingVerifyAccordion({ result, sections }: Props) {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">Verify</p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">Verify checks</p>
         <p className="text-[11px] text-slate-500">
-          Failed / marginal sections open by default · {dash.meetsTargetLifeAnswer}
+          Failed / marginal sections open by default · verdict is in the Decision Strip above
         </p>
       </div>
       <div className="space-y-2">

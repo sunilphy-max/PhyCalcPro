@@ -18,7 +18,7 @@ type Props = {
   committed?: boolean;
 };
 
-/** Thin status rail — detailed Lnm / s₀ live in the results Decision Strip. */
+/** Context rail — type/catalog/duty. Pass/fail lives only in the Decision Strip. */
 export default function BearingDesignSummaryPanel({
   preview,
   manufacturer,
@@ -36,13 +36,6 @@ export default function BearingDesignSummaryPanel({
     );
   }
 
-  const overall =
-    preview.designStatus === "safe"
-      ? { status: "ok" as const, label: "PASS" }
-      : preview.designStatus === "warning"
-        ? { status: "warn" as const, label: "MARGINAL" }
-        : { status: "fail" as const, label: "FAIL" };
-
   const oem =
     manufacturer && BEARING_MANUFACTURER_LABELS[manufacturer]
       ? BEARING_MANUFACTURER_LABELS[manufacturer]
@@ -56,16 +49,15 @@ export default function BearingDesignSummaryPanel({
     {
       label: "Type",
       value: BEARING_TYPE_LABELS[preview.bearingType] ?? preview.bearingType,
-      status: "ok",
+      status: "neutral",
     },
-    { label: "Catalog", value: catalog, status: preview.designation ? "ok" : "neutral" },
-    { label: "Status", value: overall.label, status: overall.status },
+    { label: "Catalog", value: catalog, status: "neutral" },
   ];
 
   const footer =
     requiredLifeHours != null && requiredLifeHours > 0
-      ? `Lnm ${formatDisplayNumber(preview.modifiedLife)} h · L_req ${formatDisplayNumber(requiredLifeHours)} h · see Decision Strip`
-      : `Lnm ${formatDisplayNumber(preview.modifiedLife)} h · s₀ ${formatDisplayNumber(preview.staticSafetyFactor)} · see Decision Strip`;
+      ? `Lnm ${formatDisplayNumber(preview.modifiedLife)} h · target ${formatDisplayNumber(requiredLifeHours)} h`
+      : `Lnm ${formatDisplayNumber(preview.modifiedLife)} h · s₀ ${formatDisplayNumber(preview.staticSafetyFactor)}`;
 
   return (
     <ModuleDesignSummaryPanel rows={rows} footer={footer} committed={committed} />

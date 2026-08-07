@@ -10,12 +10,11 @@ import { formatDisplayNumber } from "@/lib/display/formatEngineering";
 import type { CsvRow } from "@/lib/export/csvRows";
 import { flattenReportSectionsToCsv } from "@/lib/export/reportSections";
 
+import { lifeSafetyFactor } from "./bearingDecisionDashboard";
+
 function lifeSf(result: BearingResult): number | null {
-  if (result.lifeSafetyFactor != null && result.lifeSafetyFactor > 0) return result.lifeSafetyFactor;
-  if (result.lifeUtilization > 0 && Number.isFinite(result.lifeUtilization)) {
-    return 1 / result.lifeUtilization;
-  }
-  return null;
+  const sf = lifeSafetyFactor(result);
+  return sf > 0 ? sf : null;
 }
 
 function statusLabel(result: BearingResult): string {

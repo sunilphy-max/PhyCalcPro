@@ -1,19 +1,15 @@
 /**
- * PhyCalcPro modified rating life — ISO 281:2007 screening.
- *
- * Lnm  = a1 · aISO · (C/P)^p   [million revolutions]
- * Lnmh = 10^6 · Lnm / (60·n)   [operating hours]
+ * Thin ISO 281 modified-life helpers — delegates aISO / κ / eC to iso281Life.
+ * Prefer solveBearingDesign for full product results.
  */
 
 import type { BearingType } from "./types";
 import { lifeExponentFor } from "./equivalentLoad";
 import {
-  calculateAiso,
   estimateFatigueLoadLimitN,
   ratedViscosityNu1,
+  resolveModifiedLifeFactors,
   type ContaminationLevel,
-  CONTAMINATION_EC,
-  viscosityRatio,
 } from "./iso281Life";
 
 export type ModifiedRatingLifeInputs = {
@@ -82,17 +78,27 @@ export function calculateModifiedRatingLife(
   const p = modifiedLifeExponent(input.bearingType);
   const pu =
     input.fatigueLoadLimitN ?? estimateFatigueLoadLimitN(input.dynamicRatingN, input.bearingType);
-  const puOverP = pu / Math.max(input.equivalentLoadN, 1e-9);
-
   const nu1 = ratedViscosityNu1(input.meanDiameterMm, input.speedRpm);
+
+  let aIso = 1;
   let kappa = 0;
   let eC = 1;
-  let aIso = 1;
+  let puOverP = pu / Math.max(input.equivalentLoadN, 1e-9);
 
   if (input.kinematicViscosityCst != null && input.contamination) {
-    kappa = viscosityRatio(input.kinematicViscosityCst, nu1);
-    eC = CONTAMINATION_EC[input.contamination];
-    aIso = calculateAiso({ kappa, eC, puOverP });
+    const factors = resolveModifiedLifeFactors({
+      kinematicViscosityCst: input.kinematicViscosityCst,
+      meanDiameterMm: input.meanDiameterMm,
+      speedRpm: input.speedRpm,
+      contamination: input.contamination,
+      fatigueLoadLimitN: pu,
+      equivalentLoadN: input.equivalentLoadN,
+      bearingType: input.bearingType,
+    });
+    aIso = factors.aIso;
+    kappa = factors.kappa;
+    eC = factors.eC;
+    puOverP = factors.puOverP;
   }
 
   const basicLnm = modifiedRatingLifeMillionRevolutions({

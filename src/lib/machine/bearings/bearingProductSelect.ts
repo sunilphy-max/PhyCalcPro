@@ -1,16 +1,25 @@
 /**
- * Bearing hub entry — PhyCalc start modes.
- * Maps to DesignWorkflowMode + Designer intent/panel deep links.
+ * Bearing hub entry — PhyCalc jobs → Designer deep links.
  */
 
 import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabels";
 import { WORKFLOW_MODE_META } from "@/lib/design-workflows/workflowModeLabels";
-import type { BearingDesignerIntent, BearingDesignerStageId } from "./bearingProject";
+import {
+  designerHref,
+  parseBearingJob,
+  type BearingDesignerIntent,
+  type BearingDesignerStageId,
+  type BearingJob,
+  defaultStageForJob,
+  intentFromJob,
+} from "./bearingProject";
 
+/** @deprecated Prefer BearingJob — kept for hub card ids matching DesignWorkflowMode. */
 export type BearingStartModeId = "design" | "check" | "select" | "diagnose";
 
 export type BearingStartModeCard = {
   id: BearingStartModeId;
+  job: BearingJob;
   label: string;
   description: string;
   /** What the engineer does next */
@@ -21,74 +30,59 @@ export type BearingStartModeCard = {
   accent: "cyan" | "emerald" | "violet" | "amber";
 };
 
-export const BEARING_START_MODE_CARDS: BearingStartModeCard[] = [
-  {
-    id: "design",
-    label: WORKFLOW_MODE_META.design.label,
-    description: WORKFLOW_MODE_META.design.description,
-    outcome: "Rank catalog bearings from load, speed, and life targets",
-    href: "/products/bearings/designer?intent=design&mode=design&panel=duty",
-    intent: "design",
-    panel: "duty",
-    accent: "cyan",
-  },
-  {
-    id: "check",
-    label: WORKFLOW_MODE_META.check.label,
-    description: WORKFLOW_MODE_META.check.description,
-    outcome: "Enter a designation and duty — get L₁₀, static SF, and speed margin",
-    href: "/products/bearings/designer?intent=design&mode=check&panel=size",
-    intent: "design",
-    panel: "size",
-    accent: "emerald",
-  },
-  {
-    id: "select",
-    label: WORKFLOW_MODE_META.select.label,
-    description: WORKFLOW_MODE_META.select.description,
-    outcome: "Browse ranked alternatives side-by-side before committing",
-    href: "/products/bearings/designer?intent=design&mode=select&panel=size",
-    intent: "design",
-    panel: "size",
-    accent: "violet",
-  },
-  {
-    id: "diagnose",
-    label: WORKFLOW_MODE_META.diagnose.label,
-    description: WORKFLOW_MODE_META.diagnose.description,
-    outcome: "Screen failure risk, grease life, interchange, and defect frequencies",
-    href: "/products/bearings/designer?intent=service&mode=diagnose&panel=system",
-    intent: "service",
-    panel: "system",
-    accent: "amber",
-  },
-];
+const JOB_BY_START_MODE: Record<BearingStartModeId, BearingJob> = {
+  design: "autoDesign",
+  check: "validate",
+  select: "compare",
+  diagnose: "diagnose",
+};
 
-export type BearingQuickPath = {
+export const BEARING_START_MODE_CARDS: BearingStartModeCard[] = (
+  ["design", "check", "select", "diagnose"] as const
+).map((id) => {
+  const job = JOB_BY_START_MODE[id];
+  const panel = defaultStageForJob(job);
+  return {
+    id,
+    job,
+    label: WORKFLOW_MODE_META[id].label,
+    description: WORKFLOW_MODE_META[id].description,
+    outcome:
+      id === "design"
+        ? "Rank catalog bearings from load, speed, and life targets"
+        : id === "check"
+          ? "Enter a designation and duty — get L₁₀, static SF, and speed margin"
+          : id === "select"
+            ? "Browse ranked alternatives side-by-side before committing"
+            : "Screen failure risk, grease life, interchange, and defect frequencies",
+    href: designerHref({ job, panel }),
+    intent: intentFromJob(job),
+    panel,
+    accent:
+      id === "design"
+        ? "cyan"
+        : id === "check"
+          ? "emerald"
+          : id === "select"
+            ? "violet"
+            : "amber",
+  };
+});
+
+/** Sibling tools only — Designer entry lives in the four job cards. */
+export type BearingSiblingPath = {
   id: string;
   label: string;
   description: string;
   href: string;
 };
 
-export const BEARING_QUICK_PATHS: BearingQuickPath[] = [
-  {
-    id: "designer",
-    label: "System Designer",
-    description: "Full ISO 281 / ISO 76 rolling-bearing workspace",
-    href: "/products/bearings/designer?intent=design&mode=design&panel=duty",
-  },
+export const BEARING_SIBLING_PATHS: BearingSiblingPath[] = [
   {
     id: "catalog",
     label: "Catalog search",
     description: "Browse multi-OEM designations, then hand off to Designer",
     href: "/products/bearings/database",
-  },
-  {
-    id: "arrangement",
-    label: "Shaft arrangement",
-    description: "Locating + floating or duplex O / X / T system sizing",
-    href: "/products/bearings/designer?intent=design&mode=design&panel=system",
   },
   {
     id: "plain",
@@ -104,14 +98,16 @@ export const BEARING_QUICK_PATHS: BearingQuickPath[] = [
   },
 ];
 
+/** @deprecated Use BEARING_SIBLING_PATHS — Designer duplicates removed. */
+export const BEARING_QUICK_PATHS = BEARING_SIBLING_PATHS;
+
 export function parseWorkflowModeParam(
   value: string | null | undefined
 ): DesignWorkflowMode | null {
-  if (!value) return null;
-  const v = value.toLowerCase();
-  if (v === "design" || v === "autodesign" || v === "auto-design") return "design";
-  if (v === "check" || v === "validate") return "check";
-  if (v === "select" || v === "compare") return "select";
-  if (v === "diagnose" || v === "service") return "diagnose";
-  return null;
+  const job = parseBearingJob(value);
+  if (!job) return null;
+  if (job === "autoDesign") return "design";
+  if (job === "validate") return "check";
+  if (job === "compare") return "select";
+  return "diagnose";
 }

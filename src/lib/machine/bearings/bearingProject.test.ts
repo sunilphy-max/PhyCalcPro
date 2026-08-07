@@ -2,12 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   DESIGN_STAGE_ORDER,
   defaultStageForIntent,
+  defaultStageForJob,
+  designerHref,
+  intentFromJob,
   mountingFromTopology,
+  parseBearingJob,
   parseDesignerIntent,
   parseDesignerStage,
+  resolveBearingJob,
   stagesForIntent,
+  stagesForJob,
   stationsFromMountingSystem,
+  toEngineMountingFields,
   topologyFromMounting,
+  workflowModeFromJob,
 } from "./bearingProject";
 
 describe("bearingProject", () => {
@@ -22,9 +30,31 @@ describe("bearingProject", () => {
     expect(parseDesignerStage("failure")).toBe("verify");
   });
 
+  it("resolves BearingJob from job / mode / intent", () => {
+    expect(parseBearingJob("autoDesign")).toBe("autoDesign");
+    expect(parseBearingJob("validate")).toBe("validate");
+    expect(resolveBearingJob({ job: "compare" })).toBe("compare");
+    expect(resolveBearingJob({ mode: "check" })).toBe("validate");
+    expect(resolveBearingJob({ intent: "service" })).toBe("diagnose");
+    expect(intentFromJob("diagnose")).toBe("service");
+    expect(workflowModeFromJob("autoDesign")).toBe("design");
+    expect(defaultStageForJob("validate")).toBe("size");
+    expect(defaultStageForJob("diagnose")).toBe("system");
+  });
+
+  it("builds designer href with job + legacy aliases", () => {
+    const href = designerHref({ job: "validate", panel: "size", extra: { designation: "6205" } });
+    expect(href).toContain("job=validate");
+    expect(href).toContain("mode=check");
+    expect(href).toContain("intent=design");
+    expect(href).toContain("panel=size");
+    expect(href).toContain("designation=6205");
+  });
+
   it("orders design stages like PhyCalc selection (requirements first)", () => {
     expect(DESIGN_STAGE_ORDER[0]).toBe("duty");
     expect(stagesForIntent("design").map((s) => s.id)).toEqual(DESIGN_STAGE_ORDER);
+    expect(stagesForJob("autoDesign").map((s) => s.id)).toEqual(DESIGN_STAGE_ORDER);
     expect(defaultStageForIntent("design")).toBe("duty");
     expect(defaultStageForIntent("service")).toBe("system");
     expect(stagesForIntent("service")[0]?.id).toBe("system");
@@ -55,11 +85,17 @@ describe("bearingProject", () => {
     expect(duplex[0]?.role).toBe("duplex_a");
   });
 
-  it("maps topology presets to mounting systems", () => {
+  it("maps topology presets to mounting systems and engine fields", () => {
     expect(topologyFromMounting("single")).toBe("single");
     expect(mountingFromTopology("duplex", "single")).toBe("duplex_angular");
     expect(mountingFromTopology("locating_floating", "locating_ac_floating_nu")).toBe(
       "locating_ac_floating_nu"
     );
+    expect(toEngineMountingFields("locating_ac_floating_nu")).toEqual({
+      mountingSystem: "locating_floating",
+      locatingBearingType: "angular_contact",
+      floatingBearingType: "cylindrical_roller",
+    });
+    expect(toEngineMountingFields("duplex_angular").mountingSystem).toBe("duplex");
   });
 });

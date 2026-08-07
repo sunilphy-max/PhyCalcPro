@@ -49,7 +49,6 @@ export default function BearingResultsMetrics({
   return (
     <>
       <CalculatorMetricGrid cols={4} section="ISO 281 rating life">
-        <CalculatorMetricCard label="Catalog designation" value={result.designation ?? "—"} tone="blue" />
         <CalculatorMetricCard label="Bearing family" value={BEARING_TYPE_LABELS[result.bearingType]} />
         <CalculatorMetricCard
           label="Life method"
@@ -68,17 +67,17 @@ export default function BearingResultsMetrics({
           tone="orange"
         />
         <CalculatorMetricCard
+          label="Basic rating life L₁₀"
+          numericValue={result.expectedLife}
+          unit="h"
+          tone="blue"
+        />
+        <CalculatorMetricCard
           label="Modified rating life Lnm"
           numericValue={result.modifiedLife}
           unit="h"
           tone="purple"
           size="lg"
-        />
-        <CalculatorMetricCard
-          label="Basic rating life L₁₀"
-          numericValue={result.expectedLife}
-          unit="h"
-          tone="blue"
         />
         <CalculatorMetricCard
           label="Reliability factor a₁"

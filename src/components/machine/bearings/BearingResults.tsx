@@ -365,22 +365,16 @@ export default function BearingResults({
         summary: `Ratings: ${String(ratingsProvenance).replace(/_/g, " ")}`,
         content: (
           <div className="space-y-2 text-xs text-slate-600 dark:text-slate-300">
-            {result.bearingType ? (
-              <BearingConstructionCard
-                entry={catalogEntry}
-                bearingType={result.bearingType}
-                ratingsProvenance={ratingsProvenance}
-              />
-            ) : null}
             <p>
-              Confirm critical duty with OEM datasheets. This catalog is
-              representative screening — not full vendor assortment.
+              Ratings provenance: {String(ratingsProvenance).replace(/_/g, " ")}. Construction
+              details and defect frequencies are on the Catalog / Diagnose tabs. Confirm critical
+              duty with OEM datasheets — this catalog is representative screening.
             </p>
           </div>
         ),
       },
     ];
-  }, [catalogEntry, loadUnit, ratingsProvenance, result]);
+  }, [loadUnit, ratingsProvenance, result]);
 
   const viewTabs = useMemo(() => {
     if (!result) return [];
@@ -440,7 +434,7 @@ export default function BearingResults({
               </div>
             ) : null}
 
-            <BearingVerifyAccordion result={result} sections={verifySections} />
+            <BearingVerifyAccordion sections={verifySections} />
 
             {designerIntent === "design" &&
             workflowMode !== "diagnose" &&
@@ -557,10 +551,10 @@ export default function BearingResults({
                 ratingsProvenance={ratingsProvenance}
               />
             ) : null}
-            <BearingDefectFrequenciesCard result={result} />
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Ratings provenance: {ratingsProvenance.replace("_", " ")}. Confirm critical duty with OEM
-              datasheets — this catalog is representative screening.
+              datasheets — this catalog is representative screening. Defect frequencies are on the
+              Diagnose tab when that job is active.
             </p>
           </div>
         ),

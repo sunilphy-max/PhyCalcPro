@@ -109,6 +109,7 @@ describe("bearingApplicationAssistants", () => {
     });
     expect(href).toContain("/products/bearings/designer?");
     expect(href).toContain("assistant=motor");
+    expect(href).toContain("job=autoDesign");
     expect(href).toContain("mode=design");
     expect(href).toContain("a_boreMm=30");
     expect(href).toContain("a_rpm=1800");

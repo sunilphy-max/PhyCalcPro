@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
 import { bearingFailureModes } from "@/data/bearings/failureModes";
+import { designerHref } from "@/lib/machine/bearings/bearingProject";
 
 export default function BearingFailurePage() {
   const [activeId, setActiveId] = useState(bearingFailureModes[0]!.id);
@@ -69,7 +70,7 @@ export default function BearingFailurePage() {
         <p className="text-sm text-slate-500">
           Related:{" "}
           <Link
-            href="/products/bearings/designer?intent=service&mode=diagnose&panel=verify"
+            href={designerHref({ job: "diagnose", panel: "verify" })}
             className="text-cyan-700 underline dark:text-cyan-400"
           >
             Open in Designer (Diagnose)

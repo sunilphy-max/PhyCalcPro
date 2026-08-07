@@ -56,7 +56,8 @@ function toneFromSf(sf: number, warnAt = 1.2, failAt = 1): DashboardTone {
   return "safe";
 }
 
-function lifeSf(result: BearingResult): number {
+/** Shared life safety factor (Lnm / L_req) — single helper for strip, advisor, report. */
+export function lifeSafetyFactor(result: BearingResult): number {
   if (result.lifeSafetyFactor != null && result.lifeSafetyFactor > 0) {
     return result.lifeSafetyFactor;
   }
@@ -64,6 +65,10 @@ function lifeSf(result: BearingResult): number {
     return 1 / result.lifeUtilization;
   }
   return 0;
+}
+
+function lifeSf(result: BearingResult): number {
+  return lifeSafetyFactor(result);
 }
 
 /** Invert ISO 281 a1 table to nearest reliability %. */

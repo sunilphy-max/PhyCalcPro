@@ -12,7 +12,7 @@ import type { LucideIcon } from "lucide-react";
 import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
 import { BEARING_SUITE_STANDARDS } from "@/lib/machine/bearings/bearingSuiteNav";
 import {
-  BEARING_QUICK_PATHS,
+  BEARING_SIBLING_PATHS,
   BEARING_START_MODE_CARDS,
   type BearingStartModeId,
 } from "@/lib/machine/bearings/bearingProductSelect";
@@ -52,10 +52,11 @@ const ACCENT: Record<
 
 /**
  * Start page for the Bearing Engineering Suite.
+ * Job cards open Designer; Assistants prefill; siblings stay separate.
  */
 export default function BearingSuiteLanding() {
   return (
-    <BearingSuiteChrome subtitle="Choose a workflow — then open the Bearing System Designer.">
+    <BearingSuiteChrome subtitle="Pick a job — then work in the System Designer.">
       <div className="space-y-12 px-4 py-8 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400">
@@ -65,8 +66,8 @@ export default function BearingSuiteLanding() {
             Select and evaluate rolling bearings
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-            Start with Auto-design, Validate, Compare, or Diagnose — then size or check bearings with
-            ISO 281 / ISO 76 screening in the System Designer.
+            Choose Auto-design, Validate, Compare, or Diagnose. Assistants prefill duty for common
+            machines; Copilot advises inside the Designer.
           </p>
         </header>
 
@@ -79,7 +80,7 @@ export default function BearingSuiteLanding() {
               How do you want to work?
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Opens the Designer with the matching mode and stage.
+              Opens the Designer with the matching job and stage.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -128,8 +129,8 @@ export default function BearingSuiteLanding() {
                 Prefer a machine-guided path?
               </h2>
               <p className="mt-0.5 text-sm text-slate-500">
-                Motor, pump, fan, gearbox, conveyor, and ballscrew assistants prefill duty and
-                arrangement.
+                Assistants prefill duty and arrangement for motors, pumps, fans, gearboxes, and more
+                — then open the Designer.
               </p>
             </div>
             <Link
@@ -142,18 +143,18 @@ export default function BearingSuiteLanding() {
           </div>
         </section>
 
-        <section aria-labelledby="bearing-quick-paths">
+        <section aria-labelledby="bearing-sibling-tools">
           <h2
-            id="bearing-quick-paths"
+            id="bearing-sibling-tools"
             className="text-lg font-semibold text-slate-950 dark:text-white"
           >
-            Jump to a tool
+            Related tools
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Designer for rolling bearings, or sibling catalog and physics tools.
+            Catalog browse and sibling physics — not Designer stages.
           </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {BEARING_QUICK_PATHS.map((path) => (
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            {BEARING_SIBLING_PATHS.map((path) => (
               <Link
                 key={path.id}
                 href={path.href}
@@ -163,31 +164,6 @@ export default function BearingSuiteLanding() {
                 <p className="mt-1 text-xs leading-5 text-slate-500">{path.description}</p>
               </Link>
             ))}
-          </div>
-        </section>
-
-        <section
-          aria-labelledby="bearing-designer-stages"
-          className="rounded-2xl border border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-700 dark:bg-slate-900/60"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2
-                id="bearing-designer-stages"
-                className="text-base font-semibold text-slate-950 dark:text-white"
-              >
-                Designer stages
-              </h2>
-              <p className="mt-0.5 text-sm text-slate-500">
-                Requirements → Type &amp; arrangement → Size → Lube &amp; interfaces → Decision
-              </p>
-            </div>
-            <Link
-              href="/products/bearings/designer?intent=design&mode=design&panel=duty"
-              className="text-sm font-semibold text-cyan-700 hover:underline dark:text-cyan-400"
-            >
-              Open Designer →
-            </Link>
           </div>
         </section>
 

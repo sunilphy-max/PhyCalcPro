@@ -30,9 +30,7 @@ import BearingMountingSystem, {
 } from "@/components/machine/bearings/BearingMountingSystem";
 import BearingResults from "@/components/machine/bearings/BearingResults";
 import BearingDesignSummaryPanel from "@/components/machine/bearings/BearingDesignSummaryPanel";
-import BearingIntentToggle from "@/components/machine/bearings/BearingIntentToggle";
 import BearingDesignationSearchBar from "@/components/machine/bearings/BearingDesignationSearchBar";
-import { parseWorkflowModeParam } from "@/lib/machine/bearings/bearingProductSelect";
 import {
   answersFromParamGetter,
   consumeAssistantApply,
@@ -86,12 +84,17 @@ import type { BearingCopilotApplyPayload } from "@/lib/copilot/bearingCopilot";
 import type { BearingSystemWizardValues } from "@/components/machine/bearings/BearingSystemWizard";
 import type { BearingConfig } from "@/lib/machine/bearings/types";
 import { resolveRatingsProvenance } from "@/data/bearings/constructionDefaults";
+import { getWorkflowModeLabel } from "@/lib/design-workflows/workflowModeLabels";
 import {
-  defaultStageForIntent,
-  parseDesignerIntent,
+  defaultStageForJob,
+  intentFromJob,
   parseDesignerStage,
+  resolveBearingJob,
+  toEngineMountingFields,
+  workflowModeFromJob,
   type BearingDesignerIntent,
   type BearingDesignerStageId,
+  type BearingJob,
 } from "@/lib/machine/bearings/bearingProject";
 
 type BearingProjectData = {
@@ -199,12 +202,21 @@ function BearingDesignerPage() {
   const { mode: workflowMode, setMode: setWorkflowMode } = useDesignWorkflow();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [designerIntent, setDesignerIntent] = useState<BearingDesignerIntent>(() =>
-    parseDesignerIntent(searchParams.get("intent"))
+  const [bearingJob, setBearingJob] = useState<BearingJob>(() =>
+    resolveBearingJob({
+      job: searchParams.get("job"),
+      mode: searchParams.get("mode"),
+      intent: searchParams.get("intent"),
+    })
   );
+  const designerIntent: BearingDesignerIntent = intentFromJob(bearingJob);
   const [designerStage, setDesignerStage] = useState<BearingDesignerStageId>(() => {
-    const intent = parseDesignerIntent(searchParams.get("intent"));
-    return parseDesignerStage(searchParams.get("panel")) ?? defaultStageForIntent(intent);
+    const job = resolveBearingJob({
+      job: searchParams.get("job"),
+      mode: searchParams.get("mode"),
+      intent: searchParams.get("intent"),
+    });
+    return parseDesignerStage(searchParams.get("panel")) ?? defaultStageForJob(job);
   });
   const [radialLoad, setRadialLoad] = useState(500);
   const [radialUnit, setRadialUnit] = useState("N");
@@ -252,14 +264,20 @@ function BearingDesignerPage() {
   const [availableFloatMm, setAvailableFloatMm] = useState(1);
   const [useThermalEquilibrium, setUseThermalEquilibrium] = useState(true);
 
+  /** Skip one workflow→URL sync after URL hydration (avoids overwriting job=diagnose). */
+  const skipWorkflowUrlSync = useRef(true);
+
   useEffect(() => {
-    const intent = parseDesignerIntent(searchParams.get("intent"));
-    setDesignerIntent(intent);
+    const job = resolveBearingJob({
+      job: searchParams.get("job"),
+      mode: searchParams.get("mode"),
+      intent: searchParams.get("intent"),
+    });
+    setBearingJob(job);
     const panel = parseDesignerStage(searchParams.get("panel"));
-    setDesignerStage(panel ?? defaultStageForIntent(intent));
-    const modeParam = parseWorkflowModeParam(searchParams.get("mode"));
-    if (modeParam) setWorkflowMode(modeParam);
-    else if (intent === "service") setWorkflowMode("diagnose");
+    setDesignerStage(panel ?? defaultStageForJob(job));
+    skipWorkflowUrlSync.current = true;
+    setWorkflowMode(workflowModeFromJob(job));
   }, [searchParams, setWorkflowMode]);
 
   useEffect(() => {
@@ -278,29 +296,50 @@ function BearingDesignerPage() {
         setDesignation(designationParam);
       }
     }
-    if (searchParams.get("intent") === "service" || searchParams.get("example") === "motor") {
+    if (
+      resolveBearingJob({
+        job: searchParams.get("job"),
+        mode: searchParams.get("mode"),
+        intent: searchParams.get("intent"),
+      }) === "diagnose" ||
+      searchParams.get("example") === "motor"
+    ) {
       setUiComplexity("expert");
     }
   }, [searchParams]);
 
-  const syncIntentToUrl = useCallback(
-    (intent: BearingDesignerIntent) => {
-      setDesignerIntent(intent);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("intent", intent);
-      router.replace(`/products/bearings/designer?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams]
-  );
+  /** Keep URL job/intent in sync when CalculatorLayout DesignModeToggle changes. */
+  useEffect(() => {
+    if (skipWorkflowUrlSync.current) {
+      skipWorkflowUrlSync.current = false;
+      return;
+    }
+    const fromToggle = resolveBearingJob({ mode: workflowMode });
+    if (fromToggle === bearingJob) return;
+    setBearingJob(fromToggle);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("job", fromToggle);
+    params.set("intent", intentFromJob(fromToggle));
+    params.set("mode", workflowModeFromJob(fromToggle));
+    if (!params.get("panel")) {
+      params.set("panel", defaultStageForJob(fromToggle));
+    }
+    router.replace(`/products/bearings/designer?${params.toString()}`, { scroll: false });
+    // Only react to workflow toggle — not searchParams (would loop).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
+  }, [workflowMode]);
 
   const syncStageToUrl = useCallback(
     (stage: BearingDesignerStageId) => {
       setDesignerStage(stage);
       const params = new URLSearchParams(searchParams.toString());
       params.set("panel", stage);
+      params.set("job", bearingJob);
+      params.set("intent", intentFromJob(bearingJob));
+      params.set("mode", workflowModeFromJob(bearingJob));
       router.replace(`/products/bearings/designer?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams]
+    [router, searchParams, bearingJob]
   );
   const [lifeMethod, setLifeMethod] = useState<BearingLifeMethod>("iso281");
   const [misalignmentAngleMrad, setMisalignmentAngleMrad] = useState<number | "">("");
@@ -375,22 +414,7 @@ function BearingDesignerPage() {
       manufacturer,
       applicationProfile,
       arrangement,
-      mountingSystem: (
-        mountingSystem === "locating_dg_floating_nu" || mountingSystem === "locating_ac_floating_nu"
-          ? "locating_floating"
-          : mountingSystem === "duplex_angular"
-            ? "duplex"
-            : "single"
-      ) as "single" | "locating_floating" | "duplex",
-      locatingBearingType: (mountingSystem === "locating_dg_floating_nu"
-        ? "deep_groove"
-        : mountingSystem === "locating_ac_floating_nu"
-          ? "angular_contact"
-          : undefined) as BearingType | undefined,
-      floatingBearingType: (mountingSystem === "locating_dg_floating_nu" ||
-      mountingSystem === "locating_ac_floating_nu"
-        ? "cylindrical_roller"
-        : undefined) as BearingType | undefined,
+      ...toEngineMountingFields(mountingSystem),
       floatingDesignation: floatingDesignation || undefined,
       preloadClass,
       bearingSpanMm,
@@ -872,23 +896,7 @@ function BearingDesignerPage() {
           manufacturer,
           applicationProfile,
           arrangement,
-          mountingSystem: (
-            mountingSystem === "locating_dg_floating_nu" ||
-            mountingSystem === "locating_ac_floating_nu"
-              ? "locating_floating"
-              : mountingSystem === "duplex_angular"
-                ? "duplex"
-                : "single"
-          ) as "single" | "locating_floating" | "duplex",
-          locatingBearingType: (mountingSystem === "locating_dg_floating_nu"
-            ? "deep_groove"
-            : mountingSystem === "locating_ac_floating_nu"
-              ? "angular_contact"
-              : undefined) as BearingType | undefined,
-          floatingBearingType: (mountingSystem === "locating_dg_floating_nu" ||
-          mountingSystem === "locating_ac_floating_nu"
-            ? "cylindrical_roller"
-            : undefined) as BearingType | undefined,
+          ...toEngineMountingFields(mountingSystem),
           floatingDesignation: floatingDesignation || undefined,
           preloadClass,
           bearingSpanMm,
@@ -1209,11 +1217,16 @@ function BearingDesignerPage() {
       inputs={
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-900">
-            <BearingIntentToggle intent={designerIntent} onChange={syncIntentToUrl} />
+            <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+              Job:{" "}
+              <span className="text-cyan-700 dark:text-cyan-300">
+                {getWorkflowModeLabel(workflowModeFromJob(bearingJob))}
+              </span>
+            </p>
             <p className="text-[11px] text-slate-500">
               {designerIntent === "service"
-                ? "Service: identify → duty → evaluate → diagnose → actions"
-                : "PhyCalc: requirements → type & arrangement → size → lube & interfaces → decision"}
+                ? "Identify → duty → evaluate → diagnose → actions · switch job via mode toggle above"
+                : "Requirements → type → size → lube & interfaces → decision · switch job via mode toggle above"}
             </p>
           </div>
           <BearingDesignationSearchBar
