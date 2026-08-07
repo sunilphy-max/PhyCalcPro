@@ -1314,6 +1314,23 @@ function BearingDesignerPage() {
               if (id === "single" && arrangement !== "single") {
                 setArrangement("single");
               }
+              const suggestedType =
+                id === "locating_dg_floating_nu"
+                  ? "deep_groove"
+                  : id === "locating_ac_floating_nu" || id === "duplex_angular"
+                    ? "angular_contact"
+                    : null;
+              if (suggestedType) {
+                setBearingType(suggestedType);
+                syncDesignation(
+                  manufacturer,
+                  suggestedType,
+                  applicationProfile,
+                  seriesFilter,
+                  sealFilter,
+                  designation
+                );
+              }
             }}
             onSuggestBearingType={(type) => {
               setBearingType(type);

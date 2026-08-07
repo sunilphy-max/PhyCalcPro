@@ -69,10 +69,10 @@ export default function BearingFailurePage() {
         <p className="text-sm text-slate-500">
           Related:{" "}
           <Link
-            href="/products/bearings/designer?intent=service&panel=verify"
+            href="/products/bearings/designer?intent=service&mode=diagnose&panel=verify"
             className="text-cyan-700 underline dark:text-cyan-400"
           >
-            System Designer (Service)
+            Open in Designer (Diagnose)
           </Link>
           {" · "}
           <Link href="/products/bearings/database" className="text-cyan-700 underline dark:text-cyan-400">

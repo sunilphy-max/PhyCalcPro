@@ -756,7 +756,7 @@ export function bearingAssistantHubCards(): BearingAssistantHubCard[] {
   }));
 }
 
-/** Worked examples derived from assistants (replaces static BEARING_SUITE_EXAMPLES). */
+/** Worked-example cards for the Assistants index (derived from assistant definitions). */
 export function bearingAssistantExamples(): Array<{
   id: BearingAssistantId;
   title: string;

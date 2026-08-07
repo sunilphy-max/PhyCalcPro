@@ -38,16 +38,8 @@ import {
 } from "./variableLoad";
 import { minimumRadialLoadN } from "./auxiliaryChecks";
 import { resolveLifeModelCeiling } from "./advancedLife";
+import { A1_FACTORS } from "./iso281Life";
 import type { AdvancedLifeFactors, BearingLifeMethod } from "./types";
-
-const A1_FACTORS: Record<BearingReliability, number> = {
-  90: 1.0,
-  95: 0.64,
-  96: 0.55,
-  97: 0.47,
-  98: 0.37,
-  99: 0.25,
-};
 
 export { calculateBearingEquivalentLoad, lifeExponentFor } from "./equivalentLoad";
 

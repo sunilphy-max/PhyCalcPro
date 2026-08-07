@@ -15,16 +15,7 @@ import type {
   LubricantType,
 } from "./types";
 import type { ContaminationLevel } from "./iso281Life";
-import { CONTAMINATION_EC } from "./iso281Life";
-
-const A1_BY_RELIABILITY: Record<number, number> = {
-  90: 1.0,
-  95: 0.64,
-  96: 0.55,
-  97: 0.47,
-  98: 0.37,
-  99: 0.25,
-};
+import { A1_BY_RELIABILITY, CONTAMINATION_EC } from "./iso281Life";
 export type BearingReportInputContext = {
   radialLoad: number;
   radialUnit: string;

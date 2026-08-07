@@ -33,8 +33,6 @@ import type { DesignWorkflowMode } from "@/lib/design-workflows/workflowModeLabe
 import BearingTypePicker from "@/components/machine/bearings/BearingTypePicker";
 import BearingReferenceVisual from "@/components/machine/bearings/BearingReferenceVisual";
 import BearingDesignerSpine from "@/components/machine/bearings/BearingDesignerSpine";
-import BearingMountingSystem, { type BearingMountingSystemId } from "@/components/machine/bearings/BearingMountingSystem";
-import BearingArrangementGuide from "@/components/machine/bearings/BearingArrangementGuide";
 import BearingCatalogDetail from "@/components/machine/bearings/BearingCatalogDetail";
 import BearingSystemWizard, {
   BearingSystemWizardButton,
@@ -46,6 +44,7 @@ import type { BearingConfig } from "@/lib/machine/bearings/types";
 import type {
   BearingDesignerIntent,
   BearingDesignerStageId,
+  BearingMountingSystemId,
 } from "@/lib/machine/bearings/bearingProject";
 import {
   bearingCatalog,
@@ -361,62 +360,37 @@ export default function BearingInputs({
       case "system":
         return (
           <div className="space-y-4">
-            {onMountingSystemChange ? (
-              <BearingSystemStationsPanel
-                mountingSystem={mountingSystem}
-                onMountingSystemChange={onMountingSystemChange}
-                arrangement={arrangement}
-                onArrangementChange={setArrangement}
-                designation={designation}
-                floatingDesignation={floatingDesignation}
-                bearingType={bearingType}
-                stationRadialLoadsN={stationRadialLoadsN}
-                stationSlopesMrad={stationSlopesMrad}
-                onSwapStations={onSwapStations}
-                hasShaftHandoff={Boolean(stationRadialLoadsN && stationRadialLoadsN.length >= 2)}
-              />
-            ) : null}
-
             {designerIntent === "service" ? (
-              <CalculatorFormSection
-                title="Identify bearing"
-                description="Enter the installed designation to evaluate life, static safety, and failure risk."
-              >
-                <label className={calculatorFieldLabelClass}>
-                  Designation
-                  <input
-                    className={`${calculatorTextInputClass} mt-1`}
-                    value={designation}
-                    onChange={(e) => setDesignation(e.target.value)}
-                    placeholder="e.g. 6205"
-                  />
-                </label>
-              </CalculatorFormSection>
+              <p className="rounded-xl border border-cyan-200/80 bg-cyan-50/60 px-3 py-2 text-xs text-cyan-950 dark:border-cyan-900/40 dark:bg-cyan-950/30 dark:text-cyan-100">
+                Use the designation search above to identify the installed bearing, then set topology
+                and duty.
+              </p>
             ) : null}
 
-            <CalculatorFormSection
-              title="Shaft mounting system"
-              description="Locating + floating pairs (PhyCalc selection process step 2)."
-            >
-              {onMountingSystemChange ? (
-                <>
-                  <BearingMountingSystem
-                    value={mountingSystem}
-                    onChange={onMountingSystemChange}
-                    onSuggestType={onSuggestBearingType}
-                  />
-                  {isLocatingSystem && onSystemWizardApply && systemWizardSizingConfig ? (
-                    <div className="mt-3">
-                      <BearingSystemWizardButton onClick={() => setWizardOpen(true)} />
-                    </div>
-                  ) : null}
-                </>
-              ) : null}
-            </CalculatorFormSection>
+            {onMountingSystemChange ? (
+              <div className="space-y-2">
+                <BearingSystemStationsPanel
+                  mountingSystem={mountingSystem}
+                  onMountingSystemChange={onMountingSystemChange}
+                  arrangement={arrangement}
+                  onArrangementChange={setArrangement}
+                  designation={designation}
+                  floatingDesignation={floatingDesignation}
+                  bearingType={bearingType}
+                  stationRadialLoadsN={stationRadialLoadsN}
+                  stationSlopesMrad={stationSlopesMrad}
+                  onSwapStations={onSwapStations}
+                  hasShaftHandoff={Boolean(stationRadialLoadsN && stationRadialLoadsN.length >= 2)}
+                />
+                {isLocatingSystem && onSystemWizardApply && systemWizardSizingConfig ? (
+                  <BearingSystemWizardButton onClick={() => setWizardOpen(true)} />
+                ) : null}
+              </div>
+            ) : null}
 
             <CalculatorFormSection
               title="Bearing type"
-              description="Select the rolling bearing family — PhyCalc selection process step 2."
+              description="Select the rolling bearing family for catalog filtering and ratings."
             >
               <BearingTypePicker
                 value={bearingType}
@@ -433,7 +407,7 @@ export default function BearingInputs({
 
             <CalculatorFormSection
               title="Application profile"
-              description="Optional catalog manufacturer filter only — does not change the ISO 281 calculation method. Calculation standard comes from the application preset."
+              description="Optional catalog filter only — does not change the ISO 281 calculation method."
             >
               <CalculatorSelectField
                 label="Application profile"
@@ -444,7 +418,6 @@ export default function BearingInputs({
                   setApplicationProfile(profile);
                   setSeriesFilter("all");
                   setSealFilter("all");
-                  // Profile only filters catalog options — never forces bearing type.
                 }}
               >
                 {applicationProfileOptions().map((opt) => (
@@ -454,12 +427,6 @@ export default function BearingInputs({
                 ))}
               </CalculatorSelectField>
             </CalculatorFormSection>
-
-            <BearingArrangementGuide
-              arrangement={arrangement}
-              onChange={setArrangement}
-              bearingType={bearingType}
-            />
 
             {(arrangement === "back_to_back" ||
               arrangement === "face_to_face" ||
@@ -863,19 +830,10 @@ export default function BearingInputs({
             </CalculatorFormSection>
 
             <CalculatorFormSection
-              title="Life model ceiling"
-              description="Optional screening methods above ISO 281. Advanced paths are labeled screening — not a substitute for full elastic FEA."
+              title="Advanced life factors"
+              description="Material and misalignment inputs for the method selected in the ladder above. Screening paths are not a substitute for full elastic FEA."
             >
               <div className={calculatorInputGridClass}>
-                <CalculatorSelectField
-                  label="Life method"
-                  value={lifeMethod}
-                  onChange={(value) => setLifeMethod(value as BearingLifeMethod)}
-                >
-                  <option value="iso281">ISO 281 / aISO (default)</option>
-                  <option value="iso16281_screen">ISO 16281 screen (P adj.)</option>
-                  <option value="stress_life_screen">Stress-life screen (PhyCalc)</option>
-                </CalculatorSelectField>
                 <CalculatorSelectField
                   label="Rolling elements"
                   value={rollingElementMaterial}

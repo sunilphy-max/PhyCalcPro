@@ -20,7 +20,7 @@ export default function BearingSuiteChrome({ children, subtitle }: Props) {
   const line =
     subtitle ??
     active?.description ??
-    "PhyCalc bearing suite — start modes, then single-bearing / system calculator.";
+    "Bearing Engineering Suite — System Designer and sibling tools.";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-transparent">

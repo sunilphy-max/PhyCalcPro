@@ -4,7 +4,29 @@
  */
 
 import { isRollerBearingType } from "@/data/catalogs/bearing/types";
-import type { BearingType } from "./types";
+import type { BearingReliability, BearingType } from "./types";
+
+/**
+ * ISO 281 Table 12 — reliability factor a₁ (canonical for solver, reports, dashboard).
+ * Keys include numeric percents for helpers that store reliability as number.
+ */
+export const A1_BY_RELIABILITY: Record<number, number> = {
+  90: 1.0,
+  95: 0.64,
+  96: 0.55,
+  97: 0.47,
+  98: 0.37,
+  99: 0.25,
+};
+
+export const A1_FACTORS: Record<BearingReliability, number> = {
+  90: A1_BY_RELIABILITY[90]!,
+  95: A1_BY_RELIABILITY[95]!,
+  96: A1_BY_RELIABILITY[96]!,
+  97: A1_BY_RELIABILITY[97]!,
+  98: A1_BY_RELIABILITY[98]!,
+  99: A1_BY_RELIABILITY[99]!,
+};
 
 /** ISO 281 contamination factor eC (ηc) — cleanliness classes. */
 export type ContaminationLevel =

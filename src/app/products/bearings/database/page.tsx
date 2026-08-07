@@ -66,7 +66,7 @@ export default function BearingDatabasePage() {
           <h1 className="text-2xl font-semibold text-slate-950 dark:text-white">Bearing database</h1>
           <p className="mt-1 text-sm text-slate-500">
             Search designations across SKF, FAG, NSK, Timken, and NTN. Selecting a grade loads C, C₀,
-            geometry, and speed limits into Life or Selection.
+            geometry, and speed limits into the System Designer.
           </p>
         </div>
 
@@ -178,28 +178,28 @@ export default function BearingDatabasePage() {
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
-                    href={`/products/bearings/designer?intent=service&designation=${encodeURIComponent(selected.designation)}&panel=duty`}
+                    href={`/products/bearings/designer?intent=design&mode=check&designation=${encodeURIComponent(selected.designation)}&panel=size`}
                     className="rounded-lg bg-cyan-600 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-cyan-700"
                   >
-                    Use in life calculator
+                    Open in Designer
                   </Link>
                   <Link
-                    href={`/products/bearings/designer?intent=design&designation=${encodeURIComponent(selected.designation)}&type=${selected.type}`}
+                    href={`/products/bearings/designer?intent=service&mode=diagnose&designation=${encodeURIComponent(selected.designation)}&panel=system`}
                     className="rounded-lg border border-slate-200 px-3 py-2 text-center text-xs font-semibold dark:border-slate-600"
                   >
-                    Use in selection
+                    Open Diagnose
                   </Link>
                   <Link
-                    href={`/products/bearings/designer?intent=design&designation=${encodeURIComponent(selected.designation)}&panel=verify`}
+                    href={`/products/bearings/designer?intent=design&mode=check&designation=${encodeURIComponent(selected.designation)}&panel=verify`}
                     className="rounded-lg border border-slate-200 px-3 py-2 text-center text-xs font-semibold dark:border-slate-600"
                   >
-                    Check speed limits
+                    Check speed &amp; lube
                   </Link>
                 </div>
               </div>
             ) : (
               <div className="rounded-2xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-700">
-                Select a designation to view construction details and hand off to Life or Selection.
+                Select a designation to view construction details and hand off to the Designer.
               </div>
             )}
           </aside>

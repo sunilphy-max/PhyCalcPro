@@ -1,6 +1,6 @@
 ---
 seoTitle: "Bearing System Designer Guide: How Engineers Select Bearings"
-seoDescription: "Application System Designer for rolling bearings: stations, duty, ISO 281 L10, catalog size, lubrication, fits, and service diagnosis."
+seoDescription: "Bearing System Designer for rolling bearings: stations, duty, ISO 281 L10, catalog size, lubrication, fits, and service diagnosis."
 guideHeadline: "How Engineers Select Bearings"
 keywords: ["bearing system designer", "bearing selection", "L10 life", "ISO 281", "dynamic load rating", "equivalent bearing load", "bearing lubrication"]
 ---
@@ -11,20 +11,20 @@ keywords: ["bearing system designer", "bearing selection", "L10 life", "ISO 281"
 
 Rolling-element bearing selection is a load–life–speed–fit problem. Engineers size bearings so that the **basic or modified rating life** meets the duty, static safety is adequate at peak load, speed stays below catalog limits, and the arrangement (locating / floating, O / X / T) matches thermal growth and stiffness needs.
 
-PhyCalcPro’s **Bearing Application System Designer** (`/products/bearings/designer`) is the primary workspace. The **Design** intent follows the **PhyCalc selection process**:
+PhyCalcPro’s **Bearing System Designer** (`/products/bearings/designer`) is the primary rolling-bearing workspace. The **Design** intent follows the Designer stages:
 
-| PhyCalc step | Designer stage |
-|--------------|----------------|
-| 1 Performance & operating conditions | Requirements |
-| 2 Bearing type and arrangement | Type & arrangement |
-| 3 Bearing size | Bearing size |
-| 4–8 Lubrication, temperature/speed, interfaces, execution, sealing/mounting | Lube & interfaces |
-| — | Decision (report) |
+| Designer stage | What you set |
+|----------------|--------------|
+| Requirements | Loads, speed, life, SF |
+| Type & arrangement | Topology, family, O / X / T |
+| Bearing size | Catalog filters and designation |
+| Lube & interfaces | Method ladder, κ / eC, clearance, fits, speed |
+| Decision | Pass / Marginal / Fail, export |
 
 - **Design** (`?intent=design`) — Requirements → Type & arrangement → Size → Lube & interfaces → Decision  
 - **Service** (`?intent=service`) — Identify → Duty → Evaluate → Diagnose → Actions  
 
-Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrangement`, `/selection`) permanently redirect into Designer panels. Catalog database, failure guide, plain bearings, and housings remain sibling modules.
+Legacy URLs (`/life`, `/loads`, `/speed`, `/lubrication`, `/mounting`, `/arrangement`, `/selection`) permanently redirect into Designer panels. Sibling suite tools: [Assistants](/products/bearings/assistant), [Database](/products/bearings/database), [Failure guide](/products/bearings/failure), [Plain](/products/bearings/plain), and [Housings](/products/bearings/housing).
 
 ## Bearing types and when to use them
 
@@ -123,14 +123,14 @@ C \approx 66\,\mathrm{kN}
 1. Use angular-contact X, Y factors; Fa usually dominates → combined \(P\).
 2. Size for duplex life (Weibull combination of stations) and check Ka / moment stiffness for the O arrangement.
 3. Confirm preload class vs thermal growth; face-to-face (X) if misalignment dominates.
-4. Hand off designation into Selection Expert mode for κ, contamination, and fits.
+4. Open Lube & interfaces in Designer for κ, contamination, and fits checks.
 
 **Try it:** [Designer (angular)](/products/bearings/designer?intent=design&type=angular_contact)
 
 ## Standards scope (ISO 281 / 76 / 492 / ABMA)
 
 ### ISO 281 — Dynamic load ratings and rating life
-Defines basic and modified rating life, equivalent dynamic load \(P\), reliability factor \(a_1\), and life modification \(a_{\mathrm{ISO}}\) from \(\kappa\), \(e_C\), and \(P_u\). PhyCalcPro’s Life and Selection tools use this screening form. **Limits:** not a substitute for full elastic FEA or complete ISO 16281 system analysis.
+Defines basic and modified rating life, equivalent dynamic load \(P\), reliability factor \(a_1\), and life modification \(a_{\mathrm{ISO}}\) from \(\kappa\), \(e_C\), and \(P_u\). The System Designer uses this screening form. **Limits:** not a substitute for full elastic FEA or complete ISO 16281 system analysis.
 
 ### ISO 76 — Static load ratings
 Defines basic static load rating \(C_0\), equivalent static load \(P_0\), and safety factor \(s_0 = C_0/P_0\). Use for peak / shock / start-up checks even when life is adequate.
@@ -179,7 +179,7 @@ Yes. The shaft module can publish bearing reactions and slopes; the bearings cal
 
 ## Use the PhyCalcPro calculator
 
-Open the [Bearing Engineering Suite hub](/products/bearings) or the [System Designer](/products/bearings/designer). Use **Design a system** or **Check / diagnose**. Sibling tools: [Database](/products/bearings/database), [Failure guide](/products/bearings/failure), [Plain](/products/bearings/plain), [Housings](/products/bearings/housing). Enter stations and duty; run Calculate; review the decision strip, Verify accordion, and (in Service) Diagnose before freezing the BOM.
+Open the [Bearing Engineering Suite hub](/products/bearings) or the [System Designer](/products/bearings/designer). Start with **Auto-design**, **Validate**, **Compare**, or **Diagnose**, or use a [selection assistant](/products/bearings/assistant) for machine-guided prefill. Sibling tools: [Database](/products/bearings/database), [Failure guide](/products/bearings/failure), [Plain](/products/bearings/plain), [Housings](/products/bearings/housing). Enter stations and duty; run Calculate; review the Decision Strip, Overview verify checks, and (in Service) Diagnose before freezing the BOM.
 
 **Purpose**
 

@@ -163,7 +163,7 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       "Professional screening — verify critical gears against code software before release.",
     ],
   }),
-  bearings: withCodeChecks("bearings", "Bearing Selection", [
+  bearings: withCodeChecks("bearings", "Bearing System Designer", [
     genericIndicativeCheck("dynamic_capacity", "Dynamic load rating utilization", "utilization"),
     genericIndicativeCheck("life_l10", "Modified rating life Lnm (L_req/Lnm)", "life"),
     genericIndicativeCheck("static_capacity", "Static load rating C₀/P₀", "safety_factor"),
@@ -181,10 +181,15 @@ export const moduleStandardCatalog: Record<string, ModuleStandardProfile> = {
       "Professional screening — confirm final selection with OEM datasheets for critical duty.",
     ],
   }),
+  "bearing-assistant": withCodeChecks("bearing-assistant", "Bearing Selection Assistants", [
+    genericIndicativeCheck("assistant_prefill", "Machine-guided Designer prefill", "other"),
+  ], {
+    indicativeMethod: "Machine-path questionnaires that prefill System Designer duty and arrangement",
+  }),
   "bearing-database": withCodeChecks("bearing-database", "Bearing Database", [
     genericIndicativeCheck("catalog_lookup", "Catalog designation lookup", "other"),
   ], {
-    indicativeMethod: "Multi-OEM representative catalog browse and handoff",
+    indicativeMethod: "Multi-OEM representative catalog browse and handoff to System Designer",
   }),
   "bearing-failure": withCodeChecks("bearing-failure", "Bearing Failure", [
     genericIndicativeCheck("failure_guide", "Failure mode guidance", "other"),

@@ -73,10 +73,10 @@ export type BearingQuickPath = {
 
 export const BEARING_QUICK_PATHS: BearingQuickPath[] = [
   {
-    id: "single",
-    label: "Single rolling bearing",
-    description: "Search by designation or size from requirements",
-    href: "/products/bearings/designer?intent=design&mode=check&panel=size",
+    id: "designer",
+    label: "System Designer",
+    description: "Full ISO 281 / ISO 76 rolling-bearing workspace",
+    href: "/products/bearings/designer?intent=design&mode=design&panel=duty",
   },
   {
     id: "catalog",

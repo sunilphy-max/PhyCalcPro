@@ -3,7 +3,7 @@
  * Deterministic screening (not LLM).
  */
 
-import { A1_BY_RELIABILITY } from "./bearingLifeTool";
+import { A1_BY_RELIABILITY } from "./iso281Life";
 import { lifeExponentFor, equivalentLoadFromRadialAxial } from "./equivalentLoad";
 import type { BearingResult, BearingType } from "./types";
 

@@ -4,47 +4,24 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle2,
-  Fan,
   GitCompare,
-  Cog,
   Ruler,
   Stethoscope,
-  Zap,
-  Droplets,
-  Package,
-  Crosshair,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import BearingSuiteChrome from "@/components/machine/bearings-shared/BearingSuiteChrome";
-import {
-  BEARING_SUITE_EXAMPLES,
-  BEARING_SUITE_STANDARDS,
-} from "@/lib/machine/bearings/bearingSuiteNav";
-import { PHYCALC_SELECTION_PROCESS_STEPS } from "@/lib/machine/bearings/bearingProject";
+import { BEARING_SUITE_STANDARDS } from "@/lib/machine/bearings/bearingSuiteNav";
 import {
   BEARING_QUICK_PATHS,
   BEARING_START_MODE_CARDS,
   type BearingStartModeId,
 } from "@/lib/machine/bearings/bearingProductSelect";
-import {
-  bearingAssistantHubCards,
-  type BearingAssistantId,
-} from "@/lib/machine/bearings/bearingApplicationAssistants";
 
 const MODE_ICONS: Record<BearingStartModeId, LucideIcon> = {
   design: Ruler,
   check: CheckCircle2,
   select: GitCompare,
   diagnose: Stethoscope,
-};
-
-const ASSISTANT_ICONS: Record<BearingAssistantId, LucideIcon> = {
-  motor: Zap,
-  pump: Droplets,
-  fan: Fan,
-  gearbox: Cog,
-  conveyor: Package,
-  ballscrew: Crosshair,
 };
 
 const ACCENT: Record<
@@ -74,39 +51,36 @@ const ACCENT: Record<
 };
 
 /**
- * Start page for the PhyCalcPro Bearing suite.
+ * Start page for the Bearing Engineering Suite.
  */
 export default function BearingSuiteLanding() {
   return (
-    <BearingSuiteChrome subtitle="Choose how you want to work — then open the single-bearing / system calculator.">
+    <BearingSuiteChrome subtitle="Choose a workflow — then open the Bearing System Designer.">
       <div className="space-y-12 px-4 py-8 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-400">
-            PhyCalc Bearing Select
+            Bearing Engineering Suite
           </p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">
             Select and evaluate rolling bearings
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
-            Start with the right workflow — Auto-design, Validate, Compare, or Diagnose — then size
-            or check bearings with ISO 281 / ISO 76 screening. Confirm critical duty with OEM
-            datasheets when needed.
+            Start with Auto-design, Validate, Compare, or Diagnose — then size or check bearings with
+            ISO 281 / ISO 76 screening in the System Designer.
           </p>
         </header>
 
         <section aria-labelledby="bearing-start-modes">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h2
-                id="bearing-start-modes"
-                className="text-lg font-semibold text-slate-950 dark:text-white"
-              >
-                How do you want to work?
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Same four modes as every PhyCalcPro calculator — picked before you enter the tool.
-              </p>
-            </div>
+          <div className="mb-4">
+            <h2
+              id="bearing-start-modes"
+              className="text-lg font-semibold text-slate-950 dark:text-white"
+            >
+              How do you want to work?
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Opens the Designer with the matching mode and stage.
+            </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {BEARING_START_MODE_CARDS.map((mode) => {
@@ -141,46 +115,30 @@ export default function BearingSuiteLanding() {
           </div>
         </section>
 
-        <section aria-labelledby="bearing-assistants">
-          <div className="mb-4">
-            <h2
-              id="bearing-assistants"
-              className="text-lg font-semibold text-slate-950 dark:text-white"
+        <section
+          aria-labelledby="bearing-assistants-cta"
+          className="rounded-2xl border border-slate-200 bg-white px-5 py-4 dark:border-slate-700 dark:bg-slate-900"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2
+                id="bearing-assistants-cta"
+                className="text-base font-semibold text-slate-950 dark:text-white"
+              >
+                Prefer a machine-guided path?
+              </h2>
+              <p className="mt-0.5 text-sm text-slate-500">
+                Motor, pump, fan, gearbox, conveyor, and ballscrew assistants prefill duty and
+                arrangement.
+              </p>
+            </div>
+            <Link
+              href="/products/bearings/assistant"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-700"
             >
-              Selection assistants
-            </h2>
-            <p className="mt-1 text-sm text-slate-500">
-              Machine-guided paths for motors, gearboxes, and fans. Answer a few questions, then open
-              the calculator with duty and arrangement filled in.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {bearingAssistantHubCards().map((card) => {
-              const Icon = ASSISTANT_ICONS[card.id];
-              return (
-                <Link
-                  key={card.id}
-                  href={card.formHref}
-                  className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-cyan-400 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:hover:border-cyan-600"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-800 text-white dark:bg-cyan-800">
-                      <Icon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {card.label}
-                      </p>
-                      <p className="mt-0.5 text-xs font-medium text-cyan-800 dark:text-cyan-300">
-                        {card.outcome}
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">{card.blurb}</p>
-                    </div>
-                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-cyan-600" />
-                  </div>
-                </Link>
-              );
-            })}
+              Open Assistants
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
           </div>
         </section>
 
@@ -189,10 +147,10 @@ export default function BearingSuiteLanding() {
             id="bearing-quick-paths"
             className="text-lg font-semibold text-slate-950 dark:text-white"
           >
-            What do you want to calculate?
+            Jump to a tool
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Jump straight into a calculator surface for life, static, speed, or arrangement checks.
+            Designer for rolling bearings, or sibling catalog and physics tools.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {BEARING_QUICK_PATHS.map((path) => (
@@ -208,72 +166,51 @@ export default function BearingSuiteLanding() {
           </div>
         </section>
 
-        <section aria-labelledby="bearing-phycalc-process">
-          <div className="flex flex-wrap items-end justify-between gap-2">
+        <section
+          aria-labelledby="bearing-designer-stages"
+          className="rounded-2xl border border-slate-200 bg-slate-50/80 px-5 py-4 dark:border-slate-700 dark:bg-slate-900/60"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2
-                id="bearing-phycalc-process"
-                className="text-lg font-semibold text-slate-950 dark:text-white"
+                id="bearing-designer-stages"
+                className="text-base font-semibold text-slate-950 dark:text-white"
               >
-                PhyCalc selection process
+                Designer stages
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Eight steps — opened inside Designer after you pick a mode.
+              <p className="mt-0.5 text-sm text-slate-500">
+                Requirements → Type &amp; arrangement → Size → Lube &amp; interfaces → Decision
               </p>
             </div>
+            <Link
+              href="/products/bearings/designer?intent=design&mode=design&panel=duty"
+              className="text-sm font-semibold text-cyan-700 hover:underline dark:text-cyan-400"
+            >
+              Open Designer →
+            </Link>
           </div>
-          <ol className="mt-4 flex gap-2 overflow-x-auto pb-1">
-            {PHYCALC_SELECTION_PROCESS_STEPS.map((step) => (
-              <li key={step.step} className="min-w-[9.5rem] flex-1">
+        </section>
+
+        <section aria-labelledby="bearing-standards">
+          <h2
+            id="bearing-standards"
+            className="text-lg font-semibold text-slate-950 dark:text-white"
+          >
+            Standards
+          </h2>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {BEARING_SUITE_STANDARDS.map((std) => (
+              <li key={std.id}>
                 <Link
-                  href={`${step.href}&mode=check`}
-                  className="flex h-full flex-col rounded-xl border border-slate-200 bg-white px-3 py-2.5 transition hover:border-cyan-300 dark:border-slate-700 dark:bg-slate-900"
+                  href={std.href}
+                  className="block rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-cyan-300 dark:border-slate-700 dark:bg-slate-900"
                 >
-                  <span className="text-[10px] font-bold uppercase tracking-wide text-cyan-700 dark:text-cyan-300">
-                    {step.step}
-                  </span>
-                  <span className="mt-0.5 text-xs font-semibold leading-snug text-slate-900 dark:text-white">
-                    {step.title}
-                  </span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{std.code}</span>
+                  <span className="mt-0.5 block text-xs text-slate-500">{std.title}</span>
                 </Link>
               </li>
             ))}
-          </ol>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-2">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Worked examples</h2>
-            <ul className="mt-3 space-y-2">
-              {BEARING_SUITE_EXAMPLES.map((ex) => (
-                <li key={ex.id}>
-                  <Link
-                    href={ex.href}
-                    className="block rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-cyan-300 dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <span className="font-medium text-slate-900 dark:text-white">{ex.title}</span>
-                    <span className="mt-0.5 block text-xs text-slate-500">{ex.blurb}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Standards</h2>
-            <ul className="mt-3 space-y-2">
-              {BEARING_SUITE_STANDARDS.map((std) => (
-                <li key={std.id}>
-                  <Link
-                    href={std.href}
-                    className="block rounded-xl border border-slate-200 bg-white px-4 py-3 hover:border-cyan-300 dark:border-slate-700 dark:bg-slate-900"
-                  >
-                    <span className="font-semibold text-slate-900 dark:text-white">{std.code}</span>
-                    <span className="mt-0.5 block text-xs text-slate-500">{std.title}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          </ul>
         </section>
       </div>
     </BearingSuiteChrome>

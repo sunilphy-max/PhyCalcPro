@@ -8,21 +8,15 @@ import {
   lifeExponentFor,
 } from "./equivalentLoad";
 import {
+  A1_BY_RELIABILITY,
   CONTAMINATION_EC,
   estimateFatigueLoadLimitN,
   resolveModifiedLifeFactors,
   type ContaminationLevel,
 } from "./iso281Life";
 
-/** ISO 281 Table 3 — life adjustment factor a1 vs reliability. */
-export const A1_BY_RELIABILITY: Record<number, number> = {
-  90: 1,
-  95: 0.62,
-  96: 0.53,
-  97: 0.44,
-  98: 0.33,
-  99: 0.21,
-};
+/** Re-export canonical ISO 281 a₁ table (see iso281Life). */
+export { A1_BY_RELIABILITY };
 
 export type BearingLifeToolInput = {
   bearingType: BearingType;

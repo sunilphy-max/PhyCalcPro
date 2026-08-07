@@ -1,5 +1,5 @@
 /**
- * Bearing Application System Designer — project model, intent, and stage spine.
+ * Bearing System Designer — project model, intent, and stage spine.
  * Wraps existing solver types; does not replace BearingConfig / BearingResult.
  */
 

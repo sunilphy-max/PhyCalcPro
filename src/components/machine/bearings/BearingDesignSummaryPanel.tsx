@@ -18,17 +18,7 @@ type Props = {
   committed?: boolean;
 };
 
-function lifeSf(result: BearingResult): number | null {
-  if (result.lifeSafetyFactor != null && result.lifeSafetyFactor > 0) {
-    return result.lifeSafetyFactor;
-  }
-  if (result.lifeUtilization > 0 && Number.isFinite(result.lifeUtilization)) {
-    return 1 / result.lifeUtilization;
-  }
-  return null;
-}
-
-/** Persistent Design Summary for rolling bearings (shared rail chrome). */
+/** Thin status rail — detailed Lnm / s₀ live in the results Decision Strip. */
 export default function BearingDesignSummaryPanel({
   preview,
   manufacturer,
@@ -45,21 +35,6 @@ export default function BearingDesignSummaryPanel({
       />
     );
   }
-
-  const sf = lifeSf(preview);
-  const loads =
-    preview.dynamicUtilization > 1 || preview.staticSafetyFactor < 1
-      ? { status: "fail" as const, label: "Overloaded" }
-      : preview.dynamicUtilization > 0.85 || preview.staticSafetyFactor < 1.2
-        ? { status: "warn" as const, label: "Marginal" }
-        : { status: "ok" as const, label: "Acceptable" };
-
-  const iso =
-    preview.designStatus === "critical" || preview.lifeUtilization > 1
-      ? { status: "fail" as const, label: "FAIL" }
-      : preview.designStatus === "warning" || preview.lifeUtilization > 0.85
-        ? { status: "warn" as const, label: "MARGINAL" }
-        : { status: "ok" as const, label: "PASS" };
 
   const overall =
     preview.designStatus === "safe"
@@ -79,31 +54,18 @@ export default function BearingDesignSummaryPanel({
 
   const rows: DesignSummaryRow[] = [
     {
-      label: "Bearing Type",
+      label: "Type",
       value: BEARING_TYPE_LABELS[preview.bearingType] ?? preview.bearingType,
       status: "ok",
     },
-    { label: "Loads", value: loads.label, status: loads.status },
-    {
-      label: "Life",
-      value: `${formatDisplayNumber(preview.modifiedLife)} h`,
-      status:
-        sf != null && sf < 1 ? "fail" : sf != null && sf < 1.2 ? "warn" : preview.modifiedLife > 0 ? "ok" : "neutral",
-    },
-    {
-      label: "Safety",
-      value: sf != null ? formatDisplayNumber(sf) : "—",
-      status: sf != null && sf < 1 ? "fail" : sf != null && sf < 1.2 ? "warn" : sf != null ? "ok" : "neutral",
-    },
-    { label: "ISO 281", value: iso.label, status: iso.status },
     { label: "Catalog", value: catalog, status: preview.designation ? "ok" : "neutral" },
     { label: "Status", value: overall.label, status: overall.status },
   ];
 
   const footer =
     requiredLifeHours != null && requiredLifeHours > 0
-      ? `L_req ${formatDisplayNumber(requiredLifeHours)} h · P/C ${formatDisplayNumber(preview.dynamicUtilization)} · s₀ ${formatDisplayNumber(preview.staticSafetyFactor)}`
-      : `P/C ${formatDisplayNumber(preview.dynamicUtilization)} · s₀ ${formatDisplayNumber(preview.staticSafetyFactor)}`;
+      ? `Lnm ${formatDisplayNumber(preview.modifiedLife)} h · L_req ${formatDisplayNumber(requiredLifeHours)} h · see Decision Strip`
+      : `Lnm ${formatDisplayNumber(preview.modifiedLife)} h · s₀ ${formatDisplayNumber(preview.staticSafetyFactor)} · see Decision Strip`;
 
   return (
     <ModuleDesignSummaryPanel rows={rows} footer={footer} committed={committed} />

@@ -479,20 +479,17 @@ export default function BearingResults({
         label: "Life",
         icon: Gauge,
         content: (
-          <div className="space-y-4">
-            <BearingLifeFactorsCard result={result} />
-            <EngineeringPlotPicker
-              tabs={plotTabs.filter(
-                (t) =>
-                  t.id === "life-load" ||
-                  t.id === "life-speed" ||
-                  t.id === "reliability-life"
-              )}
-              defaultTabId="life-load"
-              label="Life sensitivity"
-              variant="segmented"
-            />
-          </div>
+          <EngineeringPlotPicker
+            tabs={plotTabs.filter(
+              (t) =>
+                t.id === "life-load" ||
+                t.id === "life-speed" ||
+                t.id === "reliability-life"
+            )}
+            defaultTabId="life-load"
+            label="Life sensitivity charts"
+            variant="segmented"
+          />
         ),
       },
       {
@@ -500,21 +497,17 @@ export default function BearingResults({
         label: "Loads",
         icon: Layers,
         content: (
-          <div className="space-y-4">
-            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
-            <BearingPairedStationsCard result={result} loadUnit={loadUnit} />
-            <EngineeringPlotPicker
-              tabs={plotTabs.filter(
-                (t) =>
-                  t.id === "load-envelope" ||
-                  t.id === "static-margin" ||
-                  t.id === "utilization"
-              )}
-              defaultTabId="load-envelope"
-              label="Load margin charts"
-              variant="segmented"
-            />
-          </div>
+          <EngineeringPlotPicker
+            tabs={plotTabs.filter(
+              (t) =>
+                t.id === "load-envelope" ||
+                t.id === "static-margin" ||
+                t.id === "utilization"
+            )}
+            defaultTabId="load-envelope"
+            label="Load margin charts"
+            variant="segmented"
+          />
         ),
       },
       {
@@ -523,8 +516,10 @@ export default function BearingResults({
         icon: Droplets,
         content: (
           <div className="space-y-4">
-            <BearingRelubricationCard result={result} />
-            <BearingThermalCard result={result} />
+            <p className="text-xs text-slate-500">
+              Relubrication and thermal screens are in Overview → Speed &amp; lubrication. This tab
+              shows thermal-equilibrium detail only.
+            </p>
             <BearingThermalEquilibriumCard result={result} />
           </div>
         ),
@@ -535,8 +530,9 @@ export default function BearingResults({
         icon: BookOpen,
         content: (
           <div className="space-y-4">
-            <BearingReactionDiagram result={result} loadUnit={loadUnit} />
-            <BearingDuplexStiffnessCard result={result} />
+            <p className="text-xs text-slate-500">
+              Stiffness and reaction checks are in Overview → Arrangement.
+            </p>
             {result.bearingType ? (
               <BearingReferenceVisual
                 bearingType={result.bearingType}
@@ -605,7 +601,6 @@ export default function BearingResults({
               />
             ) : null}
             <BearingDefectFrequenciesCard result={result} />
-            <BearingRelubricationCard result={result} />
           </div>
         ),
       });

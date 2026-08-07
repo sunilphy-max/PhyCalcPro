@@ -2,13 +2,10 @@
 
 import type { BearingMountingRole } from "@/data/catalogs/bearingCatalog";
 import { BEARING_TYPE_LABELS } from "@/data/catalogs/bearingCatalog";
+import type { BearingMountingSystemId } from "@/lib/machine/bearings/bearingProject";
 import type { BearingType } from "@/lib/machine/bearings/types";
 
-export type BearingMountingSystemId =
-  | "single"
-  | "locating_dg_floating_nu"
-  | "locating_ac_floating_nu"
-  | "duplex_angular";
+export type { BearingMountingSystemId };
 
 const SYSTEMS: {
   id: BearingMountingSystemId;

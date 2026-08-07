@@ -22,7 +22,7 @@ function baseResult(overrides: Partial<BearingResult> = {}): BearingResult {
     staticLoadRatingN: 36000,
     limitingSpeedRpm: 12000,
     lifeExponent: 3,
-    a1: 0.62,
+    a1: 0.64,
     aIso: 1.2,
     modifiedLifeFactors: {
       kappa: 1.4,
@@ -101,7 +101,7 @@ describe("bearingDecisionDashboard", () => {
 
   it("maps a1 to reliability percent", () => {
     expect(reliabilityPercentFromA1(1)).toBe(90);
-    expect(reliabilityPercentFromA1(0.62)).toBe(95);
+    expect(reliabilityPercentFromA1(0.64)).toBe(95);
   });
 
   it("builds reliability vs life curve", () => {
