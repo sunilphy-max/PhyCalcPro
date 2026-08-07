@@ -911,7 +911,7 @@ export default function BearingInputs({
             </CalculatorFormSection>
 
             <CalculatorFormSection title="Catalog designation">
-              <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-900/50">
+              <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/40">
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                   Selected designation
                 </p>
@@ -1238,7 +1238,7 @@ export default function BearingInputs({
             <CalculatorUnitField label="Speed" value={speed} onChange={setSpeed} min={0} unit="rpm" />
             <CalculatorUnitField label="Required L10h" value={lifeHours} onChange={setLifeHours} min={0} unit="h" />
           </div>
-          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-900/50">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/40">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
               Designation
             </p>
